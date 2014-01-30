@@ -1,23 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-
-Bundler::GemHelper.install_tasks
-
-task :default => "test"
-
-Rake::TestTask.new do |t|
-  t.test_files = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning    = true
-end
-
-task :build => :boilerplate
-
-desc "Add or update license boilerplate in source files"
-task :boilerplate do
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -40,41 +23,85 @@ task :boilerplate do
 # This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files  = Dir['bin/**/*'].select  { |f| File.file? f }
-  files += Dir['lib/**/*'].select  { |f| File.file? f }
-  files += Dir['test/**/*'].select { |f| File.file? f }
+module BioPieces
+  # Error class for all exceptions to do with Filesys.
+  class FilesysError < StandardError; end
 
-  files.each do |file|
-    body = ""
+  class Filesys
+    include Enumerable
 
-    File.open(file) do |ios|
-      body = ios.read
+    # Class method that returns a path to a unique temporary file.
+    # If no directory is specified reverts to the systems tmp directory.
+    def self.tmpfile(tmp_dir = ENV["TMPDIR"])
+      time = Time.now.to_i
+      user = ENV["USER"]
+      pid  = $$
+      path = tmp_dir + [user, time + pid, pid].join("_") + ".tmp"
+      path
     end
 
-    if body.sub!("# =BOILERPLATE=" + $/, boilerplate)
-      STDERR.puts "Adding boilerplate: #{file}"
+    def self.open(*args)
+      file    = args.shift
+      mode    = args.shift
+      options = args.shift || {}
 
-      File.open(file, 'w') do |ios|
-        ios.puts body
+      if mode == 'w'
+        case options[:compress]
+        when :gzip
+          ios, = Open3.pipeline_w("gzip -f", out: file)
+        when :bzip, :bzip2
+          ios, = Open3.pipeline_w("bzip2 -c", out: file)
+        else 
+          ios = File.open(file, mode, options)
+        end
+      else
+        if file == '-'
+          ios = STDIN
+        else
+          case `file -L #{file}`
+          when /gzip/
+            ios = IO.popen("gzip -cd #{file}")
+          when /bzip/
+            ios = IO.popen("bzcat #{file}")
+          else
+            ios = File.open(file, mode, options)
+          end
+        end
+      end
+
+      if block_given?
+        begin
+          yield self.new(ios)
+        ensure
+          ios.close
+        end
+      else
+        return self.new(ios)
       end
     end
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
+    def initialize(ios)
+      @io = ios
     end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body
-      exit
+    def puts(*args)
+      @io.puts(*args)
+    end
+
+    def close
+      @io.close
+    end
+
+    def eof?
+      @io.eof?
+    end
+
+    # Iterator method for parsing entries.
+    def each
+      while entry = get_entry do
+        yield entry
+      end
     end
   end
 end

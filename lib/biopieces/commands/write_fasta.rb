@@ -1,23 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-
-Bundler::GemHelper.install_tasks
-
-task :default => "test"
-
-Rake::TestTask.new do |t|
-  t.test_files = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning    = true
-end
-
-task :build => :boilerplate
-
-desc "Add or update license boilerplate in source files"
-task :boilerplate do
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -40,41 +23,23 @@ task :boilerplate do
 # This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files  = Dir['bin/**/*'].select  { |f| File.file? f }
-  files += Dir['lib/**/*'].select  { |f| File.file? f }
-  files += Dir['test/**/*'].select { |f| File.file? f }
+module BioPieces
+  def write_fasta(options = {})
+    lambda do |io_in, io_out|
+      Fasta.open(options[:output], 'w') do |ios|
+        io_in.each do |record|
+          record.chomp!
+          record = MessagePack.unpack(record)
+          record = record.inject({}) { |hash, (key, val)| hash[key.to_sym] = val; hash }
 
-  files.each do |file|
-    body = ""
+          if record[:SEQ_NAME] and record[:SEQ]
+            entry = BioPieces::Seq.new_bp(record)
 
-    File.open(file) do |ios|
-      body = ios.read
-    end
-
-    if body.sub!("# =BOILERPLATE=" + $/, boilerplate)
-      STDERR.puts "Adding boilerplate: #{file}"
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
+            ios.puts entry.to_fasta(options[:wrap])
+          end
+        end
       end
-    end
-
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
-    end
-
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body
-      exit
     end
   end
 end

@@ -1,23 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-
-Bundler::GemHelper.install_tasks
-
-task :default => "test"
-
-Rake::TestTask.new do |t|
-  t.test_files = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning    = true
-end
-
-task :build => :boilerplate
-
-desc "Add or update license boilerplate in source files"
-task :boilerplate do
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -40,41 +23,60 @@ task :boilerplate do
 # This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files  = Dir['bin/**/*'].select  { |f| File.file? f }
-  files += Dir['lib/**/*'].select  { |f| File.file? f }
-  files += Dir['test/**/*'].select { |f| File.file? f }
+module BioPieces
+  # Error class for all exceptions to do with FASTA.
+  class FastaError < StandardError; end
 
-  files.each do |file|
-    body = ""
+  class Fasta < BioPieces::Filesys #TODO FIXME AAARGH
+    # Method to get the next FASTA entry form an ios and return this
+    # as a Seq object. If no entry is found or eof then nil is returned.
+    def get_entry
+      block = @io.gets($/ + '>')
+      return nil if block.nil?
 
-    File.open(file) do |ios|
-      body = ios.read
+      block.chomp!($/ + '>')
+
+      (seq_name, seq) = block.split($/, 2)
+
+      raise FastaError, "Bad FASTA format" if seq_name.nil? or seq.nil?
+
+      entry          = BioPieces::Seq.new
+      entry.seq      = seq.gsub(/\s/, '')
+      entry.seq_name = seq_name.sub(/^>/, '').rstrip
+      entry.type     = nil
+
+      raise FastaError, "Bad FASTA format" if entry.seq_name.empty?
+      raise FastaError, "Bad FASTA format" if entry.seq.empty?
+
+      entry
     end
 
-    if body.sub!("# =BOILERPLATE=" + $/, boilerplate)
-      STDERR.puts "Adding boilerplate: #{file}"
+    # Method to get the next pseudo FASTA entry consisting of a sequence name and
+    # space seperated quality scores in decimals instead of sequence. This is
+    # the quality format used by Sanger and 454.
+    def get_decimal_qual
+      block = @io.gets($/ + '>')
+      return nil if block.nil?
 
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
-    end
+      block.chomp!($/ + '>')
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
+      (seq_name, qual) = block.split($/, 2)
 
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
+      raise FastaError, "Bad FASTA qual format" if seq_name.nil? or qual.nil?
 
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
-    end
+      entry          = BioPieces::Seq.new
+      entry.seq_name = seq_name.sub(/^>/, '').rstrip
+      entry.seq      = nil
+      entry.type     = nil
+      entry.qual     = qual.tr("\n", " ").strip.split(" ").collect { |q| (q.to_i + BioPieces::Seq::SCORE_BASE).chr }.join("")
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body
-      exit
+      raise FastaError, "Bad FASTA format" if entry.seq_name.empty?
+      raise FastaError, "Bad FASTA format" if entry.qual.empty?
+
+      entry
     end
   end
 end
+
+__END__

@@ -27,7 +27,13 @@
 raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
 
 module BioPieces
+  require 'pp'
+  require 'msgpack'
+  require 'inline'
   require 'biopieces/version'
   require 'biopieces/commands'
+  require 'biopieces/filesys'
+  require 'biopieces/fasta'
+  require 'biopieces/seq'
   require 'biopieces/pipeline'
 end

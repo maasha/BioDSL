@@ -27,4 +27,6 @@
 module BioPieces
   require 'biopieces/commands/cat'
   require 'biopieces/commands/dump'
+  require 'biopieces/commands/read_fasta'
+  require 'biopieces/commands/write_fasta'
 end
