@@ -10,6 +10,9 @@ Rake::TestTask.new do |t|
   t.warning    = true
 end
 
+task :build => :boilerplate
+
+desc "Add or update license boilerplate in source files"
 task :boilerplate do
   STDERR.puts "Fixing boilerplates"
 
