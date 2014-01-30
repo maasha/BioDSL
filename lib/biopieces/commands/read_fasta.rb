@@ -29,9 +29,11 @@ module BioPieces
     lambda do |io_in, io_out|
       BioPieces::Fasta.open(options[:input]) do |ios|
         ios.each do |entry|
-          io_out.puts entry.to_bp.to_msgpack
+          io_out.write entry.to_bp
         end
       end
+
+      io_out.flush
     end
   end
 end

@@ -29,9 +29,6 @@ module BioPieces
     lambda do |io_in, io_out|
       Fasta.open(options[:output], 'w') do |ios|
         io_in.each do |record|
-          record.chomp!
-          record = MessagePack.unpack(record, symbolize_keys: true)
-
           if record[:SEQ_NAME] and record[:SEQ]
             entry = BioPieces::Seq.new_bp(record)
 

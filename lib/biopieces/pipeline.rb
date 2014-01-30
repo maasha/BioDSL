@@ -42,11 +42,14 @@ module BioPieces
 
       private
 
-      def exec_lambda(cmd, read, write)
-        cmd[read, write]
+      def exec_lambda(cmd, io_read, io_write)
+        mp_read  = MessagePack::Unpacker.new(io_read, symbolize_keys: true)
+        mp_write = MessagePack::Packer.new(io_write)
+
+        cmd[mp_read, mp_write]
       ensure
-        close(write)
-        close(read)
+        close(io_write)
+        close(io_read)
       end
     end
 
