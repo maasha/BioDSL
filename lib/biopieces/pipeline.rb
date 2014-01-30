@@ -27,7 +27,7 @@
 module BioPieces
   # Execute pipelines of commands in threads or processes.
   # Commands are captured in lambdas which receive IO for reading and writing.
-  class Pipe
+  class Pipeline
     # Executor base class
     BaseExecutor = Struct.new :head, :tail, :commands do
       def ignore?(io)
@@ -41,6 +41,7 @@ module BioPieces
       end
 
       private
+
       def exec_lambda(cmd, read, write)
         cmd[read, write]
       ensure
