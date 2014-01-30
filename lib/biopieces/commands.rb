@@ -24,10 +24,18 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+def cat(options = {})
+  lambda do |io_in, io_out|
+    io_in.each_line {|line| line.chomp!; io_out.puts line} unless io_in.inspect =~ /STDIN/
 
-module BioPieces
-  require 'biopieces/version'
-  require 'biopieces/commands'
-  require 'biopieces/pipeline'
+    File.foreach(options[:input]) {|line| io_out.puts line}
+  end
+end
+
+def dump(options = {})
+  lambda do |io_in, io_out|
+    io_in.each do |line|
+      puts line
+    end
+  end
 end

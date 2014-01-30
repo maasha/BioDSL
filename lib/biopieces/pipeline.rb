@@ -80,7 +80,6 @@ module BioPieces
     # Executes pipeline in threads.
     class ThreadExecutor < BaseExecutor
       def run
-        debug $$
         out = tail
         to_join = nil
 
@@ -131,13 +130,13 @@ module BioPieces
 
     def execute_processes(read = $stdin, write = $stdout)
       exec = ProcessExecutor.new read, write, @cmds.dup
-      debug exec.inspect
       exec.run
     end
 
+    alias run execute_processes
+
     def execute_threads(read = $stdin, write = $stdout)
       exec = ThreadExecutor.new read, write, @cmds.dup
-      debug exec.inspect
       exec.run
     end
   end
