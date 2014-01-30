@@ -46,8 +46,7 @@ END
   files += Dir['test/**/*'].select { |f| File.file? f }
 
   files.each do |file|
-    update = false
-    body   = ""
+    body = ""
 
     File.open(file) do |ios|
       body = ios.read
@@ -61,26 +60,20 @@ END
       end
     end
 
-    body.sub(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) do |match|
-      if $1.to_i != Time.now.year
-        update = true
-
-        match.sub!($1, Time.now.year.to_s)
-      end
-    end
-
-    if update
+    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
       STDERR.puts "Updating boilerplate: #{file}"
+
+      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
 
       File.open(file, 'w') do |ios|
         ios.puts body
       end
-
-      update = false
     end
 
     unless body.match('Copyright')
       STDERR.puts "Warning: missing boilerplate in #{file}"
+      STDERR.puts body
+      exit
     end
   end
 
