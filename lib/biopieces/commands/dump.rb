@@ -25,6 +25,11 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  require 'biopieces/commands/cat'
-  require 'biopieces/commands/dump'
+  def dump(options = {})
+    lambda do |io_in, io_out|
+      io_in.each do |line|
+        puts line
+      end
+    end
+  end
 end

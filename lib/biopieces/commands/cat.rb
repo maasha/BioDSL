@@ -25,6 +25,11 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  require 'biopieces/commands/cat'
-  require 'biopieces/commands/dump'
+  def cat(options = {})
+    lambda do |io_in, io_out|
+      io_in.each_line {|line| line.chomp!; io_out.puts line} unless io_in.inspect =~ /STDIN/
+
+      File.foreach(options[:input]) {|line| io_out.puts line}
+    end
+  end
 end
