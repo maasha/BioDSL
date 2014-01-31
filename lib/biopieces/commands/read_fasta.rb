@@ -27,6 +27,8 @@
 module BioPieces
   def read_fasta(options = {})
     lambda do |io_in, io_out|
+      io_in.each { |record| io_out.write record }
+
       BioPieces::Fasta.open(options[:input]) do |ios|
         ios.each do |entry|
           io_out.write entry.to_bp
@@ -37,3 +39,4 @@ module BioPieces
     end
   end
 end
+

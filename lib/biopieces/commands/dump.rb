@@ -29,7 +29,10 @@ module BioPieces
     lambda do |io_in, io_out|
       io_in.each do |record|
         pp record
+        io_out.write record
       end
+
+      io_out.flush
     end
   end
 end

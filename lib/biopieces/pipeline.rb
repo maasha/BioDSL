@@ -131,14 +131,14 @@ module BioPieces
       end
     end
 
-    def execute_processes(read = $stdin, write = $stdout)
+    def execute_processes(read = nil, write = nil)
       exec = ProcessExecutor.new read, write, @cmds.dup
       exec.run
     end
 
     alias run execute_processes
 
-    def execute_threads(read = $stdin, write = $stdout)
+    def execute_threads(read = nil, write = nil)
       exec = ThreadExecutor.new read, write, @cmds.dup
       exec.run
     end
