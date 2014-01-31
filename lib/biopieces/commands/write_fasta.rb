@@ -34,8 +34,12 @@ module BioPieces
 
             ios.puts entry.to_fasta(options[:wrap])
           end
+
+          io_out.write record unless options[:last]
         end
       end
+
+      io_out.flush unless options[:last]
     end
   end
 end

@@ -27,8 +27,8 @@
 module BioPieces
   def dump(options = {})
     lambda do |io_in, io_out|
-      io_in.each do |line|
-        puts line
+      io_in.each do |record|
+        pp record
       end
     end
   end
