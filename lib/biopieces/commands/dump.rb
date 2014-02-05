@@ -26,10 +26,10 @@
 
 module BioPieces
   def dump
-    @input.each do |line|
-      puts ">>>#{line}<<<"
+    @input.each do |record|
+      pp record
 
-      @output.write line if @output
+      @output.write record if @output
     end
   end
 end

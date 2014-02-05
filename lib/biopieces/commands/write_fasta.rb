@@ -25,21 +25,17 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  def write_fasta(options = {})
-    lambda do |io_in, io_out|
-      Fasta.open(options[:output], 'w') do |ios|
-        io_in.each do |record|
-          if record[:SEQ_NAME] and record[:SEQ]
-            entry = BioPieces::Seq.new_bp(record)
+  def write_fasta
+    Fasta.open(@options[:output], 'w') do |ios|
+      @input.each do |record|
+        if record[:SEQ_NAME] and record[:SEQ]
+          entry = BioPieces::Seq.new_bp(record)
 
-            ios.puts entry.to_fasta(options[:wrap])
-          end
-
-          io_out.write record
+          ios.puts entry.to_fasta(@options[:wrap])
         end
-      end
 
-      io_out.flush
+        @output.write record
+      end
     end
   end
 end
