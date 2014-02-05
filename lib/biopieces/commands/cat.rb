@@ -25,12 +25,14 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  def cat
-    @input.each { |l| @output.write l } if @input
+  module Cat
+    def cat
+      @input.each { |l| @output.write l } if @input   # TODO flux_records
 
-    File.open(@options[:input]) do |ios|
-      ios.each do |line|
-        @output.write line.chomp
+      File.open(@options[:input]) do |ios|
+        ios.each do |line|
+          @output.write line.chomp
+        end
       end
     end
   end

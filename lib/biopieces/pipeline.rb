@@ -37,7 +37,7 @@ module BioPieces
       self
     end
 
-    def run
+    def run(options = {})
       out      = nil
       wait_pid = nil
 
@@ -59,6 +59,8 @@ module BioPieces
       @commands.first.run(nil, out)
 
       Process.waitpid(wait_pid) if wait_pid
+
+      "fish"  # TODO ugly hack
     end
 
     def to_s
@@ -96,6 +98,8 @@ module BioPieces
       def run(io_in, io_out)
         @input  = MessagePack::Unpacker.new(io_in, symbolize_keys: true)
         @output = MessagePack::Packer.new(io_out)
+
+        self.class.send(:include, BioPieces.const_get(@command.to_s.capitalize))
 
         send @command
       ensure

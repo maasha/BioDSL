@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,14 +27,19 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Dump
-    def dump
-      @input.each do |record|
-        pp record
+require 'test/helper'
 
-        @output.write record if @output
-      end
-    end
+class TestDump < Test::Unit::TestCase 
+  def setup
+    @pipe = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline#dump" do
+    assert_equal("Pipe.new.add(:dump).run", @pipe.add(:dump).to_s)
+  end
+
+  test "BioPieces::Pipeline#dump.run" do
+    assert_equal("Pipe.new.add(:dump).run", @pipe.add(:cat, input: "/Users/maasha/maashasignature").add(:dump).run)
   end
 end
+
