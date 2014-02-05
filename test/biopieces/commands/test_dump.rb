@@ -29,17 +29,32 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
+module Kernel
+  def capture_stdout
+    out = StringIO.new
+    $stdout = out
+    yield
+    return out
+  ensure
+    $stdout = STDOUT
+  end
+end
+
 class TestDump < Test::Unit::TestCase 
+  include BioPieces::Dump
+
   def setup
-    @pipe = BioPieces::Pipeline.new
+    @command = BioPieces::Pipeline::Command.new(:dump, {})
   end
 
   test "BioPieces::Pipeline#dump" do
-    assert_equal("Pipe.new.add(:dump).run", @pipe.add(:dump).to_s)
-  end
+    input  = StringIO.new("foobar", 'r')
+    output = StringIO.new("", 'w')
 
-  test "BioPieces::Pipeline#dump.run" do
-    assert_equal("Pipe.new.add(:dump).run", @pipe.add(:cat, input: "/Users/maasha/maashasignature").add(:dump).run)
+    out = capture_stdout { @command.run(input, output) }
+
+    assert_equal("foobar", out.string)
+    assert_equal("foobar", output.string.chomp)
   end
 end
 

@@ -59,12 +59,10 @@ module BioPieces
       @commands.first.run(nil, out)
 
       Process.waitpid(wait_pid) if wait_pid
-
-      "fish"  # TODO ugly hack
     end
 
     def to_s
-      command_string = "Pipe.new"
+      command_string = "#{self.class}.new"
 
       @commands.each do |command|
         command_string << command.to_s
@@ -89,17 +87,17 @@ module BioPieces
 
     class Command
       def initialize(command, options)
-        @command    = command
-        @options   = options
-        @input  = nil
-        @output = nil
+        @command = command
+        @options = options
+        @input   = nil
+        @output  = nil
+
+        self.class.send(:include, BioPieces.const_get(@command.to_s.capitalize))
       end
 
       def run(io_in, io_out)
         @input  = MessagePack::Unpacker.new(io_in, symbolize_keys: true)
         @output = MessagePack::Packer.new(io_out)
-
-        self.class.send(:include, BioPieces.const_get(@command.to_s.capitalize))
 
         send @command
       ensure

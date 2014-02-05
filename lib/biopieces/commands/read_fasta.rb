@@ -25,12 +25,14 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  def read_fasta
-    @input.each { |l| @output.write l } if @input
+  module Read_fasta
+    def read_fasta
+      @input.each { |l| @output.write l } if @input
 
-    BioPieces::Fasta.open(@options[:input]) do |ios|
-      ios.each do |entry|
-        @output.write entry.to_bp
+      BioPieces::Fasta.open(@options[:input]) do |ios|
+        ios.each do |entry|
+          @output.write entry.to_bp
+        end
       end
     end
   end

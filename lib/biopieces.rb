@@ -31,6 +31,7 @@ module BioPieces
   require 'msgpack'
   require 'inline'
   require 'narray'
+  require 'stringio'
   require 'biopieces/version'
   require 'biopieces/commands'
   require 'biopieces/filesys'
