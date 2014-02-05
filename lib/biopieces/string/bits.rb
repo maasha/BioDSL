@@ -24,18 +24,51 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+# Error class for all exceptions to do with String.
+class StringError < StandardError; end
 
-module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'narray'
-  require 'biopieces/version'
-  require 'biopieces/commands'
-  require 'biopieces/filesys'
-  require 'biopieces/fasta'
-  require 'biopieces/string'
-  require 'biopieces/seq'
-  require 'biopieces/pipeline'
+# Monkey patching Class String to add bitwise operators.
+class String
+  # Method to that returns the case senstive Hamming Distance between two strings.
+  # http://en.wikipedia.org/wiki/Hamming_distance
+  def hamming_distance(str)
+    (self ^ str).tr("\x00",'').length
+  end
+
+  # Method that performs bitwise AND operation where bits
+  # are copied if they exists in BOTH operands.
+  def &(str)
+    narray1, narray2 = to_narray(self, str)
+
+    (narray1 & narray2).to_s
+  end
+
+  # Method that performs bitwise OR operation where bits
+  # are copied if they exists in EITHER operands.
+  def |(str)
+    narray1, narray2 = to_narray(self, str)
+
+    (narray1 | narray2).to_s
+  end
+
+  # Method that performs bitwise XOR operation where bits
+  # are copied if they exists in ONE BUT NOT BOTH operands.
+  def ^(str)
+    narray1, narray2 = to_narray(self, str)
+
+    (narray1 ^ narray2).to_s
+  end
+
+  private
+
+  def to_narray(str1, str2)
+    if str1.length != str2.length
+      raise StringError, "Uneven string lengths: #{str1.length} != #{str2.length}"
+    end
+
+    narray1 = NArray.to_na(str1, "byte")
+    narray2 = NArray.to_na(str2, "byte")
+
+    [narray1, narray2]
+  end
 end

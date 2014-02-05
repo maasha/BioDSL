@@ -24,18 +24,58 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
-
 module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'narray'
-  require 'biopieces/version'
-  require 'biopieces/commands'
-  require 'biopieces/filesys'
-  require 'biopieces/fasta'
-  require 'biopieces/string'
-  require 'biopieces/seq'
-  require 'biopieces/pipeline'
+  # Class to calculate the Hamming distance between two
+  # given strings.
+  # http://en.wikipedia.org/wiki/Hamming_distance
+  class Hamming
+    extend Ambiguity
+
+    # Class method for calculating the Hamming distance between
+    # two given strings allowing for IUPAC ambiguity codes.
+    def self.distance(str1, str2)
+      raise ArgumentError, "string length mismatch: #{str1.length} != #{str2.length}" if str1.length != str2.length
+
+      hd = self.new
+      hd.hamming_distance_C(str1, str2, str1.length)
+    end
+
+    # >>>>>>>>>>>>>>> RubyInline C code <<<<<<<<<<<<<<<
+
+    inline do |builder|
+      add_ambiguity_macro(builder)
+
+      # C method for calculating Hamming Distance.
+      builder.c %{
+        VALUE hamming_distance_C(
+          VALUE _str1,   // String 1
+          VALUE _str2,   // String 2
+          VALUE _len     // String length
+        )
+        {
+          char         *str1 = StringValuePtr(_str1);
+          char         *str2 = StringValuePtr(_str2);
+          unsigned int  len  = FIX2UINT(_len);
+
+          unsigned int hamming_dist = 0;
+          unsigned int i            = 0;
+
+          for (i = 0; i < len; i++)
+          {
+            if (! MATCH(str1[i], str2[i]))
+            {
+              hamming_dist++;
+            }
+          }
+
+          return UINT2NUM(hamming_dist);
+        }
+      }
+    end
+  end
 end
+
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+__END__
