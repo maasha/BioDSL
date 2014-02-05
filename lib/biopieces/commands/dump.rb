@@ -25,14 +25,11 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  def dump(options = {})
-    lambda do |io_in, io_out|
-      io_in.each do |record|
-        pp record
-        io_out.write record
-      end
+  def dump
+    @input.each do |line|
+      puts ">>>#{line}<<<"
 
-      io_out.flush
+      @output.write line if @output
     end
   end
 end

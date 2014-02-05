@@ -25,122 +25,104 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  # Execute pipelines of commands in threads or processes.
-  # Commands are captured in lambdas which receive IO for reading and writing.
   class Pipeline
-    # Executor base class
-    BaseExecutor = Struct.new :head, :tail, :commands do
-      def ignore?(io)
-        head.equal? io or tail.equal? io
-      end
-
-      def close(io)
-        io.close if !ignore?(io) && File.pipe?(io)
-      rescue Exception
-        # ignore
-      end
-
-      private
-
-      def exec_lambda(cmd, io_read, io_write)
-        mp_read  = MessagePack::Unpacker.new(io_read, symbolize_keys: true)
-        mp_write = MessagePack::Packer.new(io_write)
-
-        cmd[mp_read, mp_write]
-      ensure
-        close(io_write)
-        close(io_read)
-      end
-    end
-
-    # Executes pipeline in processes.
-    class ProcessExecutor < BaseExecutor
-      def run
-        out = tail
-        wait_pid = nil
-
-        commands.reverse.each_cons(2) do |cmd2, cmd1|
-          io_read, io_write = IO.pipe
-
-          pid = fork do
-            close(io_write)
-            exec_lambda(cmd2, io_read, out)
-          end
-
-          close(io_read)
-          close(out)
-          out = io_write
-
-          wait_pid ||= pid # only the first created process which is tail of pipeline
-        end
-
-        exec_lambda(commands.first, head, out)
-
-        Process.waitpid(wait_pid) if wait_pid
-      end
-    end
-
-    # Executes pipeline in threads.
-    class ThreadExecutor < BaseExecutor
-      def run
-        out = tail
-        to_join = nil
-
-        commands.reverse.each_cons(2) do |cmd2, cmd1|
-          io_read, io_write = IO.pipe
-
-          th = Thread.new(cmd2, io_read, out) do |cmd, iin, iout|
-            exec_lambda(cmd, iin, iout)
-          end
-
-          to_join ||= th
-
-          out = io_write
-        end
-
-        exec_lambda(commands.first, head, out)
-        to_join.join if to_join
-      end
-    end
-
     def initialize
-      @cmds = []
+      @commands = []
+      @options = {}
     end
 
-    def add(cmd)
-      case cmd
-      when self.class
-        @cmds.concat(cmd.instance_variable_get('@cmds'))
-      when Proc
-        @cmds << cmd
-      else
-        raise ArgumentError, "Invalid: #{cmd.inspect}"
-      end
+    def add(command, options = {})
+      @commands << Command.new(command, options)
 
       self
     end
 
-    alias << add
-    alias | add
+    def run
+      out      = nil
+      wait_pid = nil
 
-    def +(pipe)
-      raise ArgumentError, "Not a pipe: #{pipe.inspect}" unless self.class === pipe
+      @commands.reverse.each_cons(2) do |command2, command1|
+        io_read, io_write = IO.pipe
 
-      self.class.new.tap do |copy|
-        copy.add(self).add(pipe)
+        pid = fork do
+          io_write.close
+          command2.run(io_read, out)
+        end
+
+        io_read.close
+        out.close if out
+        out = io_write
+
+        wait_pid ||= pid # only the first created process which is tail of pipeline
+      end
+
+      @commands.first.run(nil, out)
+
+      Process.waitpid(wait_pid) if wait_pid
+    end
+
+    def to_s
+      command_string = "Pipe.new"
+
+      @commands.each do |command|
+        command_string << command.to_s
+      end
+
+      if @options.empty?
+        command_string << ".run"
+      else
+        options = []
+
+        @options.each_pair do |key, value|
+          if value.is_a? String
+            options << %{#{key}: "#{Regexp::quote(value)}"}
+          else
+            options << "#{key}: #{value}"
+          end
+        end
+
+        command_string << ".run(#{options.join(", ")})"
       end
     end
 
-    def execute_processes(read = nil, write = nil)
-      exec = ProcessExecutor.new read, write, @cmds.dup
-      exec.run
-    end
+    class Command
+      def initialize(command, options)
+        @command    = command
+        @options   = options
+        @input  = nil
+        @output = nil
+      end
 
-    alias run execute_processes
+      def run(io_in, io_out)
+        @input  = MessagePack::Unpacker.new(io_in, symbolize_keys: true)
+        @output = MessagePack::Packer.new(io_out)
 
-    def execute_threads(read = nil, write = nil)
-      exec = ThreadExecutor.new read, write, @cmds.dup
-      exec.run
+        send @command
+      ensure
+        @output.flush
+        io_out.close if io_out
+        io_in.close  if io_in
+      end
+
+      def to_s
+        options_list = []
+
+        @options.each do |key, value|
+          if value.is_a? String
+            value = Regexp::quote(value) if key == :delimiter
+            options_list << %{#{key}: "#{value}"}
+          else
+            options_list << "#{key}: #{value}"
+          end
+        end
+
+        if @options.empty?
+          ".add(:#{@command})"
+        else
+          ".add(:#{@command}, #{options_list.join(", ")})"
+        end
+      end
     end
   end
 end
+

@@ -25,11 +25,13 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  def cat(options = {})
-    lambda do |io_in, io_out|
-      io_in.each_line {|line| line.chomp!; io_out.puts line} unless io_in.inspect =~ /STDIN/
+  def cat
+    @input.each { |l| @output.write l } if @input
 
-      File.foreach(options[:input]) {|line| io_out.puts line}
+    File.open(@options[:input]) do |ios|
+      ios.each do |line|
+        @output.write line.chomp
+      end
     end
   end
 end
