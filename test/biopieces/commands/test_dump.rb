@@ -44,17 +44,17 @@ class TestDump < Test::Unit::TestCase
   include BioPieces::Dump
 
   def setup
-    @command = BioPieces::Pipeline::Command.new(:dump, {})
+    @reader, @writer = IO.pipe
+    @command = BioPieces::Pipeline::Command.new(:dump)
   end
 
   test "BioPieces::Pipeline#dump" do
-    input  = StringIO.new("foobar", 'r')
-    output = StringIO.new("", 'w')
 
-    out = capture_stdout { @command.run(input, output) }
+    out = capture_stdout { @command.run(@reader, @writer) }
 
-    assert_equal("foobar", out.string)
-    assert_equal("foobar", output.string.chomp)
+
+    assert_equal("foobar", @reader.read)
+    #assert_equal("foobar", output.string.chomp)
   end
 end
 

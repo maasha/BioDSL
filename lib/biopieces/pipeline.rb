@@ -42,16 +42,16 @@ module BioPieces
       wait_pid = nil
 
       @commands.reverse.each_cons(2) do |command2, command1|
-        io_read, io_write = IO.pipe
+        io_in, io_out = IO.pipe
 
         pid = fork do
-          io_write.close
-          command2.run(io_read, out)
+          io_out.close
+          command2.run(io_in, out)
         end
 
-        io_read.close
+        io_in.close
         out.close if out
-        out = io_write
+        out = io_out
 
         wait_pid ||= pid # only the first created process which is tail of pipeline
       end
@@ -86,7 +86,7 @@ module BioPieces
     end
 
     class Command
-      def initialize(command, options)
+      def initialize(command, options = {})
         @command = command
         @options = options
         @input   = nil
