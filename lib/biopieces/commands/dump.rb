@@ -27,12 +27,33 @@
 module BioPieces
   module Dump
     def dump
-      @input.each_with_index do |record, i|
-        break if @options[:first] and @options[:first] == i
+      if @options[:first]
+        @input.each_with_index do |record, i|
+          break if @options[:first] == i
 
-        pp record
+          pp record
 
-        @output.write record if @output
+          @output.write record if @output
+        end
+      elsif @options[:last]
+        buffer = []
+
+        @input.each do |record|
+          buffer << record
+          buffer.shift if buffer.size > @options[:last]
+        end
+
+        buffer.each do |record|
+          pp record
+
+          @output.write record if @output
+        end
+      else
+        @input.each do |record|
+          pp record
+
+          @output.write record if @output
+        end
       end
     end
   end

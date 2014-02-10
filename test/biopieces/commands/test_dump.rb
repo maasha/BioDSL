@@ -50,9 +50,10 @@ class TestDump < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
+    hash = {four: 4, five: 5, six: 6}
     @command.options = {first: 1}
     @output1.write @hash
-    @output1.write @hash
+    @output1.write hash
     @output1.close
 
     stdout = capture_stdout { @command.run(@input1, @output2) }
@@ -60,5 +61,17 @@ class TestDump < Test::Unit::TestCase
     assert_equal(@hash.to_s, stdout.chomp)
     assert_equal(@hash, @input2.read)
   end
-end
 
+  test "BioPieces::Pipeline#dump with options[last: 1] returns correctly" do
+    hash = {four: 4, five: 5, six: 6}
+    @command.options = {last: 1}
+    @output1.write @hash
+    @output1.write hash
+    @output1.close
+
+    stdout = capture_stdout { @command.run(@input1, @output2) }
+
+    assert_equal(hash.to_s, stdout.chomp)
+    assert_equal(hash, @input2.read)
+  end
+end
