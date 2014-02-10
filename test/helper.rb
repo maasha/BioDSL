@@ -35,6 +35,17 @@ SimpleCov.command_name 'test:units'
 require 'biopieces'
 require 'test/unit'
 
+module Kernel
+  def capture_stdout
+    out = StringIO.new
+    $stdout = out
+    yield
+    return out.string
+  ensure
+    $stdout = STDOUT
+  end
+end
+
 class Test::Unit::TestCase
   def self.test(desc, &impl)
     define_method("test #{desc}", &impl)

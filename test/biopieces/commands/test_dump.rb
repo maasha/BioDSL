@@ -29,17 +29,6 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out
-  ensure
-    $stdout = STDOUT
-  end
-end
-
 class TestDump < Test::Unit::TestCase 
   include BioPieces::Dump
 
@@ -58,7 +47,7 @@ class TestDump < Test::Unit::TestCase
 
     stdout = capture_stdout { @command.run(@input1, @output2) }
 
-    assert_equal(hash.to_s, stdout.string.chomp)
+    assert_equal(hash.to_s, stdout.chomp)
     assert_equal(hash, @input2.read)
   end
 end
