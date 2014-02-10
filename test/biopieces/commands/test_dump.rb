@@ -36,19 +36,29 @@ class TestDump < Test::Unit::TestCase
     @command          = BioPieces::Pipeline::Command.new(:dump)
     @input1, @output1 = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @hash             = {one: 1, two: 2, three: 3}
   end
 
-  test "BioPieces::Pipeline#dump" do
-    hash = {one: 1, two: 2, three: 3}
-
-    @output1.write hash
-    @output1.flush
+  test "BioPieces::Pipeline#dump returns correctly" do
+    @output1.write @hash
     @output1.close
 
     stdout = capture_stdout { @command.run(@input1, @output2) }
 
-    assert_equal(hash.to_s, stdout.chomp)
-    assert_equal(hash, @input2.read)
+    assert_equal(@hash.to_s, stdout.chomp)
+    assert_equal(@hash, @input2.read)
+  end
+
+  test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
+    @command.options = {first: 1}
+    @output1.write @hash
+    @output1.write @hash
+    @output1.close
+
+    stdout = capture_stdout { @command.run(@input1, @output2) }
+
+    assert_equal(@hash.to_s, stdout.chomp)
+    assert_equal(@hash, @input2.read)
   end
 end
 

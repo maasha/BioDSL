@@ -27,7 +27,9 @@
 module BioPieces
   module Dump
     def dump
-      @input.each do |record|
+      @input.each_with_index do |record, i|
+        break if @options[:first] and @options[:first] == i
+
         pp record
 
         @output.write record if @output

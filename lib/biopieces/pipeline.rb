@@ -86,6 +86,8 @@ module BioPieces
     end
 
     class Stream
+      include Enumerable
+
       def self.pipe
         input, output = IO.pipe
 
@@ -100,12 +102,11 @@ module BioPieces
         @stream = stream
       end
 
-      def flush
-        @stream.flush
-      end
-
       def close
+        @stream.flush if @stream.respond_to? :flush
         @io.close
+      rescue Exception
+        # ignore
       end
 
       def read
@@ -118,10 +119,14 @@ module BioPieces
 
       def write(arg)
         @stream.write(arg)
+      rescue Exception
+        # ignore
       end
     end
 
     class Command
+      attr_accessor :options
+
       def initialize(command, options = {})
         @command = command
         @options = options
@@ -137,7 +142,6 @@ module BioPieces
 
         send @command
       ensure
-        @output.flush if @output
         @output.close if @output
         @input.close  if @input
       end
