@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -44,17 +44,22 @@ class TestDump < Test::Unit::TestCase
   include BioPieces::Dump
 
   def setup
-    @reader, @writer = IO.pipe
-    @command = BioPieces::Pipeline::Command.new(:dump)
+    @command          = BioPieces::Pipeline::Command.new(:dump)
+    @input1, @output1 = BioPieces::Pipeline::Stream.pipe
+    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
   end
 
   test "BioPieces::Pipeline#dump" do
+    hash = {one: 1, two: 2, three: 3}
 
-    out = capture_stdout { @command.run(@reader, @writer) }
+    @output1.write hash
+    @output1.flush
+    @output1.close
 
+    stdout = capture_stdout { @command.run(@input1, @output2) }
 
-    assert_equal("foobar", @reader.read)
-    #assert_equal("foobar", output.string.chomp)
+    assert_equal(hash.to_s, stdout.string.chomp)
+    assert_equal(hash, @input2.read)
   end
 end
 

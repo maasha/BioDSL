@@ -42,16 +42,16 @@ module BioPieces
       wait_pid = nil
 
       @commands.reverse.each_cons(2) do |command2, command1|
-        io_in, io_out = IO.pipe
+        input, output = Stream.pipe
 
         pid = fork do
-          io_out.close
-          command2.run(io_in, out)
+          output.close
+          command2.run(input, out)
         end
 
-        io_in.close
+        input.close
         out.close if out
-        out = io_out
+        out = output
 
         wait_pid ||= pid # only the first created process which is tail of pipeline
       end
@@ -85,6 +85,42 @@ module BioPieces
       end
     end
 
+    class Stream
+      def self.pipe
+        input, output = IO.pipe
+
+        minput  = MessagePack::Unpacker.new(input, symbolize_keys: true)
+        moutput = MessagePack::Packer.new(output)
+
+        [self.new(input, minput), self.new(output, moutput)]
+      end
+
+      def initialize(io, stream)
+        @io     = io
+        @stream = stream
+      end
+
+      def flush
+        @stream.flush
+      end
+
+      def close
+        @io.close
+      end
+
+      def read
+        @stream.read
+      end
+
+      def each
+        @stream.each { |r| yield r }
+      end
+
+      def write(arg)
+        @stream.write(arg)
+      end
+    end
+
     class Command
       def initialize(command, options = {})
         @command = command
@@ -95,15 +131,15 @@ module BioPieces
         self.class.send(:include, BioPieces.const_get(@command.to_s.capitalize))
       end
 
-      def run(io_in, io_out)
-        @input  = MessagePack::Unpacker.new(io_in, symbolize_keys: true)
-        @output = MessagePack::Packer.new(io_out)
+      def run(input, output)
+        @input  = input
+        @output = output
 
         send @command
       ensure
-        @output.flush
-        io_out.close if io_out
-        io_in.close  if io_in
+        @output.flush if @output
+        @output.close if @output
+        @input.close  if @input
       end
 
       def to_s
