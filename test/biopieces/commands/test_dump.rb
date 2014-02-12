@@ -51,7 +51,7 @@ class TestDump < Test::Unit::TestCase
 
   test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
     hash = {four: 4, five: 5, six: 6}
-    @command.options = {first: 1}
+    @command = BioPieces::Pipeline::Command.new(:dump, first: 1)
     @output1.write @hash
     @output1.write hash
     @output1.close
@@ -64,7 +64,7 @@ class TestDump < Test::Unit::TestCase
 
   test "BioPieces::Pipeline#dump with options[last: 1] returns correctly" do
     hash = {four: 4, five: 5, six: 6}
-    @command.options = {last: 1}
+    @command = BioPieces::Pipeline::Command.new(:dump, last: 1)
     @output1.write @hash
     @output1.write hash
     @output1.close

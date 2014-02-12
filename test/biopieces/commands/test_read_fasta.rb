@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,88 +23,32 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Error class for all exceptions to do with Filesys.
-  class FilesysError < StandardError; end
+require 'test/helper'
+require 'tempfile'
 
-  class Filesys
-    include Enumerable
+class TestReadFasta < Test::Unit::TestCase 
+  def setup
+    @file = Tempfile.new('foo')
 
-    # Class method that returns a path to a unique temporary file.
-    # If no directory is specified reverts to the systems tmp directory.
-    def self.tmpfile(tmp_dir = ENV["TMPDIR"])
-      time = Time.now.to_i
-      user = ENV["USER"]
-      pid  = $$
-      path = tmp_dir + [user, time + pid, pid].join("_") + ".tmp"
-      path
+    File.open(@file, 'w') do |ios|
+      ios.puts ">test1\natgcagcac\n>test2\nacagcactgA\n"
     end
+  end
 
-    def self.open(*args)
-      file    = args.shift
-      mode    = args.shift
-      options = args.shift || {}
+  def teardown
+    @file.close
+    @file.unlink
+  end
 
-      if mode == 'w'
-        case options[:compress]
-        when :gzip
-          ios, = Open3.pipeline_w("gzip -f", out: file)
-        when :bzip, :bzip2
-          ios, = Open3.pipeline_w("bzip2 -c", out: file)
-        else 
-          ios = File.open(file, mode, options)
-        end
-      else
-        if file == '-'
-          ios = STDIN
-        else
-          case `file -L #{file.path}`
-          when /gzip/
-            ios = IO.popen("gzip -cd #{file}")
-          when /bzip/
-            ios = IO.popen("bzcat #{file}")
-          else
-            ios = File.open(file, mode, options)
-          end
-        end
-      end
+  test "BioPieces::Pipeline::ReadFasta with tempfile" do
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file)
+    command.run(nil, output)
 
-      if block_given?
-        begin
-          yield self.new(ios)
-        ensure
-          ios.close
-        end
-      else
-        return self.new(ios)
-      end
-    end
-
-    def initialize(ios)
-      @io = ios
-    end
-
-    def puts(*args)
-      @io.puts(*args)
-    end
-
-    def close
-      @io.close
-    end
-
-    def eof?
-      @io.eof?
-    end
-
-    # Iterator method for parsing entries.
-    def each
-      while entry = get_entry do
-        yield entry
-      end
-    end
+    assert_equal('{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}', output.string)
   end
 end

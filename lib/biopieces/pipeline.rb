@@ -125,15 +125,19 @@ module BioPieces
     end
 
     class Command
-      attr_accessor :options
-
       def initialize(command, options = {})
         @command = command
         @options = options
         @input   = nil
         @output  = nil
 
-        self.class.send(:include, BioPieces.const_get(@command.to_s.capitalize))
+        include_command_module
+      end
+
+      def include_command_module
+        command_module = @command.to_s.split("_").map { |c| c.capitalize }.join("")
+
+        self.class.send(:include, BioPieces.const_get(command_module))
       end
 
       def run(input, output)
