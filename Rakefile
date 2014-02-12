@@ -42,11 +42,12 @@ task :boilerplate do
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 END
 
-  files  = Dir['bin/**/*'].select  { |f| File.file? f }
-  files += Dir['lib/**/*'].select  { |f| File.file? f }
-  files += Dir['test/**/*'].select { |f| File.file? f }
+  files  = Dir['bin/**/*'].select     { |f| File.file? f }
+  files += Dir['lib/**/*.rb'].select  { |f| File.file? f }
+  files += Dir['test/**/*.rb'].select { |f| File.file? f }
 
   files.each do |file|
+    $stderr.puts "File: #{file}"
     body = ""
 
     File.open(file) do |ios|
