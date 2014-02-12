@@ -30,30 +30,28 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 require 'test/helper'
 require 'tempfile'
 
-class StreamIO
-  def initialize(string = "", mode = 'r')
-    case mode
-    when 'r' then MessagePack::Unpacker.new(StringIO.new(string, mode), symbolize_keys: true)
-    when 'w' then MessagePack::Packer.new(StringIO.new(string, mode))
-    else
-      raise ArgumentError, "unknown mode"
-    end
-  end
-end
-
 class TestReadFasta < Test::Unit::TestCase 
   def setup
-    fasta_entries = <<EOF
+    @file = Tempfile.new('test')
+
+    File.open(@file, 'w') do |ios|
+      ios.puts <<EOF
 >test1
 atgcagcac
 >test2
 acagcactgA
 EOF
+    end
 
-    @file = Tempfile.new('foo')
+    @file2 = Tempfile.new('test2')
 
-    File.open(@file, 'w') do |ios|
-      ios.puts fasta_entries
+    File.open(@file2, 'w') do |ios|
+      ios.puts <<EOF
+>test3
+acGTAagcac
+>test4
+aCCAgcactgA
+EOF
     end
 
     @input, @output = BioPieces::Pipeline::Stream.pipe
@@ -62,6 +60,8 @@ EOF
   def teardown
     @file.close
     @file.unlink
+    @file2.close
+    @file2.unlink
   end
 
   test "BioPieces::Pipeline::ReadFasta returns correctly" do
@@ -69,7 +69,51 @@ EOF
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file)
     command.run(nil, output)
 
-    assert_equal('{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}', output.string)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, output.string)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with multiple files returns correctly" do
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: [@file, @file2])
+    command.run(nil, output)
+
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+    expected << '{:SEQ_NAME=>"test3", :SEQ=>"acGTAagcac", :SEQ_LEN=>10}'
+    expected << '{:SEQ_NAME=>"test4", :SEQ=>"aCCAgcactgA", :SEQ_LEN=>11}'
+
+    assert_equal(expected, output.string)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with options[:first] returns correctly" do
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: [@file, @file2], first: 3)
+    command.run(nil, output)
+
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+    expected << '{:SEQ_NAME=>"test3", :SEQ=>"acGTAagcac", :SEQ_LEN=>10}'
+
+    assert_equal(expected, output.string)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with options[:last] returns correctly" do
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: [@file, @file2], last: 3)
+    command.run(nil, output)
+
+    expected = ""
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+    expected << '{:SEQ_NAME=>"test3", :SEQ=>"acGTAagcac", :SEQ_LEN=>10}'
+    expected << '{:SEQ_NAME=>"test4", :SEQ=>"aCCAgcactgA", :SEQ_LEN=>11}'
+
+    assert_equal(expected, output.string)
   end
 
   test "BioPieces::Pipeline::ReadFasta with flux returns correctly" do
@@ -78,6 +122,10 @@ EOF
 
     result = @input.map { |h| h.to_s }.reduce(:<<)
 
-    assert_equal('{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}', result)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, result)
   end
 end

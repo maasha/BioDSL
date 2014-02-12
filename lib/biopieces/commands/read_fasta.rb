@@ -29,9 +29,38 @@ module BioPieces
     def read_fasta
       @input.each { |record| @output.write record } if @input
 
-      BioPieces::Fasta.open(@options[:input]) do |ios|
-        ios.each do |entry|
-          @output.write entry.to_bp
+      files  = (@options[:input].is_a? Array) ? @options[:input] : [@options[:input]]
+      count  = 0
+      buffer = []
+
+      catch :break do
+        files.each do |file|
+          BioPieces::Fasta.open(file) do |ios|
+            if @options[:first]
+              ios.each do |entry|
+                throw :break if @options[:first] == count
+
+                @output.write entry.to_bp
+
+                count += 1
+              end
+            elsif @options[:last]
+              ios.each do |entry|
+                buffer << entry
+                buffer.shift if buffer.size > @options[:last]
+              end
+            else
+              ios.each do |entry|
+                @output.write entry.to_bp
+              end
+            end
+          end
+        end
+
+        if @options[:last]
+          buffer.each do |entry|
+            @output.write entry.to_bp
+          end
         end
       end
     end
