@@ -30,13 +30,33 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 require 'test/helper'
 require 'tempfile'
 
+class StreamIO
+  def initialize(string = "", mode = 'r')
+    case mode
+    when 'r' then MessagePack::Unpacker.new(StringIO.new(string, mode), symbolize_keys: true)
+    when 'w' then MessagePack::Packer.new(StringIO.new(string, mode))
+    else
+      raise ArgumentError, "unknown mode"
+    end
+  end
+end
+
 class TestReadFasta < Test::Unit::TestCase 
   def setup
+    fasta_entries = <<EOF
+>test1
+atgcagcac
+>test2
+acagcactgA
+EOF
+
     @file = Tempfile.new('foo')
 
     File.open(@file, 'w') do |ios|
-      ios.puts ">test1\natgcagcac\n>test2\nacagcactgA\n"
+      ios.puts fasta_entries
     end
+
+    @input, @output = BioPieces::Pipeline::Stream.pipe
   end
 
   def teardown
@@ -44,11 +64,20 @@ class TestReadFasta < Test::Unit::TestCase
     @file.unlink
   end
 
-  test "BioPieces::Pipeline::ReadFasta with tempfile" do
+  test "BioPieces::Pipeline::ReadFasta returns correctly" do
     output = StringIO.new("", 'w')
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file)
     command.run(nil, output)
 
     assert_equal('{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}', output.string)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with flux returns correctly" do
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file)
+    command.run(nil, @output)
+
+    result = @input.map { |h| h.to_s }.reduce(:<<)
+
+    assert_equal('{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}', result)
   end
 end

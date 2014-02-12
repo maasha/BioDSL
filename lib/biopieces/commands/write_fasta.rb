@@ -25,7 +25,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Write_fasta
+  module WriteFasta
     def write_fasta
       Fasta.open(@options[:output], 'w') do |ios|
         @input.each do |record|

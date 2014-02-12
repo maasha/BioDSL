@@ -59,7 +59,8 @@ module BioPieces
         if file == '-'
           ios = STDIN
         else
-          case `file -L #{file.path}`
+          type = (file.respond_to? :path) ? `file -L #{file.path}` : `file -L #{file}`
+          case type
           when /gzip/
             ios = IO.popen("gzip -cd #{file}")
           when /bzip/
