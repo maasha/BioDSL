@@ -64,13 +64,18 @@ EOF
     @file2.unlink
   end
 
-  test "BioPieces::Pipeline::ReadFasta with invalid option raises" do
+  test "BioPieces::Pipeline::ReadFasta with invalid options raises" do
     command = BioPieces::Pipeline::Command.new(:read_fasta, foo: "bar")
     assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
   end
 
-  test "BioPieces::Pipeline::ReadFasta without required option raises" do
+  test "BioPieces::Pipeline::ReadFasta without required options raises" do
     command = BioPieces::Pipeline::Command.new(:read_fasta)
+    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+  end
+
+  test "BioPieces::Pipeline::ReadFasta without unique options raises" do
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: 1, last: 1)
     assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
   end
 

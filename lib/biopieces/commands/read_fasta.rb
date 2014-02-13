@@ -29,6 +29,7 @@ module BioPieces
     def read_fasta
       options_allowed :input, :first, :last
       options_required :input
+      options_unique :first, :last
 
       @input.each { |record| @output.write record } if @input
 
