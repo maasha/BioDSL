@@ -28,16 +28,29 @@ module BioPieces
   module WriteFasta
     def write_fasta
       options_allowed :output, :wrap
+      options_default output: $stdout
 
-      Fasta.open(@options[:output], 'w') do |ios|
+      if @options[:output] == $stdout
         @input.each do |record|
           if record[:SEQ_NAME] and record[:SEQ]
             entry = BioPieces::Seq.new_bp(record)
 
-            ios.puts entry.to_fasta(@options[:wrap])
+            $stdout.puts entry.to_fasta(@options[:wrap])
           end
 
-          @output.write record
+          @output.write record if @output
+        end
+      else
+        Fasta.open(@options[:output], 'w') do |ios|
+          @input.each do |record|
+            if record[:SEQ_NAME] and record[:SEQ]
+              entry = BioPieces::Seq.new_bp(record)
+
+              ios.puts entry.to_fasta(@options[:wrap])
+            end
+
+            @output.write record if @output
+          end
         end
       end
     end

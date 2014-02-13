@@ -59,9 +59,11 @@ module BioPieces
       end
     end
 
-    # Method that sets a default option value if this is not already set.
-    def option_default(option, value)
-      @options[option] ||= value
+    # Method that sets default options if this is not already set.
+    def options_default(defaults)
+      defaults.each do |option, value|
+        @options[option] ||= value
+      end
     end
 
     def assert(&b)
