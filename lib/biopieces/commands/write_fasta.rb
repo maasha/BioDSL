@@ -27,6 +27,8 @@
 module BioPieces
   module WriteFasta
     def write_fasta
+      options_allowed :output, :wrap
+
       Fasta.open(@options[:output], 'w') do |ios|
         @input.each do |record|
           if record[:SEQ_NAME] and record[:SEQ]
