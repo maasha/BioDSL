@@ -65,9 +65,13 @@ EOF
   end
 
   test "BioPieces::Pipeline::ReadFasta with invalid option raises" do
-    output = StringIO.new("", 'w')
     command = BioPieces::Pipeline::Command.new(:read_fasta, foo: "bar")
-    assert_raise(BioPieces::OptionError) { command.run(nil, output) }
+    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+  end
+
+  test "BioPieces::Pipeline::ReadFasta without required option raises" do
+    command = BioPieces::Pipeline::Command.new(:read_fasta)
+    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
   end
 
   test "BioPieces::Pipeline::ReadFasta returns correctly" do

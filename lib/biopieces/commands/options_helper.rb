@@ -28,9 +28,43 @@ module BioPieces
   module OptionsHelper
     class BioPieces::OptionError < StandardError; end;
 
-    def options_allowed(*options)
+    def options_allowed(*allowed)
       @options.each_key do |option|
-        raise BioPieces::OptionError, "option not allowed: #{option}" unless options.include? option
+        unless allowed.include? option
+          raise BioPieces::OptionError, "Disallowed option: #{option}. Allowed options: #{allowed.join(" ")}"
+        end
+      end
+    end
+
+    def options_required(*required)
+      required.each do |option|
+        unless @options[option]
+          raise BioPieces::OptionError, "Required option missing: #{option}. Required options: #{required.join(" ")}"
+        end
+      end
+    end
+
+    def option_default(option, value)
+      @options[option] ||= value
+    end
+
+    def assert(&b)
+      unless b.call
+        raise "assertion failed"
+      end
+    end
+
+    def options_unique(*unique)
+      lookup = []
+
+      unique.each do |option|
+        lookup << option if @options[option]
+      end
+
+      if lookup.size == 0
+        raise "Unique option missing: #{unique.join(" ")}"
+      elsif lookup.size > 1
+        raise "Multiple unique options used: #{unique.join(" ")}"
       end
     end
   end
