@@ -20,14 +20,19 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  require 'biopieces/commands/options_helper'
-  require 'biopieces/commands/cat'
-  require 'biopieces/commands/dump'
-  require 'biopieces/commands/read_fasta'
-  require 'biopieces/commands/write_fasta'
+  module OptionsHelper
+    class BioPieces::OptionError < StandardError; end;
+
+    def options_allowed(*options)
+      @options.each_key do |option|
+        raise BioPieces::OptionError, "option not allowed: #{option}" unless options.include? option
+      end
+    end
+  end
 end
+

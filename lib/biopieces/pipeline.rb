@@ -125,6 +125,8 @@ module BioPieces
     end
 
     class Command
+      include BioPieces::OptionsHelper
+
       def initialize(command, options = {})
         @command = command
         @options = options

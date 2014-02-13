@@ -64,6 +64,12 @@ EOF
     @file2.unlink
   end
 
+  test "BioPieces::Pipeline::ReadFasta with invalid option raises" do
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, foo: "bar")
+    assert_raise(BioPieces::OptionError) { command.run(nil, output) }
+  end
+
   test "BioPieces::Pipeline::ReadFasta returns correctly" do
     output = StringIO.new("", 'w')
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file)
