@@ -47,7 +47,6 @@ END
   files += Dir['test/**/*.rb'].select { |f| File.file? f }
 
   files.each do |file|
-    $stderr.puts "File: #{file}"
     body = ""
 
     File.open(file) do |ios|
