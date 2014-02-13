@@ -26,11 +26,12 @@
 
 module BioPieces
   module WriteFasta
+    # Method to write FASTA entries to stdout or file.
     def write_fasta
       options_allowed :output, :wrap
       options_default output: $stdout
 
-      if @options[:output] == $stdout
+      if @options[:output] === $stdout
         @input.each do |record|
           if record[:SEQ_NAME] and record[:SEQ]
             entry = BioPieces::Seq.new_bp(record)
