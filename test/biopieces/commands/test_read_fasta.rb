@@ -31,7 +31,8 @@ require 'test/helper'
 
 class TestReadFasta < Test::Unit::TestCase 
   def setup
-    @file = Tempfile.new('test')
+    @tmpdir = Dir.mktmpdir("BioPieces")
+    @file   = File.join(@tmpdir, 'test.fna')
 
     File.open(@file, 'w') do |ios|
       ios.puts <<EOF
@@ -42,7 +43,7 @@ acagcactgA
 EOF
     end
 
-    @file2 = Tempfile.new('test2')
+    @file2 = File.join(@tmpdir, 'test2.fna')
 
     File.open(@file2, 'w') do |ios|
       ios.puts <<EOF
@@ -57,10 +58,7 @@ EOF
   end
 
   def teardown
-    @file.close
-    @file.unlink
-    @file2.close
-    @file2.unlink
+    FileUtils.rm_r @tmpdir
   end
 
   test "BioPieces::Pipeline::ReadFasta with invalid options raises" do
@@ -95,6 +93,19 @@ EOF
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: [@file, @file2])
     command.run(nil, output)
 
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+    expected << '{:SEQ_NAME=>"test3", :SEQ=>"acGTAagcac", :SEQ_LEN=>10}'
+    expected << '{:SEQ_NAME=>"test4", :SEQ=>"aCCAgcactgA", :SEQ_LEN=>11}'
+
+    assert_equal(expected, output.string)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with input glob returns correctly" do
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: File.join(@tmpdir, "test*.fna"))
+    command.run(nil, output)
     expected = ""
     expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
     expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'

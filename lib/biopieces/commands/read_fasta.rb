@@ -29,16 +29,16 @@ module BioPieces
     def read_fasta
       options_allowed :input, :first, :last
       options_required :input
+      options_glob :input
       options_unique :first, :last
 
       @input.each { |record| @output.write record } if @input
 
-      files  = (@options[:input].is_a? Array) ? @options[:input] : [@options[:input]]
       count  = 0
       buffer = []
 
       catch :break do
-        files.each do |file|
+        @options[:input].each do |file|
           BioPieces::Fasta.open(file) do |ios|
             if @options[:first]
               ios.each do |entry|
