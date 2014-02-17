@@ -118,12 +118,21 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(stream_expected, stream_result)
   end
 
-  test "BioPieces::Pipeline::Grab with select and ignore_case correctly" do
+  test "BioPieces::Pipeline::Grab with select and ignore_case return correctly" do
     command = BioPieces::Pipeline::Command.new(:grab, select: "ATCG", ignore_case: true)
     command.run(@input, @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and specified keys return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys: :FOO)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:FOO=>"SEQ"}'
     assert_equal(stream_expected, stream_result)
   end
 end

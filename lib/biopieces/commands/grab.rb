@@ -28,34 +28,59 @@ module BioPieces
   module Grab
     # Method to grab records.
     def grab
-      options_allowed :select, :reject, :keys_only, :values_only, :ignore_case
+      options_allowed :select, :reject, :keys, :keys_only, :values_only, :ignore_case
       options_required_unique :select, :reject
       options_unique :keys_only, :values_only
+
+      if @options[:keys]
+        if @options[:keys].is_a? Array
+          keys = @options[:keys]
+        elsif @options[:keys].is_a? Symbol
+          keys = [@options[:keys]]
+        elsif @options[:keys].is_a? String
+          keys = @options[:keys].split(/, */).map { |key| key = key.sub(/^:/, '').to_sym }
+        else
+          raise "This should never happen: #{@options[:keys].inspect}"
+        end
+      end
 
       pattern = @options[:select] || @options[:reject]
       regex   = @options[:ignore_case] ? Regexp.new(/#{pattern}/i) : Regexp.new(/#{pattern}/)
 
       @input.each do |record|
         catch :next_record do
-          record.each do |key, value|
-            if @options[:select]
-              if @options[:keys_only]
-                if key =~ regex
-                  @output.write record if @output
-                  throw :next_record
-                end
-              elsif @options[:values_only]
+          if keys
+            keys.each do |key|
+              value = record[key]
+
+              if @options[:select]
                 if value =~ regex
                   @output.write record if @output
                   throw :next_record
                 end
-              else
-                if key =~ /#{@options[:select]}/
-                  @output.write record if @output
-                  throw :next_record
-                elsif value =~ regex
-                  @output.write record if @output
-                  throw :next_record
+              end
+            end
+          else
+            record.each do |key, value|
+              if @options[:select]
+                if @options[:keys_only]
+                  if key =~ regex
+                    @output.write record if @output
+                    throw :next_record
+                  end
+                elsif @options[:values_only]
+                  if value =~ regex
+                    @output.write record if @output
+                    throw :next_record
+                  end
+                else
+                  if key =~ /#{@options[:select]}/
+                    @output.write record if @output
+                    throw :next_record
+                  elsif value =~ regex
+                    @output.write record if @output
+                    throw :next_record
+                  end
                 end
               end
             end
