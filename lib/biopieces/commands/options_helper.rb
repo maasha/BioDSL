@@ -110,6 +110,16 @@ module BioPieces
       end
     end
 
+    # Method that raises if conflicting options are used.
+    # Example: select: :evaluate, reject: :evaluate
+    def options_conflict(conflicts)
+      conflicts.each do |option, conflict|
+        if @options[option] and @options[conflict]
+          raise BioPieces::OptionError, "Conflicting options: #{option}, #{conflict}"
+        end
+      end
+    end
+
     def assert(&b)
       unless b.call
         raise "assertion failed"

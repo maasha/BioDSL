@@ -28,8 +28,9 @@ module BioPieces
   module Grab
     # Method to grab records.
     def grab
-      options_allowed :select, :reject, :keys, :keys_only, :values_only, :ignore_case
-      options_required_unique :select, :reject
+      options_allowed :select, :reject, :evaluate, :keys, :keys_only, :values_only, :ignore_case
+      options_required_unique :select, :reject, :evaluate
+      options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate
       options_unique :keys_only, :values_only
 
       if @options[:keys]
@@ -82,6 +83,23 @@ module BioPieces
                     throw :next_record
                   end
                 end
+              elsif @options[:reject]
+              elsif @options[:evaluate]
+                expression = @options[:evaluate].gsub(/:\w+/) do |match|
+                  key = match[1 .. -1].to_sym
+
+                  if record[key]
+                    match = record[key]
+                  else
+                    throw :next_record
+                  end
+                end
+
+                if eval expression
+                  @output.write record if @output
+                end
+
+                throw :next_record
               end
             end
           end

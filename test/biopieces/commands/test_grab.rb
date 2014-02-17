@@ -135,5 +135,23 @@ class TestGrab < Test::Unit::TestCase
     stream_expected = '{:FOO=>"SEQ"}'
     assert_equal(stream_expected, stream_result)
   end
+
+  test "BioPieces::Pipeline::Grab with evaluate and conflicting keys raises" do
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, select: "foo").run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, reject: "foo").run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys: "foo").run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys_only: true).run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, values_only: true).run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, ignore_case: true).run(nil, nil) }
+  end
+
+  test "BioPieces::Pipeline::Grab with evaluate return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, evaluate: ":SEQ_LEN > 4")
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+    assert_equal(stream_expected, stream_result)
+  end
 end
 
