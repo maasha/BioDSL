@@ -46,6 +46,21 @@ module BioPieces
       end
     end
 
+    # Method that raises if @options include multiple options in the unique list or .
+    def options_required_unique(*unique)
+      lookup = []
+
+      unique.each do |option|
+        lookup << option if @options[option]
+      end
+
+      if lookup.size > 1
+        raise BioPieces::OptionError, "Multiple required uniques options used: #{unique.join(", ")}"
+      elsif lookup.size == 0
+        raise BioPieces::OptionError, "Required unique option missing: #{unique.join(", ")}"
+      end
+    end
+
     # Method that raises if @options include multiple options in the unique list.
     def options_unique(*unique)
       lookup = []

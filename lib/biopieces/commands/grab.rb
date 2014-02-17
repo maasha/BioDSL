@@ -1,6 +1,3 @@
-#!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
-
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -23,53 +20,46 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'test/helper'
+module BioPieces
+  module Grab
+    # Method to grab records.
+    def grab
+      options_allowed :select, :reject, :keys_only, :values_only
+      options_required_unique :select, :reject
+      options_unique :keys_only, :values_only
 
-class TestDump < Test::Unit::TestCase 
-  def setup
-    @command          = BioPieces::Pipeline::Command.new(:dump)
-    @input1, @output1 = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
-    @hash             = {one: 1, two: 2, three: 3}
-  end
-
-  test "BioPieces::Pipeline#dump returns correctly" do
-    @output1.write @hash
-    @output1.close
-
-    stdout = capture_stdout { @command.run(@input1, @output2) }
-
-    assert_equal(@hash.to_s, stdout.chomp)
-    assert_equal(@hash, @input2.read)
-  end
-
-  test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
-    hash = {four: 4, five: 5, six: 6}
-    @command = BioPieces::Pipeline::Command.new(:dump, first: 1)
-    @output1.write @hash
-    @output1.write hash
-    @output1.close
-
-    stdout = capture_stdout { @command.run(@input1, @output2) }
-
-    assert_equal(@hash.to_s, stdout.chomp)
-    assert_equal(@hash, @input2.read)
-  end
-
-  test "BioPieces::Pipeline#dump with options[last: 1] returns correctly" do
-    hash = {four: 4, five: 5, six: 6}
-    @command = BioPieces::Pipeline::Command.new(:dump, last: 1)
-    @output1.write @hash
-    @output1.write hash
-    @output1.close
-
-    stdout = capture_stdout { @command.run(@input1, @output2) }
-
-    assert_equal(hash.to_s, stdout.chomp)
-    assert_equal(hash, @input2.read)
+      @input.each do |record|
+        catch :next_record do
+          record.each do |key, value|
+            if @options[:select]
+              if @options[:keys_only]
+                if key =~ /#{@options[:select]}/
+                  @output.write record if @output
+                  throw :next_record
+                end
+              elsif @options[:values_only]
+                if value =~ /#{@options[:select]}/
+                  @output.write record if @output
+                  throw :next_record
+                end
+              else
+                if key =~ /#{@options[:select]}/
+                  @output.write record if @output
+                  throw :next_record
+                elsif value =~ /#{@options[:select]}/
+                  @output.write record if @output
+                  throw :next_record
+                end
+              end
+            end
+          end
+        end
+      end
+    end
   end
 end
+
