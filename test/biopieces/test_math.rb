@@ -1,6 +1,9 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2013 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -20,26 +23,19 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+require 'test/helper'
 
-module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'narray'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'biopieces/version'
-  require 'biopieces/commands'
-  require 'biopieces/filesys'
-  require 'biopieces/fasta'
-  require 'biopieces/math'
-  require 'biopieces/string'
-  require 'biopieces/seq'
-  require 'biopieces/pipeline'
+class MathTest < Test::Unit::TestCase
+  test "BioPieces::Math#dist_point2point returns correctly" do
+    assert_equal(1.5, BioPieces::Math.dist_point2point(1.0, 1.0, 1.0, 2.5))
+  end
+
+  test "BioPieces::Math#dist_point2line returns correctly" do
+    assert_equal(1.5, BioPieces::Math.dist_point2line( 3, 3, 0, 4.5, 5, 4.5))
+  end
 end
+

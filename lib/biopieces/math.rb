@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2013 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -20,26 +20,33 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
-
 module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'narray'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'biopieces/version'
-  require 'biopieces/commands'
-  require 'biopieces/filesys'
-  require 'biopieces/fasta'
-  require 'biopieces/math'
-  require 'biopieces/string'
-  require 'biopieces/seq'
-  require 'biopieces/pipeline'
+  module Math
+    # Class method to calculate the distance from at point to a line.
+    # The point and line are given as pairs of coordinates.
+    def self.dist_point2line(
+      px,  # point  x coordinate
+      py,  # point  y coordinate
+      x1,  # line 1 x coordinate
+      y1,  # line 1 y coordinate
+      x2,  # line 2 x coordinate
+      y2   # line 2 y coordinate
+    )
+
+      a = (y2 - y1).to_f / (x2 - x1).to_f
+      b = y1 - a * x1
+
+      (a * px + b - py).abs / ::Math.sqrt(a ** 2 + 1)
+    end
+
+    # Class method to calculate the distance between two points given
+    # as pairs of coordinates.
+    def self.dist_point2point(x1, y1, x2, y2)
+      ::Math.sqrt((x2.to_f - x1.to_f) ** 2 + (y2.to_f - y1.to_f) ** 2)
+    end
+  end
 end
