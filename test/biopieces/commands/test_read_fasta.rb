@@ -71,7 +71,7 @@ EOF
     assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
   end
 
-  test "BioPieces::Pipeline::ReadFasta without unique options raises" do
+  test "BioPieces::Pipeline::ReadFasta with exclusive unique options raises" do
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: 1, last: 1)
     assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
   end
@@ -79,6 +79,32 @@ EOF
   test "BioPieces::Pipeline::ReadFasta returns correctly" do
     output = StringIO.new("", 'w')
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file)
+    command.run(nil, output)
+
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, output.string)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with gzipped data returns correctly" do
+    `gzip #{@file}`
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file + ".gz")
+    command.run(nil, output)
+
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
+    expected << '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, output.string)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with bzip2'ed data returns correctly" do
+    `bzip2 #{@file}`
+    output = StringIO.new("", 'w')
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file + ".bz2")
     command.run(nil, output)
 
     expected = ""
