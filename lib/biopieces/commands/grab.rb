@@ -49,59 +49,70 @@ module BioPieces
       regex   = @options[:ignore_case] ? Regexp.new(/#{pattern}/i) : Regexp.new(/#{pattern}/)
 
       @input.each do |record|
-        catch :next_record do
-          if keys
-            keys.each do |key|
-              value = record[key]
+        gotit = false
 
-              if @options[:select]
+        catch :next_record do
+          if pattern
+            if keys
+              keys.each do |key|
+                value = record[key]
+
                 if value =~ regex
-                  @output.write record if @output
+                  gotit = true
                   throw :next_record
                 end
               end
-            end
-          else
-            record.each do |key, value|
-              if @options[:select]
+            else
+              record.each do |key, value|
                 if @options[:keys_only]
                   if key =~ regex
-                    @output.write record if @output
+                    gotit = true
                     throw :next_record
                   end
                 elsif @options[:values_only]
                   if value =~ regex
-                    @output.write record if @output
+                    gotit = true
                     throw :next_record
                   end
                 else
-                  if key =~ /#{@options[:select]}/
-                    @output.write record if @output
+                  if key =~ regex
+                    gotit = true
                     throw :next_record
                   elsif value =~ regex
-                    @output.write record if @output
+                    gotit = true
                     throw :next_record
                   end
                 end
-              elsif @options[:reject]
-              elsif @options[:evaluate]
-                expression = @options[:evaluate].gsub(/:\w+/) do |match|
-                  key = match[1 .. -1].to_sym
+              end
+            end
+          elsif @options[:evaluate]
+            expression = @options[:evaluate].gsub(/:\w+/) do |match|
+              key = match[1 .. -1].to_sym
 
-                  if record[key]
-                    match = record[key]
-                  else
-                    throw :next_record
-                  end
-                end
-
-                if eval expression
-                  @output.write record if @output
-                end
-
+              if record[key]
+                match = record[key]
+              else
                 throw :next_record
               end
             end
+
+            if eval expression
+              gotit = true
+            end
+
+            throw :next_record
+          else
+            raise "This should never happen: #{@options.inspect}"
+          end
+        end
+        
+        if gotit
+          if @options[:select] or @options[:evaluate]
+            @output.write record if @output
+          end
+        else
+          if @options[:reject]
+            @output.write record if @output
           end
         end
       end
