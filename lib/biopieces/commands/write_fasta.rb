@@ -28,7 +28,9 @@ module BioPieces
   module WriteFasta
     # Method to write FASTA entries to stdout or file.
     def write_fasta
-      options_allowed :output, :wrap
+      options_allowed :output, :wrap, :gzip, :bzip2
+      options_unique :gzip, :bzip2
+      options_tie gzip: :output, bzip2: :output
       options_default output: $stdout
 
       if @options[:output] === $stdout
@@ -42,7 +44,15 @@ module BioPieces
           @output.write record if @output
         end
       else
-        Fasta.open(@options[:output], 'w') do |ios|
+        if @options[:gzip]
+          compress = :gzip
+        elsif @options[:bzip2]
+          compress = :bzip2
+        else
+          compress = nil
+        end
+
+        Fasta.open(@options[:output], 'w', compress: compress) do |ios|
           @input.each do |record|
             if record[:SEQ_NAME] and record[:SEQ]
               entry = BioPieces::Seq.new_bp(record)

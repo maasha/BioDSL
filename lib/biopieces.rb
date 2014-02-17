@@ -31,6 +31,7 @@ module BioPieces
   require 'msgpack'
   require 'inline'
   require 'narray'
+  require 'open3'
   require 'stringio'
   require 'tempfile'
   require 'biopieces/version'

@@ -85,6 +85,16 @@ module BioPieces
       end
     end
 
+    # Method that raises if one option is given without some other.
+    # Example: options_tie gzip: :options, bzip2: :options
+    def options_tie(ties)
+      ties.each do |option, tie|
+        if @options[option] and not @options[tie]
+          raise BioPieces::OptionError, "Tie option: #{tie} not in @options: #{@options.keys.join(", ")}"
+        end
+      end
+    end
+
     def assert(&b)
       unless b.call
         raise "assertion failed"

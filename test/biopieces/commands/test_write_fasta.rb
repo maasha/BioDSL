@@ -31,6 +31,9 @@ require 'test/helper'
 
 class TestWriteFasta < Test::Unit::TestCase 
   def setup
+    @tmpdir = Dir.mktmpdir("BioPieces")
+    @file   = File.join(@tmpdir, 'test.fna')
+
     @input, @output   = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
 
@@ -40,13 +43,10 @@ class TestWriteFasta < Test::Unit::TestCase
     @output.write hash1
     @output.write hash2
     @output.close
-
-    @file = Tempfile.new('test')
   end
 
   def teardown
-    @file.close
-    @file.unlink
+    FileUtils.rm_r @tmpdir
   end
 
   test "BioPieces::Pipeline::WriteFasta with invalid options raises" do
@@ -74,6 +74,37 @@ class TestWriteFasta < Test::Unit::TestCase
     result = File.open(@file).read
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteFasta with gzipped data and no output file raises" do
+    command = BioPieces::Pipeline::Command.new(:write_fasta, gzip: true)
+    assert_raise(BioPieces::OptionError) { command.run(@input, nil) }
+  end
+
+  test "BioPieces::Pipeline::WriteFasta with bzip2'ed data and no output file raises" do
+    command = BioPieces::Pipeline::Command.new(:write_fasta, bzip2: true)
+    assert_raise(BioPieces::OptionError) { command.run(@input, nil) }
+  end
+
+  test "BioPieces::Pipeline::WriteFasta to file outputs gzipped data correctly" do
+    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, gzip: true)
+    command.run(@input, nil)
+    result = `zcat #{@file}`
+    expected = ">test1\natcg\n>test2\ngtac\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteFasta to file outputs bzip2'ed data correctly" do
+    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, bzip2: true)
+    command.run(@input, nil)
+    result = `bzcat #{@file}`
+    expected = ">test1\natcg\n>test2\ngtac\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteFasta with both gzip and bzip2 output raises" do
+    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, gzip: true, bzip2: true)
+    assert_raise(BioPieces::OptionError) { command.run(@input, nil) }
   end
 
   test "BioPieces::Pipeline::WriteFasta with flux outputs correctly" do
