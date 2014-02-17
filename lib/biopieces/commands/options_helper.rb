@@ -76,7 +76,7 @@ module BioPieces
             expanded_paths = []
 
             @options[option].split(/, */).each do |glob_expression|
-              expanded_paths += Dir.glob(glob_expression)
+              expanded_paths += Dir.glob(glob_expression).select { |file| File.file? file }
             end
 
             @options[option] = expanded_paths
