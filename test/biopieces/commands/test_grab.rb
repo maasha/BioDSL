@@ -31,6 +31,14 @@ require 'test/helper'
 
 class TestGrab < Test::Unit::TestCase 
   def setup
+    @tmpdir       = Dir.mktmpdir("BioPieces")
+    @pattern_file = File.join(@tmpdir, 'patterns.txt')
+
+    File.open(@pattern_file, 'w') do |ios|
+      ios.puts "test"
+      ios.puts "seq"
+    end
+
     @input, @output   = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
 
@@ -42,6 +50,10 @@ class TestGrab < Test::Unit::TestCase
     @output.write hash2
     @output.write hash3
     @output.close
+  end
+
+  def teardown
+    FileUtils.rm_r @tmpdir
   end
 
   test "BioPieces::Pipeline::Grab with invalid options raises" do
@@ -84,6 +96,26 @@ class TestGrab < Test::Unit::TestCase
     stream_expected = ""
     stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
     stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with multiple select patterns return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: ["est1", "QM"])
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = ""
+    stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with multiple reject patterns return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, reject: ["est1", "QM"])
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:FOO=>"SEQ"}'
     assert_equal(stream_expected, stream_result)
   end
 
@@ -205,6 +237,28 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(stream_expected, stream_result)
   end
 
+  test "BioPieces::Pipeline::Grab with select and multiple keys in Array return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys: [:FOO, :SEQ])
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = ""
+    stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+    stream_expected << '{:FOO=>"SEQ"}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and multiple keys in String return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys: ":FOO, :SEQ")
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = ""
+    stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+    stream_expected << '{:FOO=>"SEQ"}'
+    assert_equal(stream_expected, stream_result)
+  end
+
   test "BioPieces::Pipeline::Grab with reject and specified keys return correctly" do
     command = BioPieces::Pipeline::Command.new(:grab, reject: "SEQ", keys: :FOO)
     command.run(@input, @output2)
@@ -222,6 +276,26 @@ class TestGrab < Test::Unit::TestCase
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select_file return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select_file: @pattern_file)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = ""
+    stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with reject_file return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, reject_file: @pattern_file)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:FOO=>"SEQ"}'
     assert_equal(stream_expected, stream_result)
   end
 end

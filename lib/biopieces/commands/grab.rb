@@ -28,8 +28,8 @@ module BioPieces
   module Grab
     # Method to grab records.
     def grab
-      options_allowed :select, :reject, :evaluate, :keys, :keys_only, :values_only, :ignore_case
-      options_required_unique :select, :reject, :evaluate
+      options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :keys, :keys_only, :values_only, :ignore_case
+      options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
       options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate
       options_unique :keys_only, :values_only
 
@@ -40,47 +40,90 @@ module BioPieces
           keys = [@options[:keys]]
         elsif @options[:keys].is_a? String
           keys = @options[:keys].split(/, */).map { |key| key = key.sub(/^:/, '').to_sym }
-        else
-          raise "This should never happen: #{@options[:keys].inspect}"
         end
       end
 
-      pattern = @options[:select] || @options[:reject]
-      regex   = @options[:ignore_case] ? Regexp.new(/#{pattern}/i) : Regexp.new(/#{pattern}/)
+      patterns = []
+
+      if @options[:select]
+        if @options[:select].is_a? Array
+          patterns += @options[:select]
+        elsif @options[:select].is_a? String
+          patterns << @options[:select]
+        end
+      end
+
+      if @options[:select_file]
+        File.open(@options[:select_file]) do |ios|
+          ios.each_line { |line| patterns << line.chomp }
+        end
+      end
+
+      if @options[:reject]
+        if @options[:reject].is_a? Array
+          patterns += @options[:reject]
+        elsif @options[:reject].is_a? String
+          patterns << @options[:reject]
+        end
+      end
+
+      if @options[:reject_file]
+        File.open(@options[:reject_file]) do |ios|
+          ios.each_line { |line| patterns << line.chomp }
+        end
+      end
+
+      regexes = []
+
+      if @options[:ignore_case]
+        regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/i) }
+      else
+        regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/) }
+      end
 
       @input.each do |record|
         gotit = false
 
         catch :next_record do
-          if pattern
+          if not patterns.empty?
             if keys
               keys.each do |key|
-                value = record[key]
-
-                if value =~ regex
-                  gotit = true
-                  throw :next_record
+                if value = record[key]
+                  regexes.each do |regex|
+                    if value =~ regex
+                      gotit = true
+                      throw :next_record
+                    end
+                  end
                 end
               end
             else
               record.each do |key, value|
                 if @options[:keys_only]
-                  if key =~ regex
-                    gotit = true
-                    throw :next_record
+                  regexes.each do |regex|
+                    if key =~ regex
+                      gotit = true
+                      throw :next_record
+                    end
                   end
                 elsif @options[:values_only]
-                  if value =~ regex
-                    gotit = true
-                    throw :next_record
+                  regexes.each do |regex|
+                    if value =~ regex
+                      gotit = true
+                      throw :next_record
+                    end
                   end
                 else
-                  if key =~ regex
-                    gotit = true
-                    throw :next_record
-                  elsif value =~ regex
-                    gotit = true
-                    throw :next_record
+                  regexes.each do |regex|
+                    if key =~ regex
+                      gotit = true
+                      throw :next_record
+                    end
+
+                    if value =~ regex
+                      gotit = true
+                      throw :next_record
+                    end
                   end
                 end
               end
@@ -101,17 +144,15 @@ module BioPieces
             end
 
             throw :next_record
-          else
-            raise "This should never happen: #{@options.inspect}"
           end
         end
         
         if gotit
-          if @options[:select] or @options[:evaluate]
+          if @options[:select] or @options[:select_file] or @options[:evaluate]
             @output.write record if @output
           end
         else
-          if @options[:reject]
+          if @options[:reject] or @options[:reject_file]
             @output.write record if @output
           end
         end
