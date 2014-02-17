@@ -71,7 +71,7 @@ class TestGrab < Test::Unit::TestCase
     command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ_NAME")
     command.run(@input, @output2)
 
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
     stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
     stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
@@ -82,7 +82,7 @@ class TestGrab < Test::Unit::TestCase
     command = BioPieces::Pipeline::Command.new(:grab, select: "test1")
     command.run(@input, @output2)
 
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
     assert_equal(stream_expected, stream_result)
   end
@@ -91,7 +91,7 @@ class TestGrab < Test::Unit::TestCase
     command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys_only: true)
     command.run(@input, @output2)
 
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
     stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
     stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
@@ -102,10 +102,28 @@ class TestGrab < Test::Unit::TestCase
     command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", values_only: true)
     command.run(@input, @output2)
 
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
     stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
     stream_expected << '{:FOO=>"SEQ"}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and values_only and anchor return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "^SEQ", values_only: true)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:FOO=>"SEQ"}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and ignore_case correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "ATCG", ignore_case: true)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
     assert_equal(stream_expected, stream_result)
   end
 end
