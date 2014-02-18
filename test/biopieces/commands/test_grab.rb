@@ -87,6 +87,11 @@ class TestGrab < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, exact: true).run(nil, nil) }
   end
 
+  test "BioPieces::Pipeline::Grab with keys and keys_only or valuess_only raises" do
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, keys_only: true).run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, values_only: true).run(nil, nil) }
+  end
+
   test "BioPieces::Pipeline::Grab with missing select_file raises" do
     command = BioPieces::Pipeline::Command.new(:grab, select_file: "___dsfew")
     assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
@@ -321,6 +326,49 @@ class TestGrab < Test::Unit::TestCase
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact and keys and no match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true, keys: :SEQ_LEN)
+    command.run(@input, @output2)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    assert_nil(stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact and keys and match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true, keys: :SEQ)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact and keys_only and no match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true, keys_only: true)
+    command.run(@input, @output2)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    assert_nil(stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact and keys_only and String match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "FOO", exact: true, keys_only: true)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:FOO=>"SEQ"}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact and keys_only and Symbol match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: :FOO, exact: true, keys_only: true)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:FOO=>"SEQ"}'
     assert_equal(stream_expected, stream_result)
   end
 

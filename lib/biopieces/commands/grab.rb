@@ -31,6 +31,7 @@ module BioPieces
       options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
       options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
       options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate
+      options_conflict keys_only: :keys, values_only: :keys
       options_unique :keys_only, :values_only
       options_files_exist :select_file, :reject_file
 
@@ -80,6 +81,8 @@ module BioPieces
           patterns = @options[:select]
         elsif @options[:select].is_a? String
           patterns = [@options[:select]]
+        elsif @options[:select].is_a? Symbol
+          patterns = [@options[:select]]
         end
       elsif @options[:select_file]
         File.open(@options[:select_file]) do |ios|
@@ -91,6 +94,8 @@ module BioPieces
           patterns = @options[:reject]
         elsif @options[:reject].is_a? String
           patterns = [@options[:reject]]
+        elsif @options[:reject].is_a? Symbol
+          patterns = [@options[:select]]
         end
       elsif @options[:reject_file]
         File.open(@options[:reject_file]) do |ios|
@@ -121,7 +126,14 @@ module BioPieces
         patterns = compile_patterns
 
         lookup = {}
-        patterns.each { |pattern| lookup[pattern] = true }
+
+        patterns.each do |pattern|
+          begin
+            lookup[pattern.to_sym] = true
+          rescue
+            lookup[pattern] = true
+          end
+        end
       end
 
       lookup
@@ -153,17 +165,39 @@ module BioPieces
       if keys
         keys.each do |key|
           if value = record[key]
-            return true if lookup[value.to_sym]
+            begin
+              return true if lookup[value.to_sym]
+            rescue
+              return true if lookup[value]
+            end
           end
         end
       else
         record.each do |key, value|
           if @options[:keys_only]
-            return true if lookup[key]
+            begin
+              return true if lookup[key.to_sym]
+            rescue
+              return true if lookup[key]
+            end
           elsif @options[:values_only]
-            return true if lookup[value]
+            begin
+              return true if lookup[value.to_sym]
+            rescue
+              return true if lookup[value]
+            end
           else
-            return true if lookup[key] or lookup[value]
+            begin
+              return true if lookup[key.to_sym]
+            rescue
+              return true if lookup[key]
+            end
+
+            begin
+              return true if lookup[value.to_sym]
+            rescue
+              return true if lookup[value]
+            end
           end
         end
       end
