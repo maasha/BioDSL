@@ -121,10 +121,16 @@ module BioPieces
     end
 
     # Method that raises if given files don't exists.
-    def options_files_exist(*files)
-      files.each do |file|
-        if @options[file] and not File.file? @options[file]
-          raise BioPieces::OptionError, "For option #{file} - no such file: #{@options[file]}"
+    def options_files_exist(*args)
+      args.each do |arg|
+        if @options[arg]
+          files = (@options[arg].is_a? Array) ? @options[arg] : [@options[arg]]
+
+          files.each do |file|
+            unless File.file? file
+              raise BioPieces::OptionError, "For option #{file} - no such file: #{@options[file]}"
+            end
+          end
         end
       end
     end

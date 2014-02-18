@@ -30,6 +30,7 @@ module BioPieces
       options_allowed :input, :first, :last
       options_required :input
       options_glob :input
+      options_files_exist :input
       options_unique :first, :last
 
       @input.each { |record| @output.write record } if @input
