@@ -31,12 +31,18 @@ require 'test/helper'
 
 class TestGrab < Test::Unit::TestCase 
   def setup
-    @tmpdir       = Dir.mktmpdir("BioPieces")
-    @pattern_file = File.join(@tmpdir, 'patterns.txt')
+    @tmpdir        = Dir.mktmpdir("BioPieces")
+    @pattern_file  = File.join(@tmpdir, 'patterns.txt')
+    @pattern_file2 = File.join(@tmpdir, 'patterns2.txt')
 
     File.open(@pattern_file, 'w') do |ios|
       ios.puts "test"
       ios.puts "seq"
+    end
+
+    File.open(@pattern_file2, 'w') do |ios|
+      ios.puts 4
+      ios.puts "SEQ"
     end
 
     @input, @output   = BioPieces::Pipeline::Stream.pipe
@@ -290,12 +296,25 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(stream_expected, stream_result)
   end
 
+#  test "BioPieces::Pipeline::Grab with select_file and exact return correctly" do
+#    command = BioPieces::Pipeline::Command.new(:grab, select_file: @pattern_file, exact: true)
+#    command.run(@input, @output2)
+#
+#    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+#    stream_expected = ""
+#    stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+#    stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
+#    assert_equal(stream_expected, stream_result)
+#  end
+
   test "BioPieces::Pipeline::Grab with reject_file return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject_file: @pattern_file)
+    command = BioPieces::Pipeline::Command.new(:grab, reject_file: @pattern_file2, keys: :SEQ)
     command.run(@input, @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    stream_expected = '{:FOO=>"SEQ"}'
+    stream_expected = ""
+    stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    stream_expected << '{:FOO=>"SEQ"}'
     assert_equal(stream_expected, stream_result)
   end
 end

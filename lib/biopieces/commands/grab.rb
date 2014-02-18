@@ -28,7 +28,7 @@ module BioPieces
   module Grab
     # Method to grab records.
     def grab
-      options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :keys, :keys_only, :values_only, :ignore_case
+      options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
       options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
       options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate
       options_unique :keys_only, :values_only
