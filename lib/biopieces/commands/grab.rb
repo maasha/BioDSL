@@ -33,59 +33,20 @@ module BioPieces
       options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate
       options_unique :keys_only, :values_only
 
-      if @options[:keys]
-        if @options[:keys].is_a? Array
-          keys = @options[:keys]
-        elsif @options[:keys].is_a? Symbol
-          keys = [@options[:keys]]
-        elsif @options[:keys].is_a? String
-          keys = @options[:keys].split(/, */).map { |key| key = key.sub(/^:/, '').to_sym }
-        end
-      end
-
-      patterns = []
-
-      if @options[:select]
-        if @options[:select].is_a? Array
-          patterns += @options[:select]
-        elsif @options[:select].is_a? String
-          patterns << @options[:select]
-        end
-      end
-
-      if @options[:select_file]
-        File.open(@options[:select_file]) do |ios|
-          ios.each_line { |line| patterns << line.chomp }
-        end
-      end
-
-      if @options[:reject]
-        if @options[:reject].is_a? Array
-          patterns += @options[:reject]
-        elsif @options[:reject].is_a? String
-          patterns << @options[:reject]
-        end
-      end
-
-      if @options[:reject_file]
-        File.open(@options[:reject_file]) do |ios|
-          ios.each_line { |line| patterns << line.chomp }
-        end
-      end
-
-      regexes = []
-
-      if @options[:ignore_case]
-        regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/i) }
-      else
-        regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/) }
-      end
+      keys     = compile_keys
+      patterns = compile_patterns
+      regexes  = compile_regexes(patterns)
 
       @input.each do |record|
         gotit = false
+#        match = false
+
+#        if patterns
+#          match = grab_patterns(patterns, record, keys, @options[:keys_only], @options[:values_only])
+#        end
 
         catch :next_record do
-          if not patterns.empty?
+          if patterns
             if keys
               keys.each do |key|
                 if value = record[key]
@@ -157,6 +118,66 @@ module BioPieces
           end
         end
       end
+    end
+
+    private 
+
+    def compile_keys
+      if @options[:keys]
+        if @options[:keys].is_a? Array
+          keys = @options[:keys]
+        elsif @options[:keys].is_a? Symbol
+          keys = [@options[:keys]]
+        elsif @options[:keys].is_a? String
+          keys = @options[:keys].split(/, */).map { |key| key = key.sub(/^:/, '').to_sym }
+        end
+      end
+
+      keys
+    end
+
+    def compile_patterns
+      if @options[:select]
+        if @options[:select].is_a? Array
+          patterns = @options[:select]
+        elsif @options[:select].is_a? String
+          patterns = [@options[:select]]
+        end
+      elsif @options[:select_file]
+        File.open(@options[:select_file]) do |ios|
+          patterns = []
+
+          ios.each_line { |line| patterns << line.chomp }
+        end
+      elsif @options[:reject]
+        if @options[:reject].is_a? Array
+          patterns = @options[:reject]
+        elsif @options[:reject].is_a? String
+          patterns = [@options[:reject]]
+        end
+      elsif @options[:reject_file]
+        File.open(@options[:reject_file]) do |ios|
+          patterns = []
+          ios.each_line { |line| patterns << line.chomp }
+        end
+      end
+
+      patterns
+    end
+
+    def compile_regexes(patterns)
+      if patterns
+        if @options[:ignore_case]
+          regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/i) }
+        else
+          regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/) }
+        end
+      end
+
+      regexes
+    end
+
+    def grab_patterns
     end
   end
 end
