@@ -33,62 +33,15 @@ module BioPieces
       options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate
       options_unique :keys_only, :values_only
 
-      keys     = compile_keys
-      patterns = compile_patterns
-      regexes  = compile_regexes(patterns)
+      keys    = compile_keys
+      regexes = compile_regexes
 
       @input.each do |record|
-        gotit = false
-#        match = false
-
-#        if patterns
-#          match = grab_patterns(patterns, record, keys, @options[:keys_only], @options[:values_only])
-#        end
+        match = false
 
         catch :next_record do
-          if patterns
-            if keys
-              keys.each do |key|
-                if value = record[key]
-                  regexes.each do |regex|
-                    if value =~ regex
-                      gotit = true
-                      throw :next_record
-                    end
-                  end
-                end
-              end
-            else
-              record.each do |key, value|
-                if @options[:keys_only]
-                  regexes.each do |regex|
-                    if key =~ regex
-                      gotit = true
-                      throw :next_record
-                    end
-                  end
-                elsif @options[:values_only]
-                  regexes.each do |regex|
-                    if value =~ regex
-                      gotit = true
-                      throw :next_record
-                    end
-                  end
-                else
-                  regexes.each do |regex|
-                    if key =~ regex
-                      gotit = true
-                      throw :next_record
-                    end
-
-                    if value =~ regex
-                      gotit = true
-                      throw :next_record
-                    end
-                  end
-                end
-              end
-            end
+          if regexes
+            match = grab_regexes(regexes, record, keys, @options[:keys_only], @options[:values_only])
           elsif @options[:evaluate]
             expression = @options[:evaluate].gsub(/:\w+/) do |match|
               key = match[1 .. -1].to_sym
@@ -101,14 +54,14 @@ module BioPieces
             end
 
             if eval expression
-              gotit = true
+              match = true
             end
 
             throw :next_record
           end
         end
         
-        if gotit
+        if match
           if @options[:select] or @options[:select_file] or @options[:evaluate]
             @output.write record if @output
           end
@@ -165,7 +118,9 @@ module BioPieces
       patterns
     end
 
-    def compile_regexes(patterns)
+    def compile_regexes
+      patterns = compile_patterns
+
       if patterns
         if @options[:ignore_case]
           regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/i) }
@@ -177,7 +132,26 @@ module BioPieces
       regexes
     end
 
-    def grab_patterns
+    def grab_regexes(regexes, record, keys, keys_only, values_only)
+      if keys
+        keys.each do |key|
+          if value = record[key]
+            regexes.each { |regex| return true if value =~ regex }
+          end
+        end
+      else
+        record.each do |key, value|
+          if keys_only
+            regexes.each { |regex| return true if key =~ regex }
+          elsif values_only
+            regexes.each { |regex| return true if value =~ regex }
+          else
+            regexes.each { |regex| return true if key =~ regex or value =~ regex }
+          end
+        end
+      end
+
+      false
     end
   end
 end
