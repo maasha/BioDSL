@@ -32,6 +32,7 @@ module BioPieces
       options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
       options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate
       options_unique :keys_only, :values_only
+      options_files_exist :select_file, :reject_file
 
       invert  = @options[:reject] || @options[:reject_file]
       keys    = compile_keys

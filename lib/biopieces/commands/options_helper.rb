@@ -120,6 +120,15 @@ module BioPieces
       end
     end
 
+    # Method that raises if given files don't exists.
+    def options_files_exist(*files)
+      files.each do |file|
+        if @options[file] and not File.file? @options[file]
+          raise BioPieces::OptionError, "For option #{file} - no such file: #{@options[file]}"
+        end
+      end
+    end
+
     def assert(&b)
       unless b.call
         raise "assertion failed"

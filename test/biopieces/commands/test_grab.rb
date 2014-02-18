@@ -84,6 +84,17 @@ class TestGrab < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys_only: true).run(nil, nil) }
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, values_only: true).run(nil, nil) }
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, ignore_case: true).run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, exact: true).run(nil, nil) }
+  end
+
+  test "BioPieces::Pipeline::Grab with missing select_file raises" do
+    command = BioPieces::Pipeline::Command.new(:grab, select_file: "___dsfew")
+    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+  end
+
+  test "BioPieces::Pipeline::Grab with missing reject_file raises" do
+    command = BioPieces::Pipeline::Command.new(:grab, reject_file: "___dsfew")
+    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
   end
 
   test "BioPieces::Pipeline::Grab with no hits return correctly" do
