@@ -30,45 +30,29 @@ module BioPieces
     def grab
       options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
       options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
-      options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate
+      options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate
       options_unique :keys_only, :values_only
 
+      invert  = @options[:reject] || @options[:reject_file]
       keys    = compile_keys
       regexes = compile_regexes
+      lookup  = compile_lookup
 
       @input.each do |record|
         match = false
 
-        catch :next_record do
-          if regexes
-            match = grab_regexes(regexes, record, keys, @options[:keys_only], @options[:values_only])
-          elsif @options[:evaluate]
-            expression = @options[:evaluate].gsub(/:\w+/) do |match|
-              key = match[1 .. -1].to_sym
-
-              if record[key]
-                match = record[key]
-              else
-                throw :next_record
-              end
-            end
-
-            if eval expression
-              match = true
-            end
-
-            throw :next_record
-          end
+        if regexes
+          match = grab_regexes(record, regexes, keys)
+        elsif @options[:exact]
+          match = grab_exact(record, lookup)
+        elsif @options[:evaluate]
+          match = grab_expression(record)
         end
         
-        if match
-          if @options[:select] or @options[:select_file] or @options[:evaluate]
-            @output.write record if @output
-          end
-        else
-          if @options[:reject] or @options[:reject_file]
-            @output.write record if @output
-          end
+        if match and not invert
+          @output.write record
+        elsif not match and invert
+          @output.write record
         end
       end
     end
@@ -99,7 +83,6 @@ module BioPieces
       elsif @options[:select_file]
         File.open(@options[:select_file]) do |ios|
           patterns = []
-
           ios.each_line { |line| patterns << line.chomp }
         end
       elsif @options[:reject]
@@ -132,7 +115,10 @@ module BioPieces
       regexes
     end
 
-    def grab_regexes(regexes, record, keys, keys_only, values_only)
+    def compile_lookup
+    end
+
+    def grab_regexes(record, regexes, keys)
       if keys
         keys.each do |key|
           if value = record[key]
@@ -141,15 +127,34 @@ module BioPieces
         end
       else
         record.each do |key, value|
-          if keys_only
+          if @options[:keys_only]
             regexes.each { |regex| return true if key =~ regex }
-          elsif values_only
+          elsif @options[:values_only]
             regexes.each { |regex| return true if value =~ regex }
           else
             regexes.each { |regex| return true if key =~ regex or value =~ regex }
           end
         end
       end
+
+      false
+    end
+
+    def grab_exact(record, lookup)
+    end
+
+    def grab_expression(record)
+      expression = @options[:evaluate].gsub(/:\w+/) do |match|
+        key = match[1 .. -1].to_sym
+
+        if record[key]
+          match = record[key]
+        else
+          return false
+        end
+      end
+
+      return true if eval expression
 
       false
     end
