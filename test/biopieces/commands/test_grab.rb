@@ -296,16 +296,22 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(stream_expected, stream_result)
   end
 
-#  test "BioPieces::Pipeline::Grab with select_file and exact return correctly" do
-#    command = BioPieces::Pipeline::Command.new(:grab, select_file: @pattern_file, exact: true)
-#    command.run(@input, @output2)
-#
-#    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
-#    stream_expected = ""
-#    stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
-#    stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
-#    assert_equal(stream_expected, stream_result)
-#  end
+  test "BioPieces::Pipeline::Grab with select and exact without match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "tcg", exact: true)
+    command.run(@input, @output2)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    assert_nil(stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact with match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    assert_equal(stream_expected, stream_result)
+  end
 
   test "BioPieces::Pipeline::Grab with reject_file return correctly" do
     command = BioPieces::Pipeline::Command.new(:grab, reject_file: @pattern_file2, keys: :SEQ)

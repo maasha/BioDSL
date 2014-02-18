@@ -41,10 +41,10 @@ module BioPieces
       @input.each do |record|
         match = false
 
-        if regexes
+        if @options[:exact]
+          match = grab_exact(record, lookup, keys)
+        elsif regexes
           match = grab_regexes(record, regexes, keys)
-        elsif @options[:exact]
-          match = grab_exact(record, lookup)
         elsif @options[:evaluate]
           match = grab_expression(record)
         end
@@ -116,6 +116,14 @@ module BioPieces
     end
 
     def compile_lookup
+      if @options[:exact]
+        patterns = compile_patterns
+
+        lookup = {}
+        patterns.each { |pattern| lookup[pattern] = true }
+      end
+
+      lookup
     end
 
     def grab_regexes(record, regexes, keys)
@@ -140,7 +148,26 @@ module BioPieces
       false
     end
 
-    def grab_exact(record, lookup)
+    def grab_exact(record, lookup, keys)
+      if keys
+        keys.each do |key|
+          if value = record[key]
+            return true if lookup[value.to_sym]
+          end
+        end
+      else
+        record.each do |key, value|
+          if @options[:keys_only]
+            return true if lookup[key]
+          elsif @options[:values_only]
+            return true if lookup[value]
+          else
+            return true if lookup[key] or lookup[value]
+          end
+        end
+      end
+
+      false
     end
 
     def grab_expression(record)
