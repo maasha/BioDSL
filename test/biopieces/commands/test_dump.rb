@@ -30,8 +30,6 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 require 'test/helper'
 
 class TestDump < Test::Unit::TestCase 
-  include BioPieces::Dump
-
   def setup
     @command          = BioPieces::Pipeline::Command.new(:dump)
     @input1, @output1 = BioPieces::Pipeline::Stream.pipe

@@ -46,6 +46,21 @@ module BioPieces
       end
     end
 
+    # Method that raises if @options include multiple options in the unique list or .
+    def options_required_unique(*unique)
+      lookup = []
+
+      unique.each do |option|
+        lookup << option if @options[option]
+      end
+
+      if lookup.size > 1
+        raise BioPieces::OptionError, "Multiple required uniques options used: #{unique.join(", ")}"
+      elsif lookup.size == 0
+        raise BioPieces::OptionError, "Required unique option missing: #{unique.join(", ")}"
+      end
+    end
+
     # Method that raises if @options include multiple options in the unique list.
     def options_unique(*unique)
       lookup = []
@@ -91,6 +106,25 @@ module BioPieces
       ties.each do |option, tie|
         if @options[option] and not @options[tie]
           raise BioPieces::OptionError, "Tie option: #{tie} not in @options: #{@options.keys.join(", ")}"
+        end
+      end
+    end
+
+    # Method that raises if conflicting options are used.
+    # Example: select: :evaluate, reject: :evaluate
+    def options_conflict(conflicts)
+      conflicts.each do |option, conflict|
+        if @options[option] and @options[conflict]
+          raise BioPieces::OptionError, "Conflicting options: #{option}, #{conflict}"
+        end
+      end
+    end
+
+    # Method that raises if given files don't exists.
+    def options_files_exist(*files)
+      files.each do |file|
+        if @options[file] and not File.file? @options[file]
+          raise BioPieces::OptionError, "For option #{file} - no such file: #{@options[file]}"
         end
       end
     end
