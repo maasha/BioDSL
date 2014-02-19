@@ -88,6 +88,8 @@ module BioPieces
     class Stream
       include Enumerable
 
+      attr_reader :size
+
       def self.pipe
         input, output = IO.pipe
 
@@ -100,27 +102,29 @@ module BioPieces
       def initialize(io, stream)
         @io     = io
         @stream = stream
+        @size   = 0
       end
 
       def close
         @stream.flush if @stream.respond_to? :flush
         @io.close
-      rescue Exception
-        # ignore
       end
 
       def read
+        @size += 1
         @stream.read
       end
 
       def each
-        @stream.each { |r| yield r }
+        @stream.each do |record|
+          @size += 1
+          yield record
+        end
       end
 
       def write(arg)
+        @size += 1
         @stream.write(arg)
-      rescue Exception
-        # ignore
       end
     end
 
@@ -149,7 +153,25 @@ module BioPieces
         @input  = input
         @output = output
 
+        time_start = Time.now
+
         send @command
+
+        time_stop = Time.now
+
+        records_in  = @input  ? @input.size  : 0
+        records_out = @output ? @output.size : 0
+
+        status = {
+          command:      @command,
+          records_in:   records_in,
+          records_out:  records_out,
+          time_start:   time_start.to_s,
+          time_stop:    time_stop.to_s,
+          time_elapsed: (time_stop - time_start).to_s
+        }
+
+        File.open('biostat.sletmig', 'w') { |ios| ios.write(Marshal.dump(status)) }
       ensure
         @output.close if @output
         @input.close  if @input
