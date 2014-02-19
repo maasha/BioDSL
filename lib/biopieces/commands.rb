@@ -26,7 +26,6 @@
 
 module BioPieces
   require 'biopieces/commands/options_helper'
-  require 'biopieces/commands/cat'
   require 'biopieces/commands/dump'
   require 'biopieces/commands/grab'
   require 'biopieces/commands/read_fasta'
