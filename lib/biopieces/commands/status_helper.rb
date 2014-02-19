@@ -20,15 +20,37 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  autoload :OptionsHelper, 'biopieces/commands/options_helper'
-  autoload :StatusHelper,  'biopieces/commands/status_helper'
-  autoload :Dump,          'biopieces/commands/dump'
-  autoload :Grab,          'biopieces/commands/grab'
-  autoload :ReadFasta,     'biopieces/commands/read_fasta'
-  autoload :WriteFasta,    'biopieces/commands/write_fasta'
+  module StatusHelper
+    class BioPieces::StatusError < StandardError; end;
+
+    def status_get
+      if @input
+        status = @input.read
+
+        unless status[:BIOPIECES_STATUS]
+          pp status
+          raise BioPieces::StatusError, "Status record missing"
+        end
+      else
+        status = {BIOPIECES_STATUS: true, commands: []}
+      end
+
+      status
+    end
+
+    def status_set(status)
+      if @output
+        pp status
+        @output.write status
+      else
+        raise BioPieces::StatusError, "No output stream"
+      end
+    end
+  end
 end
+
