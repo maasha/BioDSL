@@ -26,6 +26,11 @@
 
 module BioPieces
   module Dump
+    def dump_check
+      options_allowed :first, :last
+      options_unique :first, :last
+    end
+
     def dump
       if @options[:first]
         @input.each_with_index do |record, i|
