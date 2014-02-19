@@ -50,8 +50,7 @@ class TestWriteFasta < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::WriteFasta with invalid options raises" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, foo: "bar")
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, foo: "bar") }
   end
 
   test "BioPieces::Pipeline::WriteFasta to stdout outputs correctly" do
@@ -77,13 +76,11 @@ class TestWriteFasta < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::WriteFasta with gzipped data and no output file raises" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, gzip: true)
-    assert_raise(BioPieces::OptionError) { command.run(@input, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, gzip: true) }
   end
 
   test "BioPieces::Pipeline::WriteFasta with bzip2'ed data and no output file raises" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, bzip2: true)
-    assert_raise(BioPieces::OptionError) { command.run(@input, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, bzip2: true) }
   end
 
   test "BioPieces::Pipeline::WriteFasta to file outputs gzipped data correctly" do
@@ -103,8 +100,7 @@ class TestWriteFasta < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::WriteFasta with both gzip and bzip2 output raises" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, gzip: true, bzip2: true)
-    assert_raise(BioPieces::OptionError) { command.run(@input, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, output: @file, gzip: true, bzip2: true) }
   end
 
   test "BioPieces::Pipeline::WriteFasta with flux outputs correctly" do

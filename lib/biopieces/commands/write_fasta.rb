@@ -26,12 +26,15 @@
 
 module BioPieces
   module WriteFasta
-    # Method to write FASTA entries to stdout or file.
-    def write_fasta
+    def write_fasta_check
       options_allowed :output, :wrap, :gzip, :bzip2
       options_unique :gzip, :bzip2
       options_tie gzip: :output, bzip2: :output
-      options_default output: $stdout
+    end
+
+    # Method to write FASTA entries to stdout or file.
+    def write_fasta
+      @options[:output] ||= $stdout
 
       if @options[:output] === $stdout
         @input.each do |record|
