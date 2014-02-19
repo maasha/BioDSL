@@ -63,43 +63,38 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with invalid options raises" do
-    command = BioPieces::Pipeline::Command.new(:grab, foo: "bar")
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, foo: "bar") }
   end
 
   test "BioPieces::Pipeline::Grab with select and reject options raises" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "foo", reject: "bar")
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, select: "foo", reject: "bar") }
   end
 
   test "BioPieces::Pipeline::Grab with keys_only and values_only options raises" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "foo", keys_only: true, values_only: true)
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, select: "foo", keys_only: true, values_only: true) }
   end
 
   test "BioPieces::Pipeline::Grab with evaluate and conflicting keys raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, select: "foo").run(nil, nil) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, reject: "foo").run(nil, nil) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys: "foo").run(nil, nil) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys_only: true).run(nil, nil) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, values_only: true).run(nil, nil) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, ignore_case: true).run(nil, nil) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, exact: true).run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, select: "foo") }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, reject: "foo") }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys: "foo") }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys_only: true) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, values_only: true) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, ignore_case: true) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, exact: true) }
   end
 
   test "BioPieces::Pipeline::Grab with keys and keys_only or valuess_only raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, keys_only: true).run(nil, nil) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, values_only: true).run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, keys_only: true) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, values_only: true) }
   end
 
   test "BioPieces::Pipeline::Grab with missing select_file raises" do
-    command = BioPieces::Pipeline::Command.new(:grab, select_file: "___dsfew")
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, select_file: "___select") }
   end
 
   test "BioPieces::Pipeline::Grab with missing reject_file raises" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject_file: "___dsfew")
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, reject_file: "___reject") }
   end
 
   test "BioPieces::Pipeline::Grab with no hits return correctly" do
