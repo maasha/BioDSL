@@ -134,6 +134,8 @@ module BioPieces
         @output  = nil
 
         include_command_module
+
+        send "#{@command}_check"
       end
 
       def include_command_module

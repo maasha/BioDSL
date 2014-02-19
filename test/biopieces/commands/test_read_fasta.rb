@@ -62,18 +62,15 @@ EOF
   end
 
   test "BioPieces::Pipeline::ReadFasta with invalid options raises" do
-    command = BioPieces::Pipeline::Command.new(:read_fasta, foo: "bar")
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta, foo: "bar") }
   end
 
   test "BioPieces::Pipeline::ReadFasta without required options raises" do
-    command = BioPieces::Pipeline::Command.new(:read_fasta)
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta) }
   end
 
   test "BioPieces::Pipeline::ReadFasta with exclusive unique options raises" do
-    command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: 1, last: 1)
-    assert_raise(BioPieces::OptionError) { command.run(nil, nil) }
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: 1, last: 1) }
   end
 
   test "BioPieces::Pipeline::ReadFasta returns correctly" do

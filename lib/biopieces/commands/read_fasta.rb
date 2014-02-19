@@ -26,13 +26,15 @@
 
 module BioPieces
   module ReadFasta
-    def read_fasta
+    def read_fasta_check
       options_allowed :input, :first, :last
       options_required :input
       options_glob :input
       options_files_exist :input
       options_unique :first, :last
+    end
 
+    def read_fasta
       @input.each { |record| @output.write record } if @input
 
       count  = 0
