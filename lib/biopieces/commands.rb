@@ -25,9 +25,9 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  require 'biopieces/commands/options_helper'
-  require 'biopieces/commands/dump'
-  require 'biopieces/commands/grab'
-  require 'biopieces/commands/read_fasta'
-  require 'biopieces/commands/write_fasta'
+  autoload :OptionsHelper, 'biopieces/commands/options_helper'
+  autoload :Dump,          'biopieces/commands/dump'
+  autoload :Grab,          'biopieces/commands/grab'
+  autoload :ReadFasta,     'biopieces/commands/read_fasta'
+  autoload :WriteFasta,    'biopieces/commands/write_fasta'
 end
