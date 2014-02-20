@@ -69,6 +69,14 @@ EOF
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta) }
   end
 
+  test "BioPieces::Pipeline::ReadFasta with bad first raises" do
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: -1) }
+  end
+
+  test "BioPieces::Pipeline::ReadFasta with bad last raises" do
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta, input: @file, last: -1) }
+  end
+
   test "BioPieces::Pipeline::ReadFasta with exclusive unique options raises" do
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: 1, last: 1) }
   end
