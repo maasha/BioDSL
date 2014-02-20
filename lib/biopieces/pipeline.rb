@@ -31,7 +31,7 @@ module BioPieces
     def initialize
       @commands = []
       @options  = {}
-      @status   = []
+      @status   = {}
     end
 
     def add(command, options = {})
@@ -41,8 +41,11 @@ module BioPieces
     end
 
     def run(options = {})
-      out      = nil
-      wait_pid = nil
+      out        = nil
+      wait_pid   = nil
+      time_start = Time.now
+
+      @status[:status] = []
 
       Dir.mktmpdir("BioPiecesStatus") do |tmpdir|
         @commands.each_with_index { |command, index| command.tmpfile = File.join(tmpdir, "#{index}.status") }
@@ -67,9 +70,16 @@ module BioPieces
         Process.waitpid(wait_pid) if wait_pid
 
         Dir["#{tmpdir}/*.status"].each do |file|
-          @status << Marshal.load(File.read(file))
+          @status[:status] << Marshal.load(File.read(file))
         end
       end
+
+      time_stop = Time.now
+
+      @status[:time_start]   = time_start
+      @status[:time_stop]    = time_stop
+      @status[:time_elapsed] = time_stop - time_start
+      @status
     end
 
     def to_s
@@ -178,6 +188,7 @@ module BioPieces
 
         status = {
           command:      @command,
+          options:      @options,
           records_in:   records_in,
           records_out:  records_out,
           time_start:   time_start.to_s,
