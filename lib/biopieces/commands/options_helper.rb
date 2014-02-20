@@ -125,20 +125,12 @@ module BioPieces
     end
 
     def options_assert(expression)
-      catch :ignore do
-        expression.gsub!(/:\w+/) do |match|
-          key = match[1 .. -1].to_sym
+      @options.each do |key, value|
+        expression.gsub! /:#{key}/, value.to_s
+      end
 
-          if @options[key]
-            match = @options[key]
-          else
-            throw :ignore
-          end
-        end
-
-        begin
-           eval expression
-        rescue
+      unless expression =~ /:\w/
+        unless eval expression
           raise BioPieces::OptionError, "Assertion failed: #{expression}"
         end
       end
