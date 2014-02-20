@@ -26,30 +26,23 @@
 
 module BioPieces
   module StatusHelper
-    class BioPieces::StatusError < StandardError; end;
+    def status_save
+      records_in  = @input  ? @input.size  : 0
+      records_out = @output ? @output.size : 0
 
-    def status_get
-      if @input
-        status = @input.read
+      status = {
+        command:      @command,
+        options:      @options,
+        records_in:   records_in,
+        records_out:  records_out,
+        time_elapsed: (@time_stop - @time_start).to_s
+      }
 
-        unless status[:BIOPIECES_STATUS]
-          pp status
-          raise BioPieces::StatusError, "Status record missing"
-        end
-      else
-        status = {BIOPIECES_STATUS: true, commands: []}
+      File.open(@status_file, 'w') do |ios|
+        ios.write(Marshal.dump(status))
       end
 
       status
-    end
-
-    def status_set(status)
-      if @output
-        pp status
-        @output.write status
-      else
-        raise BioPieces::StatusError, "No output stream"
-      end
     end
   end
 end

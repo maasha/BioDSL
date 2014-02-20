@@ -48,7 +48,7 @@ module BioPieces
       @status[:status] = []
 
       Dir.mktmpdir("BioPiecesStatus") do |tmpdir|
-        @commands.each_with_index { |command, index| command.tmpfile = File.join(tmpdir, "#{index}.status") }
+        @commands.each_with_index { |command, index| command.status_file = File.join(tmpdir, "#{index}.status") }
 
         @commands.reverse.each_cons(2) do |command2, command1|
           input, output = Stream.pipe
@@ -153,14 +153,16 @@ module BioPieces
       include BioPieces::OptionsHelper
       include BioPieces::StatusHelper
 
-      attr_accessor :tmpfile
+      attr_accessor :status_file
 
-      def initialize(command, options = {}, tmpfile = nil)
-        @command = command
-        @options = options
-        @tmpfile = tmpfile
-        @input   = nil
-        @output  = nil
+      def initialize(command, options = {}, status_file = nil)
+        @command     = command
+        @options     = options
+        @status_file = status_file
+        @time_start  = nil
+        @time_stop   = nil
+        @input       = nil
+        @output      = nil
 
         include_command_module
 
@@ -174,29 +176,15 @@ module BioPieces
       end
 
       def run(input, output)
-        @input  = input
-        @output = output
-
-        time_start = Time.now
+        @input      = input
+        @output     = output
+        @time_start = Time.now
 
         send @command
 
-        time_stop = Time.now
+        @time_stop = Time.now
 
-        records_in  = @input  ? @input.size  : 0
-        records_out = @output ? @output.size : 0
-
-        status = {
-          command:      @command,
-          options:      @options,
-          records_in:   records_in,
-          records_out:  records_out,
-          time_start:   time_start.to_s,
-          time_stop:    time_stop.to_s,
-          time_elapsed: (time_stop - time_start).to_s
-        }
-
-        File.open(@tmpfile, 'w') { |ios| ios.write(Marshal.dump(status)) } if @tmpfile
+        status_save if @status_file
       ensure
         @output.close if @output
         @input.close  if @input
