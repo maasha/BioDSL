@@ -81,9 +81,7 @@ module BioPieces
       if @options[:select]
         if @options[:select].is_a? Array
           patterns = @options[:select]
-        elsif @options[:select].is_a? String
-          patterns = [@options[:select]]
-        elsif @options[:select].is_a? Symbol
+        else
           patterns = [@options[:select]]
         end
       elsif @options[:select_file]
@@ -94,10 +92,8 @@ module BioPieces
       elsif @options[:reject]
         if @options[:reject].is_a? Array
           patterns = @options[:reject]
-        elsif @options[:reject].is_a? String
+        else
           patterns = [@options[:reject]]
-        elsif @options[:reject].is_a? Symbol
-          patterns = [@options[:select]]
         end
       elsif @options[:reject_file]
         File.open(@options[:reject_file]) do |ios|
@@ -177,11 +173,7 @@ module BioPieces
       else
         record.each do |key, value|
           if @options[:keys_only]
-            begin
-              return true if lookup[key.to_sym]
-            rescue
-              return true if lookup[key]
-            end
+            return true if lookup[key.to_sym]
           elsif @options[:values_only]
             begin
               return true if lookup[value.to_sym]
@@ -189,11 +181,7 @@ module BioPieces
               return true if lookup[value]
             end
           else
-            begin
-              return true if lookup[key.to_sym]
-            rescue
-              return true if lookup[key]
-            end
+            return true if lookup[key.to_sym]
 
             begin
               return true if lookup[value.to_sym]
