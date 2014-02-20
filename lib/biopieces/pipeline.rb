@@ -26,9 +26,12 @@
 
 module BioPieces
   class Pipeline
+    attr_reader :status
+
     def initialize
       @commands = []
-      @options = {}
+      @options  = {}
+      @status   = []
     end
 
     def add(command, options = {})
@@ -41,24 +44,32 @@ module BioPieces
       out      = nil
       wait_pid = nil
 
-      @commands.reverse.each_cons(2) do |command2, command1|
-        input, output = Stream.pipe
+      Dir.mktmpdir("BioPiecesStatus") do |tmpdir|
+        @commands.each_with_index { |command, index| command.tmpfile = File.join(tmpdir, "#{index}.status") }
 
-        pid = fork do
-          output.close
-          command2.run(input, out)
+        @commands.reverse.each_cons(2) do |command2, command1|
+          input, output = Stream.pipe
+
+          pid = fork do
+            output.close
+            command2.run(input, out)
+          end
+
+          input.close
+          out.close if out
+          out = output
+
+          wait_pid ||= pid # only the first created process which is tail of pipeline
         end
 
-        input.close
-        out.close if out
-        out = output
+        @commands.first.run(nil, out)
 
-        wait_pid ||= pid # only the first created process which is tail of pipeline
+        Process.waitpid(wait_pid) if wait_pid
+
+        Dir["#{tmpdir}/*.status"].each do |file|
+          @status << Marshal.load(File.read(file))
+        end
       end
-
-      @commands.first.run(nil, out)
-
-      Process.waitpid(wait_pid) if wait_pid
     end
 
     def to_s
@@ -132,9 +143,12 @@ module BioPieces
       include BioPieces::OptionsHelper
       include BioPieces::StatusHelper
 
-      def initialize(command, options = {})
+      attr_accessor :tmpfile
+
+      def initialize(command, options = {}, tmpfile = nil)
         @command = command
         @options = options
+        @tmpfile = tmpfile
         @input   = nil
         @output  = nil
 
@@ -171,7 +185,7 @@ module BioPieces
           time_elapsed: (time_stop - time_start).to_s
         }
 
-        File.open('biostat.sletmig', 'w') { |ios| ios.write(Marshal.dump(status)) }
+        File.open(@tmpfile, 'w') { |ios| ios.write(Marshal.dump(status)) } if @tmpfile
       ensure
         @output.close if @output
         @input.close  if @input
