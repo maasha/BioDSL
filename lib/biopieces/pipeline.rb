@@ -156,6 +156,7 @@ module BioPieces
       def initialize(command, options = {}, status_file = nil)
         @command     = command
         @options     = options
+        @options_dup = options.dup
         @status_file = status_file
         @time_start  = nil
         @time_stop   = nil
@@ -191,7 +192,7 @@ module BioPieces
       def to_s
         options_list = []
 
-        @options.each do |key, value|
+        @options_dup.each do |key, value|
           if value.is_a? String
             value = Regexp::quote(value) if key == :delimiter
             options_list << %{#{key}: "#{value}"}
