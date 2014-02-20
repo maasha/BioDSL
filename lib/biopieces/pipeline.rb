@@ -25,6 +25,8 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  class PipelineError < StandardError; end
+
   class Pipeline
     attr_reader :status
 
@@ -41,6 +43,8 @@ module BioPieces
     end
 
     def run(options = {})
+      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
+
       out        = nil
       wait_pid   = nil
       time_start = Time.now
@@ -83,6 +87,8 @@ module BioPieces
     end
 
     def to_s
+      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
+
       command_string = "#{self.class}.new"
 
       @commands.each { |command| command_string << command.to_s }
@@ -170,7 +176,11 @@ module BioPieces
       def include_command_module
         command_module = @command.to_s.split("_").map { |c| c.capitalize }.join("")
 
-        self.class.send(:include, BioPieces.const_get(command_module))
+        begin
+          self.class.send(:include, BioPieces.const_get(command_module))
+        rescue
+          raise BioPieces::PipelineError, "No such command: #{@command}"
+        end
       end
 
       def run(input, output)

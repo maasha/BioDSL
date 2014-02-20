@@ -32,13 +32,26 @@ require 'test/helper'
 class PipelineTest < Test::Unit::TestCase
   def setup
     @p = BioPieces::Pipeline.new
+    @fasta_file = __FILE__
   end
 
   def teardown
   end
 
-  test "BioPieces::Pipeline#to_s" do
-    assert_equal(1.5, @p.to_s)
+  test "BioPieces::Pipeline#run with no commands raises" do
+    assert_raise(BioPieces::PipelineError) { @p.run }
+  end
+
+  test "BioPieces::Pipeline#to_s with no commands raises" do
+    assert_raise(BioPieces::PipelineError) { @p.to_s }
+  end
+
+  test "BioPieces::Pipeline#add with non-existing command raises" do
+    assert_raise(BioPieces::PipelineError) { @p.add(:foo) }
+  end
+
+  test "BioPieces::Pipeline#to_s returns correctly" do
+    assert_equal("tyt", @p.add(:read_fasta, input: @fasta_file).to_s)
   end
 end
 
