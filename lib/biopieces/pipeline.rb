@@ -85,9 +85,7 @@ module BioPieces
     def to_s
       command_string = "#{self.class}.new"
 
-      @commands.each do |command|
-        command_string << command.to_s
-      end
+      @commands.each { |command| command_string << command.to_s }
 
       if @options.empty?
         command_string << ".run"
