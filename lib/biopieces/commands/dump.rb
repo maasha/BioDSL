@@ -29,6 +29,8 @@ module BioPieces
     def dump_check
       options_allowed :first, :last
       options_unique :first, :last
+      options_assert ":first > 0"
+      options_assert ":last > 0"
     end
 
     def dump

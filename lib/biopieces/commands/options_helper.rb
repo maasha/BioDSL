@@ -77,18 +77,14 @@ module BioPieces
     # Method to expand all options in the glob list into lists of paths.
     def options_glob(*globs)
       globs.each do |option|
-        unless @options[option]
-          raise BioPieces::OptionError, "Option: #{option} not in @options: #{@options.keys.join(", ")}" 
-        else
-          unless @options[option].is_a? Array
-            expanded_paths = []
+        unless @options[option].is_a? Array
+          expanded_paths = []
 
-            @options[option].split(/, */).each do |glob_expression|
-              expanded_paths += Dir.glob(glob_expression).select { |file| File.file? file }
-            end
-
-            @options[option] = expanded_paths
+          @options[option].split(/, */).each do |glob_expression|
+            expanded_paths += Dir.glob(glob_expression).select { |file| File.file? file }
           end
+
+          @options[option] = expanded_paths
         end
       end
     end
@@ -128,9 +124,15 @@ module BioPieces
       end
     end
 
-    def assert(&b)
-      unless b.call
-        raise "assertion failed"
+    def options_assert(expression)
+      @options.each do |key, value|
+        expression.gsub!(/:#{key}/, value.to_s)
+      end
+
+      unless expression =~ /:\w/
+        unless eval expression
+          raise BioPieces::OptionError, "Assertion failed: #{expression}"
+        end
       end
     end
   end

@@ -32,6 +32,8 @@ module BioPieces
       options_glob :input
       options_files_exist :input
       options_unique :first, :last
+      options_assert ":first >= 0"
+      options_assert ":last >= 0"
     end
 
     def read_fasta

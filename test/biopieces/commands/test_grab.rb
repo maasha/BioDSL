@@ -145,6 +145,15 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(stream_expected, stream_result)
   end
 
+  test "BioPieces::Pipeline::Grab with reject with symbol return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, reject: :SEQ_NAME)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:FOO=>"SEQ"}'
+    assert_equal(stream_expected, stream_result)
+  end
+
   test "BioPieces::Pipeline::Grab with select and value hit return correctly" do
     command = BioPieces::Pipeline::Command.new(:grab, select: "test1")
     command.run(@input, @output2)
@@ -320,6 +329,32 @@ class TestGrab < Test::Unit::TestCase
     command.run(@input, @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact with number match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: 4, exact: true)
+    command.run(@input, @output2)
+
+    stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
+    assert_equal(stream_expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact with number and keys_only match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: 4, exact: true, keys_only: true)
+    command.run(@input, @output2)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    assert_nil(stream_result)
+  end
+
+  test "BioPieces::Pipeline::Grab with select and exact with number and values_only match return correctly" do
+    command = BioPieces::Pipeline::Command.new(:grab, select: 4, exact: true, values_only: true)
+    command.run(@input, @output2)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
     assert_equal(stream_expected, stream_result)
   end

@@ -47,6 +47,14 @@ class TestDump < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, foo: "bar") }
   end
 
+  test "BioPieces::Pipeline#dump with bad first raises" do
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, first: 0) }
+  end
+
+  test "BioPieces::Pipeline#dump with bad last raises" do
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, last: 0) }
+  end
+
   test "BioPieces::Pipeline#dump with first and last raises" do
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, first: 1, last: 1) }
   end
