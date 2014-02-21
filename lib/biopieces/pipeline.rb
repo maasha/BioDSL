@@ -30,6 +30,8 @@ module BioPieces
   class Pipeline
     attr_reader :status
 
+    include BioPieces::OptionsHelper
+
     def initialize
       @commands = []
       @options  = {}
@@ -43,6 +45,9 @@ module BioPieces
     end
 
     def run(options = {})
+      @options = options
+      options_allowed :verbose
+
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
       out        = nil
@@ -83,7 +88,8 @@ module BioPieces
       @status[:time_start]   = time_start
       @status[:time_stop]    = time_stop
       @status[:time_elapsed] = time_stop - time_start
-      @status
+
+      self
     end
 
     def to_s
@@ -93,21 +99,25 @@ module BioPieces
 
       @commands.each { |command| command_string << command.to_s }
 
-      if @options.empty?
-        command_string << ".run"
-      else
-        options = []
+      unless @status.empty?
+        if @options.empty?
+          command_string << ".run"
+        else
+          options = []
 
-        @options.each_pair do |key, value|
-          if value.is_a? String
-            options << %{#{key}: "#{Regexp::quote(value)}"}
-          else
-            options << "#{key}: #{value}"
+          @options.each_pair do |key, value|
+            if value.is_a? String
+              options << %{#{key}: "#{Regexp::quote(value)}"}
+            else
+              options << "#{key}: #{value}"
+            end
           end
-        end
 
-        command_string << ".run(#{options.join(", ")})"
+          command_string << ".run(#{options.join(", ")})"
+        end
       end
+
+      command_string
     end
 
     class Stream

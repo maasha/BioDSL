@@ -30,9 +30,20 @@ module BioPieces
       records_in  = @input  ? @input.size  : 0
       records_out = @output ? @output.size : 0
 
+      options = {}
+
+      # Remove unmashallable objects
+      @options.each do |key, value|
+  #      if value.is_a? StringIO
+  #        options[key] = "StringIO"
+  #      else
+          options[key] = value
+  #      end
+      end
+
       status = {
         command:      @command,
-        options:      @options,
+        options:      options,
         records_in:   records_in,
         records_out:  records_out,
         time_elapsed: (@time_stop - @time_start).to_s

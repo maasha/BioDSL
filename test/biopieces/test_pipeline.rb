@@ -31,11 +31,18 @@ require 'test/helper'
 
 class PipelineTest < Test::Unit::TestCase
   def setup
+    @tmpdir = Dir.mktmpdir("BioPieces")
     @p = BioPieces::Pipeline.new
-    @fasta_file = __FILE__
+    @fasta_file  = File.join(@tmpdir, "test.fna")
+    @fasta_file2 = File.join(@tmpdir, "test2.fna")
+
+    File.open(@fasta_file, 'w') do |ios|
+      ios.puts ">test1\natcg\n>test2\ntgac"
+    end
   end
 
   def teardown
+    FileUtils.rm_r @tmpdir
   end
 
   test "BioPieces::Pipeline#run with no commands raises" do
@@ -50,8 +57,40 @@ class PipelineTest < Test::Unit::TestCase
     assert_raise(BioPieces::PipelineError) { @p.add(:foo) }
   end
 
-  test "BioPieces::Pipeline#to_s returns correctly" do
-    assert_equal("tyt", @p.add(:read_fasta, input: @fasta_file).to_s)
+  test "BioPieces::Pipeline#to_s without .run() returns correctly" do
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"])}
+    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).to_s)
+  end
+
+  test "BioPieces::Pipeline#to_s with .run() returns correctly" do
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).run}
+    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.to_s)
+  end
+
+  test "BioPieces::Pipeline#status without .run() returns correctly" do
+    assert_equal({}, @p.add(:read_fasta, input: @fasta_file).status)
+  end
+
+  test "BioPieces::Pipeline#status with .run() returns correctly" do
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"])}
+    @p.expects(:status).returns(expected)
+    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.status)
+  end
+
+  test "BioPieces::Pipeline#run with disallowed option raises" do
+    assert_raise(BioPieces::OptionError) { @p.add(:read_fasta, input: @fasta_file).run(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#run returns correctly" do
+    @p.add(:read_fasta, input: @fasta_file).add(:write_fasta, output: @fasta_file2).run 
+
+    result = nil
+
+    File.open(@fasta_file2) do |ios|
+      result = ios.read
+    end
+
+    assert_equal(">test1\natcg\n>test2\ntgac\n", result)
   end
 end
 

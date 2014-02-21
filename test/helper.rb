@@ -34,6 +34,7 @@ SimpleCov.command_name 'test:units'
 
 require 'biopieces'
 require 'test/unit'
+require 'mocha/test_unit'
 
 module Kernel
   def capture_stdout
