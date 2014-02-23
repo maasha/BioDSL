@@ -89,6 +89,8 @@ module BioPieces
       @status[:time_stop]    = time_stop
       @status[:time_elapsed] = time_stop - time_start
 
+      pp @status if @options[:verbose]
+
       self
     end
 

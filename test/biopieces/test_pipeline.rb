@@ -67,6 +67,12 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.to_s)
   end
 
+  test "BioPieces::Pipeline#to_s with .run() and options returns correctly" do
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).run(verbose: false)}
+    @p.expects(:status).returns(expected)
+    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run(verbose: false).to_s)
+  end
+
   test "BioPieces::Pipeline#status without .run() returns correctly" do
     assert_equal({}, @p.add(:read_fasta, input: @fasta_file).status)
   end
@@ -79,6 +85,12 @@ class PipelineTest < Test::Unit::TestCase
 
   test "BioPieces::Pipeline#run with disallowed option raises" do
     assert_raise(BioPieces::OptionError) { @p.add(:read_fasta, input: @fasta_file).run(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#run with verbose returns correctly" do
+    stdout   = capture_stdout { @p.add(:read_fasta, input: @fasta_file).run(verbose: true) }
+    expected = capture_stdout { pp @p.status } 
+    assert_equal(expected, stdout)
   end
 
   test "BioPieces::Pipeline#run returns correctly" do
