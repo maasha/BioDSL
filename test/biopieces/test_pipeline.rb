@@ -39,10 +39,16 @@ class PipelineTest < Test::Unit::TestCase
     File.open(@fasta_file, 'w') do |ios|
       ios.puts ">test1\natcg\n>test2\ntgac"
     end
+
+    Mail.defaults do
+      delivery_method :test
+    end
   end
 
   def teardown
     FileUtils.rm_r @tmpdir
+
+    Mail::TestMailer.deliveries.clear
   end
 
   test "BioPieces::Pipeline#run with no commands raises" do
@@ -68,7 +74,7 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(expected, @p.to_s)
   end
 
-  test "BioPieces::Pipeline#to_s with grab strangeness correctly" do
+  test "BioPieces::Pipeline#to_s with \" in options returns correctly" do
     expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}").add(:grab, select: "foo").run}
     capture_stdout { @p.add(:read_fasta, input: @fasta_file).add(:grab, select: "foo").run }
     assert_equal(expected, @p.to_s)
@@ -98,6 +104,22 @@ class PipelineTest < Test::Unit::TestCase
     stdout   = capture_stdout { @p.add(:read_fasta, input: @fasta_file).run(verbose: true) }
     expected = capture_stdout { pp @p.status } 
     assert_equal(expected, stdout)
+  end
+
+  test "BioPieces::Pipeline#run with subject but no email raises" do
+    assert_raise(BioPieces::OptionError) { @p.add(:read_fasta, input: @fasta_file).run(subject: "foobar") }
+  end
+
+  test "BioPieces::Pipeline#run with email sends mail correctly" do
+    @p.add(:read_fasta, input: @fasta_file).run(email: "foo@bar.com")
+    assert_equal(1, Mail::TestMailer.deliveries.length)
+    assert_equal(@p.to_s, Mail::TestMailer.deliveries.first.subject)
+  end
+
+  test "BioPieces::Pipeline#run with email and subject sends correctly" do
+    @p.add(:read_fasta, input: @fasta_file).run(email: "foo@bar.com", subject: "foobar")
+    assert_equal(1, Mail::TestMailer.deliveries.length)
+    assert_equal("foobar", Mail::TestMailer.deliveries.first.subject)
   end
 
   test "BioPieces::Pipeline#run returns correctly" do
