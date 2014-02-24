@@ -62,9 +62,16 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).to_s)
   end
 
-  test "BioPieces::Pipeline#to_s with .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).run}
-    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.to_s)
+  test "BioPieces::Pipeline#to_s with add without options and .run() returns correctly" do
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).add(:dump).run}
+    capture_stdout { @p.add(:read_fasta, input: @fasta_file).add(:dump).run }
+    assert_equal(expected, @p.to_s)
+  end
+
+  test "BioPieces::Pipeline#to_s with grab strangeness correctly" do
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).add(:grab, select: "foo").run}
+    capture_stdout { @p.add(:read_fasta, input: @fasta_file).add(:grab, select: "foo").run }
+    assert_equal(expected, @p.to_s)
   end
 
   test "BioPieces::Pipeline#to_s with .run() and options returns correctly" do

@@ -108,11 +108,7 @@ module BioPieces
           options = []
 
           @options.each_pair do |key, value|
-            if value.is_a? String
-              options << %{#{key}: "#{Regexp::quote(value)}"}
-            else
-              options << "#{key}: #{value}"
-            end
+            options << "#{key}: #{value}"
           end
 
           command_string << ".run(#{options.join(", ")})"
