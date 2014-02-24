@@ -25,8 +25,12 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  class PipelineError < StandardError; end
+
   class Pipeline
     attr_reader :status
+
+    include BioPieces::OptionsHelper
 
     def initialize
       @commands = []
@@ -41,6 +45,11 @@ module BioPieces
     end
 
     def run(options = {})
+      @options = options
+      options_allowed :verbose
+
+      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
+
       out        = nil
       wait_pid   = nil
       time_start = Time.now
@@ -79,29 +88,34 @@ module BioPieces
       @status[:time_start]   = time_start
       @status[:time_stop]    = time_stop
       @status[:time_elapsed] = time_stop - time_start
-      @status
+
+      pp @status if @options[:verbose]
+
+      self
     end
 
     def to_s
+      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
+
       command_string = "#{self.class}.new"
 
       @commands.each { |command| command_string << command.to_s }
 
-      if @options.empty?
-        command_string << ".run"
-      else
-        options = []
+      unless @status.empty?
+        if @options.empty?
+          command_string << ".run"
+        else
+          options = []
 
-        @options.each_pair do |key, value|
-          if value.is_a? String
-            options << %{#{key}: "#{Regexp::quote(value)}"}
-          else
+          @options.each_pair do |key, value|
             options << "#{key}: #{value}"
           end
-        end
 
-        command_string << ".run(#{options.join(", ")})"
+          command_string << ".run(#{options.join(", ")})"
+        end
       end
+
+      command_string
     end
 
     class Stream
@@ -171,7 +185,11 @@ module BioPieces
       def include_command_module
         command_module = @command.to_s.split("_").map { |c| c.capitalize }.join("")
 
-        self.class.send(:include, BioPieces.const_get(command_module))
+        begin
+          self.class.send(:include, BioPieces.const_get(command_module))
+        rescue
+          raise BioPieces::PipelineError, "No such command: #{@command}"
+        end
       end
 
       def run(input, output)

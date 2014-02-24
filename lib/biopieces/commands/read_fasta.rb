@@ -60,7 +60,7 @@ module BioPieces
               end
             else
               ios.each do |entry|
-                @output.write entry.to_bp
+                @output.write entry.to_bp if @output
               end
             end
           end
