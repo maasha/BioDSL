@@ -23,6 +23,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency("RubyInline", ">= 3.12.2")
   s.add_dependency("narray",     ">= 0.6.0")
+  s.add_dependency("mail",       ">= 2.5.4")
+  s.add_dependency("msgpack",    ">= 0.5.8")
   s.add_development_dependency("simplecov", ">= 0.7.1")
   s.add_development_dependency("mocha", ">= 1.0.0")
 end

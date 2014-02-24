@@ -30,6 +30,7 @@ module BioPieces
   require 'pp'
   require 'msgpack'
   require 'inline'
+  require 'mail'
   require 'narray'
   require 'open3'
   require 'stringio'

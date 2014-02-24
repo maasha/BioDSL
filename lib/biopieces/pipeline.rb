@@ -47,7 +47,8 @@ module BioPieces
 
     def run(options = {})
       @options = options
-      options_allowed :verbose
+      options_allowed :verbose, :email, :subject
+      options_tie subject: :email
 
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
@@ -92,6 +93,8 @@ module BioPieces
 
       pp @status if @options[:verbose]
 
+      email_send if @options[:email]
+
       history_save
 
       self
@@ -119,6 +122,16 @@ module BioPieces
       end
 
       command_string
+    end
+
+    def email_send
+      mail = Mail.new
+      mail[:from]    = "#{ENV['USER']}@#{`hostname`.strip}"
+      mail[:to]      = @options[:email]
+      mail[:subject] = @options[:subject] || self.to_s
+      mail[:body]    = "#{self.to_s}\n\n\n#{PP.pp(@status, '')}"
+
+      mail.deliver!
     end
 
     class Stream
