@@ -20,16 +20,17 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  autoload :HistoryHelper, 'biopieces/commands/history_helper'
-  autoload :OptionsHelper, 'biopieces/commands/options_helper'
-  autoload :StatusHelper,  'biopieces/commands/status_helper'
-  autoload :Dump,          'biopieces/commands/dump'
-  autoload :Grab,          'biopieces/commands/grab'
-  autoload :ReadFasta,     'biopieces/commands/read_fasta'
-  autoload :WriteFasta,    'biopieces/commands/write_fasta'
+  module HistoryHelper
+    def history_save
+      File.open(BioPieces::Config::HISTORY_FILE, 'a') do |ios|
+        ios.puts self
+      end
+    end
+  end
 end
+

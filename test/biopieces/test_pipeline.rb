@@ -58,24 +58,24 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#to_s without .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"])}
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}")}
     assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).to_s)
   end
 
   test "BioPieces::Pipeline#to_s with add without options and .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).add(:dump).run}
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}").add(:dump).run}
     capture_stdout { @p.add(:read_fasta, input: @fasta_file).add(:dump).run }
     assert_equal(expected, @p.to_s)
   end
 
   test "BioPieces::Pipeline#to_s with grab strangeness correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).add(:grab, select: "foo").run}
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}").add(:grab, select: "foo").run}
     capture_stdout { @p.add(:read_fasta, input: @fasta_file).add(:grab, select: "foo").run }
     assert_equal(expected, @p.to_s)
   end
 
   test "BioPieces::Pipeline#to_s with .run() and options returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"]).run(verbose: false)}
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}").run(verbose: false)}
     @p.expects(:status).returns(expected)
     assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run(verbose: false).to_s)
   end
@@ -85,7 +85,7 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#status with .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: ["#{@fasta_file}"])}
+    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}")}
     @p.expects(:status).returns(expected)
     assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.status)
   end
@@ -98,6 +98,12 @@ class PipelineTest < Test::Unit::TestCase
     stdout   = capture_stdout { @p.add(:read_fasta, input: @fasta_file).run(verbose: true) }
     expected = capture_stdout { pp @p.status } 
     assert_equal(expected, stdout)
+  end
+
+  test "BioPieces::Pipeline#run saves to history file correctly" do
+    @p.add(:read_fasta, input: @fasta_file).run
+    history = `tail -n 1 #{BioPieces::Config::HISTORY_FILE}`
+    assert_equal(@p.to_s, history.chomp)
   end
 
   test "BioPieces::Pipeline#run returns correctly" do

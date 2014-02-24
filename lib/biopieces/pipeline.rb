@@ -30,6 +30,7 @@ module BioPieces
   class Pipeline
     attr_reader :status
 
+    include BioPieces::HistoryHelper
     include BioPieces::OptionsHelper
 
     def initialize
@@ -90,6 +91,8 @@ module BioPieces
       @status[:time_elapsed] = time_stop - time_start
 
       pp @status if @options[:verbose]
+
+      history_save
 
       self
     end

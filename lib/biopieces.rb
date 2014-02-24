@@ -37,6 +37,7 @@ module BioPieces
   require 'biopieces/commands'
   require 'biopieces/string'
   require 'biopieces/seq'
+  autoload :Config,   'biopieces/config'
   autoload :Version,  'biopieces/version'
   autoload :Filesys,  'biopieces/filesys'
   autoload :Pipeline, 'biopieces/pipeline'
