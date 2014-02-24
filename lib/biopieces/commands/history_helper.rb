@@ -27,8 +27,10 @@
 module BioPieces
   module HistoryHelper
     def history_save
-      File.open(BioPieces::Config::HISTORY_FILE, 'a') do |ios|
-        ios.puts self
+      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+        File.open(BioPieces::Config::HISTORY_FILE, 'a') do |ios|
+          ios.puts self
+        end
       end
     end
   end

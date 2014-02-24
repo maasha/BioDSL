@@ -100,12 +100,6 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(expected, stdout)
   end
 
-  test "BioPieces::Pipeline#run saves to history file correctly" do
-    @p.add(:read_fasta, input: @fasta_file).run
-    history = `tail -n 1 #{BioPieces::Config::HISTORY_FILE}`
-    assert_equal(@p.to_s, history.chomp)
-  end
-
   test "BioPieces::Pipeline#run returns correctly" do
     @p.add(:read_fasta, input: @fasta_file).add(:write_fasta, output: @fasta_file2).run 
 

@@ -36,6 +36,8 @@ require 'biopieces'
 require 'test/unit'
 require 'mocha/test_unit'
 
+ENV['BIOPIECES_ENV'] = 'test'
+
 module Kernel
   def capture_stdout
     out = StringIO.new
