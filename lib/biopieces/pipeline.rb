@@ -31,6 +31,7 @@ module BioPieces
     attr_reader :status
 
     include BioPieces::HistoryHelper
+    include BioPieces::LogHelper
     include BioPieces::OptionsHelper
 
     def initialize
@@ -95,6 +96,7 @@ module BioPieces
 
       email_send if @options[:email]
 
+      log_save
       history_save
 
       self

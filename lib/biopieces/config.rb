@@ -27,5 +27,6 @@
 module BioPieces
   module Config
     HISTORY_FILE = File.join(ENV['HOME'], ".biopieces_history")
+    LOG_FILE     = File.join(ENV['HOME'], ".biopieces_log")
   end
 end

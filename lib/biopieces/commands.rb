@@ -26,6 +26,7 @@
 
 module BioPieces
   autoload :HistoryHelper, 'biopieces/commands/history_helper'
+  autoload :LogHelper,     'biopieces/commands/log_helper'
   autoload :OptionsHelper, 'biopieces/commands/options_helper'
   autoload :StatusHelper,  'biopieces/commands/status_helper'
   autoload :Dump,          'biopieces/commands/dump'
