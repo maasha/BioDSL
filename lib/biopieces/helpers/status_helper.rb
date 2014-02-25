@@ -20,29 +20,41 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
-
 module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'narray'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/string'
-  require 'biopieces/seq'
-  autoload :Config,   'biopieces/config'
-  autoload :Version,  'biopieces/version'
-  autoload :Filesys,  'biopieces/filesys'
-  autoload :Pipeline, 'biopieces/pipeline'
-  autoload :Fasta,    'biopieces/fasta'
-  autoload :Math,     'biopieces/math'
+  module StatusHelper
+    def status_save
+      records_in  = @input  ? @input.size  : 0
+      records_out = @output ? @output.size : 0
+
+      options = {}
+
+      # Remove unmashallable objects
+      @options.each do |key, value|
+  #      if value.is_a? StringIO
+  #        options[key] = "StringIO"
+  #      else
+          options[key] = value
+  #      end
+      end
+
+      status = {
+        command:      @command,
+        options:      options,
+        records_in:   records_in,
+        records_out:  records_out,
+        time_elapsed: (@time_stop - @time_start).to_s
+      }
+
+      File.open(@status_file, 'w') do |ios|
+        ios.write(Marshal.dump(status))
+      end
+
+      status
+    end
+  end
 end
+

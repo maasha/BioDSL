@@ -20,29 +20,13 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
-
 module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'narray'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/string'
-  require 'biopieces/seq'
-  autoload :Config,   'biopieces/config'
-  autoload :Version,  'biopieces/version'
-  autoload :Filesys,  'biopieces/filesys'
-  autoload :Pipeline, 'biopieces/pipeline'
-  autoload :Fasta,    'biopieces/fasta'
-  autoload :Math,     'biopieces/math'
+  autoload :HistoryHelper, 'biopieces/helpers/history_helper'
+  autoload :LogHelper,     'biopieces/helpers/log_helper'
+  autoload :OptionsHelper, 'biopieces/helpers/options_helper'
+  autoload :StatusHelper,  'biopieces/helpers/status_helper'
 end
