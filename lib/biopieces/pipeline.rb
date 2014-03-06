@@ -100,9 +100,13 @@ module BioPieces
 
       self
     rescue Exception => exception
-      STDERR.puts "Error in run: " + exception.to_s
-      STDERR.puts exception.backtrace if @options[:verbose]
-      log_error(exception)
+      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+        STDERR.puts "Error in run: " + exception.to_s
+        STDERR.puts exception.backtrace if @options[:verbose]
+        log_error(exception)
+      else
+        raise exception
+      end
     ensure
       history_save
     end
@@ -205,9 +209,13 @@ module BioPieces
 
         send "#{@command}_check"
       rescue Exception => exception
-        STDERR.puts "Error in #{@command}: " + exception.to_s
-        STDERR.puts exception.backtrace if @options[:verbose]
-        log_error(exception)
+        unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+          STDERR.puts "Error in #{@command}: " + exception.to_s
+          STDERR.puts exception.backtrace if @options[:verbose]
+          log_error(exception)
+        else
+          raise exception
+        end
       end
 
       def include_command_module
