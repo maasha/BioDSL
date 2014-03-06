@@ -26,11 +26,24 @@
 
 module BioPieces
   module LogHelper
-    def log_save
+    def log_ok
       unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
         File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
           ios.puts self
           ios.puts PP.pp(self.status, '')
+          ios.puts "OK"
+        end
+      end
+    end
+
+    def log_error(exception)
+      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+        File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
+          ios.puts self
+          ios.puts PP.pp(self.status, '') if self.respond_to? :status
+          ios.puts "ERROR"
+          ios.puts exception
+          ios.puts exception.backtrace
         end
       end
     end

@@ -96,10 +96,15 @@ module BioPieces
 
       email_send if @options[:email]
 
-      log_save
-      history_save
+      log_ok
 
       self
+    rescue Exception => exception
+      STDERR.puts "Error in run: " + exception.to_s
+      STDERR.puts exception.backtrace if @options[:verbose]
+      log_error(exception)
+    ensure
+      history_save
     end
 
     def to_s
@@ -180,6 +185,7 @@ module BioPieces
     end
 
     class Command
+      include BioPieces::LogHelper
       include BioPieces::OptionsHelper
       include BioPieces::StatusHelper
 
@@ -198,6 +204,10 @@ module BioPieces
         include_command_module
 
         send "#{@command}_check"
+      rescue Exception => exception
+        STDERR.puts "Error in #{@command}: " + exception.to_s
+        STDERR.puts exception.backtrace if @options[:verbose]
+        log_error(exception)
       end
 
       def include_command_module
