@@ -26,7 +26,8 @@
 
 module BioPieces
   module Config
-    HISTORY_FILE = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE     = File.join(ENV['HOME'], ".biopieces_log")
+    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
+    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
+    STATUS_SAVE_INTERVAL = 1
   end
 end

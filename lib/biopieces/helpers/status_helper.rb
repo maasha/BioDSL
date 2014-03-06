@@ -26,7 +26,31 @@
 
 module BioPieces
   module StatusHelper
+    def status_display
+      pp @status
+    end
+
+    def status_update
+      if (Time.now - @time_stop) > BioPieces::Config::STATUS_SAVE_INTERVAL
+        status_save
+
+        @time_stop = Time.now
+      end
+    end
+
+    def status_load
+      status = []
+
+      @commands.each do |command|
+        status << Marshal.load(File.read(File.join(@tmp_dir, "#{command.index}.status")))
+      end
+
+      status
+    end
+
     def status_save
+      return unless @tmp_dir
+
       records_in  = @input  ? @input.size  : 0
       records_out = @output ? @output.size : 0
 
@@ -34,11 +58,7 @@ module BioPieces
 
       # Remove unmashallable objects
       @options.each do |key, value|
-  #      if value.is_a? StringIO
-  #        options[key] = "StringIO"
-  #      else
-          options[key] = value
-  #      end
+        options[key] = value
       end
 
       status = {
@@ -49,7 +69,9 @@ module BioPieces
         time_elapsed: (@time_stop - @time_start).to_s
       }
 
-      File.open(@status_file, 'w') do |ios|
+      status_file = File.join(@tmp_dir, "#{@index}.status")
+
+      File.open(status_file, 'w') do |ios|
         ios.write(Marshal.dump(status))
       end
 

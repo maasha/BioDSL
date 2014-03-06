@@ -37,7 +37,7 @@ module BioPieces
     end
 
     def read_fasta
-      @input.each { |record| @output.write record } if @input
+      @input.each { |record| status_update; @output.write record } if @input
 
       count  = 0
       buffer = []
@@ -47,6 +47,7 @@ module BioPieces
           BioPieces::Fasta.open(file) do |ios|
             if @options[:first]
               ios.each do |entry|
+                status_update
                 throw :break if @options[:first] == count
 
                 @output.write entry.to_bp
@@ -60,6 +61,7 @@ module BioPieces
               end
             else
               ios.each do |entry|
+                status_update
                 @output.write entry.to_bp if @output
               end
             end
@@ -68,6 +70,7 @@ module BioPieces
 
         if @options[:last]
           buffer.each do |entry|
+            status_update
             @output.write entry.to_bp
           end
         end

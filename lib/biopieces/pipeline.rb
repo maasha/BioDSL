@@ -20,7 +20,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,15 +33,20 @@ module BioPieces
     include BioPieces::HistoryHelper
     include BioPieces::LogHelper
     include BioPieces::OptionsHelper
+    include BioPieces::StatusHelper
 
     def initialize
       @commands = []
       @options  = {}
       @status   = {}
+      @index    = 0
+      @tmp_dir  = Dir.mktmpdir("BioPiecesStatus")
     end
 
     def add(command, options = {})
-      @commands << Command.new(command, options)
+      @commands << Command.new(command, options, @index, @tmp_dir)
+
+      @index += 1
 
       self
     end
@@ -59,32 +64,26 @@ module BioPieces
 
       @status[:status] = []
 
-      Dir.mktmpdir("BioPiecesStatus") do |tmpdir|
-        @commands.each_with_index { |command, index| command.status_file = File.join(tmpdir, "#{index}.status") }
+      @commands.reverse.each_cons(2) do |command2, command1|
+        input, output = Stream.pipe
 
-        @commands.reverse.each_cons(2) do |command2, command1|
-          input, output = Stream.pipe
-
-          pid = fork do
-            output.close
-            command2.run(input, out)
-          end
-
-          input.close
-          out.close if out
-          out = output
-
-          wait_pid ||= pid # only the first created process which is tail of pipeline
+        pid = fork do
+          output.close
+          command2.run(input, out)
         end
 
-        @commands.first.run(nil, out)
+        input.close
+        out.close if out
+        out = output
 
-        Process.waitpid(wait_pid) if wait_pid
-
-        Dir["#{tmpdir}/*.status"].each do |file|
-          @status[:status] << Marshal.load(File.read(file))
-        end
+        wait_pid ||= pid # only the first created process which is tail of pipeline
       end
+
+      @commands.first.run(nil, out)
+
+      Process.waitpid(wait_pid) if wait_pid
+
+      @status[:status] = status_load
 
       time_stop = Time.now
 
@@ -92,9 +91,8 @@ module BioPieces
       @status[:time_stop]    = time_stop
       @status[:time_elapsed] = time_stop - time_start
 
-      pp @status if @options[:verbose]
-
-      email_send if @options[:email]
+      status_display if @options[:verbose]
+      email_send     if @options[:email]
 
       log_ok
 
@@ -109,6 +107,7 @@ module BioPieces
       end
     ensure
       history_save
+      FileUtils.remove_entry @tmp_dir
     end
 
     def to_s
@@ -189,17 +188,18 @@ module BioPieces
     end
 
     class Command
+      attr_reader :index
+
       include BioPieces::LogHelper
       include BioPieces::OptionsHelper
       include BioPieces::StatusHelper
 
-      attr_accessor :status_file
-
-      def initialize(command, options = {}, status_file = nil)
+      def initialize(command, options = {}, index = nil, tmp_dir = nil)
         @command     = command
         @options     = options
         @options_dup = options.dup
-        @status_file = status_file
+        @index       = index
+        @tmp_dir     = tmp_dir
         @time_start  = nil
         @time_stop   = nil
         @input       = nil
@@ -221,23 +221,22 @@ module BioPieces
       def include_command_module
         command_module = @command.to_s.split("_").map { |c| c.capitalize }.join("")
 
-        begin
-          self.class.send(:include, BioPieces.const_get(command_module))
-        rescue
-          raise BioPieces::PipelineError, "No such command: #{@command}"
-        end
+        self.class.send(:include, BioPieces.const_get(command_module))
+      rescue
+        raise BioPieces::PipelineError, "No such BioPieces command: #{@command}"
       end
 
       def run(input, output)
         @input      = input
         @output     = output
         @time_start = Time.now
+        @time_stop  = Time.now
 
         send @command
 
-        @time_stop = Time.now
+        @time_stop  = Time.now
 
-        status_save if @status_file
+        status_save
       ensure
         @output.close if @output
         @input.close  if @input
