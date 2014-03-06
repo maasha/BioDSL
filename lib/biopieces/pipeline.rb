@@ -53,7 +53,7 @@ module BioPieces
 
     def run(options = {})
       @options = options
-      options_allowed :verbose, :email, :subject
+      options_allowed :verbose, :email, :progress, :subject
       options_tie subject: :email
 
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
@@ -63,6 +63,7 @@ module BioPieces
       time_start = Time.now
 
       @status[:status] = []
+      @commands.last.progress = :true if @options[:progress]
 
       @commands.reverse.each_cons(2) do |command2, command1|
         input, output = Stream.pipe
@@ -188,6 +189,7 @@ module BioPieces
     end
 
     class Command
+      attr_accessor :progress
       attr_reader :index
 
       include BioPieces::LogHelper
@@ -200,6 +202,7 @@ module BioPieces
         @options_dup = options.dup
         @index       = index
         @tmp_dir     = tmp_dir
+        @progress    = nil
         @time_start  = nil
         @time_stop   = nil
         @input       = nil

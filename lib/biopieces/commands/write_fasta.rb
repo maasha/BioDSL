@@ -38,6 +38,8 @@ module BioPieces
 
       if @options[:output] === $stdout
         @input.each do |record|
+          status_update
+
           if record[:SEQ_NAME] and record[:SEQ]
             entry = BioPieces::Seq.new_bp(record)
 
@@ -57,6 +59,8 @@ module BioPieces
 
         Fasta.open(@options[:output], 'w', compress: compress) do |ios|
           @input.each do |record|
+            status_update
+
             if record[:SEQ_NAME] and record[:SEQ]
               entry = BioPieces::Seq.new_bp(record)
 

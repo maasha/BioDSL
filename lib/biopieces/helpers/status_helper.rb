@@ -26,13 +26,14 @@
 
 module BioPieces
   module StatusHelper
-    def status_display
-      pp @status
-    end
-
     def status_update
       if (Time.now - @time_stop) > BioPieces::Config::STATUS_SAVE_INTERVAL
         status_save
+
+        if self.progress
+          system("clear")
+          pp status_load
+        end
 
         @time_stop = Time.now
       end
@@ -41,8 +42,8 @@ module BioPieces
     def status_load
       status = []
 
-      @commands.each do |command|
-        status << Marshal.load(File.read(File.join(@tmp_dir, "#{command.index}.status")))
+      Dir["#{@tmp_dir}/*.status"].each do |file|
+        status << Marshal.load(File.read(file))
       end
 
       status
@@ -69,7 +70,7 @@ module BioPieces
         time_elapsed: (@time_stop - @time_start).to_s
       }
 
-      status_file = File.join(@tmp_dir, "#{@index}.status")
+      status_file = File.join(@tmp_dir, "%05d" % @index + ".status")
 
       File.open(status_file, 'w') do |ios|
         ios.write(Marshal.dump(status))
@@ -77,6 +78,11 @@ module BioPieces
 
       status
     end
+
+    def status_display
+      pp @status
+    end
+
   end
 end
 
