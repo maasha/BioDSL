@@ -81,6 +81,10 @@ EOF
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: 1, last: 1) }
   end
 
+  test "BioPieces::Pipeline::ReadFasta with non-existing input file raises" do
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:read_fasta, input: "___adsf") }
+  end
+
   test "BioPieces::Pipeline::ReadFasta returns correctly" do
     output = StringIO.new("", 'w')
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file)

@@ -81,7 +81,11 @@ module BioPieces
           expanded_paths = []
 
           @options[option].split(/, */).each do |glob_expression|
-            expanded_paths += Dir.glob(glob_expression).select { |file| File.file? file }
+            if glob_expression.include? '*'
+              expanded_paths += Dir.glob(glob_expression).select { |file| File.file? file }
+            else
+              expanded_paths << glob_expression
+            end
           end
 
           @options[option] = expanded_paths
@@ -117,7 +121,7 @@ module BioPieces
 
           files.each do |file|
             unless File.file? file
-              raise BioPieces::OptionError, "For option #{file} - no such file: #{@options[file]}"
+              raise BioPieces::OptionError, "For option #{arg} - no such file: #{file}"
             end
           end
         end
