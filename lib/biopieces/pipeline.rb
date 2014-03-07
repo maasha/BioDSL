@@ -51,6 +51,10 @@ module BioPieces
       self
     end
 
+    def pop
+      @commands.pop
+    end
+
     def run(options = {})
       @options = options
       options_allowed :verbose, :email, :progress, :subject
