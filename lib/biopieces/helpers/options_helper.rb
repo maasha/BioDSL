@@ -128,6 +128,22 @@ module BioPieces
       end
     end
 
+    # Method that raises if files exists unless @options[:force] == true.
+    def options_files_exists_force(*args)
+      args.each do |arg|
+        if @options[arg]
+          files = (@options[arg].is_a? Array) ? @options[arg] : [@options[arg]]
+
+          files.each do |file|
+            if File.file? file and not @options[:force]
+              raise BioPieces::OptionError, "File exists: #{file} - use 'force: true' to override"
+            end
+          end
+        end
+      end
+    end
+
+    # Method to assert a given expression.
     def options_assert(expression)
       @options.each do |key, value|
         expression.gsub!(/:#{key}/, value.to_s)

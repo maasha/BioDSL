@@ -33,6 +33,7 @@ class TestWriteFasta < Test::Unit::TestCase
   def setup
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.fna')
+    @file2  = File.join(@tmpdir, 'test.fna')
 
     @input, @output   = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
@@ -69,6 +70,20 @@ class TestWriteFasta < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::WriteFasta to file outputs correctly" do
     command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file)
+    command.run(@input, nil)
+    result = File.open(@file).read
+    expected = ">test1\natcg\n>test2\ngtac\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteFasta to existing file raises" do
+    `touch #{@file}`
+    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, output: @file) }
+  end
+
+  test "BioPieces::Pipeline::WriteFasta to existing file with options[:force] outputs correctly" do
+    `touch #{@file}`
+    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, force: true)
     command.run(@input, nil)
     result = File.open(@file).read
     expected = ">test1\natcg\n>test2\ngtac\n"
