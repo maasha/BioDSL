@@ -46,3 +46,5 @@ module BioPieces
   autoload :Fasta,    'biopieces/fasta'
   autoload :Math,     'biopieces/math'
 end
+
+BP = BioPieces::Pipeline # Module alias for irb short hand

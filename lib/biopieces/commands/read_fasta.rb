@@ -36,6 +36,7 @@ module BioPieces
       options_assert ":last >= 0"
     end
 
+    # Method to read FASTA entries form file
     def read_fasta
       @input.each { |record| status_update; @output.write record } if @input
 

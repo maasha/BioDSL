@@ -112,8 +112,6 @@ module BioPieces
     end
 
     def to_s
-      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
-
       command_string = "#{self.class}.new"
 
       @commands.each { |command| command_string << command.to_s }
@@ -262,4 +260,3 @@ module BioPieces
     end
   end
 end
-
