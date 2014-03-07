@@ -29,6 +29,7 @@ module BioPieces
 
   class Pipeline
     attr_reader :status
+    attr_accessor :commands
 
     include BioPieces::HistoryHelper
     include BioPieces::LogHelper
@@ -43,6 +44,10 @@ module BioPieces
       @tmp_dir  = Dir.mktmpdir("BioPiecesStatus")
     end
 
+    def size
+      @commands.size
+    end
+
     def add(command, options = {})
       @commands << Command.new(command, options, @index, @tmp_dir)
 
@@ -51,8 +56,11 @@ module BioPieces
       self
     end
 
+    # Removes last command from a Pipeline and returns a new Pipeline with this command.
     def pop
-      @commands.pop
+      p = BioPieces::Pipeline.new
+      p.commands = [@commands.pop]
+      p
     end
 
     def run(options = {})

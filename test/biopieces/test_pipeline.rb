@@ -59,6 +59,27 @@ class PipelineTest < Test::Unit::TestCase
     assert_raise(BioPieces::PipelineError) { @p.add(:foo) }
   end
 
+  test "BioPieces::Pipeline#size returns correctly" do
+    assert_equal(0, @p.size)
+    @p.add(:dump)
+    assert_equal(1, @p.size)
+  end
+
+  test "BioPieces::Pipeline#pop decreases size" do
+    @p.add(:dump)
+    assert_equal(1, @p.size)
+    @p.pop
+    assert_equal(0, @p.size)
+    @p.pop
+    assert_equal(0, @p.size)
+  end
+
+  test "BioPieces::Pipeline#pop returns correctly" do
+    @p.add(:dump)
+    assert_equal(BioPieces::Pipeline.new.add(:dump).to_s, @p.pop.to_s)
+    assert_equal(BioPieces::Pipeline.new.to_s, @p.to_s)
+  end
+
   test "BioPieces::Pipeline#to_s without .run() returns correctly" do
     expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}")}
     assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).to_s)
