@@ -92,8 +92,8 @@ module BioPieces
       @status[:time_stop]    = time_stop
       @status[:time_elapsed] = time_stop - time_start
 
-      status_display if @options[:verbose]
-      email_send     if @options[:email]
+      pp @status if @options[:verbose]
+      email_send if @options[:email]
 
       log_ok
 

@@ -78,11 +78,6 @@ module BioPieces
 
       status
     end
-
-    def status_display
-      pp @status
-    end
-
   end
 end
 
