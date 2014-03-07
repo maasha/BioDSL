@@ -29,5 +29,6 @@ module BioPieces
     HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
     LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
     STATUS_SAVE_INTERVAL = 1
+    DEBUG                = false
   end
 end

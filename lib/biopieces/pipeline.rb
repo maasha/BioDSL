@@ -25,6 +25,8 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  trap("INT") { exit! } unless BioPieces::Config::DEBUG
+
   class PipelineError < StandardError; end
 
   class Pipeline
@@ -115,6 +117,7 @@ module BioPieces
         STDERR.puts "Error in run: " + exception.to_s
         STDERR.puts exception.backtrace if @options[:verbose]
         log_error(exception)
+        exit 2
       else
         raise exception
       end
@@ -226,6 +229,7 @@ module BioPieces
           STDERR.puts "Error in #{@command}: " + exception.to_s
           STDERR.puts exception.backtrace if @options[:verbose]
           log_error(exception)
+          exit 2
         else
           raise exception
         end
