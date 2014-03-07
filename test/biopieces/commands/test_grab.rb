@@ -97,6 +97,12 @@ class TestGrab < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, reject_file: "___reject") }
   end
 
+  test "BioPieces::Pipeline::Grab#to_s with select and symbol key return correctly" do
+    command  = BioPieces::Pipeline::Command.new(:grab, select: :SEQ_NAME)
+    expected = ".add(:grab, select: :SEQ_NAME)"
+    assert_equal(expected, command.to_s)
+  end
+
   test "BioPieces::Pipeline::Grab with no hits return correctly" do
     command = BioPieces::Pipeline::Command.new(:grab, select: "fish")
     command.run(@input, @output2)

@@ -254,6 +254,8 @@ module BioPieces
           if value.is_a? String
             value = Regexp::quote(value) if key == :delimiter
             options_list << %{#{key}: "#{value}"}
+          elsif value.is_a? Symbol
+            options_list << "#{key}: :#{value}"
           else
             options_list << "#{key}: #{value}"
           end
