@@ -163,6 +163,14 @@ EOF
     assert_equal(expected, output.string)
   end
 
+  test "BioPieces::Pipeline::ReadFasta#to_s with options[:first] returns correctly" do
+    command = BioPieces::Pipeline::Command.new(:read_fasta, input: @file, first: 3)
+
+    expected = %{.add(:read_fasta, input: "#{@file}", first: 3)}
+
+    assert_equal(expected, command.to_s)
+  end
+
   test "BioPieces::Pipeline::ReadFasta with options[:last] returns correctly" do
     output = StringIO.new("", 'w')
     command = BioPieces::Pipeline::Command.new(:read_fasta, input: [@file, @file2], last: 3)

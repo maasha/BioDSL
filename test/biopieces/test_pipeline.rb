@@ -55,10 +55,6 @@ class PipelineTest < Test::Unit::TestCase
     assert_raise(BioPieces::PipelineError) { @p.run }
   end
 
-  test "BioPieces::Pipeline#to_s with no commands raises" do
-    assert_raise(BioPieces::PipelineError) { @p.to_s }
-  end
-
   test "BioPieces::Pipeline#add with non-existing command raises" do
     assert_raise(BioPieces::PipelineError) { @p.add(:foo) }
   end

@@ -251,8 +251,12 @@ module BioPieces
         options_list = []
 
         @options_dup.each do |key, value|
-          value = Regexp::quote(value) if key == :delimiter
-          options_list << %{#{key}: "#{value}"}
+          if value.is_a? String
+            value = Regexp::quote(value) if key == :delimiter
+            options_list << %{#{key}: "#{value}"}
+          else
+            options_list << "#{key}: #{value}"
+          end
         end
 
         if @options.empty?
