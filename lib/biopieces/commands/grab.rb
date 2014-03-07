@@ -43,6 +43,8 @@ module BioPieces
       lookup  = compile_lookup
 
       @input.each do |record|
+        status_update
+
         match = false
 
         if @options[:exact]
