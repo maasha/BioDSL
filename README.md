@@ -68,3 +68,12 @@ E-mail notification:
 
 `BP.new.add(:read_fasta, input: "input.fna").add(:dump).run(email: mail@maasha.dk, subject: "Script done!")`
 
+
+Contributing
+------------
+
+Fork it
+Create your feature branch (git checkout -b my-new-feature)
+Commit your changes (git commit -am 'Add some feature')
+Push to the branch (git push origin my-new-feature)
+Create new Pull Request
