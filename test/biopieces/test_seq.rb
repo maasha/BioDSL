@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -45,6 +45,44 @@ class TestSeq < Test::Unit::TestCase
     assert_equal("ATCG", seq.seq)
     assert_equal(:dna,  seq.type)
     assert_equal("hhhh", seq.qual)
+  end
+
+  test "BioPieces::generate_oligos with bad type raises" do
+    assert_raise(BioPieces::SeqError) { BioPieces::Seq.generate_oligos(2, :foo) }
+  end
+
+  test "BioPieces::generate_oligos with bad length raises" do
+    assert_raise(BioPieces::SeqError) { BioPieces::Seq.generate_oligos(0, :dna) }
+  end
+
+  test "BioPieces::generate_oligos returns correctly" do
+    expected = %w{aa at ac ag ta tt tc tg ca ct cc cg ga gt gc gg}
+    assert_equal(expected, BioPieces::Seq.generate_oligos(2, :dna))
+    expected = %w{aa au ac ag ua uu uc ug ca cu cc cg ga gu gc gg}
+    assert_equal(expected, BioPieces::Seq.generate_oligos(2, :rna))
+    expected = %w{
+      ff fl fs fy fc fw fp fh fq fr fi fm ft fn fk fv fa fd fe fg
+      lf ll ls ly lc lw lp lh lq lr li lm lt ln lk lv la ld le lg
+      sf sl ss sy sc sw sp sh sq sr si sm st sn sk sv sa sd se sg
+      yf yl ys yy yc yw yp yh yq yr yi ym yt yn yk yv ya yd ye yg
+      cf cl cs cy cc cw cp ch cq cr ci cm ct cn ck cv ca cd ce cg
+      wf wl ws wy wc ww wp wh wq wr wi wm wt wn wk wv wa wd we wg
+      pf pl ps py pc pw pp ph pq pr pi pm pt pn pk pv pa pd pe pg
+      hf hl hs hy hc hw hp hh hq hr hi hm ht hn hk hv ha hd he hg
+      qf ql qs qy qc qw qp qh qq qr qi qm qt qn qk qv qa qd qe qg
+      rf rl rs ry rc rw rp rh rq rr ri rm rt rn rk rv ra rd re rg
+      if il is iy ic iw ip ih iq ir ii im it in ik iv ia id ie ig
+      mf ml ms my mc mw mp mh mq mr mi mm mt mn mk mv ma md me mg
+      tf tl ts ty tc tw tp th tq tr ti tm tt tn tk tv ta td te tg
+      nf nl ns ny nc nw np nh nq nr ni nm nt nn nk nv na nd ne ng
+      kf kl ks ky kc kw kp kh kq kr ki km kt kn kk kv ka kd ke kg
+      vf vl vs vy vc vw vp vh vq vr vi vm vt vn vk vv va vd ve vg
+      af al as ay ac aw ap ah aq ar ai am at an ak av aa ad ae ag
+      df dl ds dy dc dw dp dh dq dr di dm dt dn dk dv da dd de dg
+      ef el es ey ec ew ep eh eq er ei em et en ek ev ea ed ee eg
+      gf gl gs gy gc gw gp gh gq gr gi gm gt gn gk gv ga gd ge gg
+    }
+    assert_equal(expected, BioPieces::Seq.generate_oligos(2, :protein))
   end
 
   test "#is_dna? with no sequence type returns false" do

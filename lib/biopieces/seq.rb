@@ -99,7 +99,7 @@ module BioPieces
 
     # Class method that generates all possible oligos of a specifed length and type.
     def self.generate_oligos(length, type)
-      raise SeqError, "Cannot generate negative oligo length: #{length}" if length <= 0
+      raise SeqError, "Cannot generate oligos of zero or negative length: #{length}" if length <= 0
 
       case type.downcase
       when :dna     then alph = DNA
