@@ -488,11 +488,6 @@ class TestSeq < Test::Unit::TestCase
     assert_equal("Ttcg", entry.seq)
   end
 
-  test "#subseq_rand returns correct sequence" do
-    @entry.seq  = "ATCG"
-    assert_equal("ATCG", @entry.subseq_rand(4).seq)
-  end
-
   test "#indels_remove without qual returns correctly" do
     @entry.seq  = "A-T.CG~CG"
     @entry.qual = nil
