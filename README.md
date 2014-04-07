@@ -8,7 +8,8 @@ Installation
 
 Add the following alias to your `~/.bashrc` file:
 
-`alias bp="irb -r biopieces --noinspect"`
+`alias bp="ruby -r biopieces"`
+`alias ibp="irb -r biopieces --noinspect"`
 
 
 Getting started
@@ -27,9 +28,9 @@ A test script:
     p.add(:write_fasta, output: "output.fna")
     p.run(progress: true)
 
-Or in irb using the alias bp:
+Or using an interactive shell using the alias ibp:
 
-    $ bp
+    $ ibp
     irb(main):001:0> p = BP.new
     => BioPieces::Pipeline.new
     irb(main):002:0> p.add(:read_fasta, input: "input.fna")
@@ -44,10 +45,14 @@ Or in irb using the alias bp:
 
 Or chaining commands directoy:
 
-    $ bp
+    $ ibp
     irb(main):001:0> BioPieces::Pipeline.new.add(:read_fasta, input: "input.fna").add(:grab, select: "ATC$", keys: :SEQ).add(:write_fasta, output: "output.fna").run
     => BioPieces::Pipeline.new.add(:read_fasta, input: "input.fna").add(:grab, select: "ATC$", keys: SEQ).add(:write_fasta, output: "output.fna").run
     irb(main):002:0>
+
+Or run on the command line with the alias bp:
+
+    $ bp -e 'BioPieces::Pipeline.new.add(:read_fasta, input: "input.fna").add(:grab, select: "ATC$", keys: :SEQ).add(:write_fasta, output: "output.fna").run(progress: true)'
 
 Log and History
 ---------------
