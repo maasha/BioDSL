@@ -20,7 +20,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part Biopieces (www.biopieces.org).                           #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -28,6 +28,7 @@ module BioPieces
   require 'biopieces/seq/ambiguity'
   require 'biopieces/seq/assemble'
   require 'biopieces/seq/digest'
+  require 'biopieces/seq/translate'
   require 'biopieces/seq/trim'
   require 'biopieces/seq/backtrack'
   require 'biopieces/seq/dynamic'
@@ -41,37 +42,6 @@ module BioPieces
   PROTEIN = %w[f l s y c w p h q r i m t n k v a d e g]
   INDELS  = %w[. - _ ~]
 
-  # Translation table 11
-  # (http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=cgencodes#SG11)
-  #   AAs  = FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG
-  # Starts = ---M---------------M------------MMMM---------------M------------
-  # Base1  = TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG
-  # Base2  = TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG
-  # Base3  = TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG
-  TRANS_TAB11_START = {
-    "TTG" => "M", "CTG" => "M", "ATT" => "M", "ATC" => "M",
-    "ATA" => "M", "ATG" => "M", "GTG" => "M"
-  }
-
-  TRANS_TAB11 = {
-    "TTT" => "F", "TCT" => "S", "TAT" => "Y", "TGT" => "C",
-    "TTC" => "F", "TCC" => "S", "TAC" => "Y", "TGC" => "C",
-    "TTA" => "L", "TCA" => "S", "TAA" => "*", "TGA" => "*",
-    "TTG" => "L", "TCG" => "S", "TAG" => "*", "TGG" => "W",
-    "CTT" => "L", "CCT" => "P", "CAT" => "H", "CGT" => "R",
-    "CTC" => "L", "CCC" => "P", "CAC" => "H", "CGC" => "R",
-    "CTA" => "L", "CCA" => "P", "CAA" => "Q", "CGA" => "R",
-    "CTG" => "L", "CCG" => "P", "CAG" => "Q", "CGG" => "R",
-    "ATT" => "I", "ACT" => "T", "AAT" => "N", "AGT" => "S",
-    "ATC" => "I", "ACC" => "T", "AAC" => "N", "AGC" => "S",
-    "ATA" => "I", "ACA" => "T", "AAA" => "K", "AGA" => "R",
-    "ATG" => "M", "ACG" => "T", "AAG" => "K", "AGG" => "R",
-    "GTT" => "V", "GCT" => "A", "GAT" => "D", "GGT" => "G",
-    "GTC" => "V", "GCC" => "A", "GAC" => "D", "GGC" => "G",
-    "GTA" => "V", "GCA" => "A", "GAA" => "E", "GGA" => "G",
-    "GTG" => "V", "GCG" => "A", "GAG" => "E", "GGG" => "G"
-  }
-
   # Error class for all exceptions to do with Seq.
   class SeqError < StandardError; end
 
@@ -82,6 +52,7 @@ module BioPieces
     SCORE_MAX  = 40
 
     include BioPieces::Digest
+    include BioPieces::Translate
     include BioPieces::Trim
 
     attr_accessor :seq_name, :seq, :type, :qual
@@ -226,56 +197,6 @@ module BioPieces
       self.type = :dna
       self.seq.tr!('Uu','Tt')
     end
-
-    # Method to translate a DNA sequence to protein.
-    def translate!(trans_tab = 11)
-      raise SeqError, "Sequence type must be 'dna' - not #{self.type}" unless self.type == :dna
-      raise SeqError, "Sequence length must be a multiplum of 3 - was: #{self.length}" unless (self.length % 3) == 0
-
-      case trans_tab
-      when 11
-        codon_start_hash = TRANS_TAB11_START
-        codon_hash       = TRANS_TAB11
-      else
-        raise SeqError, "Unknown translation table: #{trans_tab}"
-      end
-
-      codon  = self.seq[0 ... 3].upcase
-
-      aa = codon_start_hash[codon]
-
-      raise SeqError, "Unknown start codon: #{codon}" if aa.nil?
-
-      protein = aa
-
-      i = 3
-
-      while i < self.length
-        codon = self.seq[i ... i + 3].upcase
-
-        aa = codon_hash[codon]
-
-        raise SeqError, "Unknown codon: #{codon}" if aa.nil?
-
-        protein << aa
-
-        i += 3
-      end
-
-      self.seq  = protein
-      self.qual = nil
-      self.type = :protein
-
-      self
-    end
-
-    alias :to_protein! :translate!
-
-    def translate(trans_tab = 11)
-      self.dup.translate!(trans_tab)
-    end
-
-    alias :to_protein :translate
 
     # Method that given a Seq entry returns a Biopieces record (a hash).
     def to_bp
