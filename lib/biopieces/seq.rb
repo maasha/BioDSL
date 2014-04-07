@@ -407,53 +407,6 @@ module BioPieces
       self
     end
 
-    # Method that returns a subsequence of from a given start position
-    # and of a given length.
-    def subseq(start, length = self.length - start)
-      raise SeqError, "subsequence start: #{start} < 0"                                                if start  < 0
-      raise SeqError, "subsequence length: #{length} < 0"                                              if length < 0
-      raise SeqError, "subsequence start + length > Seq.length: #{start} + #{length} > #{self.length}" if start + length > self.length
-
-      if length == 0
-        seq  = ""
-        qual = "" unless self.qual.nil?
-      else
-        stop = start + length - 1
-
-        seq  = self.seq[start .. stop]
-        qual = self.qual[start .. stop] unless self.qual.nil?
-      end
-
-      seq_name = self.seq_name.nil? ? nil : self.seq_name.dup
-
-      Seq.new(seq_name: seq_name, seq: seq, type: self.type, qual: qual)
-    end
-
-    # Method that replaces a sequence with a subsequence from a given start position
-    # and of a given length.
-    def subseq!(start, length = self.length - start)
-      s = subseq(start, length)
-
-      self.seq_name = s.seq_name
-      self.seq      = s.seq
-      self.type     = s.type
-      self.qual     = s.qual
-
-      self
-    end
-
-    # Method that returns a subsequence of a given length
-    # beginning at a random position.
-    def subseq_rand(length)
-      if self.length - length + 1 == 0
-        start = 0
-      else
-        start = rand(self.length - length + 1)
-      end
-
-      self.subseq(start, length)
-    end
-
     # Method that returns the residue compositions of a sequence in
     # a hash where the key is the residue and the value is the residue
     # count.
