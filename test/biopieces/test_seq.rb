@@ -661,6 +661,11 @@ class TestSeq < Test::Unit::TestCase
     assert_equal('BCDEFGHI', @entry.qual_convert!(:base_64, :base_33).qual)
   end
 
+  test "#qual_coerce! with bad base raises" do
+    @entry.qual = ('!' .. '~').to_a.join
+    assert_raise(BioPieces::SeqError) { @entry.qual_coerce!(:foo) }
+  end
+
   test "#qual_coerce! returns correctly" do
     @entry.qual = ('!' .. '~').to_a.join
     assert_equal("!\"\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", @entry.qual_coerce!(:base_33).qual)

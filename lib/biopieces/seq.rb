@@ -501,7 +501,8 @@ module BioPieces
       case encoding
       when :base_33 then self.qual.tr!("[J-~]", "I")
       when :base_64 then self.qual.tr!("[i-~]", "h")
-      else raise SeqError, "unknown quality score encoding: #{encoding}"
+      else
+        raise SeqError, "unknown quality score encoding: #{encoding}"
       end 
 
       self
