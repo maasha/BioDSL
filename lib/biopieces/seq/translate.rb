@@ -59,6 +59,19 @@ module BioPieces
 
     # Method to translate a DNA sequence to protein.
     def translate!(trans_tab = 11)
+      entry = translate(trans_tab)
+
+      self.seq_name = entry.seq_name ? entry.seq_name.dup : nil
+      self.seq      = entry.seq.dup
+      self.type     = entry.type
+      self.qual     = entry.qual
+
+      self
+    end
+
+    alias :to_protein! :translate!
+
+    def translate(trans_tab = 11)
       raise SeqError, "Sequence type must be 'dna' - not #{self.type}" unless self.type == :dna
       raise SeqError, "Sequence length must be a multiplum of 3 - was: #{self.length}" unless (self.length % 3) == 0
 
@@ -70,39 +83,25 @@ module BioPieces
         raise SeqError, "Unknown translation table: #{trans_tab}"
       end
 
-      codon  = self.seq[0 ... 3].upcase
+      codon = self.seq[0 ... 3].upcase
 
       aa = codon_start_hash[codon]
 
       raise SeqError, "Unknown start codon: #{codon}" if aa.nil?
 
-      protein = aa
+      protein = aa.dup
 
-      i = 3
-
-      while i < self.length
+      (3 ... self.length).step(3) do |i|
         codon = self.seq[i ... i + 3].upcase
 
         aa = codon_hash[codon]
 
         raise SeqError, "Unknown codon: #{codon}" if aa.nil?
 
-        protein << aa
-
-        i += 3
+        protein << aa.dup
       end
 
-      self.seq  = protein
-      self.qual = nil
-      self.type = :protein
-
-      self
-    end
-
-    alias :to_protein! :translate!
-
-    def translate(trans_tab = 11)
-      self.dup.translate!(trans_tab)
+      Seq.new(seq_name: self.seq_name, seq: protein[0 .. -2], type: :protein)
     end
 
     alias :to_protein :translate
