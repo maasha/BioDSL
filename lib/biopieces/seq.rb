@@ -538,12 +538,18 @@ module BioPieces
     end
 
     # Method to find open reading frames (ORFs).
-    def each_orf(size_min, size_max, start_codons, stop_codons, pick_longest = false)
+    def each_orf(options = {})
+      size_min     = options[:size_min]     || 0
+      size_max     = options[:size_max]     || self.length
+      start_codons = options[:start_codons] || "ATG,GTG,AUG,GUG"
+      stop_codons  = options[:stop_codons]  || "TAA,TGA,TAG,UAA,UGA,UAG"
+      pick_longest = options[:pick_longest]
+
       orfs    = []
       pos_beg = 0
 
-      regex_start = Regexp.new(start_codons.join('|'), true)
-      regex_stop  = Regexp.new(stop_codons.join('|'), true)
+      regex_start = Regexp.new(start_codons.split(',').join('|'), true)
+      regex_stop  = Regexp.new(stop_codons.split(',').join('|'), true)
 
       while pos_beg and pos_beg < self.length - size_min
         if pos_beg = self.seq.index(regex_start, pos_beg)
@@ -552,9 +558,9 @@ module BioPieces
 
             if (length % 3) == 0
               if size_min <= length and length <= size_max
-                subseq = self.subseq(pos_beg, length)
+                subseq = self[pos_beg ... pos_beg + length]
 
-                orfs << [subseq, pos_beg, pos_end + 3]
+                orfs << Orf.new(subseq, pos_beg, pos_end + 2)
               end
             end
           end
@@ -566,7 +572,7 @@ module BioPieces
       if pick_longest
         orf_hash = {}
 
-        orfs.each { |orf| orf_hash[orf.last] = orf unless orf_hash[orf.last] }
+        orfs.each { |orf| orf_hash[orf.stop] = orf unless orf_hash[orf.stop] }
 
         orfs = orf_hash.values
       end
@@ -575,6 +581,16 @@ module BioPieces
         orfs.each { |orf| yield orf }
       else
         return orfs
+      end
+    end
+
+    class Orf
+      attr_reader :entry, :start, :stop
+
+      def initialize(entry, start, stop)
+        @entry = entry
+        @start = start
+        @stop  = stop
       end
     end
   end

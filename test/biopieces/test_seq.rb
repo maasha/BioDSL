@@ -682,4 +682,58 @@ class TestSeq < Test::Unit::TestCase
     @entry.qual = '!!II'
     assert_equal(20.0, @entry.scores_mean)
   end
+
+  test "#each_orf returns correctly" do
+    @entry.seq = "atATGcgatcgATGcatcgatcagcatcgatcgatTAAcg"
+    orfs = @entry.each_orf
+
+    assert_equal(2, orfs.size)
+    assert_equal("ATGcgatcgATGcatcgatcagcatcgatcgatTAA", orfs.first.entry.seq)
+    assert_equal(2, orfs.first.start)
+    assert_equal(37, orfs.first.stop)
+    assert_equal("ATGcatcgatcagcatcgatcgatTAA", orfs.last.entry.seq)
+    assert_equal(11, orfs.last.start)
+    assert_equal(37, orfs.last.stop)
+  end
+
+  test "#each_orf in block context returns correctly" do
+    @entry.seq = "atATGcgatcgATGcatcgatcagcatcgatcgatTAAcg"
+    @entry.each_orf do |orf|
+      assert_equal("ATGcgatcgATGcatcgatcagcatcgatcgatTAA", orf.entry.seq)
+      assert_equal(2, orf.start)
+      assert_equal(37, orf.stop)
+
+      break
+    end
+  end
+
+  test "#each_orf with size_min returns correctly" do
+    @entry.seq = "atATGcgatcgATGcatcgatcagcatcgatcgatTAAcg"
+    orfs = @entry.each_orf(size_min: 30)
+
+    assert_equal(1, orfs.size)
+    assert_equal("ATGcgatcgATGcatcgatcagcatcgatcgatTAA", orfs.first.entry.seq)
+    assert_equal(2, orfs.first.start)
+    assert_equal(37, orfs.first.stop)
+  end
+
+  test "#each_orf with size_max returns correctly" do
+    @entry.seq = "atATGcgatcgATGcatcgatcagcatcgatcgatTAAcg"
+    orfs = @entry.each_orf(size_max: 30)
+
+    assert_equal(1, orfs.size)
+    assert_equal("ATGcatcgatcagcatcgatcgatTAA", orfs.first.entry.seq)
+    assert_equal(11, orfs.first.start)
+    assert_equal(37, orfs.first.stop)
+  end
+
+  test "#each_orf with pick_longest returns correctly" do
+    @entry.seq = "atATGcgatcgATGcatcgatcagcatcgatcgatTAAcg"
+    orfs = @entry.each_orf(pick_longest: true)
+
+    assert_equal(1, orfs.size)
+    assert_equal("ATGcgatcgATGcatcgatcagcatcgatcgatTAA", orfs.first.entry.seq)
+    assert_equal(2, orfs.first.start)
+    assert_equal(37, orfs.first.stop)
+  end
 end
