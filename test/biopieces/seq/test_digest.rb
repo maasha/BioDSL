@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,78 +27,45 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Error class for all exceptions to do with Digest.
-  class DigestError < StandardError; end
+require 'test/helper'
 
-  module Digest
-    # Method to get the next digestion product from a sequence.
-    def each_digest(pattern, cut_pos)
-      pattern = disambiguate(pattern)
-      results = []
-      offset  = 0
+class TestDigest < Test::Unit::TestCase 
+  def setup
+    @entry = BioPieces::Seq.new(seq: "cgatcgatcGGATCCgagagggtgtgtagtgGAATTCcgctgc")
+  end
 
-      self.seq.upcase.scan pattern do
-        pos = $`.length + cut_pos 
+  test "#each_digest with bad residue in pattern raises" do
+    assert_raise(BioPieces::DigestError) { @entry.each_digest("X", 0) }
+  end
 
-        if pos >= 0 and pos < self.length - 2
-          subseq = self[offset ... pos]
-          subseq.seq_name = "#{self.seq_name}[#{offset}-#{pos - offset - 1}]"
+  test "#each_digest returns correctly" do
+    digests = @entry.each_digest("GGATCC", 1)
+    assert_equal(2, digests.size)
+    assert_equal("[0-9]", digests.first.seq_name)
+    assert_equal("cgatcgatcG", digests.first.seq)
+    assert_equal("[10-42]", digests.last.seq_name)
+    assert_equal("GATCCgagagggtgtgtagtgGAATTCcgctgc", digests.last.seq)
+  end
 
-          block_given? ? (yield subseq) : (results << subseq)
-        end
+  test "#each_digest with negavive offset returns correctly" do
+    digests = @entry.each_digest("CGATCG", -1)
+    assert_equal(1, digests.size)
+    assert_equal("[0-42]", digests.first.seq_name)
+    assert_equal(@entry.seq, digests.first.seq)
+  end
 
-        offset = pos 
-      end
+  test "#each_digest with offset out of bounds returns correctly" do
+    digests = @entry.each_digest("AATTCcgctgc", 15)
+    assert_equal(1, digests.size)
+    assert_equal("[0-42]", digests.first.seq_name)
+    assert_equal(@entry.seq, digests.first.seq)
+  end
 
-      if offset < 0 or offset > self.length
-        offset = 0
-      end
-
-      subseq = self[offset .. -1]
-      subseq.seq_name = "#{self.seq_name}[#{offset}-#{self.length - 1}]"
-
-      block_given? ? (yield subseq) : (results << subseq)
-
-      return results unless block_given?
-    end
-
-    private
-
-    # Method that returns a regexp object with a restriction
-    # enzyme pattern with ambiguity codes substituted to the
-    # appropriate regexp.
-    def disambiguate(pattern)
-      ambiguity = {
-        'A' => "A",
-        'T' => "T",
-        'U' => "T",
-        'C' => "C",
-        'G' => "G",
-        'M' => "[AC]",
-        'R' => "[AG]",
-        'W' => "[AT]",
-        'S' => "[CG]",
-        'Y' => "[CT]",
-        'K' => "[GT]",
-        'V' => "[ACG]",
-        'H' => "[ACT]",
-        'D' => "[AGT]",
-        'B' => "[CGT]",
-        'N' => "[GATC]"
-      }
-
-      new_pattern = ""
-
-      pattern.upcase.each_char do |char|
-        if ambiguity[char]
-          new_pattern << ambiguity[char]
-        else
-          raise DigestError, "Could not disambiguate residue: #{char}"
-        end
-      end
-
-      Regexp.new(new_pattern)
+  test "#each_digest in block context returns correctly" do
+    digests = @entry.each_digest("GGATCC", 1) do |digest|
+      assert_equal("[0-9]", digest.seq_name)
+      assert_equal("cgatcgatcG", digest.seq)
+      break
     end
   end
 end
