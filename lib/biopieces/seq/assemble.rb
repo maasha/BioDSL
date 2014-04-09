@@ -25,9 +25,11 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  # Class containing methods to assemble two overlapping sequences into a single.
+  # Error class for all Assemble errors.
+  class AssembleError < StandardError; end
+
   class Assemble
-    extend BioPieces::Ambiguity
+    extend Ambiguity
 
     # Class method to assemble two Seq objects.
     def self.pair(entry1, entry2, options = {})
@@ -39,44 +41,93 @@ module BioPieces
     def initialize(entry1, entry2, options)
       @entry1  = entry1
       @entry2  = entry2
+      @overlap = 0
+      @offset1 = 0
+      @offset2 = 0
       @options = options
       @options[:mismatches_max] ||= 0
       @options[:overlap_min]    ||= 1
-      @options[:overlap_max]    ||= entry1.length
-      @options[:overlap_max]      = [@options[:overlap_max], entry1.length, entry2.length].min
+
+      if @options[:mismatches_max] < 0
+        raise AssembleError, "mismatches_max must be zero or greater - not: #{@options[:mismatches_max]}"
+      end
+
+      if @options[:overlap_max] and @options[:overlap_max] <= 0
+        raise AssembleError, "overlap_max must be one or greater - not: #{@options[:overlap_max]}"
+      end
+
+      if @options[:overlap_min] <= 0
+        raise AssembleError, "overlap_min must be one or greater - not: #{@options[:overlap_min]}"
+      end
     end
 
     # Method to locate overlapping matches between two sequences.
     def match
-      overlap = @options[:overlap_max]
+      if @options[:overlap_max]
+        @overlap = [@options[:overlap_max], @entry1.length, @entry2.length].min
+      else
+        @overlap = [@entry1.length, @entry2.length].min
+      end
 
-      while overlap >= @options[:overlap_min]
-        mismatches_max = (overlap * @options[:mismatches_max] * 0.01).round
+      diff = @entry1.length - @entry2.length
+      diff = 0 if diff < 0
 
-        if match_C(@entry1.seq, @entry2.seq, @entry1.length - overlap, 0, overlap, mismatches_max)
-          entry_left  = @entry1[0 ... @entry1.length - overlap]
-          entry_right = @entry2[overlap .. -1]
+      @offset1 = @entry1.length - @overlap - diff
 
-          if @entry1.qual and @entry2.qual
-            entry_overlap1 = @entry1[-1 * overlap .. -1]
-            entry_overlap2 = @entry2[0 ... overlap]
+      while @overlap >= @options[:overlap_min]
+        mismatches_max = (@overlap * @options[:mismatches_max] * 0.01).round
+       
+        # puts "diff: #{diff}   offset1: #{@offset1}  offset2: #{@offset2}   overlap: #{@overlap}"
 
-            entry_overlap = merge_overlap(entry_overlap1, entry_overlap2)
-          else
-            entry_overlap = @entry1[-1 * overlap .. -1]
-          end
-
-          entry_left.seq.downcase!
-          entry_overlap.seq.upcase!
-          entry_right.seq.downcase!
+        if mismatches = match_C(@entry1.seq, @entry2.seq, @offset1, @offset2, @overlap, mismatches_max) and mismatches >= 0
           entry_merged          = entry_left + entry_overlap + entry_right
-          entry_merged.seq_name = @entry1.seq_name + ":overlap=#{overlap}"
+          entry_merged.seq_name = @entry1.seq_name + ":overlap=#{@overlap}:hamming=#{mismatches}" if @entry1.seq_name
 
           return entry_merged
         end
 
-        overlap -= 1
+        if diff > 0
+          diff -= 1
+        else
+          @overlap -= 1
+        end
+
+        @offset1 += 1
       end
+    end
+
+    # Method to extract and downcase the left part of an assembled pair.
+    def entry_left
+      entry = @entry1[0 ... @offset1]
+      entry.seq.downcase!
+      entry
+    end
+
+    # Method to extract and downcase the right part of an assembled pair.
+    def entry_right
+      if @entry1.length > @offset1 + @overlap
+        entry = @entry1[@offset1 + @overlap .. -1]
+      else
+        entry = @entry2[@offset2 + @overlap .. -1]
+      end
+
+      entry.seq.downcase!
+      entry
+    end
+
+    # Method to extract and upcase the overlapping part of an assembled pair.
+    def entry_overlap
+      if @entry1.qual and @entry2.qual
+        entry_overlap1 = @entry1[@offset1 ... @offset1 + @overlap]
+        entry_overlap2 = @entry2[@offset2 ... @offset2 + @overlap]
+
+        entry = merge_overlap(entry_overlap1, entry_overlap2)
+      else
+        entry = @entry1[@offset1 ... @offset1 + @overlap]
+      end
+
+      entry.seq.upcase!
+      entry
     end
 
     # Method to merge sequence and quality scores in an overlap.
@@ -94,7 +145,7 @@ module BioPieces
       mask_xor = na_seq[true, 0] ^ na_seq[true, 1] > 0
       mask_seq = ((na_qual * mask_xor).eq( (na_qual * mask_xor).max(1)))
 
-      merged      = BioPieces::Seq.new()
+      merged      = Seq.new()
       merged.seq  = (na_seq * mask_seq).max(1).to_s
       merged.qual = na_qual.mean(1).round.to_type("byte").to_s
 
@@ -106,7 +157,7 @@ module BioPieces
 
       # C method for determining if two strings of equal length match
       # given a maximum allowed mismatches and allowing for IUPAC
-      # ambiguity codes. Returns true if match, else false.
+      # ambiguity codes. Returns number of mismatches is true if match, else false.
       builder.c %{
         VALUE match_C(
           VALUE _string1,       // String 1
@@ -136,7 +187,7 @@ module BioPieces
               match++;
 
               if (match >= max_match) {
-                return Qtrue;
+                return UINT2NUM(mismatch);
               }
             }
             else
@@ -144,12 +195,12 @@ module BioPieces
               mismatch++;
 
               if (mismatch > max_mismatch) {
-                return Qfalse;
+                return INT2NUM(-1);
               }
             }
           }
 
-          return Qfalse;
+          return INT2NUM(-1);
         }
       }
     end
