@@ -52,6 +52,7 @@ module BioPieces
     SCORE_MAX  = 40
 
     include BioPieces::Digest
+    include BioPieces::Homopolymer
     include BioPieces::Translate
     include BioPieces::Trim
 

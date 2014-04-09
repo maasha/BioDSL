@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,36 +27,32 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Error class for all exceptions to do with Homopolymer.
-  class HomopolymerError < StandardError; end
+require 'test/helper'
 
-  module Homopolymer
-    def each_homopolymer(min = 1)
-      raise HomopolymerError, "Bad min value: #{min}" if min <= 0
-      list = []
+class TestHomopolymer < Test::Unit::TestCase 
+  def setup
+    @entry = BioPieces::Seq.new(seq: "atcgatTTTTTTcggttga")
+  end
 
-      self.seq.upcase.scan(/A{#{min},}|T{#{min},}|G{#{min},}|C{#{min},}|N{#{min},}/) do |match|
-        hp = Homopolymer.new(match, match.length, $`.length)
+  test "#each_homopolymer with bad min raises" do
+    assert_raise(BioPieces::HomopolymerError) { @entry.each_homopolymer(0) }
+    assert_raise(BioPieces::HomopolymerError) { @entry.each_homopolymer(-1) }
+  end
 
-        if block_given?
-          yield hp
-        else
-          list << hp
-        end
-      end
+  test "#each_homopolymer returns correctly" do
+    hps = @entry.each_homopolymer(3)
+    assert_equal(1, hps.size)
+    assert_equal(7, hps.first.length)
+    assert_equal("TTTTTTT", hps.first.pattern)
+    assert_equal(5, hps.first.pos)
+  end
 
-      block_given? ? self : list
-    end
-
-    class Homopolymer
-      attr_reader :pattern, :length, :pos
-
-      def initialize(pattern, length, pos)
-        @pattern = pattern
-        @length  = length
-        @pos     = pos
-      end
+  test "#each_homopolymer in block context returns correctly" do
+    @entry.each_homopolymer(3) do |hp|
+      assert_equal(7, hp.length)
+      assert_equal("TTTTTTT", hp.pattern)
+      assert_equal(5, hp.pos)
+      break
     end
   end
 end
