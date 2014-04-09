@@ -33,7 +33,6 @@ module BioPieces
   require 'biopieces/seq/backtrack'
   require 'biopieces/seq/dynamic'
   require 'biopieces/seq/homopolymer'
-  require 'biopieces/seq/hamming'
   require 'biopieces/seq/levenshtein'
 
   # Residue alphabets
@@ -321,11 +320,11 @@ module BioPieces
 
     # Method to determine the Hamming Distance between
     # two Sequence objects (case insensitive).
-    def hamming_distance(entry, options = nil)
-      if options and options[:ambiguity]
-        Hamming.distance(self.seq, entry.seq)
+    def hamming_distance(entry, options = {})
+      if options[:ambiguity]
+        BioPieces::Hamming.distance(self.seq, entry.seq, options)
       else
-        self.seq.upcase.hamming_distance(entry.seq.upcase)
+        BioPieces::Hamming.distance(self.seq.upcase, entry.seq.upcase, options)
       end
     end
 

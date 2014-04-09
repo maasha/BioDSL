@@ -39,6 +39,7 @@ module BioPieces
   require 'biopieces/helpers'
   require 'biopieces/seq'
   autoload :Config,   'biopieces/config'
+  autoload :Hamming,  'biopieces/hamming'
   autoload :Version,  'biopieces/version'
   autoload :Filesys,  'biopieces/filesys'
   autoload :Pipeline, 'biopieces/pipeline'
