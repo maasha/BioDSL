@@ -37,7 +37,6 @@ module BioPieces
   require 'tempfile'
   require 'biopieces/commands'
   require 'biopieces/helpers'
-  require 'biopieces/string'
   require 'biopieces/seq'
   autoload :Config,   'biopieces/config'
   autoload :Version,  'biopieces/version'
