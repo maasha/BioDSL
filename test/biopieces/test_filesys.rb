@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,85 +27,24 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Error class for all exceptions to do with Filesys.
-  class FilesysError < StandardError; end
+require 'test/helper'
 
-  class Filesys
-    include Enumerable
-
-    # Class method that returns a path to a unique temporary file.
-    # If no directory is specified reverts to the systems tmp directory.
-    def self.tmpfile(tmp_dir = ENV["TMPDIR"])
-      time = Time.now.to_i
-      user = ENV["USER"]
-      pid  = $$
-      path = tmp_dir + [user, time + pid, pid].join("_") + ".tmp"
-      path
-    end
-
-    def self.open(*args)
-      file    = args.shift
-      mode    = args.shift
-      options = args.shift || {}
-
-      if mode == 'w'
-        case options[:compress]
-        when :gzip
-          ios, = Open3.pipeline_w("gzip -f", out: file)
-        when :bzip, :bzip2
-          ios, = Open3.pipeline_w("bzip2 -c", out: file)
-        else 
-          ios = File.open(file, mode, options)
-        end
-      else
-        if file == '-'
-          ios = STDIN
-        else
-          type = (file.respond_to? :path) ? `file -L #{file.path}` : `file -L #{file}`
-          case type
-          when /gzip/
-            ios = IO.popen("gzip -cd #{file}")
-          when /bzip/
-            ios = IO.popen("bzcat #{file}")
-          else
-            ios = File.open(file, mode, options)
-          end
-        end
-      end
-
-      if block_given?
-        begin
-          yield self.new(ios)
-        ensure
-          ios.close
-        end
-      else
-        return self.new(ios)
-      end
-    end
-
-    def initialize(ios)
-      @io = ios
-    end
-
-    def puts(*args)
-      @io.puts(*args)
-    end
-
-    def close
-      @io.close
-    end
-
-    def eof?
-      @io.eof?
-    end
-
-    # Iterator method for parsing entries.
-    def each
-      while entry = get_entry do
-        yield entry
-      end
-    end
+class FilesysTest < Test::Unit::TestCase
+  def setup
+    @tmpdir = Dir.mktmpdir("BioPieces")
   end
+
+  def teardown
+    FileUtils.rm_r @tmpdir
+  end
+
+  test "#tmpfile returns correctly" do
+    assert_equal(@tmpdir, BioPieces::Filesys.tmpfile(@tmpdir).match(/^#{@tmpdir}/).to_s)
+  end
+
+#  test "BioPieces::Pipeline#status with .run() returns correctly" do
+#    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}")}
+#    @p.expects(:status).returns(expected)
+#    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.status)
+#  end
 end
