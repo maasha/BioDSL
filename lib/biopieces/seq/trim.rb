@@ -20,7 +20,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -34,79 +34,74 @@ module BioPieces
     # Method to progressively trim a Seq object sequence from the right end until
     # a run of min_len residues with quality scores above min_qual is encountered.
     def quality_trim_right(min_qual, min_len = 1)
-      check_trim_args(min_qual)
+      check_trim_args(min_qual, min_len)
 
       pos = trim_right_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
 
-      self.subseq(0, pos)
+      self[0 .. pos]
     end
 
     # Method to progressively trim a Seq object sequence from the right end until
     # a run of min_len residues with quality scores above min_qual is encountered.
     def quality_trim_right!(min_qual, min_len = 1)
-      check_trim_args(min_qual)
-
-      pos = trim_right_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
-
-      self.subseq!(0, pos)
+      subseq    = quality_trim_right(min_qual, min_len)
+      self.seq  = subseq.seq
+      self.qual = subseq.qual
+      self
     end
 
     # Method to progressively trim a Seq object sequence from the left end until
     # a run of min_len residues with quality scores above min_qual is encountered.
     def quality_trim_left(min_qual, min_len = 1)
-      check_trim_args(min_qual)
+      check_trim_args(min_qual, min_len)
 
       pos = trim_left_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
 
-      self.subseq(pos)
+      self[pos .. self.length]
     end
 
     # Method to progressively trim a Seq object sequence from the left end until
     # a run of min_len residues with quality scores above min_qual is encountered.
     def quality_trim_left!(min_qual, min_len = 1)
-      check_trim_args(min_qual)
-
-      pos = trim_left_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
-
-      self.subseq!(pos)
+      subseq    = quality_trim_left(min_qual, min_len)
+      self.seq  = subseq.seq
+      self.qual = subseq.qual
+      self
     end
 
     # Method to progressively trim a Seq object sequence from both ends until a
     # run of min_len residues with quality scores above min_qual is encountered.
     def quality_trim(min_qual, min_len = 1)
-      check_trim_args(min_qual)
+      check_trim_args(min_qual, min_len)
 
       pos_right = trim_right_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
       pos_left  = trim_left_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
 
       pos_left = pos_right if pos_left > pos_right
 
-      self.subseq(pos_left, pos_right - pos_left)
+      self[pos_left ... pos_right]
     end
 
     # Method to progressively trim a Seq object sequence from both ends until a
     # run of min_len residues with quality scores above min_qual is encountered.
     def quality_trim!(min_qual, min_len = 1)
-      check_trim_args(min_qual)
-
-      pos_right = trim_right_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
-      pos_left  = trim_left_pos_c(self.qual, self.length, min_qual, min_len, Seq::SCORE_BASE)
-
-      pos_left = pos_right if pos_left > pos_right
-
-      self.subseq!(pos_left, pos_right - pos_left)
+      subseq    = quality_trim(min_qual, min_len)
+      self.seq  = subseq.seq
+      self.qual = subseq.qual
+      self
     end
 
     private
 
     # Method to check the arguments for trimming and raise on bad sequence, qualities,
     # and min_qual.
-    def check_trim_args(min_qual)
+    def check_trim_args(min_qual, min_len)
       raise TrimError, "no sequence"      if self.seq.nil?
       raise TrimError, "no quality score" if self.qual.nil?
       unless (Seq::SCORE_MIN .. Seq::SCORE_MAX).include? min_qual
         raise TrimError, "minimum quality value: #{min_qual} out of range #{Seq::SCORE_MIN} .. #{Seq::SCORE_MAX}"
       end
+      raise TrimError, "min_len must be larger than zero" if min_len <= 0
     end
 
     # Inline C functions for speed below.
