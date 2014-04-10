@@ -20,11 +20,14 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  # Error class for Dynamic.
+  class DynamicError < StandardError; end
+
   # Module containing code to locate nucleotide patterns in sequences allowing for
   # ambiguity codes and a given maximum edit distance.
   # Insertions are nucleotides found in the pattern but not in the sequence.
