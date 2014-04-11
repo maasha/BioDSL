@@ -31,7 +31,19 @@ require 'test/helper'
 
 class FilesysTest < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir("BioPieces")
+    @tmpdir     = Dir.mktmpdir("BioPieces")
+    @file       = File.join(@tmpdir, 'test.txt')
+    file_gzip   = File.join(@tmpdir, 'test_gzip.txt')
+    file_bzip2  = File.join(@tmpdir, 'test_bzip2.txt')
+    @file_gzip  = File.join(@tmpdir, 'test_gzip.txt.gz')
+    @file_bzip2 = File.join(@tmpdir, 'test_bzip2.txt.bz2')
+
+    File.open(@file, 'w')      { |ios| ios << "foobar" }
+    File.open(file_gzip, 'w')  { |ios| ios << "foobar" }
+    File.open(file_bzip2, 'w') { |ios| ios << "foobar" }
+
+    `gzip #{file_gzip}`
+    `bzip2 #{file_bzip2}`
   end
 
   def teardown
@@ -42,9 +54,81 @@ class FilesysTest < Test::Unit::TestCase
     assert_equal(@tmpdir, BioPieces::Filesys.tmpfile(@tmpdir).match(/^#{@tmpdir}/).to_s)
   end
 
-#  test "BioPieces::Pipeline#status with .run() returns correctly" do
-#    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}")}
-#    @p.expects(:status).returns(expected)
-#    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.status)
-#  end
+  test "#open in read mode returns correctly" do
+    ios = BioPieces::Filesys.open(@file)
+    assert_equal("foobar", ios.read)
+    ios.close
+  end
+
+  test "#open in read mode with block context returns correctly" do
+    BioPieces::Filesys.open(@file) { |ios| assert_equal("foobar", ios.read) }
+  end
+
+  test "#open in write mode outputs correctly" do
+    ios = BioPieces::Filesys.open(@file, 'w')
+    ios.write "foobar"
+    ios.close
+    File.open(@file) { |ios2| assert_equal("foobar", ios2.read) }
+  end
+
+  test "#open in write mode with block context outputs correctly" do
+    BioPieces::Filesys.open(@file, 'w') { |ios| ios.write "foobar" }
+    File.open(@file) { |ios| assert_equal("foobar", ios.read) }
+  end
+
+  test "#open gzip in read mode returns correctly" do
+    ios = BioPieces::Filesys.open(@file_gzip)
+    assert_equal("foobar", ios.read)
+    ios.close
+  end
+
+  test "#open gzip in read mode with block context returns correctly" do
+    BioPieces::Filesys.open(@file_gzip) { |ios| assert_equal("foobar", ios.read) }
+  end
+
+  test "#open gzip in write mode outputs correctly" do
+    ios = BioPieces::Filesys.open(@file, 'w', compress: :gzip)
+    ios.write "foobar"
+    ios.close
+    result = `zcat #{@file}`
+    assert_equal("foobar", result)
+  end
+
+  test "#open gzip in write mode with block context outputs correctly" do
+    BioPieces::Filesys.open(@file, 'w', compress: :gzip) { |ios| ios.write "foobar" }
+    result = `zcat #{@file}`
+    assert_equal("foobar", result)
+  end
+
+  test "#open bzip2 in read mode returns correctly" do
+    ios = BioPieces::Filesys.open(@file_bzip2)
+    assert_equal("foobar", ios.read)
+    ios.close
+  end
+
+  test "#open bzip2 in read mode with block context returns correctly" do
+    BioPieces::Filesys.open(@file_bzip2) { |ios| assert_equal("foobar", ios.read) }
+  end
+
+  test "#open bzip2 in write mode outputs correctly" do
+    ios = BioPieces::Filesys.open(@file, 'w', compress: :bzip2)
+    ios.write "foobar"
+    ios.close
+    result = `bzcat #{@file}`
+    assert_equal("foobar", result)
+  end
+
+  test "#open bzip2 in write mode with block context outputs correctly" do
+    BioPieces::Filesys.open(@file, 'w', compress: :bzip2) { |ios| ios.write "foobar" }
+    result = `bzcat #{@file}`
+    assert_equal("foobar", result)
+  end
+
+  test "#open if eof? returns correctly" do
+    ios = BioPieces::Filesys.open(@file)
+    assert_equal(false, ios.eof?)
+    ios.read
+    assert_equal(true, ios.eof?)
+    ios.close
+  end
 end
