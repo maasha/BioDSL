@@ -62,7 +62,7 @@ class TestDigest < Test::Unit::TestCase
   end
 
   test "#each_digest in block context returns correctly" do
-    digests = @entry.each_digest("GGATCC", 1) do |digest|
+    @entry.each_digest("GGATCC", 1) do |digest|
       assert_equal("[0-9]", digest.seq_name)
       assert_equal("cgatcgatcG", digest.seq)
       break

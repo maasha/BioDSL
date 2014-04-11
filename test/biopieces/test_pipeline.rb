@@ -123,6 +123,18 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(expected, stdout)
   end
 
+  test "BioPieces::Pipeline#run returns correctly" do
+    @p.add(:read_fasta, input: @fasta_file).add(:write_fasta, output: @fasta_file2).run 
+
+    result = nil
+
+    File.open(@fasta_file2) do |ios|
+      result = ios.read
+    end
+
+    assert_equal(">test1\natcg\n>test2\ntgac\n", result)
+  end
+
   test "BioPieces::Pipeline#run with subject but no email raises" do
     assert_raise(BioPieces::OptionError) { @p.add(:read_fasta, input: @fasta_file).run(subject: "foobar") }
   end
@@ -137,18 +149,6 @@ class PipelineTest < Test::Unit::TestCase
     @p.add(:read_fasta, input: @fasta_file).run(email: "foo@bar.com", subject: "foobar")
     assert_equal(1, Mail::TestMailer.deliveries.length)
     assert_equal("foobar", Mail::TestMailer.deliveries.first.subject)
-  end
-
-  test "BioPieces::Pipeline#run returns correctly" do
-    @p.add(:read_fasta, input: @fasta_file).add(:write_fasta, output: @fasta_file2).run 
-
-    result = nil
-
-    File.open(@fasta_file2) do |ios|
-      result = ios.read
-    end
-
-    assert_equal(">test1\natcg\n>test2\ntgac\n", result)
   end
 end
 
