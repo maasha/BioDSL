@@ -77,7 +77,7 @@ module BioPieces
     # Method to expand all options in the glob list into lists of paths.
     def options_glob(*globs)
       globs.each do |option|
-        unless @options[option].is_a? Array
+        if @options[option] and not @options[option].is_a? Array
           expanded_paths = []
 
           @options[option].split(/, */).each do |glob_expression|
