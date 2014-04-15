@@ -36,7 +36,57 @@ module BioPieces
       options_assert ":last >= 0"
     end
 
-    # Method to read FASTA entries form file
+    # == Read FASTA entries from one or more files.
+    #
+    # +read_fasta+ read in sequence entries from FASTA files. Each sequence
+    # entry consists of a sequence name prefixed by a '>' followed by the sequence
+    # name on a line of its own, followed by one or my lines of sequence until the
+    # next entry or the end of the file. The resulting Biopiece record consists of
+    # the following record type:
+    #
+    #     {:SEQ_NAME=>"test",
+    #      :SEQ=>"AGCATCGACTAGCAGCATTT",
+    #      :SEQ_LEN=>20}
+    #
+    # Input files may be compressed with gzip og bzip2.
+    #
+    # For more about the FASTA format:
+    #
+    # http://en.wikipedia.org/wiki/Fasta_format
+    # 
+    # == Usage
+    #     add(:read_fasta, input: <glob>[, first: <uint>|last <uint>])
+    #
+    # === Options
+    # * input - Input file or file glob expression.
+    # * first - Only read in the _first_ number of entries.
+    # * last  - Only read in the _last_ number of entries.
+    #
+    # == Examples
+    #
+    # To read all FASTA entries from a file:
+    #
+    #    add(:read_fasta, input: "test.fna")
+    #
+    # To read all FASTA entries from a gzipped file:
+    #
+    #    add(:read_fasta, input: "test.fna.gz")
+    #
+    # To read in only 10 records from a FASTA file:
+    #
+    #    add(:read_fasta, input: "test.fna", first: 10)
+    #
+    # To read in the last 10 records from a FASTA file:
+    #
+    #    add(:read_fasta, input: "test.fna", last: 10)
+    #
+    # To read all FASTA entries from multiple files:
+    #
+    #    add(:read_fasta, input: "test1.fna,test2.fna")
+    #
+    # To read FASTA entries from multiple files using a glob expression:
+    #
+    #    add(:read_fasta, input: "*.fna")
     def read_fasta
       @input.each { |record| status_update; @output.write record } if @input
 
