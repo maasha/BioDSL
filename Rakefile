@@ -10,6 +10,11 @@ Rake::TestTask.new do |t|
   t.warning    = true
 end
 
+desc "Add or update rdoc"
+task :doc do
+  `rdoc lib/`
+end
+
 task :build => :boilerplate
 
 desc "Add or update license boilerplate in source files"
