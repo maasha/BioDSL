@@ -55,7 +55,7 @@ module BioPieces
     # http://en.wikipedia.org/wiki/Fasta_format
     # 
     # == Usage
-    #     add(:read_fasta, input: <glob>[, first: <uint>|last <uint>])
+    #    add(:read_fasta, input: <glob>[, first: <uint>|last <uint>])
     #
     # === Options
     # * input - Input file or file glob expression.
