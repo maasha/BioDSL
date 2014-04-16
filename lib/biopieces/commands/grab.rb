@@ -25,16 +25,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Grab
-    def grab_check
-      options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
-      options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
-      options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate
-      options_conflict keys_only: :keys, values_only: :keys
-      options_unique :keys_only, :values_only
-      options_files_exist :select_file, :reject_file
-    end
-
+  module Commands
     # == Grab records in stream.
     # 
     # +grab+ select records from the stream by matching patterns to keys or
@@ -46,7 +37,7 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    add(:grab, <select: <pattern>|select_file: <file>|reject: <pattern>|
+    #    grab(<select: <pattern>|select_file: <file>|reject: <pattern>|
     #                reject_file: <file>|evaluate: <expression>|exact: <bool>>
     #               [, keys: <list>|keys_only: <bool>|values_only: <bool>|
     #               ignore_case: <bool>])
@@ -73,38 +64,38 @@ module BioPieces
     # To easily grab all records in the stream that has any mentioning of the
     # pattern 'human' just pipe the data stream through grab like this:
     # 
-    #    add(:grab, select: "human")
+    #    grab(select: "human")
     # 
     # This will search for the pattern 'human' in all keys and all values. The
     # +select+ option alternatively uses an array of patterns, so in order to
     # match one of multiple patterns do:
     # 
-    #    add(:grab, select: ["human", "mouse"])
+    #    grab(select: ["human", "mouse"])
     # 
     # It is also possible to invoke flexible matching using regex (regular
     # expressions) instead of simple pattern matching. If you want to +grab+ 
     # records with the sequence +ATCG+ or +GCTA+ you can do this:
     # 
-    #    add(:grab, select: "ATCG|GCTA")
+    #    grab(select: "ATCG|GCTA")
     # 
     # Or if you want to +grab+ sequences beginning with +ATCG+:
     # 
-    #    add(:grab, select: "^ATCG")
+    #    grab(select: "^ATCG")
     # 
     # It is also possible to use the +select_file+ option to load patterns from
     # a file with one pattern per line.
     # 
-    #    add(:grab, select_file: "patterns.txt")
+    #    grab(select_file: "patterns.txt")
     # 
     # If you want the opposite result - to find all records that does not match
     # the a pattern, use the +reject+ option:
     # 
-    #    add(:grab, reject: "human")
+    #    grab(reject: "human")
     # 
     # Similar to +select_file+ there is a +reject_file+ option to load patterns
     # from a file, and use any of these patterns to reject records:
     #
-    #    add(:grab, reject_file: "patterns.txt")
+    #    grab(reject_file: "patterns.txt")
     #
     # If you want to search the record keys only, e.g. to +grab+ all records
     # containing the key +SEQ+ you can use the +keys_only+ option. This will
@@ -112,12 +103,12 @@ module BioPieces
     # uncommon peptide sequence you could get an unwanted record. Also, this
     # will give an increase in speed since only the keys are searched:
     # 
-    #    add(:grab, select: "SEQ", keys_only: true)
+    #    grab(select: "SEQ", keys_only: true)
     # 
     # However, if you are interested in +grabbing+ the peptide sequence +SEQ+ and
     # not the +SEQ+ key, just use the +vals_only+ option:
     # 
-    #    add(:grab, select: "SEQ", vals_only: true)
+    #    grab(select: "SEQ", vals_only: true)
     # 
     # Also, if you want to +grab+ for certain key/value pairs you can supply a
     # comma separated list or an array of keys whos values will then be grabbed
@@ -126,18 +117,18 @@ module BioPieces
     # e.g. the organism name - it is much faster to tell +grab+ which keys to
     # search the value for:
     # 
-    #    add(:grab, select: "human", keys: :SEQ_NAME)
+    #    grab(select: "human", keys: :SEQ_NAME)
     # 
     # You can also use the +evaluate+ option to +grab+ records that fulfill an
     # expression. So to +grab+ all records with a sequence length greater than 30:
     # 
-    #    add(:grab, evaluate: 'SEQ_LEN > 30')
+    #    grab(evaluate: 'SEQ_LEN > 30')
     # 
     # If you want to +grab+ all records containing the pattern 'human' and where the
     # sequence length is greater that 30, you do this by running the stream through
     # +grab+ twice:
     # 
-    #    add(:grab, select: 'human').add(:grab, evaluate: 'SEQ_LEN > 30')
+    #    grab(select: 'human').grab(evaluate: 'SEQ_LEN > 30')
     # 
     # Finally, it is possible to +grab+ for exact pattern using the +exact+
     # option. This is much faster than the default regex pattern grabbing
@@ -146,70 +137,82 @@ module BioPieces
     # file with ID numbers and you want to +grab+ matching records from the 
     # stream:
     # 
-    #    add(:grab, select_file: "ids.txt", keys: :ID, exact: true)
-    def grab
-      invert  = @options[:reject] || @options[:reject_file]
-      keys    = compile_keys
-      regexes = compile_regexes
-      lookup  = compile_lookup
+    #    grab(select_file: "ids.txt", keys: :ID, exact: true)
+    def grab(options)
+      @options = options
+      options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
+      options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
+      options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate
+      options_conflict keys_only: :keys, values_only: :keys
+      options_unique :keys_only, :values_only
+      options_files_exist :select_file, :reject_file
 
-      @input.each do |record|
-        status_update
+      lmb = lambda do |input, output, run_options|
+        status_track(input, output, run_options) do
+          invert  = options[:reject] || options[:reject_file]
+          keys    = compile_keys(options)
+          regexes = compile_regexes(options)
+          lookup  = compile_lookup(options)
 
-        match = false
+          input.each do |record|
+            match = false
 
-        if @options[:exact]
-          match = grab_exact(record, lookup, keys)
-        elsif regexes
-          match = grab_regexes(record, regexes, keys)
-        elsif @options[:evaluate]
-          match = grab_expression(record)
-        end
-        
-        if match and not invert
-          @output.write record
-        elsif not match and invert
-          @output.write record
+            if options[:exact]
+              match = grab_exact(options, record, lookup, keys)
+            elsif regexes
+              match = grab_regexes(options, record, regexes, keys)
+            elsif options[:evaluate]
+              match = grab_expression(options, record)
+            end
+            
+            if match and not invert
+              output.write record
+            elsif not match and invert
+              output.write record
+            end
+          end
         end
       end
+
+      [:grab, options, lmb]
     end
 
     private 
 
-    def compile_keys
-      if @options[:keys]
-        if @options[:keys].is_a? Array
-          keys = @options[:keys]
-        elsif @options[:keys].is_a? Symbol
-          keys = [@options[:keys]]
-        elsif @options[:keys].is_a? String
-          keys = @options[:keys].split(/, */).map { |key| key = key.sub(/^:/, '').to_sym }
+    def compile_keys(options)
+      if options[:keys]
+        if options[:keys].is_a? Array
+          keys = options[:keys]
+        elsif options[:keys].is_a? Symbol
+          keys = [options[:keys]]
+        elsif options[:keys].is_a? String
+          keys = options[:keys].split(/, */).map { |key| key = key.sub(/^:/, '').to_sym }
         end
       end
 
       keys
     end
 
-    def compile_patterns
-      if @options[:select]
-        if @options[:select].is_a? Array
-          patterns = @options[:select]
+    def compile_patterns(options)
+      if options[:select]
+        if options[:select].is_a? Array
+          patterns = options[:select]
         else
-          patterns = [@options[:select]]
+          patterns = [options[:select]]
         end
-      elsif @options[:select_file]
-        File.open(@options[:select_file]) do |ios|
+      elsif options[:select_file]
+        File.open(options[:select_file]) do |ios|
           patterns = []
           ios.each_line { |line| patterns << line.chomp }
         end
-      elsif @options[:reject]
-        if @options[:reject].is_a? Array
-          patterns = @options[:reject]
+      elsif options[:reject]
+        if options[:reject].is_a? Array
+          patterns = options[:reject]
         else
-          patterns = [@options[:reject]]
+          patterns = [options[:reject]]
         end
-      elsif @options[:reject_file]
-        File.open(@options[:reject_file]) do |ios|
+      elsif options[:reject_file]
+        File.open(options[:reject_file]) do |ios|
           patterns = []
           ios.each_line { |line| patterns << line.chomp }
         end
@@ -218,11 +221,11 @@ module BioPieces
       patterns
     end
 
-    def compile_regexes
-      patterns = compile_patterns
+    def compile_regexes(options)
+      patterns = compile_patterns(options)
 
       if patterns
-        if @options[:ignore_case]
+        if options[:ignore_case]
           regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/i) }
         else
           regexes = patterns.inject([]) { |list, pattern| list << Regexp.new(/#{pattern}/) }
@@ -232,8 +235,8 @@ module BioPieces
       regexes
     end
 
-    def compile_lookup
-      if @options[:exact]
+    def compile_lookup(options)
+      if options[:exact]
         patterns = compile_patterns
 
         lookup = {}
@@ -250,7 +253,7 @@ module BioPieces
       lookup
     end
 
-    def grab_regexes(record, regexes, keys)
+    def grab_regexes(options, record, regexes, keys)
       if keys
         keys.each do |key|
           if value = record[key]
@@ -259,9 +262,9 @@ module BioPieces
         end
       else
         record.each do |key, value|
-          if @options[:keys_only]
+          if options[:keys_only]
             regexes.each { |regex| return true if key =~ regex }
-          elsif @options[:values_only]
+          elsif options[:values_only]
             regexes.each { |regex| return true if value =~ regex }
           else
             regexes.each { |regex| return true if key =~ regex or value =~ regex }
@@ -272,7 +275,7 @@ module BioPieces
       false
     end
 
-    def grab_exact(record, lookup, keys)
+    def grab_exact(options, record, lookup, keys)
       if keys
         keys.each do |key|
           if value = record[key]
@@ -285,9 +288,9 @@ module BioPieces
         end
       else
         record.each do |key, value|
-          if @options[:keys_only]
+          if options[:keys_only]
             return true if lookup[key.to_sym]
-          elsif @options[:values_only]
+          elsif options[:values_only]
             begin
               return true if lookup[value.to_sym]
             rescue
@@ -308,8 +311,8 @@ module BioPieces
       false
     end
 
-    def grab_expression(record)
-      expression = @options[:evaluate].gsub(/:\w+/) do |match|
+    def grab_expression(options, record)
+      expression = options[:evaluate].gsub(/:\w+/) do |match|
         key = match[1 .. -1].to_sym
 
         if record[key]

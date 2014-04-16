@@ -25,8 +25,10 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  autoload :Dump,       'biopieces/commands/dump'
-  autoload :Grab,       'biopieces/commands/grab'
-  autoload :ReadFasta,  'biopieces/commands/read_fasta'
-  autoload :WriteFasta, 'biopieces/commands/write_fasta'
+  module Commands
+    require 'biopieces/commands/dump'
+    require 'biopieces/commands/grab'
+    require 'biopieces/commands/read_fasta'
+    require 'biopieces/commands/write_fasta'
+  end
 end

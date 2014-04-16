@@ -50,13 +50,18 @@ module BioPieces
       @commands.size
     end
 
-    def add(command, options = {})
-      @commands << Command.new(command, options, @index, @tmp_dir)
+    def add(args)
+      command, options, lmb = args
+      options ||= {}
+
+      @commands << Command.new(command, options, @index, @tmp_dir, lmb)
 
       @index += 1
 
       self
     end
+
+    alias :<< :add
 
     # Removes last command from a Pipeline and returns a new Pipeline with this command.
     def pop
@@ -98,7 +103,7 @@ module BioPieces
 
       Process.waitpid(wait_pid) if wait_pid
 
-      @status[:status] = status_load
+      @status[:status] = status_load(tmp_dir: @tmp_dir)
 
       time_stop = Time.now
 
@@ -209,10 +214,11 @@ module BioPieces
       include BioPieces::OptionsHelper
       include BioPieces::StatusHelper
 
-      def initialize(command, options = {}, index = nil, tmp_dir = nil)
+      def initialize(command, options = {}, index = nil, tmp_dir = nil, lmb)
         @command     = command
         @options     = options
         @options_dup = options.dup
+        @lmb         = lmb
         @index       = index
         @tmp_dir     = tmp_dir
         @progress    = nil
@@ -220,10 +226,6 @@ module BioPieces
         @time_stop   = nil
         @input       = nil
         @output      = nil
-
-        include_command_module
-
-        send "#{@command}_check"
       rescue Exception => exception
         unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
           STDERR.puts "Error in #{@command}: " + exception.to_s
@@ -235,25 +237,23 @@ module BioPieces
         end
       end
 
-      def include_command_module
-        command_module = @command.to_s.split("_").map { |c| c.capitalize }.join("")
-
-        self.class.send(:include, BioPieces.const_get(command_module))
-      rescue
-        raise BioPieces::PipelineError, "No such BioPieces command: #{@command}"
-      end
-
       def run(input, output)
         @input      = input
         @output     = output
         @time_start = Time.now
         @time_stop  = Time.now
 
-        send @command
+        run_options = {}
+        run_options[:command]    = @command
+        run_options[:options]    = @options
+        run_options[:tmp_dir]    = @tmp_dir
+        run_options[:index]      = @index
+        run_options[:time_start] = @time_start
+        run_options[:progress]   = true if self.progress
+
+        @lmb.call(input, output, run_options)
 
         @time_stop  = Time.now
-
-        status_save
       ensure
         @output.close if @output
         @input.close  if @input
@@ -274,9 +274,9 @@ module BioPieces
         end
 
         if @options.empty?
-          ".add(:#{@command})"
+          ".#{@command}"
         else
-          ".add(:#{@command}, #{options_list.join(", ")})"
+          ".#{@command}(#{options_list.join(", ")})"
         end
       end
     end

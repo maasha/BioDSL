@@ -26,51 +26,48 @@
 
 module BioPieces
   module StatusHelper
-    def status_update
-      if (Time.now - @time_stop) > BioPieces::Config::STATUS_SAVE_INTERVAL
-        status_save
+    def status_track(input, output, run_options, &block)
+      time = Time.now
 
-        if self.progress
-          system("clear")
-          pp status_load
+      Thread.new do
+        loop do
+          status_save(input, output, time, run_options)
+
+          if run_options[:progress]
+            system("clear")
+    
+            pp status_load(run_options)
+          end
+
+          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
         end
-
-        @time_stop = Time.now
       end
+
+      block.call
+
+      status_save(input, output, time, run_options)
     end
 
-    def status_load
+    def status_load(run_options)
       status = []
 
-      Dir["#{@tmp_dir}/*.status"].each do |file|
+      Dir["#{run_options[:tmp_dir]}/*.status"].each do |file|
         status << Marshal.load(File.read(file))
       end
 
       status
     end
 
-    def status_save
-      return unless @tmp_dir
-
-      records_in  = @input  ? @input.size  : 0
-      records_out = @output ? @output.size : 0
-
-      options = {}
-
-      # Remove unmashallable objects
-      @options.each do |key, value|
-        options[key] = value
-      end
-
+    def status_save(input, output, time, run_options)
       status = {
-        command:      @command,
-        options:      options,
-        records_in:   records_in,
-        records_out:  records_out,
-        time_elapsed: (@time_stop - @time_start).to_s
+        command:      run_options[:command],
+        options:      run_options[:options],
+        records_in:   input  ? input.size  : 0,
+        records_out:  output ? output.size : 0,
+        time_elapsed: (Time.now - time).to_s
       }
 
-      status_file = File.join(@tmp_dir, "%05d" % @index + ".status")
+      status_file = File.join(run_options[:tmp_dir], "%05d" % run_options[:index] + ".status")
 
       File.open(status_file, 'w') do |ios|
         ios.write(Marshal.dump(status))

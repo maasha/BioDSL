@@ -25,17 +25,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module ReadFasta
-    def read_fasta_check
-      options_allowed :input, :first, :last
-      options_required :input
-      options_glob :input
-      options_files_exist :input
-      options_unique :first, :last
-      options_assert ":first >= 0"
-      options_assert ":last >= 0"
-    end
-
+  module Commands
     # == Read FASTA entries from one or more files.
     #
     # +read_fasta+ read in sequence entries from FASTA files. Each sequence
@@ -55,7 +45,7 @@ module BioPieces
     # http://en.wikipedia.org/wiki/Fasta_format
     # 
     # == Usage
-    #    add(:read_fasta, input: <glob>[, first: <uint>|last <uint>])
+    #    read_fasta(input: <glob>[, first: <uint>|last <uint>])
     #
     # === Options
     # * input - Input file or file glob expression.
@@ -66,66 +56,78 @@ module BioPieces
     #
     # To read all FASTA entries from a file:
     #
-    #    add(:read_fasta, input: "test.fna")
+    #    read_fasta(input: "test.fna")
     #
     # To read all FASTA entries from a gzipped file:
     #
-    #    add(:read_fasta, input: "test.fna.gz")
+    #    read_fasta(input: "test.fna.gz")
     #
     # To read in only 10 records from a FASTA file:
     #
-    #    add(:read_fasta, input: "test.fna", first: 10)
+    #    read_fasta(input: "test.fna", first: 10)
     #
     # To read in the last 10 records from a FASTA file:
     #
-    #    add(:read_fasta, input: "test.fna", last: 10)
+    #    read_fasta(input: "test.fna", last: 10)
     #
     # To read all FASTA entries from multiple files:
     #
-    #    add(:read_fasta, input: "test1.fna,test2.fna")
+    #    read_fasta(input: "test1.fna,test2.fna")
     #
     # To read FASTA entries from multiple files using a glob expression:
     #
-    #    add(:read_fasta, input: "*.fna")
-    def read_fasta
-      @input.each { |record| status_update; @output.write record } if @input
+    #    read_fasta(input: "*.fna")
+    def read_fasta(options)
+      @options = options
+      options_allowed :input, :first, :last
+      options_required :input
+      options_glob :input
+      options_files_exist :input
+      options_unique :first, :last
+      options_assert ":first >= 0"
+      options_assert ":last >= 0"
 
-      count  = 0
-      buffer = []
+      lmb = lambda do |input, output, run_options|
+        status_track(input, output, run_options) do
+          input.each { |record| output.write record } if input
 
-      catch :break do
-        @options[:input].each do |file|
-          BioPieces::Fasta.open(file) do |ios|
-            if @options[:first]
-              ios.each do |entry|
-                status_update
-                throw :break if @options[:first] == count
+          count  = 0
+          buffer = []
 
-                @output.write entry.to_bp
+          catch :break do
+            options[:input].each do |file|
+              BioPieces::Fasta.open(file) do |ios|
+                if options[:first]
+                  ios.each do |entry|
+                    throw :break if options[:first] == count
 
-                count += 1
+                    output.write entry.to_bp
+
+                    count += 1
+                  end
+                elsif options[:last]
+                  ios.each do |entry|
+                    buffer << entry
+                    buffer.shift if buffer.size > options[:last]
+                  end
+                else
+                  ios.each do |entry|
+                    output.write entry.to_bp if output
+                  end
+                end
               end
-            elsif @options[:last]
-              ios.each do |entry|
-                buffer << entry
-                buffer.shift if buffer.size > @options[:last]
-              end
-            else
-              ios.each do |entry|
-                status_update
-                @output.write entry.to_bp if @output
+            end
+
+            if options[:last]
+              buffer.each do |entry|
+                output.write entry.to_bp
               end
             end
           end
         end
-
-        if @options[:last]
-          buffer.each do |entry|
-            status_update
-            @output.write entry.to_bp
-          end
-        end
       end
+
+      [:read_fasta, options, lmb]
     end
   end
 end

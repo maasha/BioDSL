@@ -25,43 +25,48 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Dump
-    def dump_check
+  module Commands
+    def dump(options = {})
+      @options = options
       options_allowed :first, :last
       options_unique :first, :last
       options_assert ":first > 0"
       options_assert ":last > 0"
-    end
 
-    def dump
-      if @options[:first]
-        @input.each_with_index do |record, i|
-          break if @options[:first] == i
+      lmb = lambda do |input, output, run_options|
+        status_track(input, output, run_options) do
+          if options[:first]
+            input.each_with_index do |record, i|
+              break if options[:first] == i
 
-          pp record
+              pp record
 
-          @output.write record if @output
-        end
-      elsif @options[:last]
-        buffer = []
+              output.write record if @output
+            end
+          elsif options[:last]
+            buffer = []
 
-        @input.each do |record|
-          buffer << record
-          buffer.shift if buffer.size > @options[:last]
-        end
+            input.each do |record|
+              buffer << record
+              buffer.shift if buffer.size > options[:last]
+            end
 
-        buffer.each do |record|
-          pp record
+            buffer.each do |record|
+              pp record
 
-          @output.write record if @output
-        end
-      else
-        @input.each do |record|
-          pp record
+              output.write record if output
+            end
+          else
+            input.each do |record|
+              pp record
 
-          @output.write record if @output
+              output.write record if output
+            end
+          end
         end
       end
+
+      [:dump, options, lmb]
     end
   end
 end

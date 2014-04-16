@@ -25,53 +25,54 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module WriteFasta
-    def write_fasta_check
+  module Commands
+    # Method to write FASTA entries to stdout or file.
+    def write_fasta(options)
+      @options = options
       options_allowed :force, :output, :wrap, :gzip, :bzip2
       options_unique :gzip, :bzip2
       options_tie gzip: :output, bzip2: :output
       options_files_exists_force :output
-    end
 
-    # Method to write FASTA entries to stdout or file.
-    def write_fasta
-      @options[:output] ||= $stdout
+      lmb = lambda do |input, output, run_options|
+        status_track(input, output, run_options) do
+          options[:output] ||= $stdout
 
-      if @options[:output] === $stdout
-        @input.each do |record|
-          status_update
+          if options[:output] === $stdout
+            input.each do |record|
+              if record[:SEQ_NAME] and record[:SEQ]
+                entry = BioPieces::Seq.new_bp(record)
 
-          if record[:SEQ_NAME] and record[:SEQ]
-            entry = BioPieces::Seq.new_bp(record)
+                $stdout.puts entry.to_fasta(options[:wrap])
+              end
 
-            $stdout.puts entry.to_fasta(@options[:wrap])
-          end
-
-          @output.write record if @output
-        end
-      else
-        if @options[:gzip]
-          compress = :gzip
-        elsif @options[:bzip2]
-          compress = :bzip2
-        else
-          compress = nil
-        end
-
-        Fasta.open(@options[:output], 'w', compress: compress) do |ios|
-          @input.each do |record|
-            status_update
-
-            if record[:SEQ_NAME] and record[:SEQ]
-              entry = BioPieces::Seq.new_bp(record)
-
-              ios.puts entry.to_fasta(@options[:wrap])
+              output.write record if output
+            end
+          else
+            if options[:gzip]
+              compress = :gzip
+            elsif options[:bzip2]
+              compress = :bzip2
+            else
+              compress = nil
             end
 
-            @output.write record if @output
+            Fasta.open(options[:output], 'w', compress: compress) do |ios|
+              input.each do |record|
+                if record[:SEQ_NAME] and record[:SEQ]
+                  entry = BioPieces::Seq.new_bp(record)
+
+                  ios.puts entry.to_fasta(options[:wrap])
+                end
+
+                output.write record if output
+              end
+            end
           end
         end
       end
+
+      [:write_fasta, options, lmb]
     end
   end
 end
