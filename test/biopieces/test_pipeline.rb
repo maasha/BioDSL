@@ -55,18 +55,14 @@ class PipelineTest < Test::Unit::TestCase
     assert_raise(BioPieces::PipelineError) { @p.run }
   end
 
-  test "BioPieces::Pipeline#add with non-existing command raises" do
-    assert_raise(BioPieces::PipelineError) { @p.add(:foo) }
-  end
-
   test "BioPieces::Pipeline#size returns correctly" do
     assert_equal(0, @p.size)
-    @p.add(:dump)
+    @p.dump
     assert_equal(1, @p.size)
   end
 
   test "BioPieces::Pipeline#pop decreases size" do
-    @p.add(:dump)
+    @p.dump
     assert_equal(1, @p.size)
     @p.pop
     assert_equal(0, @p.size)
@@ -92,39 +88,39 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#to_s with \" in options returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}").add(:grab, select: "foo").run}
-    capture_stdout { @p.add(:read_fasta, input: @fasta_file).add(:grab, select: "foo").run }
+    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}").grab(select: "foo").run}
+    capture_stdout { @p.read_fasta(input: @fasta_file).grab(select: "foo").run }
     assert_equal(expected, @p.to_s)
   end
 
   test "BioPieces::Pipeline#to_s with .run() and options returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}").run(verbose: false)}
+    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}").run(verbose: false)}
     @p.expects(:status).returns(expected)
-    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run(verbose: false).to_s)
+    assert_equal(expected, @p.read_fasta(input: @fasta_file).run(verbose: false).to_s)
   end
 
   test "BioPieces::Pipeline#status without .run() returns correctly" do
-    assert_equal({}, @p.add(:read_fasta, input: @fasta_file).status)
+    assert_equal({}, @p.read_fasta(input: @fasta_file).status)
   end
 
   test "BioPieces::Pipeline#status with .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}")}
+    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}")}
     @p.expects(:status).returns(expected)
-    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).run.status)
+    assert_equal(expected, @p.read_fasta(input: @fasta_file).run.status)
   end
 
   test "BioPieces::Pipeline#run with disallowed option raises" do
-    assert_raise(BioPieces::OptionError) { @p.add(:read_fasta, input: @fasta_file).run(foo: "bar") }
+    assert_raise(BioPieces::OptionError) { @p.read_fasta(input: @fasta_file).run(foo: "bar") }
   end
 
   test "BioPieces::Pipeline#run with verbose returns correctly" do
-    stdout   = capture_stdout { @p.add(:read_fasta, input: @fasta_file).run(verbose: true) }
+    stdout   = capture_stdout { @p.read_fasta(input: @fasta_file).run(verbose: true) }
     expected = capture_stdout { pp @p.status } 
     assert_equal(expected, stdout)
   end
 
   test "BioPieces::Pipeline#run returns correctly" do
-    @p.add(:read_fasta, input: @fasta_file).add(:write_fasta, output: @fasta_file2).run 
+    @p.read_fasta(input: @fasta_file).write_fasta(output: @fasta_file2).run 
 
     result = nil
 
@@ -136,17 +132,17 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#run with subject but no email raises" do
-    assert_raise(BioPieces::OptionError) { @p.add(:read_fasta, input: @fasta_file).run(subject: "foobar") }
+    assert_raise(BioPieces::OptionError) { @p.read_fasta(input: @fasta_file).run(subject: "foobar") }
   end
 
   test "BioPieces::Pipeline#run with email sends mail correctly" do
-    @p.add(:read_fasta, input: @fasta_file).run(email: "foo@bar.com")
+    @p.read_fasta(input: @fasta_file).run(email: "foo@bar.com")
     assert_equal(1, Mail::TestMailer.deliveries.length)
     assert_equal(@p.to_s, Mail::TestMailer.deliveries.first.subject)
   end
 
   test "BioPieces::Pipeline#run with email and subject sends correctly" do
-    @p.add(:read_fasta, input: @fasta_file).run(email: "foo@bar.com", subject: "foobar")
+    @p.read_fasta(input: @fasta_file).run(email: "foo@bar.com", subject: "foobar")
     assert_equal(1, Mail::TestMailer.deliveries.length)
     assert_equal("foobar", Mail::TestMailer.deliveries.first.subject)
   end
