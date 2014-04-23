@@ -174,7 +174,9 @@ module BioPieces
         end
       end
 
-      [:grab, options, lmb]
+      add(:read_fasta, options, lmb)
+
+      self
     end
 
     private 

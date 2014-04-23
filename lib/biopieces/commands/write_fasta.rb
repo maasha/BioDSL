@@ -72,7 +72,9 @@ module BioPieces
         end
       end
 
-      [:write_fasta, options, lmb]
+      add(:read_fasta, options, lmb)
+
+      self
     end
   end
 end

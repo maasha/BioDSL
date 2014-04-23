@@ -41,7 +41,7 @@ module BioPieces
 
               pp record
 
-              output.write record if @output
+              output.write record if output
             end
           elsif options[:last]
             buffer = []
@@ -66,7 +66,9 @@ module BioPieces
         end
       end
 
-      [:dump, options, lmb]
+      add(:dump, options, lmb)
+
+      self
     end
   end
 end

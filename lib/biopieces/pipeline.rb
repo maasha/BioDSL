@@ -33,6 +33,7 @@ module BioPieces
     attr_reader :status
     attr_accessor :commands
 
+    include BioPieces::Commands
     include BioPieces::HistoryHelper
     include BioPieces::LogHelper
     include BioPieces::OptionsHelper
@@ -49,19 +50,6 @@ module BioPieces
     def size
       @commands.size
     end
-
-    def add(args)
-      command, options, lmb = args
-      options ||= {}
-
-      @commands << Command.new(command, options, @index, @tmp_dir, lmb)
-
-      @index += 1
-
-      self
-    end
-
-    alias :<< :add
 
     # Removes last command from a Pipeline and returns a new Pipeline with this command.
     def pop
@@ -161,6 +149,16 @@ module BioPieces
       mail[:body]    = "#{self.to_s}\n\n\n#{PP.pp(@status, '')}"
 
       mail.deliver!
+    end
+
+    private
+
+    def add(command, options, lmb)
+      @commands << Command.new(command, options, @index, @tmp_dir, lmb)
+
+      @index += 1
+
+      self
     end
 
     class Stream
