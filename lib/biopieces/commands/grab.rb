@@ -174,7 +174,7 @@ module BioPieces
         end
       end
 
-      add(:read_fasta, options, lmb)
+      add(__method__, options, lmb)
 
       self
     end

@@ -66,7 +66,7 @@ module BioPieces
         end
       end
 
-      add(:dump, options, lmb)
+      add(__method__, options, lmb)
 
       self
     end
