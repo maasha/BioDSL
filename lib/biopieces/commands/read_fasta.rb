@@ -78,7 +78,8 @@ module BioPieces
     #
     #    read_fasta(input: "*.fna")
     def read_fasta(options)
-      @options = options
+      options_orig = options.dup
+      @options     = options
       options_allowed :input, :first, :last
       options_required :input
       options_glob :input
@@ -127,7 +128,7 @@ module BioPieces
         end
       end
 
-      add(__method__, options, lmb)
+      add(__method__, options, options_orig, lmb)
 
       self
     end

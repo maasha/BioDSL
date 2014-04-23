@@ -139,6 +139,7 @@ module BioPieces
     # 
     #    grab(select_file: "ids.txt", keys: :ID, exact: true)
     def grab(options)
+      options_orig = options.dup
       @options = options
       options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
       options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
@@ -174,7 +175,7 @@ module BioPieces
         end
       end
 
-      add(__method__, options, lmb)
+      add(__method__, options, options_orig, lmb)
 
       self
     end

@@ -27,6 +27,7 @@
 module BioPieces
   module Commands
     def dump(options = {})
+      options_orig = options.dup
       @options = options
       options_allowed :first, :last
       options_unique :first, :last
@@ -66,7 +67,7 @@ module BioPieces
         end
       end
 
-      add(__method__, options, lmb)
+      add(__method__, options, options_orig, lmb)
 
       self
     end

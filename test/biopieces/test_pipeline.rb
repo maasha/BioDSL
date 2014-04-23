@@ -75,19 +75,19 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#pop returns correctly" do
-    @p.add(:dump)
-    assert_equal(BioPieces::Pipeline.new.add(:dump).to_s, @p.pop.to_s)
+    @p.dump
+    assert_equal(BioPieces::Pipeline.new.dump.to_s, @p.pop.to_s)
     assert_equal(BioPieces::Pipeline.new.to_s, @p.to_s)
   end
 
   test "BioPieces::Pipeline#to_s without .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}")}
-    assert_equal(expected, @p.add(:read_fasta, input: @fasta_file).to_s)
+    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}")}
+    assert_equal(expected, @p.read_fasta(input: @fasta_file).to_s)
   end
 
   test "BioPieces::Pipeline#to_s with add without options and .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.add(:read_fasta, input: "#{@fasta_file}").add(:dump).run}
-    capture_stdout { @p.add(:read_fasta, input: @fasta_file).add(:dump).run }
+    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}").dump.run}
+    capture_stdout { @p.read_fasta(input: @fasta_file).dump.run }
     assert_equal(expected, @p.to_s)
   end
 

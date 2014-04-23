@@ -153,8 +153,8 @@ module BioPieces
 
     private
 
-    def add(command, options, lmb)
-      @commands << Command.new(command, options, @index, @tmp_dir, lmb)
+    def add(command, options, options_orig, lmb)
+      @commands << Command.new(command, options, options_orig, @index, @tmp_dir, lmb)
 
       @index += 1
 
@@ -212,10 +212,10 @@ module BioPieces
       include BioPieces::OptionsHelper
       include BioPieces::StatusHelper
 
-      def initialize(command, options = {}, index = nil, tmp_dir = nil, lmb)
+      def initialize(command, options = {}, options_orig = {}, index = nil, tmp_dir = nil, lmb)
         @command     = command
         @options     = options
-        @options_dup = options.dup
+        @options_dup = options_orig
         @lmb         = lmb
         @index       = index
         @tmp_dir     = tmp_dir
