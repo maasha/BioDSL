@@ -77,7 +77,7 @@ module BioPieces
     # To read FASTA entries from multiple files using a glob expression:
     #
     #    read_fasta(input: "*.fna")
-    def read_fasta(options)
+    def read_fasta(options = {})
       options_orig = options.dup
       @options     = options
       options_allowed :input, :first, :last

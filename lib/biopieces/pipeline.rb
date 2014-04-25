@@ -60,12 +60,12 @@ module BioPieces
 
     def run(options = {})
       @options = options
-      options_allowed :verbose, :email, :progress, :subject
+      options_allowed :verbose, :email, :progress, :subject, :input, :output
       options_tie subject: :email
 
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      out        = nil
+      out        = @options[:output]
       wait_pid   = nil
       time_start = Time.now
 
@@ -87,7 +87,7 @@ module BioPieces
         wait_pid ||= pid # only the first created process which is tail of pipeline
       end
 
-      @commands.first.run(nil, out)
+      @commands.first.run(@options[:input], out)
 
       Process.waitpid(wait_pid) if wait_pid
 
