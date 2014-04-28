@@ -59,9 +59,20 @@ module BioPieces
     end
 
     def status_save(input, output, time, run_options)
+      options = {}
+
+      # Remove unmashallable objects
+      run_options[:options].each do |key, value|
+        if value.is_a? StringIO
+          options[key] = "StringIO"
+        else
+          options[key] = value
+        end
+      end
+
       status = {
         command:      run_options[:command],
-        options:      run_options[:options],
+        options:      options,
         records_in:   input  ? input.size  : 0,
         records_out:  output ? output.size : 0,
         time_elapsed: (Time.now - time).to_s
