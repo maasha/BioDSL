@@ -44,6 +44,8 @@ class TestWriteFasta < Test::Unit::TestCase
     @output.write hash1
     @output.write hash2
     @output.close
+
+    @p = BioPieces::Pipeline.new
   end
 
   def teardown
@@ -51,26 +53,23 @@ class TestWriteFasta < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::WriteFasta with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, foo: "bar") }
+    assert_raise(BioPieces::OptionError) { @p.write_fasta(foo: "bar") }
   end
 
   test "BioPieces::Pipeline::WriteFasta to stdout outputs correctly" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta)
-    result = capture_stdout { command.run(@input, nil) }
+    result = capture_stdout { @p.write_fasta.run(input: @input) }
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
   end
 
   test "BioPieces::Pipeline::WriteFasta with options[:wrap] outputs correctly" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, wrap: 2)
-    result = capture_stdout { command.run(@input, nil) }
+    result = capture_stdout { @p.write_fasta(wrap: 2).run(input: @input) }
     expected = ">test1\nat\ncg\n>test2\ngt\nac\n"
     assert_equal(expected, result)
   end
 
   test "BioPieces::Pipeline::WriteFasta to file outputs correctly" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file)
-    command.run(@input, nil)
+    @p.write_fasta(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
@@ -78,49 +77,45 @@ class TestWriteFasta < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::WriteFasta to existing file raises" do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, output: @file) }
+    assert_raise(BioPieces::OptionError) { @p.write_fasta(output: @file) }
   end
 
   test "BioPieces::Pipeline::WriteFasta to existing file with options[:force] outputs correctly" do
     `touch #{@file}`
-    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, force: true)
-    command.run(@input, nil)
+    @p.write_fasta(output: @file, force: true).run(input: @input)
     result = File.open(@file).read
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
   end
 
   test "BioPieces::Pipeline::WriteFasta with gzipped data and no output file raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, gzip: true) }
+    assert_raise(BioPieces::OptionError) { @p.write_fasta(gzip: true) }
   end
 
   test "BioPieces::Pipeline::WriteFasta with bzip2'ed data and no output file raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, bzip2: true) }
+    assert_raise(BioPieces::OptionError) { @p.write_fasta(bzip2: true) }
   end
 
   test "BioPieces::Pipeline::WriteFasta to file outputs gzipped data correctly" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, gzip: true)
-    command.run(@input, nil)
+    @p.write_fasta(output: @file, gzip: true).run(input: @input)
     result = `zcat #{@file}`
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
   end
 
   test "BioPieces::Pipeline::WriteFasta to file outputs bzip2'ed data correctly" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file, bzip2: true)
-    command.run(@input, nil)
+    @p.write_fasta(output: @file, bzip2: true).run(input: @input)
     result = `bzcat #{@file}`
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
   end
 
   test "BioPieces::Pipeline::WriteFasta with both gzip and bzip2 output raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:write_fasta, output: @file, gzip: true, bzip2: true) }
+    assert_raise(BioPieces::OptionError) { @p.write_fasta(output: @file, gzip: true, bzip2: true) }
   end
 
   test "BioPieces::Pipeline::WriteFasta with flux outputs correctly" do
-    command = BioPieces::Pipeline::Command.new(:write_fasta, output: @file)
-    command.run(@input, @output2)
+    @p.write_fasta(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)

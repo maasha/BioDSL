@@ -27,7 +27,7 @@
 module BioPieces
   module Commands
     # Method to write FASTA entries to stdout or file.
-    def write_fasta(options)
+    def write_fasta(options = {})
       options_orig = options.dup
       @options     = options
       options_allowed :force, :output, :wrap, :gzip, :bzip2
