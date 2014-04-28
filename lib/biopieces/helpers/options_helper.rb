@@ -79,7 +79,6 @@ module BioPieces
       globs.each do |option|
         if @options[option] and not @options[option].is_a? Array
           expanded_paths = []
-
           @options[option].split(/, */).each do |glob_expression|
             if glob_expression.include? '*'
               expanded_paths += Dir.glob(glob_expression).select { |file| File.file? file }
