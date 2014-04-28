@@ -138,7 +138,7 @@ module BioPieces
     # stream:
     # 
     #    grab(select_file: "ids.txt", keys: :ID, exact: true)
-    def grab(options)
+    def grab(options = {})
       options_orig = options.dup
       @options = options
       options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
@@ -240,7 +240,7 @@ module BioPieces
 
     def compile_lookup(options)
       if options[:exact]
-        patterns = compile_patterns
+        patterns = compile_patterns(options)
 
         lookup = {}
 

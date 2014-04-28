@@ -56,6 +56,8 @@ class TestGrab < Test::Unit::TestCase
     @output.write hash2
     @output.write hash3
     @output.close
+
+    @p = BioPieces::Pipeline.new
   end
 
   def teardown
@@ -63,57 +65,55 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, foo: "bar") }
+    assert_raise(BioPieces::OptionError) { @p.grab(foo: "bar") }
   end
 
   test "BioPieces::Pipeline::Grab with select and reject options raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, select: "foo", reject: "bar") }
+    assert_raise(BioPieces::OptionError) { @p.grab(select: "foo", reject: "bar") }
   end
 
   test "BioPieces::Pipeline::Grab with keys_only and values_only options raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, select: "foo", keys_only: true, values_only: true) }
+    assert_raise(BioPieces::OptionError) { @p.grab(select: "foo", keys_only: true, values_only: true) }
   end
 
   test "BioPieces::Pipeline::Grab with evaluate and conflicting keys raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, select: "foo") }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, reject: "foo") }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys: "foo") }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, keys_only: true) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, values_only: true) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, ignore_case: true) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, evaluate: 0, exact: true) }
+    assert_raise(BioPieces::OptionError) { @p.grab(evaluate: 0, select: "foo") }
+    assert_raise(BioPieces::OptionError) { @p.grab(evaluate: 0, reject: "foo") }
+    assert_raise(BioPieces::OptionError) { @p.grab(evaluate: 0, keys: "foo") }
+    assert_raise(BioPieces::OptionError) { @p.grab(evaluate: 0, keys_only: true) }
+    assert_raise(BioPieces::OptionError) { @p.grab(evaluate: 0, values_only: true) }
+    assert_raise(BioPieces::OptionError) { @p.grab(evaluate: 0, ignore_case: true) }
+    assert_raise(BioPieces::OptionError) { @p.grab(evaluate: 0, exact: true) }
   end
 
   test "BioPieces::Pipeline::Grab with keys and keys_only or valuess_only raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, keys_only: true) }
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, keys: :FOO, values_only: true) }
+    assert_raise(BioPieces::OptionError) { @p.grab(keys: :FOO, keys_only: true) }
+    assert_raise(BioPieces::OptionError) { @p.grab(keys: :FOO, values_only: true) }
   end
 
   test "BioPieces::Pipeline::Grab with missing select_file raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, select_file: "___select") }
+    assert_raise(BioPieces::OptionError) { @p.grab(select_file: "___select") }
   end
 
   test "BioPieces::Pipeline::Grab with missing reject_file raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:grab, reject_file: "___reject") }
+    assert_raise(BioPieces::OptionError) { @p.grab(reject_file: "___reject") }
   end
 
   test "BioPieces::Pipeline::Grab#to_s with select and symbol key return correctly" do
-    command  = BioPieces::Pipeline::Command.new(:grab, select: :SEQ_NAME)
-    expected = ".add(:grab, select: :SEQ_NAME)"
-    assert_equal(expected, command.to_s)
+    @p.grab(select: :SEQ_NAME)
+    expected = "BioPieces::Pipeline.new.grab(select: :SEQ_NAME)"
+    assert_equal(expected, @p.to_s)
   end
 
   test "BioPieces::Pipeline::Grab with no hits return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "fish")
-    command.run(@input, @output2)
+    @p.grab(select: "fish").run(input: @input, output: @output2)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     assert_nil(stream_result)
   end
 
   test "BioPieces::Pipeline::Grab with select and key hit return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ_NAME")
-    command.run(@input, @output2)
+    @p.grab(select: "SEQ_NAME").run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -123,8 +123,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with multiple select patterns return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: ["est1", "QM"])
-    command.run(@input, @output2)
+    @p.grab(select: ["est1", "QM"]).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -134,8 +133,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with multiple reject patterns return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: ["est1", "QM"])
-    command.run(@input, @output2)
+    @p.grab(reject: ["est1", "QM"]).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -143,8 +141,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject and key hit return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: "SEQ_NAME")
-    command.run(@input, @output2)
+    @p.grab(reject: "SEQ_NAME").run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -152,8 +149,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject with symbol return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: :SEQ_NAME)
-    command.run(@input, @output2)
+    @p.grab(reject: :SEQ_NAME).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -161,8 +157,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and value hit return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "test1")
-    command.run(@input, @output2)
+    @p.grab(select: "test1").run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
@@ -170,8 +165,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject and value hit return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: "test1")
-    command.run(@input, @output2)
+    @p.grab(reject: "test1").run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -181,8 +175,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and keys_only return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: "SEQ", keys_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -192,8 +185,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject and keys_only return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: "SEQ", keys_only: true)
-    command.run(@input, @output2)
+    @p.grab(reject: "SEQ", keys_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -201,8 +193,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and values_only return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", values_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: "SEQ", values_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -212,8 +203,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject and values_only return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: "SEQ", values_only: true)
-    command.run(@input, @output2)
+    @p.grab(reject: "SEQ", values_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
@@ -221,8 +211,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and values_only and anchor return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "^SEQ", values_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: "^SEQ", values_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -230,8 +219,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject and values_only and anchor return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: "^SEQ", values_only: true)
-    command.run(@input, @output2)
+    @p.grab(reject: "^SEQ", values_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -241,8 +229,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and ignore_case return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "ATCG", ignore_case: true)
-    command.run(@input, @output2)
+    @p.grab(select: "ATCG", ignore_case: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
@@ -250,8 +237,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject and ignore_case return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: "ATCG", ignore_case: true)
-    command.run(@input, @output2)
+    @p.grab(reject: "ATCG", ignore_case: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -261,8 +247,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and specified keys return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys: :FOO)
-    command.run(@input, @output2)
+    @p.grab(select: "SEQ", keys: :FOO).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -270,8 +255,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and multiple keys in Array return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys: [:FOO, :SEQ])
-    command.run(@input, @output2)
+    @p.grab(select: "SEQ", keys: [:FOO, :SEQ]).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -281,8 +265,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and multiple keys in String return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "SEQ", keys: ":FOO, :SEQ")
-    command.run(@input, @output2)
+    @p.grab(select: "SEQ", keys: ":FOO, :SEQ").run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -292,8 +275,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject and specified keys return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject: "SEQ", keys: :FOO)
-    command.run(@input, @output2)
+    @p.grab(reject: "SEQ", keys: :FOO).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -303,8 +285,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with evaluate return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, evaluate: ":SEQ_LEN > 4")
-    command.run(@input, @output2)
+    @p.grab(evaluate: ":SEQ_LEN > 4").run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}'
@@ -312,8 +293,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select_file return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select_file: @pattern_file)
-    command.run(@input, @output2)
+    @p.grab(select_file: @pattern_file).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
@@ -323,16 +303,14 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and exact without match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "tcg", exact: true)
-    command.run(@input, @output2)
+    @p.grab(select: "tcg", exact: true).run(input: @input, output: @output2)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     assert_nil(stream_result)
   end
 
   test "BioPieces::Pipeline::Grab with select and exact with match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true)
-    command.run(@input, @output2)
+    @p.grab(select: "atcg", exact: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
@@ -340,8 +318,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and exact with number match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: 4, exact: true)
-    command.run(@input, @output2)
+    @p.grab(select: 4, exact: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
@@ -349,16 +326,14 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and exact with number and keys_only match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: 4, exact: true, keys_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: 4, exact: true, keys_only: true).run(input: @input, output: @output2)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     assert_nil(stream_result)
   end
 
   test "BioPieces::Pipeline::Grab with select and exact with number and values_only match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: 4, exact: true, values_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: 4, exact: true, values_only: true).run(input: @input, output: @output2)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
@@ -366,16 +341,14 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and exact and keys and no match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true, keys: :SEQ_LEN)
-    command.run(@input, @output2)
+    @p.grab(select: "atcg", exact: true, keys: :SEQ_LEN).run(input: @input, output: @output2)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     assert_nil(stream_result)
   end
 
   test "BioPieces::Pipeline::Grab with select and exact and keys and match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true, keys: :SEQ)
-    command.run(@input, @output2)
+    @p.grab(select: "atcg", exact: true, keys: :SEQ).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
@@ -383,16 +356,14 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and exact and keys_only and no match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "atcg", exact: true, keys_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: "atcg", exact: true, keys_only: true).run(input: @input, output: @output2)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     assert_nil(stream_result)
   end
 
   test "BioPieces::Pipeline::Grab with select and exact and keys_only and String match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: "FOO", exact: true, keys_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: "FOO", exact: true, keys_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -400,8 +371,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with select and exact and keys_only and Symbol match return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, select: :FOO, exact: true, keys_only: true)
-    command.run(@input, @output2)
+    @p.grab(select: :FOO, exact: true, keys_only: true).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = '{:FOO=>"SEQ"}'
@@ -409,8 +379,7 @@ class TestGrab < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::Grab with reject_file return correctly" do
-    command = BioPieces::Pipeline::Command.new(:grab, reject_file: @pattern_file2, keys: :SEQ)
-    command.run(@input, @output2)
+    @p.grab(reject_file: @pattern_file2, keys: :SEQ).run(input: @input, output: @output2)
 
     stream_result   = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
