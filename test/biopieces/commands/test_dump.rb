@@ -31,68 +31,62 @@ require 'test/helper'
 
 class TestDump < Test::Unit::TestCase 
   def setup
-    @input1, @output1 = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
-    @hash             = {one: 1, two: 2, three: 3}
+    @hash1  = {one: 1, two: 2, three: 3}
+    @hash2  = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
+    @hash3  = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4}
 
-    hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
-    hash2 = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4}
-
-    @output1.write hash1
-    @output1.write hash2
-    @output1.close
+    @p      = BioPieces::Pipeline.new
+    @input  = StringIO.new("")
+    @output = StringIO.new("")
   end
 
   test "BioPieces::Pipeline#dump with disallowed option raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, foo: "bar") }
+    assert_raise(BioPieces::OptionError) { @p.dump(foo: "bar") }
   end
 
   test "BioPieces::Pipeline#dump with bad first raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, first: 0) }
+    assert_raise(BioPieces::OptionError) { @p.dump(first: 0) }
   end
 
   test "BioPieces::Pipeline#dump with bad last raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, last: 0) }
+    assert_raise(BioPieces::OptionError) { @p.dump(last: 0) }
   end
 
   test "BioPieces::Pipeline#dump with first and last raises" do
-    assert_raise(BioPieces::OptionError) { BioPieces::Pipeline::Command.new(:dump, first: 1, last: 1) }
+    assert_raise(BioPieces::OptionError) { @p.dump(first: 1, last: 1) }
   end
 
   test "BioPieces::Pipeline#dump returns correctly" do
-    command = BioPieces::Pipeline::Command.new(:dump)
+    @input.string = PP.pp(@hash2, '') + PP.pp(@hash3, '')
+    stdout_result = capture_stdout { @p.dump.run(input: @input, output: @output) }
+    stream_result = @output.string
 
-    stdout_result = capture_stdout { command.run(@input1, @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
-
-    stdout_expected = "{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}\n{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-    stream_expected = "{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+    stdout_expected = %{\"{:SEQ_NAME=>\\\"test1\\\", :SEQ=>\\\"atcg\\\", :SEQ_LEN=>4}\\n\"\n\"{:SEQ_NAME=>\\\"test2\\\", :SEQ=>\\\"gtac\\\", :SEQ_LEN=>4}\\n\"}
+    stream_expected = "{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}\n{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}\n"
 
     assert_equal(stdout_expected, stdout_result.chomp)
     assert_equal(stream_expected, stream_result)
   end
 
   test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
-    command = BioPieces::Pipeline::Command.new(:dump, first: 1)
+    @input.string = PP.pp(@hash2, '') + PP.pp(@hash3, '')
+    stdout_result = capture_stdout { @p.dump(first: 1).run(input: @input, output: @output) }
+    stream_result = @output.string
 
-    stdout_result = capture_stdout { command.run(@input1, @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
-
-    stdout_expected = "{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}"
-    stream_expected = "{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}"
+    stdout_expected = %{\"{:SEQ_NAME=>\\\"test1\\\", :SEQ=>\\\"atcg\\\", :SEQ_LEN=>4}\\n\"}
+    stream_expected = "{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}\n"
 
     assert_equal(stdout_expected, stdout_result.chomp)
     assert_equal(stream_expected, stream_result)
   end
 
   test "BioPieces::Pipeline#dump with options[last: 1] returns correctly" do
-    command = BioPieces::Pipeline::Command.new(:dump, last: 1)
+    @input.string = PP.pp(@hash2, '') + PP.pp(@hash3, '')
+    stdout_result = capture_stdout { @p.dump(last: 1).run(input: @input, output: @output) }
+    stream_result = @output.string
 
-    stdout_result = capture_stdout { command.run(@input1, @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
-
-    stdout_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-    stream_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+    stdout_expected = %{\"{:SEQ_NAME=>\\\"test2\\\", :SEQ=>\\\"gtac\\\", :SEQ_LEN=>4}\\n\"}
+    stream_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}\n"
 
     assert_equal(stdout_expected, stdout_result.chomp)
     assert_equal(stream_expected, stream_result)
