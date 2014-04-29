@@ -45,12 +45,12 @@ module BioPieces
     # http://en.wikipedia.org/wiki/Fasta_format
     # 
     # == Usage
-    #    read_fasta(input: <glob>[, first: <uint>|last <uint>])
+    #    read_fasta(input: <glob>[, first: <uint>|last: <uint>])
     #
     # === Options
-    # * input - Input file or file glob expression.
-    # * first - Only read in the _first_ number of entries.
-    # * last  - Only read in the _last_ number of entries.
+    # * input <glob> - Input file or file glob expression.
+    # * first <uint> - Only read in the _first_ number of entries.
+    # * last <uint>  - Only read in the _last_ number of entries.
     #
     # == Examples
     #

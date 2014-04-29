@@ -26,6 +26,32 @@
 
 module BioPieces
   module Commands
+    # == Dump records in stream to STDOUT.
+    # 
+    # +dump+ outputs records from the stream to STDOUT.
+    # 
+    # == Usage
+    # 
+    #    dump([first: <uint> |last: <uint>])
+    # 
+    # === Options
+    #
+    # * first <uint> - Only dump the first number of records.
+    # * last <uint>  - Only dump the last number of records.
+    # 
+    # == Examples
+    # 
+    # To dump all records in the stream:
+    #
+    #    dump
+    #
+    # To dump only the _first_ 10 records:
+    #
+    #    dump(first: 10)
+    #
+    # To dump only the _last_ 10 records:
+    # 
+    #    dump(last: 10)
     def dump(options = {})
       options_orig = options.dup
       @options = options

@@ -26,7 +26,59 @@
 
 module BioPieces
   module Commands
-    # Method to write FASTA entries to stdout or file.
+    # == Write sequences from stream in FASTA format.
+    # 
+    # Description
+    # 
+    # +write_fasta+ writes sequence from the data stream in FASTA format.
+    # However, a FASTA entry will only be written if a SEQ key and a SEQ_NAME key
+    # is present. An example FASTA entry:
+    #
+    #     >test1
+    #     TATGACGCGCATCGACAGCAGCACGAGCATGCATCGACTG
+    #     TGCACTGACTACGAGCATCACTATATCATCATCATAATCT
+    #     TACGACATCTAGGGACTAC
+    # 
+    # For more about the FASTA format:
+    # 
+    # http://en.wikipedia.org/wiki/Fasta_format
+    # 
+    # == Usage
+    #    write_fasta([wrap: <uin>[, output: <file>[, force: <bool>
+    #                [, gzip: <bool> | bzip2: <bool>]]])
+    #
+    # === Options
+    # * output <file> - Output file.
+    # * force <bool>  - Force overwrite existing output file.
+    # * wrap <uint>   - Wrap sequence into lines of wrap length.
+    # * gzip <bool>   - Write gzipped output file.
+    # * bzip2 <bool>  - Write bzipped output file.
+    # 
+    # == Examples
+    # 
+    # To write FASTA entries to STDOUT.
+    # 
+    #    write_fasta
+    #
+    # To write FASTA entries wrapped in lines of length of 80 to STDOUT.
+    # 
+    #    write_fasta(wrap: 80)
+    # 
+    # To write FASTA entries to a file 'test.fna'.
+    # 
+    #    write_fasta(output: "test.fna")
+    # 
+    # To overwrite output file if this exists use the force option:
+    #
+    #    write_fasta(output: "test.fna", force: true)
+    #
+    # To write gzipped FASTA entries to file 'test.fna.gz'.
+    # 
+    #    write_fasta(output: "test.fna.gz", gzip: true)
+    #
+    # To write bzipped FASTA entries to file 'test.fna.bz2'.
+    # 
+    #    write_fasta(output: "test.fna.bz2", bzip2: true)
     def write_fasta(options = {})
       options_orig = options.dup
       @options     = options
