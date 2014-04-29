@@ -44,6 +44,7 @@ module BioPieces
   autoload :Filesys,  'biopieces/filesys'
   autoload :Pipeline, 'biopieces/pipeline'
   autoload :Fasta,    'biopieces/fasta'
+  autoload :Fastq,    'biopieces/fastq'
   autoload :Math,     'biopieces/math'
 end
 

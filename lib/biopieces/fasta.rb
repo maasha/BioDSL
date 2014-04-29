@@ -78,5 +78,3 @@ module BioPieces
     end
   end
 end
-
-__END__
