@@ -52,7 +52,11 @@ module BioPieces
       status = []
 
       Dir["#{run_options[:tmp_dir]}/*.status"].each do |file|
-        status << Marshal.load(File.read(file))
+        begin
+          status << Marshal.load(File.read(file))
+        rescue ArgumentError
+          retry
+        end
       end
 
       status
