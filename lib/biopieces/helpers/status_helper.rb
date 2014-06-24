@@ -63,9 +63,7 @@ module BioPieces
 
       # Remove unmashallable objects
       run_options[:options].each do |key, value|
-        if value.is_a? StringIO
-          options[key] = "StringIO"
-        else
+        unless value.is_a? StringIO or value.is_a? IO
           options[key] = value
         end
       end
