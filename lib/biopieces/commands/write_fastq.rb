@@ -26,66 +26,64 @@
 
 module BioPieces
   module Commands
-    # == Write sequences from stream in FASTA format.
+    # == Write sequences from stream in FASTQ format.
     # 
     # Description
     # 
-    # +write_fasta+ writes sequence from the data stream in FASTA format.
-    # However, a FASTA entry will only be written if a SEQ key and a SEQ_NAME key
-    # is present. An example FASTA entry:
+    # +write_fastq+ writes sequence from the data stream in FASTQ format.
+    # However, a FASTQ entry will only be written if a SEQ key and a SEQ_NAME key
+    # is present. An example FASTQ entry:
     #
     #     >test1
     #     TATGACGCGCATCGACAGCAGCACGAGCATGCATCGACTG
     #     TGCACTGACTACGAGCATCACTATATCATCATCATAATCT
     #     TACGACATCTAGGGACTAC
     # 
-    # For more about the FASTA format:
+    # For more about the FASTQ format:
     # 
-    # http://en.wikipedia.org/wiki/FASTA_format
+    # http://en.wikipedia.org/wiki/FASTQ_format
     # 
     # == Usage
-    #    write_fasta([wrap: <uin>[, output: <file>[, force: <bool>
-    #                [, gzip: <bool> | bzip2: <bool>]]]])
+    #    write_fastq([encoding: <:base_33|:base_64>[, output: <file>
+    #                [, force: <bool>[, gzip: <bool> | bzip2: <bool>]]])
     #
     # === Options
-    # * output <file> - Output file.
-    # * force <bool>  - Force overwrite existing output file.
-    # * wrap <uint>   - Wrap sequence into lines of wrap length.
-    # * gzip <bool>   - Write gzipped output file.
-    # * bzip2 <bool>  - Write bzipped output file.
+    # * encoding <base> - Encoding quality scores using :base_33 (default) or :base_64.
+    # * output <file>   - Output file.
+    # * force <bool>    - Force overwrite existing output file.
+    # * gzip <bool>     - Write gzipped output file.
+    # * bzip2 <bool>    - Write bzipped output file.
     # 
     # == Examples
     # 
-    # To write FASTA entries to STDOUT.
+    # To write FASTQ entries to STDOUT.
     # 
-    #    write_fasta
+    #    write_fastq
     #
-    # To write FASTA entries wrapped in lines of length of 80 to STDOUT.
+    # To write FASTQ entries to a file 'test.fq'.
     # 
-    #    write_fasta(wrap: 80)
-    # 
-    # To write FASTA entries to a file 'test.fna'.
-    # 
-    #    write_fasta(output: "test.fna")
+    #    write_fastq(output: "test.fq")
     # 
     # To overwrite output file if this exists use the force option:
     #
-    #    write_fasta(output: "test.fna", force: true)
+    #    write_fastq(output: "test.fq", force: true)
     #
-    # To write gzipped FASTA entries to file 'test.fna.gz'.
+    # To write gzipped FASTQ entries to file 'test.fq.gz'.
     # 
-    #    write_fasta(output: "test.fna.gz", gzip: true)
+    #    write_fastq(output: "test.fq.gz", gzip: true)
     #
-    # To write bzipped FASTA entries to file 'test.fna.bz2'.
+    # To write bzipped FASTQ entries to file 'test.fq.bz2'.
     # 
-    #    write_fasta(output: "test.fna.bz2", bzip2: true)
-    def write_fasta(options = {})
+    #    write_fastq(output: "test.fq.bz2", bzip2: true)
+    def write_fastq(options = {})
       options_orig = options.dup
       @options     = options
-      options_allowed :force, :output, :wrap, :gzip, :bzip2
+      options_allowed :encoding, :force, :output, :gzip, :bzip2
       options_unique :gzip, :bzip2
       options_tie gzip: :output, bzip2: :output
       options_files_exists_force :output
+
+      encoding = @options[:encoding] || :base_33
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
@@ -93,10 +91,11 @@ module BioPieces
 
           if options[:output] === $stdout
             input.each do |record|
-              if record[:SEQ_NAME] and record[:SEQ]
+              if record[:SEQ_NAME] and record[:SEQ] and record[:SCORES]
                 entry = BioPieces::Seq.new_bp(record)
+                entry.qual_convert!(:base_33, encoding)
 
-                $stdout.puts entry.to_fasta(options[:wrap])
+                $stdout.puts entry.to_fastq
               end
 
               output.write record if output
@@ -110,12 +109,13 @@ module BioPieces
               compress = nil
             end
 
-            Fasta.open(options[:output], 'w', compress: compress) do |ios|
+            Fastq.open(options[:output], 'w', compress: compress) do |ios|
               input.each do |record|
-                if record[:SEQ_NAME] and record[:SEQ]
+                if record[:SEQ_NAME] and record[:SEQ] and record[:SCORES]
                   entry = BioPieces::Seq.new_bp(record)
+                  entry.qual_convert!(:base_33, encoding)
 
-                  ios.puts entry.to_fasta(options[:wrap])
+                  ios.puts entry.to_fastq
                 end
 
                 output.write record if output

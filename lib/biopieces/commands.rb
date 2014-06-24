@@ -31,5 +31,6 @@ module BioPieces
     require 'biopieces/commands/read_fasta'
     require 'biopieces/commands/read_fastq'
     require 'biopieces/commands/write_fasta'
+    require 'biopieces/commands/write_fastq'
   end
 end
