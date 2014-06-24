@@ -102,6 +102,59 @@ module BioPieces
 
           catch :break do
             if options[:input] and options[:input2]
+              if options[:input].size != options[:input2].size
+                raise BioPieces::OptionError, "input and input2 file count don't match: #{options[:input].size} != #{options[:input2].size}" 
+              end
+
+              (0 ... options[:input].size).each do |i|
+                file1 = options[:input][i]
+                file2 = options[:input2][i]
+
+                io1 = Fastq.open(file1, 'r')
+                io2 = Fastq.open(file2, 'r')
+
+                while entry1 = io1.get_entry and entry2 = io2.get_entry
+                  if encoding == :auto
+                    if entry1.qual_base33? or entry2.qual_base33?
+                      encoding = :base_33
+                    elsif entry1.qual_base64? or entry2.qual_base64?
+                      encoding = :base_64
+                    else
+                      raise BioPieces::SeqError, "Could not auto-detect quality score encoding"
+                    end
+                  end
+
+                  entry1.qual_convert!(encoding, :base_33)
+                  entry2.qual_convert!(encoding, :base_33)
+                  entry1.qual_coerce!(:base_33)
+                  entry2.qual_coerce!(:base_33)
+
+                  if count < MAX_TEST
+                    raise BioPieces::SeqError, "Quality score outside valid range" unless entry1.qual_valid?(:base_33)
+                    raise BioPieces::SeqError, "Quality score outside valid range" unless entry2.qual_valid?(:base_33)
+                  end
+
+                  if options[:first]
+                    throw :break if options[:first] == count
+
+                    output.write entry1.to_bp
+                    output.write entry2.to_bp
+
+                    count += 2
+                  elsif options[:last]
+                      buffer << entry1
+                      buffer.shift if buffer.size > options[:last]
+                      buffer << entry2
+                      buffer.shift if buffer.size > options[:last]
+                  else
+                    output.write entry1.to_bp if output
+                    output.write entry2.to_bp if output
+                  end
+                end
+
+                io1.close
+                io2.close
+              end
             else
               options[:input].each do |file|
                 BioPieces::Fastq.open(file) do |ios|
