@@ -28,6 +28,7 @@ module BioPieces
   module Commands
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
+    require 'biopieces/commands/plot_histogram'
     require 'biopieces/commands/read_fasta'
     require 'biopieces/commands/read_fastq'
     require 'biopieces/commands/write_fasta'
