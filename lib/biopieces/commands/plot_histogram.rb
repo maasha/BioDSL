@@ -26,115 +26,71 @@
 
 module BioPieces
   module Commands
-    # == Grab records in stream.
+    # == Plot a histogram of numerical values for a specified key.
     # 
-    # +plot_histogram+ select records from the stream by matching patterns to keys or
-    # values. +plot_histogram+ is  Biopieces' equivalent of Unix' +grep+, however, +plot_histogram+
-    # is much more versatile.
+    # +plot_distribution+ create a histogram plot of the values for a specified
+    # key from all records in the stream. Plotting is done using GNUplot which
+    # allows for different types of output the default one being crufty ASCII
+    # graphics.
+    #
+    # GNUplot must be installed for plot_distribution to work. Read more here:
+    #
+    # http://www.gnuplot.info/
     # 
     # == Usage
     # 
-    #    plot_histogram(<select: <pattern>|select_file: <file>|reject: <pattern>|
-    #                reject_file: <file>|evaluate: <expression>|exact: <bool>>
-    #               [, keys: <list>|keys_only: <bool>|values_only: <bool>|
-    #               ignore_case: <bool>])
+    #    plot_histogram(<key: <string>>[, output: <file>[, terminal: <string>
+    #                   [, title: <string>[, xlabel: <string>[, ylabel: <string>
+    #                   [, ylogscale: <bool>]]]]]])
     # 
     # === Options
     #
-    # * select: <pattern>      - Select records matching <pattern> which is
-    #   a regex or an exact match if the exact option is set.
-    # * select_file: <file>    - File with one <pattern> per line to select.
-    # * reject: <pattern>      - Reject records matching <pattern> which is
-    #   a regex or an exact match if the exact option is set.
-    # * reject_file: <file>    - File with one <pattern> per line to reject.
-    # * evaluate: <expression> - Select records where <expression> is true.
-    # * exact: <bool>          - Turn on exact matching for improved speed.
-    # * keys: <list>           - Comma separated list or array of keys to plot_histogram
-    #   the value for.
-    # * keys_only: <bool>      - Only plot_histogram for keys.
-    # * values_only: <bool>    - Only plot_histogram for values.
-    # * ignore_case: <bool>    - Ignore case when plot_histogrambing with regex (does not
-    #   work with +evaluate+ and +exact+).
-    # 
+    # * key: <string>      - Key to use for plotting.
+    # * output: <file>     - Output file.
+    # * terminal: <string> - Terminal for output: dumb|post|svg|x11|aqua|png|pdf (default=dumb).
+    # * title: <string>    - Plot title (default="Histogram").
+    # * xlabel: <string>   - X-axis label (default=<key>).
+    # * ylabel: <string>   - Y-axis label (default="n").
+    # * ylogscale: <bool>  - Set y-axis to log scale.
+    #
     # == Examples
     # 
-    # To easily plot_histogram all records in the stream that has any mentioning of the
-    # pattern 'human' just pipe the data stream through plot_histogram like this:
+    # Here we plot a histogram of sequence lengths from a FASTA file:
     # 
-    #    plot_histogram(select: "human")
+    #    read_fasta(input: "test.fna").plot_distribution(key: :SEQ_LEN).run
     # 
-    # This will search for the pattern 'human' in all keys and all values. The
-    # +select+ option alternatively uses an array of patterns, so in order to
-    # match one of multiple patterns do:
+    #                                      Histogram
+    #           +             +            +            +            +             +
+    #      90 +++-------------+------------+------------+------------+-------------+++
+    #          |                                                                    |
+    #      80 ++                                                                  **++
+    #          |                                                                  **|
+    #      70 ++                                                                  **++
+    #      60 ++                                                                  **++
+    #          |                                                                  **|
+    #      50 ++                                                                  **++
+    #          |                                                                  **|
+    #      40 ++                                                                  **++
+    #          |                                                                  **|
+    #      30 ++                                                                  **++
+    #      20 ++                                                                  **++
+    #          |                                                                  **|
+    #      10 ++                                                                  **++
+    #          |                                                              ******|
+    #       0 +++-------------+------------+**--------**+--***-------+**--**********++
+    #           +             +            +            +            +             +
+    #           0             10           20           30           40            50
+    #                                         SEQ_LEN
     # 
-    #    plot_histogram(select: ["human", "mouse"])
+    # To render X11 output (i.e. instant view) use the +terminal+ option:
     # 
-    # It is also possible to invoke flexible matching using regex (regular
-    # expressions) instead of simple pattern matching. If you want to +plot_histogram+ 
-    # records with the sequence +ATCG+ or +GCTA+ you can do this:
+    #    read_fasta(input: "test.fna").
+    #    plot_distribution(key: :SEQ_LEN, terminal: :x11).run
     # 
-    #    plot_histogram(select: "ATCG|GCTA")
+    # To generate a PNG image and save to file:
     # 
-    # Or if you want to +plot_histogram+ sequences beginning with +ATCG+:
-    # 
-    #    plot_histogram(select: "^ATCG")
-    # 
-    # It is also possible to use the +select_file+ option to load patterns from
-    # a file with one pattern per line.
-    # 
-    #    plot_histogram(select_file: "patterns.txt")
-    # 
-    # If you want the opposite result - to find all records that does not match
-    # the a pattern, use the +reject+ option:
-    # 
-    #    plot_histogram(reject: "human")
-    # 
-    # Similar to +select_file+ there is a +reject_file+ option to load patterns
-    # from a file, and use any of these patterns to reject records:
-    #
-    #    plot_histogram(reject_file: "patterns.txt")
-    #
-    # If you want to search the record keys only, e.g. to +plot_histogram+ all records
-    # containing the key +SEQ+ you can use the +keys_only+ option. This will
-    # prevent matching of +SEQ+ in any record value, and in fact +SEQ+ is a not
-    # uncommon peptide sequence you could get an unwanted record. Also, this
-    # will give an increase in speed since only the keys are searched:
-    # 
-    #    plot_histogram(select: "SEQ", keys_only: true)
-    # 
-    # However, if you are interested in +plot_histogrambing+ the peptide sequence +SEQ+ and
-    # not the +SEQ+ key, just use the +vals_only+ option:
-    # 
-    #    plot_histogram(select: "SEQ", vals_only: true)
-    # 
-    # Also, if you want to +plot_histogram+ for certain key/value pairs you can supply a
-    # comma separated list or an array of keys whos values will then be plot_histogrambed
-    # using the +keys+ option. This is handy if your records contain large
-    # genomic sequences and you don't want to search the entire sequence for
-    # e.g. the organism name - it is much faster to tell +plot_histogram+ which keys to
-    # search the value for:
-    # 
-    #    plot_histogram(select: "human", keys: :SEQ_NAME)
-    # 
-    # You can also use the +evaluate+ option to +plot_histogram+ records that fulfill an
-    # expression. So to +plot_histogram+ all records with a sequence length greater than 30:
-    # 
-    #    plot_histogram(evaluate: 'SEQ_LEN > 30')
-    # 
-    # If you want to +plot_histogram+ all records containing the pattern 'human' and where the
-    # sequence length is greater that 30, you do this by running the stream through
-    # +plot_histogram+ twice:
-    # 
-    #    plot_histogram(select: 'human').plot_histogram(evaluate: 'SEQ_LEN > 30')
-    # 
-    # Finally, it is possible to +plot_histogram+ for exact pattern using the +exact+
-    # option. This is much faster than the default regex pattern plot_histogrambing
-    # because with +exact+ the patterns are used to create a lookup hash for
-    # instant matching of keys or values. This is useful if you e.g. have a
-    # file with ID numbers and you want to +plot_histogram+ matching records from the 
-    # stream:
-    # 
-    #    plot_histogram(select_file: "ids.txt", keys: :ID, exact: true)
+    #    read_fasta(input: "test.fna").
+    #    plot_distribution(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
       options_orig = options.dup
       @options = options
