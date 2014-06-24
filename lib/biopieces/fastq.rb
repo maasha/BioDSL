@@ -29,7 +29,7 @@ module BioPieces
   class FastqError < StandardError; end
 
   # Class for parsing FASTQ entries from an ios and return as Seq objects.
-  class Fastq < BioPieces::Filesys #TODO FIXME AAARGH
+  class Fastq < BioPieces::Filesys
     # Method to get the next FASTQ entry from an ios and return this
     # as a Seq object. If no entry is found or eof then nil is returned.
     def get_entry
@@ -47,64 +47,6 @@ module BioPieces
       entry
     rescue
       nil
-    end
-  end
-
-  # Class for indesing FASTQ entries. The index will be
-  # a hash with the FASTQ sequence name as key and a 
-  # FastqElem as value. The latter contains info on
-  # byte offset and length for each entry.
-  class FastqIndex
-    HEADCHAR = 1
-    NEWLINE  = 1
-
-    attr_accessor :ios
-
-    # Method to initialize a FastqIndex object. For reading
-    # entries from file an _ios_ object must be supplied.
-    def initialize(ios = nil)
-      @ios    = ios
-      @index  = {}
-      @offset = 0
-    end
-
-    # Method to add a Fastq entry to a FastqIndex.
-    def add(entry, orig_name)
-      offset_seq  = @offset + HEADCHAR + entry.seq_name.length + NEWLINE
-      offset_qual = @offset + HEADCHAR + entry.seq_name.length + NEWLINE + entry.length + NEWLINE + HEADCHAR + NEWLINE
-
-      @index[entry.seq_name] = FastqElem.new(offset_seq, offset_qual, entry.length, orig_name)
-
-      @offset += HEADCHAR + entry.seq_name.length + NEWLINE + entry.length + NEWLINE + HEADCHAR + NEWLINE + entry.length + NEWLINE
-    end
-
-    # Method to read from file a Fastq entry from an indexed position,
-    # and return the entry as a Seq object.
-    def get(seq_name)
-      raise FastqError, "Sequence name: #{seq_name} not found in index." unless @index[seq_name]
-
-      elem = @index[seq_name]
-      @ios.sysseek(elem.offset_seq)
-      seq = @ios.sysread(elem.length)
-      @ios.sysseek(elem.offset_qual)
-      qual = @ios.sysread(elem.length)
-
-      Seq.new(seq_name: elem.seq_name, seq: seq, qual: qual)
-    end
-
-    private
-
-    # Class for storing index information to be used
-    # with disk based index.
-    class FastqElem
-      attr_reader :offset_seq, :offset_qual, :length, :seq_name
-
-      def initialize(offset_seq, offset_qual, length, seq_name)
-        @offset_seq  = offset_seq
-        @offset_qual = offset_qual
-        @length      = length
-        @seq_name    = seq_name
-      end
     end
   end
 end
