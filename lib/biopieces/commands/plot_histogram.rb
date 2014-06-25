@@ -39,14 +39,16 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    plot_histogram(<key: <string>>[, output: <file>[, terminal: <string>
-    #                   [, title: <string>[, xlabel: <string>[, ylabel: <string>
-    #                   [, ylogscale: <bool>]]]]]])
+    #    plot_histogram(<key: <string>>[, output: <file>[, force: <bool>
+    #                   [, terminal: <string>[, title: <string>
+    #                   [, xlabel: <string>[, ylabel: <string>
+    #                   [, ylogscale: <bool>]]]]]]])
     # 
     # === Options
     #
     # * key: <string>      - Key to use for plotting.
     # * output: <file>     - Output file.
+    # * force: <bool>      - Force overwrite existing output file.
     # * terminal: <string> - Terminal for output: dumb|post|svg|x11|aqua|png|pdf (default=dumb).
     # * title: <string>    - Plot title (default="Histogram").
     # * xlabel: <string>   - X-axis label (default=<key>).
@@ -94,12 +96,12 @@ module BioPieces
     def plot_histogram(options = {})
       options_orig = options.dup
       @options = options
-      options_allowed :key, :output, :terminal, :title, :xlabel, :ylabel, :ylogscale
+      options_allowed :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale
       options_allowed_values terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf]
       options_required :key
       options_files_exists_force :output
 
-      key      = @options[:key]
+      key = @options[:key]
       @options[:terminal] ||= :dumb
       @options[:title]    ||= "Histogram"
       @options[:xlabel]   ||= @options[:key]
@@ -134,7 +136,7 @@ module BioPieces
               plot.title    options[:title]
               plot.xlabel   options[:xlabel]
               plot.ylabel   options[:ylabel]
-              plot.output   options[:data_out] || "/dev/stderr"
+              plot.output   options[:output] || "/dev/stderr"
               plot.logscale "y" if options[:ylogscale]
               plot.xrange   "[#{x.min - 1}:#{x.max + 1}]"
               plot.style    "fill solid 0.5 border"
