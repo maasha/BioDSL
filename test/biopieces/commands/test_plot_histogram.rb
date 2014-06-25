@@ -80,7 +80,17 @@ EOF
   end
 
   test "BioPieces::Pipeline::PlotHistogram with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.plot_histogram(foo: "bar") }
+    assert_raise(BioPieces::OptionError) { @p.plot_histogram(key: :LEN, foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::PlotHistogram with invalid terminal raises" do
+    assert_raise(BioPieces::OptionError) { @p.plot_histogram(key: :LEN, terminal: "foo") }
+  end
+
+  test "BioPieces::Pipeline::PlotHistogram with valid terminal don't raise" do
+    %w{dumb post svg x11 aqua png pdf}.each do |terminal|
+      assert_nothing_raised { @p.plot_histogram(key: :LEN, terminal: terminal.to_sym) }
+    end
   end
 
 #  test "BioPieces::Pipeline::PlotHistogram to stdout outputs correctly" do
