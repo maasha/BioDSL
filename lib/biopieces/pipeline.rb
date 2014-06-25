@@ -120,7 +120,7 @@ module BioPieces
     end
 
     def to_s
-      command_string = "#{self.class}.new"
+      command_string = "BP.new"
 
       @commands.each { |command| command_string << command.to_s }
 
