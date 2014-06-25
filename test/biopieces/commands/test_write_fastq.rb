@@ -56,6 +56,15 @@ class TestWriteFastq < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { @p.write_fastq(foo: "bar") }
   end
 
+  test "BioPieces::Pipeline::WriteFastq with invalid encoding raises" do
+    assert_raise(BioPieces::OptionError) { @p.write_fastq(encoding: "foo") }
+  end
+
+  test "BioPieces::Pipeline::WriteFastq with valid encoding don't raise" do
+    assert_nothing_raised { @p.write_fastq(encoding: :base_33) }
+    assert_nothing_raised { @p.write_fastq(encoding: :base_64) }
+  end
+
   test "BioPieces::Pipeline::WriteFastq to stdout outputs correctly" do
     result = capture_stdout { @p.write_fastq.run(input: @input) }
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"

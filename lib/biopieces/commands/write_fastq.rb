@@ -79,6 +79,7 @@ module BioPieces
       options_orig = options.dup
       @options     = options
       options_allowed :encoding, :force, :output, :gzip, :bzip2
+      options_allowed_values encoding: [:base_33, :base_64]
       options_unique :gzip, :bzip2
       options_tie gzip: :output, bzip2: :output
       options_files_exists_force :output
