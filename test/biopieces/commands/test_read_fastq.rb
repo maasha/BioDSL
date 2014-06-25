@@ -167,6 +167,22 @@ EOF
     assert_raise(BioPieces::SeqError) { @p.read_fastq(input: @file6, input2: @file6).run }
   end
 
+  test "BioPieces::Pipeline::ReadFastq with encoding and bad value raises" do
+    assert_raise(BioPieces::OptionError) { @p.read_fastq(input: @file6, encoding: :foo).run }
+  end
+
+  test "BioPieces::Pipeline::ReadFastq with encoding: :auto don't raise" do
+    assert_nothing_raised { @p.read_fastq(input: @file, encoding: :auto).run }
+  end
+
+  test "BioPieces::Pipeline::ReadFastq with encoding: :base_33 don't raise" do
+    assert_nothing_raised { @p.read_fastq(input: @file2, encoding: :base_33).run }
+  end
+
+  test "BioPieces::Pipeline::ReadFastq with encoding: :base_64 don't raise" do
+    assert_nothing_raised { @p.read_fastq(input: @file4, encoding: :base_64).run }
+  end
+
   test "BioPieces::Pipeline::ReadFastq returns correctly" do
     @p.read_fastq(input: @file).run(output: @output2)
 
