@@ -101,7 +101,7 @@ class TestGrab < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::Grab#to_s with select and symbol key return correctly" do
     @p.grab(select: :SEQ_NAME)
-    expected = "BioPieces::Pipeline.new.grab(select: :SEQ_NAME)"
+    expected = "BP.new.grab(select: :SEQ_NAME)"
     assert_equal(expected, @p.to_s)
   end
 

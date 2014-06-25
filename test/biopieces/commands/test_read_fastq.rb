@@ -253,7 +253,7 @@ EOF
   test "BioPieces::Pipeline::ReadFastq#to_s with options[:first] returns correctly" do
     @p.read_fastq(input: @file, first: 3)
 
-    expected = %{BioPieces::Pipeline.new.read_fastq(input: "#{@file}", first: 3)}
+    expected = %{BP.new.read_fastq(input: "#{@file}", first: 3)}
 
     assert_equal(expected, @p.to_s)
   end

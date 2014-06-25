@@ -77,24 +77,24 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#to_s without .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}")}
+    expected = %{BP.new.read_fasta(input: "#{@fasta_file}")}
     assert_equal(expected, @p.read_fasta(input: @fasta_file).to_s)
   end
 
   test "BioPieces::Pipeline#to_s with add without options and .run() returns correctly" do
-    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}").dump.run}
+    expected = %{BP.new.read_fasta(input: "#{@fasta_file}").dump.run}
     capture_stdout { @p.read_fasta(input: @fasta_file).dump.run }
     assert_equal(expected, @p.to_s)
   end
 
   test "BioPieces::Pipeline#to_s with \" in options returns correctly" do
-    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}").grab(select: "foo").run}
+    expected = %{BP.new.read_fasta(input: "#{@fasta_file}").grab(select: "foo").run}
     capture_stdout { @p.read_fasta(input: @fasta_file).grab(select: "foo").run }
     assert_equal(expected, @p.to_s)
   end
 
   test "BioPieces::Pipeline#to_s with .run() and options returns correctly" do
-    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}").run(verbose: false)}
+    expected = %{BP.new.read_fasta(input: "#{@fasta_file}").run(verbose: false)}
     @p.expects(:status).returns(expected)
     assert_equal(expected, @p.read_fasta(input: @fasta_file).run(verbose: false).to_s)
   end

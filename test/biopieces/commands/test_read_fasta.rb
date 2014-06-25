@@ -179,7 +179,7 @@ EOF
   test "BioPieces::Pipeline::ReadFasta#to_s with options[:first] returns correctly" do
     @p.read_fasta(input: @file, first: 3)
 
-    expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@file}", first: 3)}
+    expected = %{BP.new.read_fasta(input: "#{@file}", first: 3)}
 
     assert_equal(expected, @p.to_s)
   end
