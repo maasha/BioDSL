@@ -28,11 +28,22 @@ module BioPieces
   module OptionsHelper
     class BioPieces::OptionError < StandardError; end;
 
-    # Method that raises of @options include any option not in the allowed list.
+    # Method that raises if @options include any option not in the allowed list.
     def options_allowed(*allowed)
       @options.each_key do |option|
         unless allowed.include? option
           raise BioPieces::OptionError, "Disallowed option: #{option}. Allowed options: #{allowed.join(", ")}"
+        end
+      end
+    end
+
+    # Method that raises of @options include any option value not in the allowed hash.
+    def options_allowed_values(allowed)
+      allowed.each do |key, values|
+        if @options[key]
+          unless values.include? @options[key]
+            raise BioPieces::OptionError, "Disallowed option value: #{@options[key]}. Allowed options: #{values.join(", ")}"
+          end
         end
       end
     end

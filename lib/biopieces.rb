@@ -31,6 +31,7 @@ module BioPieces
   require 'msgpack'
   require 'inline'
   require 'mail'
+  require 'gnuplot'
   require 'narray'
   require 'open3'
   require 'stringio'
