@@ -36,7 +36,7 @@ module BioPieces
           if run_options[:progress]
             system("clear")
     
-            pp status_load(run_options)
+            pp status_load
           end
 
           sleep BioPieces::Config::STATUS_SAVE_INTERVAL
