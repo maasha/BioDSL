@@ -47,8 +47,18 @@ module BioPieces
       @tmp_dir  = Dir.mktmpdir("BioPiecesStatus")
     end
 
+    # Returns the size or number of commands in a pipeline.
     def size
       @commands.size
+    end
+
+    def +(pipeline)
+      raise ArgumentError, "Not a pipeline: #{pipeline.inspect}" unless self.class === pipeline
+
+      p = BioPieces::Pipeline.new
+      p.commands = @commands
+      pipeline.commands.each { |command| p.commands << command }
+      p
     end
 
     # Removes last command from a Pipeline and returns a new Pipeline with this command.
@@ -153,6 +163,7 @@ module BioPieces
 
     private
 
+    # Add a command to the pipeline.
     def add(command, options, options_orig, lmb)
       @commands << Command.new(command, options, options_orig, @index, @tmp_dir, lmb)
 
@@ -160,6 +171,7 @@ module BioPieces
 
       self
     end
+
 
     class Stream
       include Enumerable
