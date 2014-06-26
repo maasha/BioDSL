@@ -54,6 +54,16 @@ Or run on the command line with the alias bp:
 
     $ bp -e 'BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)'
 
+Available Biopieces
+-------------------
+*  `read_fasta`
+*  `write_fasta`
+*  `read_fastq`
+*  `write_fastq`
+*  `grab`
+*  `plot_histogram`
+*  `dump`
+
 Log and History
 ---------------
 
