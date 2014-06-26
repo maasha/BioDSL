@@ -33,6 +33,7 @@ module BioPieces
   require 'mail'
   require 'gnuplot'
   require 'narray'
+  require 'parallel'
   require 'open3'
   require 'stringio'
   require 'tempfile'
