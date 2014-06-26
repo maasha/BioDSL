@@ -1,5 +1,5 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
+
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
@@ -43,8 +43,6 @@ module BioPieces
       @commands = []
       @options  = {}
       @status   = {}
-      @index    = 0
-      @tmp_dir  = Dir.mktmpdir("BioPiecesStatus")
     end
 
     # Returns the size or number of commands in a pipeline.
@@ -56,8 +54,7 @@ module BioPieces
       raise ArgumentError, "Not a pipeline: #{pipeline.inspect}" unless self.class === pipeline
 
       p = BioPieces::Pipeline.new
-      p.commands = @commands
-      pipeline.commands.each { |command| p.commands << command }
+      p.commands = @commands + pipeline.commands
       p
     end
 
@@ -101,7 +98,7 @@ module BioPieces
 
       Process.waitpid(wait_pid) if wait_pid
 
-      @status[:status] = status_load(tmp_dir: @tmp_dir)
+      @status[:status] = status_load
 
       time_stop = Time.now
 
@@ -126,7 +123,6 @@ module BioPieces
       end
     ensure
       history_save
-      FileUtils.remove_entry @tmp_dir
     end
 
     def to_s
@@ -165,9 +161,7 @@ module BioPieces
 
     # Add a command to the pipeline.
     def add(command, options, options_orig, lmb)
-      @commands << Command.new(command, options, options_orig, @index, @tmp_dir, lmb)
-
-      @index += 1
+      @commands << Command.new(command, options, options_orig, lmb)
 
       self
     end
@@ -217,20 +211,18 @@ module BioPieces
     end
 
     class Command
-      attr_accessor :progress
-      attr_reader :index
+      attr_accessor :progress, :status_file
 
       include BioPieces::LogHelper
       include BioPieces::OptionsHelper
       include BioPieces::StatusHelper
 
-      def initialize(command, options = {}, options_orig = {}, index = nil, tmp_dir = nil, lmb)
+      def initialize(command, options = {}, options_orig = {}, lmb)
         @command     = command
         @options     = options
         @options_dup = options_orig
         @lmb         = lmb
-        @index       = index
-        @tmp_dir     = tmp_dir
+        @status_file = Tempfile.new(command.to_s)
         @progress    = nil
         @time_start  = nil
         @time_stop   = nil
@@ -254,12 +246,11 @@ module BioPieces
         @time_stop  = Time.now
 
         run_options = {}
-        run_options[:command]    = @command
-        run_options[:options]    = @options
-        run_options[:tmp_dir]    = @tmp_dir
-        run_options[:index]      = @index
-        run_options[:time_start] = @time_start
-        run_options[:progress]   = true if self.progress
+        run_options[:command]     = @command
+        run_options[:options]     = @options
+        run_options[:status_file] = @status_file
+        run_options[:time_start]  = @time_start
+        run_options[:progress]    = true if self.progress
 
         @lmb.call(input, output, run_options)
 

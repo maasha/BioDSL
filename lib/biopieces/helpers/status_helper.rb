@@ -48,12 +48,12 @@ module BioPieces
       status_save(input, output, time, run_options)
     end
 
-    def status_load(run_options)
+    def status_load
       status = []
 
-      Dir["#{run_options[:tmp_dir]}/*.status"].each do |file|
+      @commands.each do |command|
         begin
-          status << Marshal.load(File.read(file))
+          status << Marshal.load(File.read(command.status_file))
         rescue ArgumentError
           retry
         end
@@ -80,9 +80,7 @@ module BioPieces
         time_elapsed: (Time.now - time).to_s
       }
 
-      status_file = File.join(run_options[:tmp_dir], "%05d" % run_options[:index] + ".status")
-
-      File.open(status_file, 'w') do |ios|
+      File.open(run_options[:status_file], 'w') do |ios|
         ios.write(Marshal.dump(status))
       end
 
