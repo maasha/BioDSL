@@ -50,11 +50,13 @@ module BioPieces
       @commands.size
     end
 
+    # Method that adds two Pipelines and return a new Pipeline.
     def +(pipeline)
       raise ArgumentError, "Not a pipeline: #{pipeline.inspect}" unless self.class === pipeline
 
-      p = BioPieces::Pipeline.new
+      p = self.class.new
       p.commands = @commands + pipeline.commands
+      p.commands.map { |c| c.status_file = Tempfile.new(c.command.to_s) }
       p
     end
 
@@ -65,6 +67,7 @@ module BioPieces
       p
     end
 
+    # Run a Pipeline.
     def run(options = {})
       @options = options
       options_allowed :verbose, :email, :progress, :subject, :input, :output
@@ -84,7 +87,7 @@ module BioPieces
 
         pid = fork do
           output.close
-          command2.run(input, out)
+          command2.run(input, out, @commands)
         end
 
         input.close
@@ -94,11 +97,11 @@ module BioPieces
         wait_pid ||= pid # only the first created process which is tail of pipeline
       end
 
-      @commands.first.run(@options[:input], out)
+      @commands.first.run(@options[:input], out, @commands)
 
       Process.waitpid(wait_pid) if wait_pid
 
-      @status[:status] = status_load
+      @status[:status] = status_load(@commands)
 
       time_stop = Time.now
 
@@ -125,6 +128,7 @@ module BioPieces
       history_save
     end
 
+    # format a Pipeline to a pretty string which is returned.
     def to_s
       command_string = "BP.new"
 
@@ -147,6 +151,10 @@ module BioPieces
       command_string
     end
 
+    # Send email notification to email address specfied in @options[:email],
+    # including a optional subject specified in @options[:subject], that will
+    # otherwise default to self.to_s. The body of the email will be the
+    # Pipeline status.
     def email_send
       mail = Mail.new
       mail[:from]    = "#{ENV['USER']}@#{`hostname`.strip}"
@@ -211,11 +219,11 @@ module BioPieces
     end
 
     class Command
+      attr_reader :command
       attr_accessor :progress, :status_file
 
       include BioPieces::LogHelper
       include BioPieces::OptionsHelper
-      include BioPieces::StatusHelper
 
       def initialize(command, options = {}, options_orig = {}, lmb)
         @command     = command
@@ -239,7 +247,7 @@ module BioPieces
         end
       end
 
-      def run(input, output)
+      def run(input, output, commands)
         @input      = input
         @output     = output
         @time_start = Time.now
@@ -251,6 +259,7 @@ module BioPieces
         run_options[:status_file] = @status_file
         run_options[:time_start]  = @time_start
         run_options[:progress]    = true if self.progress
+        run_options[:commands]    = commands
 
         @lmb.call(input, output, run_options)
 

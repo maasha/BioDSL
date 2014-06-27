@@ -36,7 +36,7 @@ module BioPieces
           if run_options[:progress]
             system("clear")
     
-            pp status_load
+            pp status_load(run_options[:commands])
           end
 
           sleep BioPieces::Config::STATUS_SAVE_INTERVAL
@@ -48,10 +48,10 @@ module BioPieces
       status_save(input, output, time, run_options)
     end
 
-    def status_load
+    def status_load(commands)
       status = []
 
-      @commands.each do |command|
+      commands.each do |command|
         begin
           status << Marshal.load(File.read(command.status_file))
         rescue ArgumentError

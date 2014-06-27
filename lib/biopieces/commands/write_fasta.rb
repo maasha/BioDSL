@@ -89,6 +89,7 @@ module BioPieces
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
+
           options[:output] ||= $stdout
 
           if options[:output] === $stdout
