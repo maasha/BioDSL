@@ -61,6 +61,25 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(1, @p.size)
   end
 
+  test "BioPieces::Pipeline#+ with non-Pipeline object raises" do
+    assert_raise(ArgumentError) { @p + "foo" }
+  end
+
+  test "BioPieces::Pipeline#+ with Pipeline object don't raise" do
+    assert_nothing_raised { @p + @p }
+  end
+
+  test "BioPieces::Pipeline#+ of two Pipelines return correctly" do
+    p = BioPieces::Pipeline.new.dump(first: 2)
+    assert_equal("BP.new.dump(first: 2)", (@p + p).to_s)
+  end
+
+  test "BioPieces::Pipeline#+ of three Pipelines return correctly" do
+    p1 = BioPieces::Pipeline.new.dump(first: 2)
+    p2 = BioPieces::Pipeline.new.dump(last: 3)
+    assert_equal("BP.new.dump(first: 2).dump(last: 3)", (@p + p1 + p2).to_s)
+  end
+
   test "BioPieces::Pipeline#pop decreases size" do
     @p.dump
     assert_equal(1, @p.size)
