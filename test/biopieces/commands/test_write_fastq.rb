@@ -71,6 +71,11 @@ class TestWriteFastq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::WriteFastq status outputs correctly" do
+    capture_stdout { @p.write_fastq.run(input: @input) }
+    assert_equal(8, @p.status[:status].first[:bases_out])
+  end
+
   test "BioPieces::Pipeline::WriteFastq to stdout with base 64 encoding outputs correctly" do
     result = capture_stdout { @p.write_fastq(encoding: :base_64).run(input: @input) }
     expected = "@test1\natcg\n+\n@@hh\n@test2\ngtac\n+\n@@hh\n"
