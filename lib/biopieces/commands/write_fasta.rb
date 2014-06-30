@@ -91,7 +91,7 @@ module BioPieces
         status_track(input, output, run_options) do
 
           run_options[:status][:fasta_out] = 0
-          run_options[:status][:bases_out] = 0
+          run_options[:status][:residues_out] = 0
 
           options[:output] ||= $stdout
 
@@ -102,7 +102,7 @@ module BioPieces
 
                 $stdout.puts entry.to_fasta(options[:wrap])
                 run_options[:status][:fasta_out] += 1
-                run_options[:status][:bases_out] += entry.length
+                run_options[:status][:residues_out] += entry.length
               end
 
               output.write record if output
@@ -123,7 +123,7 @@ module BioPieces
 
                   ios.puts entry.to_fasta(options[:wrap])
                   run_options[:status][:fasta_out] += 1
-                  run_options[:status][:bases_out] += entry.length
+                  run_options[:status][:residues_out] += entry.length
                 end
 
                 output.write record if output

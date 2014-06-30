@@ -99,7 +99,7 @@ module BioPieces
           input.each { |record| output.write record } if input
 
           run_options[:status][:fastq_in] = 0
-          run_options[:status][:bases_in] = 0
+          run_options[:status][:residues_in] = 0
 
           count  = 0
           buffer = []
@@ -145,7 +145,7 @@ module BioPieces
                     output.write entry2.to_bp
 
                     run_options[:status][:fastq_in] += 2
-                    run_options[:status][:bases_in] += entry1.length + entry2.length
+                    run_options[:status][:residues_in] += entry1.length + entry2.length
 
                     count += 2
                   elsif options[:last]
@@ -158,7 +158,7 @@ module BioPieces
                     output.write entry2.to_bp if output
 
                     run_options[:status][:fastq_in] += 2
-                    run_options[:status][:bases_in] += entry1.length + entry2.length
+                    run_options[:status][:residues_in] += entry1.length + entry2.length
                   end
                 end
 
@@ -191,7 +191,7 @@ module BioPieces
 
                       output.write entry.to_bp
                       run_options[:status][:fastq_in] += 1
-                      run_options[:status][:bases_in] += entry.length
+                      run_options[:status][:residues_in] += entry.length
 
                       count += 1
                     elsif options[:last]
@@ -200,7 +200,7 @@ module BioPieces
                     else
                       output.write entry.to_bp if output
                       run_options[:status][:fastq_in] += 1
-                      run_options[:status][:bases_in] += entry.length
+                      run_options[:status][:residues_in] += entry.length
                     end
                   end
                 end
@@ -210,7 +210,7 @@ module BioPieces
             if options[:last]
               buffer.each do |entry|
                 output.write entry.to_bp
-                run_options[:status][:bases_in] += entry.length
+                run_options[:status][:residues_in] += entry.length
               end
             end
           end

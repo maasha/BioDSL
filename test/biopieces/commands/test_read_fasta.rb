@@ -111,7 +111,7 @@ EOF
     @p.read_fasta(input: @file).run(output: @output2)
 
     assert_equal(2, @p.status[:status].first[:fasta_in])
-    assert_equal(19, @p.status[:status].first[:bases_in])
+    assert_equal(19, @p.status[:status].first[:residues_in])
   end
 
   test "BioPieces::Pipeline::ReadFasta with gzipped data returns correctly" do

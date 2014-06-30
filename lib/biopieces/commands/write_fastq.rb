@@ -91,7 +91,7 @@ module BioPieces
           options[:output] ||= $stdout
 
           run_options[:status][:fastq_out] = 0
-          run_options[:status][:bases_out] = 0
+          run_options[:status][:residues_out] = 0
 
           if options[:output] === $stdout
             input.each do |record|
@@ -101,7 +101,7 @@ module BioPieces
 
                 $stdout.puts entry.to_fastq
                 run_options[:status][:fastq_out] += 1
-                run_options[:status][:bases_out] += entry.length
+                run_options[:status][:residues_out] += entry.length
               end
 
               output.write record if output
@@ -123,7 +123,7 @@ module BioPieces
 
                   ios.puts entry.to_fastq
                   run_options[:status][:fastq_out] += 1
-                  run_options[:status][:bases_out] += entry.length
+                  run_options[:status][:residues_out] += entry.length
                 end
 
                 output.write record if output
