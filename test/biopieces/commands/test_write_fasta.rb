@@ -62,6 +62,12 @@ class TestWriteFasta < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::WriteFasta status outputs correctly" do
+    capture_stdout { @p.write_fasta.run(input: @input) }
+    assert_equal(2, @p.status[:status].first[:fasta_out])
+    assert_equal(8, @p.status[:status].first[:residues_out])
+  end
+
   test "BioPieces::Pipeline::WriteFasta with options[:wrap] outputs correctly" do
     result = capture_stdout { @p.write_fasta(wrap: 2).run(input: @input) }
     expected = ">test1\nat\ncg\n>test2\ngt\nac\n"
