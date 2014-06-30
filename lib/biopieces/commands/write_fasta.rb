@@ -90,6 +90,7 @@ module BioPieces
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
 
+          run_options[:status][:fasta_out] = 0
           run_options[:status][:bases_out] = 0
 
           options[:output] ||= $stdout
@@ -100,6 +101,7 @@ module BioPieces
                 entry = BioPieces::Seq.new_bp(record)
 
                 $stdout.puts entry.to_fasta(options[:wrap])
+                run_options[:status][:fasta_out] += 1
                 run_options[:status][:bases_out] += entry.length
               end
 
@@ -120,6 +122,7 @@ module BioPieces
                   entry = BioPieces::Seq.new_bp(record)
 
                   ios.puts entry.to_fasta(options[:wrap])
+                  run_options[:status][:fasta_out] += 1
                   run_options[:status][:bases_out] += entry.length
                 end
 

@@ -198,6 +198,7 @@ EOF
   test "BioPieces::Pipeline::ReadFastq status returns correctly" do
     @p.read_fastq(input: @file).run(output: @output2)
 
+    assert_equal(2,   @p.status[:status].first[:fastq_in])
     assert_equal(162, @p.status[:status].first[:bases_in])
   end
 
