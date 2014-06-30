@@ -77,8 +77,8 @@ module BioPieces
         options:      options,
         records_in:   input  ? input.size  : 0,
         records_out:  output ? output.size : 0,
-        time_elapsed: (Time.now - time).to_s
-      }
+        time_elapsed: (Time.now - time).to_s,
+      }.merge(run_options[:status])
 
       File.open(run_options[:status_file], 'w') do |ios|
         ios.write(Marshal.dump(status))
