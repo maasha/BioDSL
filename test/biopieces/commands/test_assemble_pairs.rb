@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,15 +27,30 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
+require 'test/helper'
+
+class TestAssemblePairs < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Pipeline::Stream.pipe
+    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+
+    hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
+    hash2 = {SEQ_NAME: "test2", SEQ: "DSEQM", SEQ_LEN: 5}
+    hash3 = {FOO: "SEQ"}
+
+    @output.write hash1
+    @output.write hash2
+    @output.write hash3
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.assemble_pairs(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with valid options don't raise" do
+    assert_nothing_raised { @p.assemble_pairs(reverse_complement: true) }
   end
 end
