@@ -26,6 +26,7 @@
 
 module BioPieces
   module Commands
+    require 'biopieces/commands/assemble_pairs'
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
     require 'biopieces/commands/plot_histogram'

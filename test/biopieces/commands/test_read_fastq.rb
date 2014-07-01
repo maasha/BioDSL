@@ -195,6 +195,13 @@ EOF
     assert_equal(expected, stream_result)
   end
 
+  test "BioPieces::Pipeline::ReadFastq status returns correctly" do
+    @p.read_fastq(input: @file).run(output: @output2)
+
+    assert_equal(2,   @p.status[:status].first[:sequences_in])
+    assert_equal(162, @p.status[:status].first[:residues_in])
+  end
+
   test "BioPieces::Pipeline::ReadFastq with gzipped data returns correctly" do
     `gzip #{@file}`
 
@@ -299,6 +306,12 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     assert_equal(expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::ReadFastq status with :input and :input2 returns correctly" do
+    @p.read_fastq(input: @file2, input2: @file3).run(output: @output2)
+
+    assert_equal(156, @p.status[:status].first[:residues_in])
   end
 
   test "BioPieces::Pipeline::ReadFastq with :input and :input2 and :first returns correctly" do
