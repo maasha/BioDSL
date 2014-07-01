@@ -34,13 +34,14 @@ class TestAssemblePairs < Test::Unit::TestCase
     @input, @output   = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
 
-    hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
-    hash2 = {SEQ_NAME: "test2", SEQ: "DSEQM", SEQ_LEN: 5}
-    hash3 = {FOO: "SEQ"}
+    @output.write({SEQ_NAME: "test1/1", SEQ: "aaaaaaaagagtcat", SCORES: "IIIIIIIIIIIIIII", SEQ_LEN: 15})
+    @output.write({SEQ_NAME: "test1/2", SEQ: "gagtcataaaaaaaa", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})
+    @output.write({SEQ_NAME: "test2/1", SEQ: "aaaaaaaagagGcaG", SCORES: "IIIIIIIIIIIIIII", SEQ_LEN: 15})
+    @output.write({SEQ_NAME: "test2/2", SEQ: "gagtcataaaaaaaa", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})
+    @output.write({SEQ_NAME: "test3/1", SEQ: "aaaaaaaagagtcat", SCORES: "IIIIIIIIIIIIIII", SEQ_LEN: 15})
+    @output.write({SEQ_NAME: "test3/2", SEQ: "ttttttttatgactc", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})
+    @output.write({FOO: "SEQ"})
 
-    @output.write hash1
-    @output.write hash2
-    @output.write hash3
     @output.close
 
     @p = BioPieces::Pipeline.new
@@ -52,5 +53,66 @@ class TestAssemblePairs < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::AssemblePairs with valid options don't raise" do
     assert_nothing_raised { @p.assemble_pairs(reverse_complement: true) }
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs returns correctly" do
+    @p.assemble_pairs.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>"3", :HAMMING_DIST=>"1"}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with :mismatch_percent returns correctly" do
+    @p.assemble_pairs(mismatch_percent: 0).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test2/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagaggcaGagtcataaaaaaaa", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with :overlap_min returns correctly" do
+    @p.assemble_pairs(overlap_min: 5).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with :overlap_max returns correctly" do
+    @p.assemble_pairs(overlap_max: 5).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>"3", :HAMMING_DIST=>"1"}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with :reverse_complement returns correctly" do
+    @p.assemble_pairs(reverse_complement: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
   end
 end

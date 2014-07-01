@@ -129,8 +129,8 @@ module BioPieces
                 end
               end
             else
-              output.puts record1
-              output.puts record2
+              output.write record1
+              output.write record2
             end
           end
         end
