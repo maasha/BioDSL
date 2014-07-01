@@ -73,7 +73,7 @@ class TestWriteFastq < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::WriteFastq status outputs correctly" do
     capture_stdout { @p.write_fastq.run(input: @input) }
-    assert_equal(2, @p.status[:status].first[:fastq_out])
+    assert_equal(2, @p.status[:status].first[:sequences_out])
     assert_equal(8, @p.status[:status].first[:residues_out])
   end
 

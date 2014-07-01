@@ -90,7 +90,7 @@ module BioPieces
         status_track(input, output, run_options) do
           options[:output] ||= $stdout
 
-          run_options[:status][:fastq_out] = 0
+          run_options[:status][:sequences_out] = 0
           run_options[:status][:residues_out] = 0
 
           if options[:output] === $stdout
@@ -100,7 +100,7 @@ module BioPieces
                 entry.qual_convert!(:base_33, encoding)
 
                 $stdout.puts entry.to_fastq
-                run_options[:status][:fastq_out] += 1
+                run_options[:status][:sequences_out] += 1
                 run_options[:status][:residues_out] += entry.length
               end
 
@@ -122,7 +122,7 @@ module BioPieces
                   entry.qual_convert!(:base_33, encoding)
 
                   ios.puts entry.to_fastq
-                  run_options[:status][:fastq_out] += 1
+                  run_options[:status][:sequences_out] += 1
                   run_options[:status][:residues_out] += entry.length
                 end
 

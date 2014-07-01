@@ -92,7 +92,7 @@ module BioPieces
         status_track(input, output, run_options) do
           input.each { |record| output.write record } if input
 
-          run_options[:status][:fasta_in] = 0
+          run_options[:status][:sequences_in] = 0
           run_options[:status][:residues_in] = 0
 
           count  = 0
@@ -106,7 +106,7 @@ module BioPieces
                     throw :break if options[:first] == count
 
                     output.write entry.to_bp if output
-                    run_options[:status][:fasta_in] += 1
+                    run_options[:status][:sequences_in] += 1
                     run_options[:status][:residues_in] += entry.length
 
                     count += 1
@@ -119,7 +119,7 @@ module BioPieces
                 else
                   ios.each do |entry|
                     output.write entry.to_bp if output
-                    run_options[:status][:fasta_in] += 1
+                    run_options[:status][:sequences_in] += 1
                     run_options[:status][:residues_in] += entry.length
                   end
                 end
@@ -129,7 +129,7 @@ module BioPieces
             if options[:last]
               buffer.each do |entry|
                 output.write entry.to_bp if output
-                run_options[:status][:fasta_in] += 1
+                run_options[:status][:sequences_in] += 1
                 run_options[:status][:residues_in] += entry.length
               end
             end
