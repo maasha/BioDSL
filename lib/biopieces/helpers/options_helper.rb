@@ -57,7 +57,7 @@ module BioPieces
       end
     end
 
-    # Method that raises if @options include multiple options in the unique list or .
+    # Method that raises if @options include multiple options in the unique list.
     def options_required_unique(*unique)
       lookup = []
 
@@ -69,6 +69,19 @@ module BioPieces
         raise BioPieces::OptionError, "Multiple required uniques options used: #{unique.join(", ")}"
       elsif lookup.size == 0
         raise BioPieces::OptionError, "Required unique option missing: #{unique.join(", ")}"
+      end
+    end
+
+    # Method that raises if @options don't contain at least one option in the single list.
+    def options_required_single(*single)
+      lookup = []
+
+      single.each do |option|
+        lookup << option if @options[option]
+      end
+
+      if lookup.size == 0
+        raise BioPieces::OptionError, "Required single option missing: #{single.join(", ")}"
       end
     end
 
@@ -156,7 +169,7 @@ module BioPieces
     # Method to assert a given expression.
     def options_assert(expression)
       @options.each do |key, value|
-        expression.gsub!(/:#{key}/, value.to_s)
+        expression.gsub!(/^:#{key}$/, value.to_s)
       end
 
       unless expression =~ /:\w/
