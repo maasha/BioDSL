@@ -32,6 +32,7 @@ module BioPieces
     require 'biopieces/commands/plot_histogram'
     require 'biopieces/commands/read_fasta'
     require 'biopieces/commands/read_fastq'
+    require 'biopieces/commands/trim_seq'
     require 'biopieces/commands/write_fasta'
     require 'biopieces/commands/write_fastq'
   end
