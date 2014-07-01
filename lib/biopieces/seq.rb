@@ -54,6 +54,7 @@ module BioPieces
     include BioPieces::Homopolymer
     include BioPieces::Translate
     include BioPieces::Trim
+    include BioPieces::BackTrack
 
     attr_accessor :seq_name, :seq, :type, :qual
 
