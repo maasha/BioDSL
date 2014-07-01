@@ -26,118 +26,51 @@
 
 module BioPieces
   module Commands
-    # == Grab records in stream.
+    # == Assemble ordered overlapping pair-end sequences in the stream.
     # 
-    # +assemble_pairs+ select records from the stream by matching patterns to keys or
-    # values. +assemble_pairs+ is  Biopieces' equivalent of Unix' +grep+, however, +assemble_pairs+
-    # is much more versatile.
-    # 
-    # NB! If chaining multiple +assemble_pairs+ commands then use the most restrictive +assemble_pairs+
-    # first in order to get the best performance.
-    # 
+    # +assemble_pairs+ assembles overlapping pair-end sequences into single
+    # sequences that are output to the stream - the orginal sequences are no
+    # output. Assembly works by progressively considering all overlaps between
+    # the maximum considered overlap using the +overlap_max+ option (default is
+    # the length of the shortest sequence) until the minimum required overlap
+    # supplied with the +overlap_min+ option (default 1). For each overlap a 
+    # percentage of mismatches can be allowed using the +mismatch_percent+
+    # option (default 20%).
+    #
+    # Mismatches in the overlapping regions are resolved so that the residues with
+    # the highest quality score is used in the assembled sequence. The quality scores
+    # are averaged in the overlapping region. The sequence of the overlapping region
+    # is output in upper case and the remaining in lower case.
+    #
+    # Futhermore, sequences must be in interleaved order in the stream - use
+    # +read_fastq+ with +input+ and +input2+ options for that.
+    #
+    # The additional keys are added to records with merged sequences:
+    #
+    # * OVERLAP_LEN   - the length of the located overlap.
+    # * HAMMING_DIST  - the number of mismatches in the assembly.
+    #
     # == Usage
     # 
-    #    assemble_pairs(<select: <pattern>|select_file: <file>|reject: <pattern>|
-    #                reject_file: <file>|evaluate: <expression>|exact: <bool>>
-    #               [, keys: <list>|keys_only: <bool>|values_only: <bool>|
-    #               ignore_case: <bool>])
-    # 
+    #    assemble_pairs([mismatch_percent: <uint>[, overlap_min: <uint>
+    #                   [, overlap_max: <uint>[, reverse_complement: <bool>]]]])
+    #
     # === Options
     #
-    # * select: <pattern>      - Select records matching <pattern> which is
-    #   a regex or an exact match if the exact option is set.
-    # * select_file: <file>    - File with one <pattern> per line to select.
-    # * reject: <pattern>      - Reject records matching <pattern> which is
-    #   a regex or an exact match if the exact option is set.
-    # * reject_file: <file>    - File with one <pattern> per line to reject.
-    # * evaluate: <expression> - Select records where <expression> is true.
-    # * exact: <bool>          - Turn on exact matching for improved speed.
-    # * keys: <list>           - Comma separated list or array of keys to assemble_pairs
-    #   the value for.
-    # * keys_only: <bool>      - Only assemble_pairs for keys.
-    # * values_only: <bool>    - Only assemble_pairs for values.
-    # * ignore_case: <bool>    - Ignore case when assemble_pairsbing with regex (does not
-    #   work with +evaluate+ and +exact+).
+    # * mismatch_percent: <uint>   - Maximum allowed overlap mismatches in percent (default=20).
+    # * overlap_min: <uint>        - Minimum overlap required (default=1).
+    # * overlap_max: <uint>        - Maximum overlap considered (default=<length of shortest sequences>).
+    # * reverse_complement: <bool> - Reverse-complement read2 before assembly (default=false).
     # 
     # == Examples
     # 
-    # To easily assemble_pairs all records in the stream that has any mentioning of the
-    # pattern 'human' just pipe the data stream through assemble_pairs like this:
-    # 
-    #    assemble_pairs(select: "human")
-    # 
-    # This will search for the pattern 'human' in all keys and all values. The
-    # +select+ option alternatively uses an array of patterns, so in order to
-    # match one of multiple patterns do:
-    # 
-    #    assemble_pairs(select: ["human", "mouse"])
-    # 
-    # It is also possible to invoke flexible matching using regex (regular
-    # expressions) instead of simple pattern matching. If you want to +assemble_pairs+ 
-    # records with the sequence +ATCG+ or +GCTA+ you can do this:
-    # 
-    #    assemble_pairs(select: "ATCG|GCTA")
-    # 
-    # Or if you want to +assemble_pairs+ sequences beginning with +ATCG+:
-    # 
-    #    assemble_pairs(select: "^ATCG")
-    # 
-    # It is also possible to use the +select_file+ option to load patterns from
-    # a file with one pattern per line.
-    # 
-    #    assemble_pairs(select_file: "patterns.txt")
-    # 
-    # If you want the opposite result - to find all records that does not match
-    # the a pattern, use the +reject+ option:
-    # 
-    #    assemble_pairs(reject: "human")
-    # 
-    # Similar to +select_file+ there is a +reject_file+ option to load patterns
-    # from a file, and use any of these patterns to reject records:
+    # If you have two pair-end sequence files with the Illumina data then you
+    # can assemble these using assemble_pairs like this:
     #
-    #    assemble_pairs(reject_file: "patterns.txt")
-    #
-    # If you want to search the record keys only, e.g. to +assemble_pairs+ all records
-    # containing the key +SEQ+ you can use the +keys_only+ option. This will
-    # prevent matching of +SEQ+ in any record value, and in fact +SEQ+ is a not
-    # uncommon peptide sequence you could get an unwanted record. Also, this
-    # will give an increase in speed since only the keys are searched:
-    # 
-    #    assemble_pairs(select: "SEQ", keys_only: true)
-    # 
-    # However, if you are interested in +assemble_pairsbing+ the peptide sequence +SEQ+ and
-    # not the +SEQ+ key, just use the +vals_only+ option:
-    # 
-    #    assemble_pairs(select: "SEQ", vals_only: true)
-    # 
-    # Also, if you want to +assemble_pairs+ for certain key/value pairs you can supply a
-    # comma separated list or an array of keys whos values will then be assemble_pairsbed
-    # using the +keys+ option. This is handy if your records contain large
-    # genomic sequences and you don't want to search the entire sequence for
-    # e.g. the organism name - it is much faster to tell +assemble_pairs+ which keys to
-    # search the value for:
-    # 
-    #    assemble_pairs(select: "human", keys: :SEQ_NAME)
-    # 
-    # You can also use the +evaluate+ option to +assemble_pairs+ records that fulfill an
-    # expression. So to +assemble_pairs+ all records with a sequence length greater than 30:
-    # 
-    #    assemble_pairs(evaluate: 'SEQ_LEN > 30')
-    # 
-    # If you want to +assemble_pairs+ all records containing the pattern 'human' and where the
-    # sequence length is greater that 30, you do this by running the stream through
-    # +assemble_pairs+ twice:
-    # 
-    #    assemble_pairs(select: 'human').assemble_pairs(evaluate: 'SEQ_LEN > 30')
-    # 
-    # Finally, it is possible to +assemble_pairs+ for exact pattern using the +exact+
-    # option. This is much faster than the default regex pattern assemble_pairsbing
-    # because with +exact+ the patterns are used to create a lookup hash for
-    # instant matching of keys or values. This is useful if you e.g. have a
-    # file with ID numbers and you want to +assemble_pairs+ matching records from the 
-    # stream:
-    # 
-    #    assemble_pairs(select_file: "ids.txt", keys: :ID, exact: true)
+    #    BP.new.
+    #    read_fastq(input: "file1.fq", input2: "file2.fq).
+    #    assemble_pairs(reverse_complement: true).
+    #    run
     def assemble_pairs(options = {})
       options_orig = options.dup
       @options = options
