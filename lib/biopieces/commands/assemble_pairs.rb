@@ -152,10 +152,18 @@ module BioPieces
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
+          run_options[:status][:sequences_in] = 0
+          run_options[:status][:sequences_out] = 0
+          run_options[:status][:residues_in] = 0
+          run_options[:status][:residues_out] = 0
+
           input.each_slice(2) do |record1, record2|
             if record1[:SEQ] and record2[:SEQ]
               entry1 = BioPieces::Seq.new_bp(record1)
               entry2 = BioPieces::Seq.new_bp(record2)
+
+              run_options[:status][:sequences_in] += 2
+              run_options[:status][:residues_in]  += entry1.length + entry2.length
 
               if entry1.length >= options[:overlap_min] and
                 entry2.length >= options[:overlap_min]
@@ -182,6 +190,9 @@ module BioPieces
                   end
 
                   output.write new_record
+
+                  run_options[:status][:sequences_out] += 1
+                  run_options[:status][:residues_out]  += merged.length
                 end
               end
             else
