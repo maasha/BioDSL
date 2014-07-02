@@ -32,7 +32,7 @@ module BioPieces
 
     # == Trim sequence ends removing residues with a low quality score.
     # 
-    # +remove_adaptor+ removes subquality residues from the ends of sequences in the
+    # +clip_primer+ removes subquality residues from the ends of sequences in the
     # stream based on quality SCORES in a FASTQ type quality score string.
     # Trimming progresses until a stretch, specified with the +length_min+
     # option, is found thus preventing premature termination of the trimming
@@ -42,7 +42,7 @@ module BioPieces
     #
     # == Usage
     # 
-    #    remove_adaptor([quality_min: <uint>[, length_min: <uint>[, mode: <:left|:right|:both>]]])
+    #    clip_primer([quality_min: <uint>[, length_min: <uint>[, mode: <:left|:right|:both>]]])
     #
     # === Options
     #
@@ -58,7 +58,7 @@ module BioPieces
     #    gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
     #    +
     #    @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
-    def remove_adaptor(options = {})
+    def clip_primer(options = {})
       options_orig = options.dup
       @options = options
       options_allowed :forward, :reverse, :forward_rc, :reverse_rc, :forward_length,

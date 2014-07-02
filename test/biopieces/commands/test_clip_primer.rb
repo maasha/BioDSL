@@ -29,7 +29,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-class TestTrimSeq < Test::Unit::TestCase 
+class TestClipPrimer < Test::Unit::TestCase 
   def setup
     @input, @output   = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
@@ -47,16 +47,16 @@ class TestTrimSeq < Test::Unit::TestCase
     @p = BioPieces::Pipeline.new
   end
 
-  test "BioPieces::Pipeline::TrimSeq with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.trim_seq(foo: "bar") }
+  test "BioPieces::Pipeline::ClipPrimer with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.clip_primer(foo: "bar") }
   end
 
-  test "BioPieces::Pipeline::TrimSeq with valid options don't raise" do
-    assert_nothing_raised { @p.trim_seq(mode: :left) }
+  test "BioPieces::Pipeline::ClipPrimer with valid options don't raise" do
+    assert_nothing_raised { @p.clip_primer(mode: :left) }
   end
 
-  test "BioPieces::Pipeline::TrimSeq returns correctly" do
-    @p.trim_seq.run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer returns correctly" do
+    @p.clip_primer.run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
@@ -65,8 +65,8 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::TrimSeq with :quality_min returns correctly" do
-    @p.trim_seq(quality_min: 25).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with :quality_min returns correctly" do
+    @p.clip_primer(quality_min: 25).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
@@ -75,8 +75,8 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::TrimSeq with mode: both: returns correctly" do
-    @p.trim_seq(mode: :both).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with mode: both: returns correctly" do
+    @p.clip_primer(mode: :both).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
@@ -85,8 +85,8 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::TrimSeq with mode: :left returns correctly" do
-    @p.trim_seq(mode: :left).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with mode: :left returns correctly" do
+    @p.clip_primer(mode: :left).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
@@ -95,8 +95,8 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::TrimSeq with mode: :right returns correctly" do
-    @p.trim_seq(mode: :right).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with mode: :right returns correctly" do
+    @p.clip_primer(mode: :right).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
@@ -105,8 +105,8 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::TrimSeq with :length_min returns correctly" do
-    @p.trim_seq(length_min: 4).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with :length_min returns correctly" do
+    @p.clip_primer(length_min: 4).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
