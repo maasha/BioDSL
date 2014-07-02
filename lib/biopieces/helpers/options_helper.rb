@@ -169,7 +169,7 @@ module BioPieces
     # Method to assert a given expression.
     def options_assert(expression)
       @options.each do |key, value|
-        expression.gsub!(/^:#{key}$/, value.to_s)
+        expression.gsub!(/:#{key}/, value.to_s)
       end
 
       unless expression =~ /:\w/
