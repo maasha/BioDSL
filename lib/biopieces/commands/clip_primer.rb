@@ -61,128 +61,78 @@ module BioPieces
     def clip_primer(options = {})
       options_orig = options.dup
       @options = options
-      options_allowed :forward, :reverse, :forward_rc, :reverse_rc, :forward_length,
-                      :reverse_length, :mismatch_percent, :insertion_percent, :deletion_percent
-      options_allowed_values forward_rc: [true, false]
-      options_allowed_values reverse_rc: [true, false]
-      options_required_single :forward, :reverse
-      options_assert ":forward_length > 0"
-      options_assert ":reverse_length > 0"
+      options_allowed :primer, :direction, :search_distance, :reverse_complement,
+                      :mismatch_percent, :insertion_percent, :deletion_percent
+      options_required :primer, :direction
+      options_allowed_values direction: [:forward, :reverse]
+      options_allowed_values reverse_complement: [true, false]
+      options_assert ":search_distance > 0"
       options_assert ":mismatch_percent > 0"
       options_assert ":insertion_percent > 0"
       options_assert ":deletion_percent  > 0"
 
-      @options[:mismatch_percent] ||= 0
+      @options[:mismatch_percent]  ||= 0
       @options[:insertion_percent] ||= 0
       @options[:deletion_percent]  ||= 0
 
-      if options[:forward_rc]
-        @options[:forward] = Seq.new(seq: options[:forward], type: :dna).reverse.complement.seq
-      end
-
-      if options[:reverse_rc]
-        @options[:reverse] = Seq.new(seq: options[:reverse], type: :dna).reverse.complement.seq
+      if options[:reverse_complement]
+        primer = Seq.new(seq: options[:primer], type: :dna).reverse.complement.seq
+      else
+        primer = options[:primer]
       end
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
+          run_options[:status][:sequences_in]    = 0
+          run_options[:status][:sequences_out]   = 0
+          run_options[:status][:pattern_hits]    = 0
+          run_options[:status][:pattern_missess] = 0
+          run_options[:status][:residues_in]     = 0
+          run_options[:status][:residues_out]    = 0
 
-          if options[:forward]
-            options[:forward_length] = options[:forward].length unless options[:forward_length]
-
-            if options[:forward_length] > options[:forward].length
-              raise ArgumentError, "forward_length > forward adaptor (#{options[:forward_length]} > #{options[:forward].length})" 
-            end
-
-            fmis = percent2real(options[:forward].length, options[:mismatch_percent])
-            fins = percent2real(options[:forward].length, options[:insertion_percent])
-            fdel = percent2real(options[:forward].length, options[:deletion_percent])
-          end
-
-          if options[:reverse]
-            options[:reverse_length] = options[:reverse].length unless options[:reverse_length]
-          
-            if options[:reverse_length] > options[:reverse].length
-              raise ArgumentError, "reverse_length > reverse adaptor (#{options[:reverse_length]} > #{options[:reverse].length})"
-            end
-          
-            rmis = percent2real(options[:reverse].length, options[:mismatch_percent])
-            rins = percent2real(options[:reverse].length, options[:insertion_percent])
-            rdel = percent2real(options[:reverse].length, options[:deletion_percent])
-          end
-
-          run_options[:status][:sequences_in]  = 0
-          run_options[:status][:sequences_out] = 0
-          run_options[:status][:residues_in]   = 0
-          run_options[:status][:residues_out]  = 0
+          mis = percent2real(primer.length, options[:mismatch_percent])
+          ins = percent2real(primer.length, options[:insertion_percent])
+          del = percent2real(primer.length, options[:deletion_percent])
 
           input.each do |record|
             if record[:SEQ]
               entry = BioPieces::Seq.new_bp(record)
+              dist  = options[:search_distance] || entry.length  
 
               run_options[:status][:sequences_in] += 1
               run_options[:status][:residues_in]  += entry.length
 
-              if options[:forward] and record[:SEQ].length >= options[:forward].length
-                if fmatch = entry.patmatch(options[:forward], max_mismatches: fmis, max_insertions: fins, max_deletions: fdel)
-                elsif options[:forward_length] < options[:forward].length
-                  len = options[:forward].length - 1
-                  pat = options[:forward]
+              case options[:direction]
+              when :reverse
+                if match = entry.patmatch(primer, start: entry.length - dist, stop: entry.length - 1, max_mismatches: mis, max_insertions: ins, max_deletions: del)
+                  run_options[:status][:pattern_hits] += 1
 
-                  while len >= options[:forward_length]
-                    fmis = percent2real(len, options[:mismatch_percent])
-                    fins = percent2real(len, options[:insertion_percent])
-                    fdel = percent2real(len, options[:deletion_percent])
+                  record[:PRIMER_CLIP_DIRECTION] = 'REVERSE'
+                  record[:PRIMER_CLIP_POS]       = match.pos
+                  record[:PRIMER_CLIP_LEN]       = match.length
+                  record[:PRIMER_CLIP_PAT]       = match.match
 
-                    pat = pat[1 ... pat.length]
-
-                    if fmatch = entry.patmatch(pat, start: 0, stop: len, max_mismatches: fmis, max_insertions: fins, max_deletions: fdel)
-                      break
-                    end
-
-                    len -= 1
-                  end
+                  entry = entry[0 ... match.pos]
+                else
+                  run_options[:status][:pattern_missess] += 1
                 end
-              end
+              when :forward
+                if match = entry.patmatch(primer, start: 0, stop: dist - 1, max_mismatches: mis, max_insertions: ins, max_deletions: del)
+                  run_options[:status][:pattern_hits] += 1
 
-              if options[:reverse] and record[:SEQ].length >= options[:reverse].length
-                if rmatch = entry.patmatch(options[:reverse], max_mismatches: rmis, max_insertions: rins, max_deletions: rdel)
-                elsif options[:reverse_length] < options[:reverse].length
-                  len = options[:reverse].length - 1
-                  pat = options[:reverse]
+                  record[:PRIMER_CLIP_DIRECTION] = 'FORWARD'
+                  record[:PRIMER_CLIP_POS]       = match.pos
+                  record[:PRIMER_CLIP_LEN]       = match.length
+                  record[:PRIMER_CLIP_PAT]       = match.match
 
-                  while len >= options[:reverse_length]
-                    rmis = percent2real(len, options[:mismatch_percent])
-                    rins = percent2real(len, options[:insertion_percent])
-                    rdel = percent2real(len, options[:deletion_percent])
-
-                    pat = pat[0 ... pat.length - 1]
-
-                    if rmatch = entry.patmatch(pat, start: entry.length - len, max_mismatches: rmis, max_insertions: rins, max_deletions: rdel)
-                      break
-                    end
-
-                    len -= 1
+                  if match.pos + match.length < entry.length
+                    entry = entry[match.pos + match.length .. -1]
                   end
+                else
+                  run_options[:status][:pattern_missess] += 1
                 end
-              end
-
-              if rmatch
-                record[:ADAPTOR_POS_RIGHT] = rmatch.pos
-                record[:ADAPTOR_LEN_RIGHT] = rmatch.length
-                record[:ADAPTOR_PAT_RIGHT] = rmatch.match
-
-                entry = entry[0 ... rmatch.pos]
-              end
-
-              if fmatch
-                 record[:ADAPTOR_POS_LEFT] = fmatch.pos
-                 record[:ADAPTOR_LEN_LEFT] = fmatch.length
-                 record[:ADAPTOR_PAT_LEFT] = fmatch.match
-
-                 if fmatch.pos + fmatch.length < entry.length
-                   entry = entry[fmatch.pos + fmatch.length .. -1]
-                 end
+              else
+                raise RunTimeError, "This should never happen"
               end
 
               run_options[:status][:sequences_out] += 1
