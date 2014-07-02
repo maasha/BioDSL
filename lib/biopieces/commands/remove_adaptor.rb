@@ -58,47 +58,6 @@ module BioPieces
     #    gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
     #    +
     #    @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
-    # 
-    # To trim both ends simply do:
-    # 
-    #    BP.new.read_fastq(input: "test.fq").remove_adaptor.dump.run
-    # 
-    #    SEQ_NAME: test
-    #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
-    #    SEQ_LEN: 62
-    #    SCORES: TUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
-    #    ---
-    # 
-    # Use the +quality_min+ option to change the minimum value to discard:
-    # 
-    #    BP.new.read_fastq(input: "test.fq").remove_adaptor(quality_min: 25).dump.run
-    # 
-    #    SEQ_NAME: test
-    #    SEQ: cgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
-    #    SEQ_LEN: 57
-    #    SCORES: YZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
-    #    ---
-    # 
-    # To trim the left end only (use :rigth for right end only), do:
-    # 
-    #    BP.new.read_fastq(input: "test.fq").remove_adaptor(mode: :left).dump.run
-    # 
-    #    SEQ_NAME: test
-    #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
-    #    SEQ_LEN: 62
-    #    SCORES: TUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
-    #    ---
-    # 
-    # To increase the length of stretch of good quality residues to match, use the -l
-    # switch:
-    # 
-    #    BP.new.read_fastq(input: "test.fq").remove_adaptor(lengh_min: 4).dump.run
-    # 
-    #    SEQ_NAME: test
-    #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtct
-    #    SEQ_LEN: 42
-    #    SCORES: TUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUT
-    #    ---
     def remove_adaptor(options = {})
       options_orig = options.dup
       @options = options
