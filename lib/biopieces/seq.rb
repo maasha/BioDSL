@@ -201,14 +201,11 @@ module BioPieces
 
     # Method that given a Seq entry returns a Biopieces record (a hash).
     def to_bp
-      raise SeqError, "Missing seq_name" if self.seq_name.nil?
-      raise SeqError, "Missing seq"      if self.seq.nil?
-
-      record             = {}
-      record[:SEQ_NAME] = self.seq_name
-      record[:SEQ]      = self.seq
-      record[:SEQ_LEN]  = self.length
-      record[:SCORES]   = self.qual if self.qual
+      record            = {}
+      record[:SEQ_NAME] = self.seq_name if self.seq_name
+      record[:SEQ]      = self.seq      if self.seq
+      record[:SEQ_LEN]  = self.length   if self.length
+      record[:SCORES]   = self.qual     if self.qual
       record
     end
 
