@@ -133,10 +133,10 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with forward and partial match and length_min returns correctly" do
+  test "BioPieces::Pipeline::ClipPrimer with forward and partial match and overlap_min returns correctly" do
     @output.write({SEQ: "TATGactgactgatcgca"})
     @output.close
-    @p.trim_primer(primer: "TCGTATG", direction: :forward, length_min: 4).run(input: @input, output: @output2)
+    @p.trim_primer(primer: "TCGTATG", direction: :forward, overlap_min: 4).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"actgactgatcgca", :SEQ_LEN=>14, :TRIM_PRIMER_DIR=>"FORWARD", :TRIM_PRIMER_POS=>0, :TRIM_PRIMER_LEN=>4, :TRIM_PRIMER_PAT=>"TATG"}'
@@ -144,10 +144,10 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with reverse and partial match and length_min returns correctly" do
+  test "BioPieces::Pipeline::ClipPrimer with reverse and partial match and overlap_min returns correctly" do
     @output.write({SEQ: "ctgactgatcgcaaTCGT"})
     @output.close
-    @p.trim_primer(primer: "TCGTATG", direction: :reverse, length_min: 4).run(input: @input, output: @output2)
+    @p.trim_primer(primer: "TCGTATG", direction: :reverse, overlap_min: 4).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"ctgactgatcgcaa", :SEQ_LEN=>14, :TRIM_PRIMER_DIR=>"REVERSE", :TRIM_PRIMER_POS=>14, :TRIM_PRIMER_LEN=>4, :TRIM_PRIMER_PAT=>"TCGT"}'
@@ -155,10 +155,10 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with forward and partial miss due to length_min returns correctly" do
+  test "BioPieces::Pipeline::ClipPrimer with forward and partial miss due to overlap_min returns correctly" do
     @output.write({SEQ: "TATGactgactgatcgca"})
     @output.close
-    @p.trim_primer(primer: "TCGTATG", direction: :forward, length_min: 5).run(input: @input, output: @output2)
+    @p.trim_primer(primer: "TCGTATG", direction: :forward, overlap_min: 5).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"TATGactgactgatcgca"}'
@@ -166,10 +166,10 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with reverse and partial match and length_min returns correctly" do
+  test "BioPieces::Pipeline::ClipPrimer with reverse and partial match and overlap_min returns correctly" do
     @output.write({SEQ: "ctgactgatcgcaaTCGT"})
     @output.close
-    @p.trim_primer(primer: "TCGTATG", direction: :reverse, length_min: 5).run(input: @input, output: @output2)
+    @p.trim_primer(primer: "TCGTATG", direction: :reverse, overlap_min: 5).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"ctgactgatcgcaaTCGT"}'

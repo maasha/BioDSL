@@ -26,29 +26,39 @@
 
 module BioPieces
   module Commands
-    # == Clip sequences in the stream at a specified primer location.
+    # == Trim sequence ends in the stream matching a specified primer.
     # 
-    # +trim_primer+ locates a specified +primer+ in sequences in the stream and
-    # clips the sequence after the match if the +direction+ is forward or 
-    # before the match is the +direction+ is reverse. Using the 
-    # +reverse_complement+ option the primer sequence will be reverse
-    # complemented prior to matching. Using the +search_distance+ option will
-    # limit the primer search to the beginning of the sequence if the
-    # +direction+ is forward and to the end if the direction is +reverse+.
+    # +trim_primer+ can trim full or partial primer sequence from sequence
+    # ends. This is done by matching the primer at the end specified by the
+    # +direction+ option:
+    #
+    # Forward clip:
+    #     sequence       ATCGACTGCATCACGACG
+    #     primer    CATGAATCGA
+    #     result              CTGCATCACGACG
+    #
+    # Reverse clip:
+    #     sequence  ATCGACTGCATCACGACG
+    #     primer                  GACGATAGCA
+    #     result    ATCGACTGCATCAC
+    #
+    # The primer sequence can be reverse complemented using the 
+    # +reverse_complement+ option. Also, a minimum overlap for trimming can be
+    # specified using the +overlap_min+ option (default=1).
     #
     # Non-perfect matching can be allowed by setting the allowed
     # +mismatch_percent+, +insertion_percent+ and +deletion_percent+.
     #
     # The following keys are added to clipped records:
     #
-    # * PRIMER_CLIP_DIRECTION - Direction of clip.
-    # * PRIMER_CLIP_POS       - Sequence position of clip (0 based).
-    # * PRIMER_CLIP_LEN       - Length of clip match.
-    # * PRIMER_CLIP_PAT       - Clip match pattern.
+    # * TRIM_PRIMER_DIR - Direction of clip.
+    # * TRIM_PRIMER_POS - Sequence position of clip (0 based).
+    # * TRIM_PRIMER_LEN - Length of clip match.
+    # * TRIM_PRIMER_PAT - Clip match pattern.
     # == Usage
     # 
     #    trim_primer(<primer: <string>>, <direction: <:forward|:reverse>
-    #                [, reverse_complement: <bool>[, length_min: <uint>
+    #                [, reverse_complement: <bool>[, overlap_min: <uint>
     #                [, mismatch_percent: <uint>
     #                [, insertion_percent: <uint>
     #                [, deletion_percent: <uint>]]]]]) 
@@ -58,28 +68,53 @@ module BioPieces
     # * primer: <string>               - Primer sequence to search for.
     # * direction: <:forward|:reverse> - Clip direction.
     # * reverse_complement: <bool>     - Reverse complement primer (default=false).
-    # * length_min: <uint>             - Minimum primer length used (default=1).
+    # * overlap_min: <uint>             - Minimum primer length used (default=1).
     # * mismatch_percent: <unit>       - Allowed percent mismatches (default=0).
     # * insertion_percent: <unit>      - Allowed percent insertions (default=0).
     # * deletion_percent: <unit>       - Allowed percent mismatches (default=0).
     # 
     # == Examples
     # 
-    # Consider the following FASTA entry in the file test.fq:
+    # Consider the following FASTA entry in the file test.fna:
+    #
+    #     >test
+    #     ACTGACTGATGACTACGACTACGACTACTACTACGT
+    #
+    # The forward end can be trimmed like this:
+    #
+    #     BP.new.read_fasta(input: "test.fna").trim_primer(primer: "ATAGAACTGAC", direction: :forward).dump.run
+    #     {:SEQ_NAME=>"test",
+    #      :SEQ=>"TGATGACTACGACTACGACTACTACTACGT",
+    #      :SEQ_LEN=>30,
+    #      :TRIM_PRIMER_DIR=>"FORWARD",
+    #      :TRIM_PRIMER_POS=>0,
+    #      :TRIM_PRIMER_LEN=>6,
+    #      :TRIM_PRIMER_PAT=>"ACTGAC"}
+    #
+    # And trimming a reverse primer:
+    #
+    #     BP.new.read_fasta(input: "test.fna").trim_primer(primer: "ACTACGTGCGGAT", direction: :reverse).dump.run
+    #     {:SEQ_NAME=>"test",
+    #      :SEQ=>"ACTGACTGATGACTACGACTACGACTACT",
+    #      :SEQ_LEN=>29,
+    #      :TRIM_PRIMER_DIR=>"REVERSE",
+    #      :TRIM_PRIMER_POS=>29,
+    #      :TRIM_PRIMER_LEN=>7,
+    #      :TRIM_PRIMER_PAT=>"ACTACGT"}
     def trim_primer(options = {})
       options_orig = options.dup
       @options = options
-      options_allowed :primer, :direction, :length_min, :reverse_complement,
+      options_allowed :primer, :direction, :overlap_min, :reverse_complement,
                       :mismatch_percent, :insertion_percent, :deletion_percent
       options_required :primer, :direction
       options_allowed_values direction: [:forward, :reverse]
       options_allowed_values reverse_complement: [true, false]
-      options_assert ":length_min        >  0"
+      options_assert ":overlap_min        >  0"
       options_assert ":mismatch_percent  >= 0"
       options_assert ":insertion_percent >= 0"
       options_assert ":deletion_percent  >= 0"
 
-      @options[:length_min]        ||= 1
+      @options[:overlap_min]        ||= 1
       @options[:mismatch_percent]  ||= 0
       @options[:insertion_percent] ||= 0
       @options[:deletion_percent]  ||= 0
@@ -103,7 +138,7 @@ module BioPieces
             if record[:SEQ]
               entry = BioPieces::Seq.new_bp(record)
               pat   = options[:primer]
-              min   = options[:length_min]
+              min   = options[:overlap_min]
 
               run_options[:status][:sequences_in] += 1
               run_options[:status][:residues_in]  += entry.length
