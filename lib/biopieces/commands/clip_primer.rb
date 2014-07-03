@@ -118,12 +118,12 @@ module BioPieces
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
-          run_options[:status][:sequences_in]    = 0
-          run_options[:status][:sequences_out]   = 0
-          run_options[:status][:pattern_hits]    = 0
-          run_options[:status][:pattern_missess] = 0
-          run_options[:status][:residues_in]     = 0
-          run_options[:status][:residues_out]    = 0
+          run_options[:status][:sequences_in]   = 0
+          run_options[:status][:sequences_out]  = 0
+          run_options[:status][:pattern_hits]   = 0
+          run_options[:status][:pattern_misses] = 0
+          run_options[:status][:residues_in]    = 0
+          run_options[:status][:residues_out]   = 0
 
           mis = (primer.length * options[:mismatch_percent]  * 0.01).round
           ins = (primer.length * options[:insertion_percent] * 0.01).round
@@ -150,7 +150,7 @@ module BioPieces
                   record[:CLIP_PRIMER_LEN]       = match.length
                   record[:CLIP_PRIMER_PAT]       = match.match
                 else
-                  run_options[:status][:pattern_missess] += 1
+                  run_options[:status][:pattern_misses] += 1
                 end
               when :forward
                 stop = dist - primer.length
@@ -169,7 +169,7 @@ module BioPieces
                     record[:CLIP_PRIMER_PAT]       = match.match
                   end
                 else
-                  run_options[:status][:pattern_missess] += 1
+                  run_options[:status][:pattern_misses] += 1
                 end
               else
                 raise RunTimeError, "This should never happen"

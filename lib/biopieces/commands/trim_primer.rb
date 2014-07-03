@@ -68,7 +68,7 @@ module BioPieces
     # * primer: <string>               - Primer sequence to search for.
     # * direction: <:forward|:reverse> - Clip direction.
     # * reverse_complement: <bool>     - Reverse complement primer (default=false).
-    # * overlap_min: <uint>             - Minimum primer length used (default=1).
+    # * overlap_min: <uint>            - Minimum primer length used (default=1).
     # * mismatch_percent: <unit>       - Allowed percent mismatches (default=0).
     # * insertion_percent: <unit>      - Allowed percent insertions (default=0).
     # * deletion_percent: <unit>       - Allowed percent mismatches (default=0).
@@ -127,15 +127,16 @@ module BioPieces
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
-          run_options[:status][:sequences_in]    = 0
-          run_options[:status][:sequences_out]   = 0
-          run_options[:status][:pattern_hits]    = 0
-          run_options[:status][:pattern_missess] = 0
-          run_options[:status][:residues_in]     = 0
-          run_options[:status][:residues_out]    = 0
+          run_options[:status][:sequences_in]   = 0
+          run_options[:status][:sequences_out]  = 0
+          run_options[:status][:pattern_hits]   = 0
+          run_options[:status][:pattern_misses] = 0
+          run_options[:status][:residues_in]    = 0
+          run_options[:status][:residues_out]   = 0
 
           input.each do |record|
             if record[:SEQ] and record[:SEQ].length > 0
+              miss  = true
               entry = BioPieces::Seq.new_bp(record)
               pat   = options[:primer]
               min   = options[:overlap_min]
@@ -161,6 +162,7 @@ module BioPieces
                     record[:TRIM_PRIMER_LEN] = match.length
                     record[:TRIM_PRIMER_PAT] = match.match
 
+                    miss = false
                     break
                   end
 
@@ -183,6 +185,7 @@ module BioPieces
                     record[:TRIM_PRIMER_LEN] = match.length
                     record[:TRIM_PRIMER_PAT] = match.match
 
+                    miss = false
                     break
                   end
 
@@ -192,8 +195,9 @@ module BioPieces
                 raise RunTimeError, "This should never happen"
               end
 
-              run_options[:status][:sequences_out] += 1
-              run_options[:status][:residues_out]  += entry.length
+              run_options[:status][:sequences_out]  += 1
+              run_options[:status][:residues_out]   += entry.length
+              run_options[:status][:pattern_misses] += 1 if miss
             end
 
             output.write record
