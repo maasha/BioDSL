@@ -217,16 +217,6 @@ class TestSeq < Test::Unit::TestCase
     assert_equal({:SEQ_NAME=>"test", :SEQ=>"ATCG", :SEQ_LEN=>4}, @entry.to_bp)
   end
 
-  test "#to_bp with missing seq_name raises" do
-    @entry.seq = 'ATCG'
-    assert_raise(BioPieces::SeqError) { @entry.to_bp }
-  end
-
-  test "#to_bp with missing sequence raises" do
-    @entry.seq_name = 'test'
-    assert_raise(BioPieces::SeqError) { @entry.to_bp }
-  end
-
   test "#to_fasta with missing seq_name raises" do
     @entry.seq = 'ATCG'
     assert_raise(BioPieces::SeqError) { @entry.to_fasta }
