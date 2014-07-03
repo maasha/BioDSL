@@ -30,28 +30,73 @@ module BioPieces
       (length * percent * 0.01).round
     end
 
-    # == Trim sequence ends removing residues with a low quality score.
+    # == Clip sequences in the stream at a specified primer location.
     # 
-    # +clip_primer+ removes subquality residues from the ends of sequences in the
+    # +clip_primer+ locates a specified +primer+ in sequences in the stream and
+    # clips the sequence after the match if the +direction+ is forward or 
+    # before the match is the +direction+ is reverse. Using the 
+    # +reverse_complement+ option the primer sequence will be reverse
+    # complemented prior to matching. Using the +search_distance+ option will
+    # limit the primer search to the beginning of the sequence if the
+    # +direction+ is forward and to the end if the direction is +reverse+.
     #
+    # Non-perfect matching can be allowed by setting the allowed
+    # +mismatch_percent+, +insertion_percent+ and +deletion_percent+.
+    #
+    # The following keys are added to clipped records:
+    #
+    # * PRIMER_CLIP_DIRECTION - Direction of clip.
+    # * PRIMER_CLIP_POS       - Sequence position of clip (0 based).
+    # * PRIMER_CLIP_LEN       - Length of clip match.
+    # * PRIMER_CLIP_PAT       - Clip match pattern.
     # == Usage
     # 
-    #    clip_primer([quality_min: <uint>[, length_min: <uint>[, mode: <:left|:right|:both>]]])
+    #    clip_primer(<primer: <string>>, <direction: <:forward|:reverse>
+    #                [, reverse_complement: <bool>[, search_distance: <uint>
+    #                [, mismatch_percent: <uint>
+    #                [, insertion_percent: <uint>
+    #                [, deletion_percent: <uint>]]]]]) 
     #
     # === Options
     #
-    # * quality_min: <uint> - Minimum quality (default=20).
-    # * length_min: <uint>  - Minimum stretch length (default=3).
-    # * mode: <string>      - Trim mode :left|:right|:both (default=:both).
+    # * primer: <string>               - Primer sequence to search for.
+    # * direction: <:forward|:reverse> - Clip direction.
+    # * reverse_complement: <bool>     - Reverse complement primer (default=false).
+    # * search_distance: <uint>        - Search distance from forward or reverse end.
+    # * mismatch_percent: <unit>       - Allowed percent mismatches (default=0).
+    # * insertion_percent: <unit>      - Allowed percent insertions (default=0).
+    # * deletion_percent: <unit>       - Allowed percent mismatches (default=0).
     # 
     # == Examples
     # 
-    # Consider the following FASTQ entry in the file test.fq:
+    # Consider the following FASTA entry in the file test.fq:
     # 
-    #    @test
-    #    gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
-    #    +
-    #    @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
+    #    >test
+    #    actgactgaTCGTATGCCGTCTTCTGCTTactacgt
+    #
+    # To clip this sequence in the forward direction with the primer 'TGACTACGACTACGACTACT' do:
+    #
+    #    BP.new.read_fasta(input: "test.fna").clip_primer(primer: "TGACTACGACTACGACTACT", direction: :forward).dump.run
+    #
+    #    {:SEQ_NAME=>"test",
+    #     :SEQ=>"actacgt",
+    #     :SEQ_LEN=>7,
+    #     :PRIMER_CLIP_DIRECTION=>"FORWARD",
+    #     :PRIMER_CLIP_POS=>9,
+    #     :PRIMER_CLIP_LEN=>20,
+    #     :PRIMER_CLIP_PAT=>"TGACTACGACTACGACTACT"}
+    #
+    # Or in the reverse direction:
+    #
+    #    BP.new.read_fasta(input: "test.fna").clip_primer(primer: "TGACTACGACTACGACTACT", direction: :reverse).dump.run
+    #
+    #    {:SEQ_NAME=>"test",
+    #     :SEQ=>"actgactga",
+    #     :SEQ_LEN=>9,
+    #     :PRIMER_CLIP_DIRECTION=>"REVERSE",
+    #     :PRIMER_CLIP_POS=>9,
+    #     :PRIMER_CLIP_LEN=>20,
+    #     :PRIMER_CLIP_PAT=>"TGACTACGACTACGACTACT"}
     def clip_primer(options = {})
       options_orig = options.dup
       @options = options
