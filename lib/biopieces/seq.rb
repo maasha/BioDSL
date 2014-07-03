@@ -202,10 +202,10 @@ module BioPieces
     # Method that given a Seq entry returns a Biopieces record (a hash).
     def to_bp
       record            = {}
-      record[:SEQ_NAME] = self.seq_name if self.seq_name
-      record[:SEQ]      = self.seq      if self.seq
-      record[:SEQ_LEN]  = self.length   if self.length
-      record[:SCORES]   = self.qual     if self.qual
+      record[:SEQ_NAME] = self.seq_name   if self.seq_name
+      record[:SEQ]      = self.seq        if self.seq
+      record[:SEQ_LEN]  = self.seq.length if self.seq
+      record[:SCORES]   = self.qual       if self.qual
       record
     end
 
