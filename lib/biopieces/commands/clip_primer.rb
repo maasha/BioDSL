@@ -33,12 +33,6 @@ module BioPieces
     # == Trim sequence ends removing residues with a low quality score.
     # 
     # +clip_primer+ removes subquality residues from the ends of sequences in the
-    # stream based on quality SCORES in a FASTQ type quality score string.
-    # Trimming progresses until a stretch, specified with the +length_min+
-    # option, is found thus preventing premature termination of the trimming
-    # by e.g. a single good quality residue at the end. It is possible, using
-    # the +mode+ option to indicate if the sequence should be trimmed from the
-    # left or right end or both (default=:both).
     #
     # == Usage
     # 
@@ -66,10 +60,10 @@ module BioPieces
       options_required :primer, :direction
       options_allowed_values direction: [:forward, :reverse]
       options_allowed_values reverse_complement: [true, false]
-      options_assert ":search_distance > 0"
-      options_assert ":mismatch_percent > 0"
-      options_assert ":insertion_percent > 0"
-      options_assert ":deletion_percent  > 0"
+      options_assert ":search_distance   >  0"
+      options_assert ":mismatch_percent  >= 0"
+      options_assert ":insertion_percent >= 0"
+      options_assert ":deletion_percent  >= 0"
 
       @options[:mismatch_percent]  ||= 0
       @options[:insertion_percent] ||= 0
@@ -117,7 +111,10 @@ module BioPieces
                   run_options[:status][:pattern_missess] += 1
                 end
               when :forward
-                if match = entry.patmatch(primer, start: 0, stop: dist - 1, max_mismatches: mis, max_insertions: ins, max_deletions: del)
+                stop = dist - primer.length + 1
+                stop = 0 if stop < 0
+
+                if match = entry.patmatch(primer, start: 0, stop: stop, max_mismatches: mis, max_insertions: ins, max_deletions: del)
                   run_options[:status][:pattern_hits] += 1
 
                   record[:PRIMER_CLIP_DIRECTION] = 'FORWARD'
