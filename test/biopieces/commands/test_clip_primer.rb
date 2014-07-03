@@ -51,7 +51,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :CLIP_PRIMER_DIR=>"FORWARD", :CLIP_PRIMER_POS=>0, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -62,7 +62,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>0, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -73,7 +73,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :CLIP_PRIMER_DIR=>"FORWARD", :CLIP_PRIMER_POS=>0, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -84,7 +84,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>0, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -95,7 +95,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :CLIP_PRIMER_DIR=>"FORWARD", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -106,7 +106,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -117,7 +117,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>6, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :CLIP_PRIMER_DIR=>"FORWARD", :CLIP_PRIMER_POS=>6, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -128,7 +128,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"gactga", :SEQ_LEN=>6, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>6, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"gactga", :SEQ_LEN=>6, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>6, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -139,7 +139,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "AAGCAGAAGACGGCATACGA", direction: :forward, reverse_complement: true).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :CLIP_PRIMER_DIR=>"FORWARD", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -150,7 +150,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "AAGCAGAAGACGGCATACGA", direction: :reverse, reverse_complement: true).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -172,7 +172,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward, search_distance: 29).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :CLIP_PRIMER_DIR=>"FORWARD", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -194,7 +194,7 @@ class TestClipPrimer < Test::Unit::TestCase
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse, search_distance: 27).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end

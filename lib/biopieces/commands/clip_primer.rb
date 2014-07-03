@@ -41,10 +41,10 @@ module BioPieces
     #
     # The following keys are added to clipped records:
     #
-    # * PRIMER_CLIP_DIRECTION - Direction of clip.
-    # * PRIMER_CLIP_POS       - Sequence position of clip (0 based).
-    # * PRIMER_CLIP_LEN       - Length of clip match.
-    # * PRIMER_CLIP_PAT       - Clip match pattern.
+    # * CLIP_PRIMERT_DIR - Direction of clip.
+    # * CLIP_PRIMERT_POS       - Sequence position of clip (0 based).
+    # * CLIP_PRIMERT_LEN       - Length of clip match.
+    # * CLIP_PRIMERT_PAT       - Clip match pattern.
     # == Usage
     # 
     #    clip_primer(<primer: <string>>, <direction: <:forward|:reverse>
@@ -77,10 +77,10 @@ module BioPieces
     #    {:SEQ_NAME=>"test",
     #     :SEQ=>"actacgt",
     #     :SEQ_LEN=>7,
-    #     :PRIMER_CLIP_DIRECTION=>"FORWARD",
-    #     :PRIMER_CLIP_POS=>9,
-    #     :PRIMER_CLIP_LEN=>20,
-    #     :PRIMER_CLIP_PAT=>"TGACTACGACTACGACTACT"}
+    #     :CLIP_PRIMERT_DIR=>"FORWARD",
+    #     :CLIP_PRIMERT_POS=>9,
+    #     :CLIP_PRIMERT_LEN=>20,
+    #     :CLIP_PRIMERT_PAT=>"TGACTACGACTACGACTACT"}
     #
     # Or in the reverse direction:
     #
@@ -89,10 +89,10 @@ module BioPieces
     #    {:SEQ_NAME=>"test",
     #     :SEQ=>"actgactga",
     #     :SEQ_LEN=>9,
-    #     :PRIMER_CLIP_DIRECTION=>"REVERSE",
-    #     :PRIMER_CLIP_POS=>9,
-    #     :PRIMER_CLIP_LEN=>20,
-    #     :PRIMER_CLIP_PAT=>"TGACTACGACTACGACTACT"}
+    #     :CLIP_PRIMER_DIR=>"REVERSE",
+    #     :CLIP_PRIMER_POS=>9,
+    #     :CLIP_PRIMER_LEN=>20,
+    #     :CLIP_PRIMER_PAT=>"TGACTACGACTACGACTACT"}
     def clip_primer(options = {})
       options_orig = options.dup
       @options = options
@@ -145,10 +145,10 @@ module BioPieces
                   entry = entry[0 ... match.pos]
 
                   record = record.merge(entry.to_bp)
-                  record[:PRIMER_CLIP_DIRECTION] = 'REVERSE'
-                  record[:PRIMER_CLIP_POS]       = match.pos
-                  record[:PRIMER_CLIP_LEN]       = match.length
-                  record[:PRIMER_CLIP_PAT]       = match.match
+                  record[:CLIP_PRIMER_DIR] = 'REVERSE'
+                  record[:CLIP_PRIMER_POS]       = match.pos
+                  record[:CLIP_PRIMER_LEN]       = match.length
+                  record[:CLIP_PRIMER_PAT]       = match.match
                 else
                   run_options[:status][:pattern_missess] += 1
                 end
@@ -163,10 +163,10 @@ module BioPieces
                     entry = entry[match.pos + match.length .. -1]
 
                     record = record.merge(entry.to_bp)
-                    record[:PRIMER_CLIP_DIRECTION] = 'FORWARD'
-                    record[:PRIMER_CLIP_POS]       = match.pos
-                    record[:PRIMER_CLIP_LEN]       = match.length
-                    record[:PRIMER_CLIP_PAT]       = match.match
+                    record[:CLIP_PRIMER_DIR] = 'FORWARD'
+                    record[:CLIP_PRIMER_POS]       = match.pos
+                    record[:CLIP_PRIMER_LEN]       = match.length
+                    record[:CLIP_PRIMER_PAT]       = match.match
                   end
                 else
                   run_options[:status][:pattern_missess] += 1
