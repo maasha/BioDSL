@@ -135,7 +135,7 @@ module BioPieces
           run_options[:status][:residues_out]    = 0
 
           input.each do |record|
-            if record[:SEQ]
+            if record[:SEQ] and record[:SEQ].length > 0
               entry = BioPieces::Seq.new_bp(record)
               pat   = options[:primer]
               min   = options[:overlap_min]
