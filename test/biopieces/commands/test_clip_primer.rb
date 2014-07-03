@@ -34,16 +34,6 @@ class TestClipPrimer < Test::Unit::TestCase
     @input, @output   = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
 
-    hash = {
-      SEQ_NAME: "test",
-      SEQ: "gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag",
-      SEQ_LEN: 82,
-      SCORES: %q[!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III]
-    }
-
-    @output.write hash
-    @output.close
-
     @p = BioPieces::Pipeline.new
   end
 
@@ -52,65 +42,82 @@ class TestClipPrimer < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::ClipPrimer with valid options don't raise" do
-    assert_nothing_raised { @p.clip_primer(mode: :left) }
+    assert_nothing_raised { @p.clip_primer(primer: "atcg", direction: :forward) }
   end
 
-  test "BioPieces::Pipeline::ClipPrimer returns correctly" do
-    @p.clip_primer.run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with forward full lenght match returns correctly" do
+    @output.write({SEQ: "TCGTATGCCGTCTTCTGCTT"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = ""
-    expected << %Q{{:SEQ_NAME=>"test", :SEQ=>"tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag", :SEQ_LEN=>62, :SCORES=>"56789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with :quality_min returns correctly" do
-    @p.clip_primer(quality_min: 25).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with forward begin match returns correctly" do
+    @output.write({SEQ: "TCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = ""
-    expected << %Q{{:SEQ_NAME=>"test", :SEQ=>"cgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag", :SEQ_LEN=>57, :SCORES=>":;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with mode: both: returns correctly" do
-    @p.clip_primer(mode: :both).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with forward middle match returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = ""
-    expected << %Q{{:SEQ_NAME=>"test", :SEQ=>"tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag", :SEQ_LEN=>62, :SCORES=>"56789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with mode: :left returns correctly" do
-    @p.clip_primer(mode: :left).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with forward end match returns correctly" do
+    @output.write({SEQ: "gactgaTCGTATGCCGTCTTCTGCTT"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = ""
-    expected << %Q{{:SEQ_NAME=>"test", :SEQ=>"tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag", :SEQ_LEN=>62, :SCORES=>"56789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>6, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with mode: :right returns correctly" do
-    @p.clip_primer(mode: :right).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with forward middle match and reverse_complement returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "AAGCAGAAGACGGCATACGA", direction: :forward, reverse_complement: true).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = ""
-    expected << %q[{:SEQ_NAME=>"test", :SEQ=>"gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag", :SEQ_LEN=>82, :SCORES=>"!\\"\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}]
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with :length_min returns correctly" do
-    @p.clip_primer(length_min: 4).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::ClipPrimer with forward middle miss and search_distance returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward, search_distance: 28).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = ""
-    expected << %Q{{:SEQ_NAME=>"test", :SEQ=>"tctgacgtatcgatcgttgattagttgctagctatgcagtct", :SEQ_LEN=>42, :SCORES=>"56789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:98765"}}
+    expected = '{:SEQ=>"actgactgaTCGTATGCCGTCTTCTGCTTactacgt"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with forward middle match and search_distance returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward, search_distance: 29).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
