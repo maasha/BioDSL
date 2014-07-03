@@ -101,29 +101,31 @@ module BioPieces
                 if match = entry.patmatch(primer, start: entry.length - dist, stop: entry.length - 1, max_mismatches: mis, max_insertions: ins, max_deletions: del)
                   run_options[:status][:pattern_hits] += 1
 
+                  entry = entry[0 ... match.pos]
+
+                  record = record.merge(entry.to_bp)
                   record[:PRIMER_CLIP_DIRECTION] = 'REVERSE'
                   record[:PRIMER_CLIP_POS]       = match.pos
                   record[:PRIMER_CLIP_LEN]       = match.length
                   record[:PRIMER_CLIP_PAT]       = match.match
-
-                  entry = entry[0 ... match.pos]
                 else
                   run_options[:status][:pattern_missess] += 1
                 end
               when :forward
-                stop = dist - primer.length + 1
+                stop = dist - primer.length
                 stop = 0 if stop < 0
 
                 if match = entry.patmatch(primer, start: 0, stop: stop, max_mismatches: mis, max_insertions: ins, max_deletions: del)
                   run_options[:status][:pattern_hits] += 1
 
-                  record[:PRIMER_CLIP_DIRECTION] = 'FORWARD'
-                  record[:PRIMER_CLIP_POS]       = match.pos
-                  record[:PRIMER_CLIP_LEN]       = match.length
-                  record[:PRIMER_CLIP_PAT]       = match.match
-
-                  if match.pos + match.length < entry.length
+                  if match.pos + match.length <= entry.length
                     entry = entry[match.pos + match.length .. -1]
+
+                    record = record.merge(entry.to_bp)
+                    record[:PRIMER_CLIP_DIRECTION] = 'FORWARD'
+                    record[:PRIMER_CLIP_POS]       = match.pos
+                    record[:PRIMER_CLIP_LEN]       = match.length
+                    record[:PRIMER_CLIP_PAT]       = match.match
                   end
                 else
                   run_options[:status][:pattern_missess] += 1
@@ -136,7 +138,7 @@ module BioPieces
               run_options[:status][:residues_out]  += entry.length
             end
 
-            output.write entry.to_bp.merge(record)
+            output.write record
           end
         end
       end
