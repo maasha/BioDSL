@@ -56,6 +56,17 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::ClipPrimer with reverse full lenght match returns correctly" do
+    @output.write({SEQ: "TCGTATGCCGTCTTCTGCTT"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::ClipPrimer with forward begin match returns correctly" do
     @output.write({SEQ: "TCGTATGCCGTCTTCTGCTTactacgt"})
     @output.close
@@ -63,6 +74,17 @@ class TestClipPrimer < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with reverse begin match returns correctly" do
+    @output.write({SEQ: "TCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"", :SEQ_LEN=>0, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>0, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -78,6 +100,17 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::ClipPrimer with reverse middle match returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::ClipPrimer with forward end match returns correctly" do
     @output.write({SEQ: "gactgaTCGTATGCCGTCTTCTGCTT"})
     @output.close
@@ -89,6 +122,17 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::ClipPrimer with reverse end match returns correctly" do
+    @output.write({SEQ: "gactgaTCGTATGCCGTCTTCTGCTT"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"gactga", :SEQ_LEN=>6, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>6, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::ClipPrimer with forward middle match and reverse_complement returns correctly" do
     @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
     @output.close
@@ -96,6 +140,17 @@ class TestClipPrimer < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with reverse middle match and reverse_complement returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "AAGCAGAAGACGGCATACGA", direction: :reverse, reverse_complement: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
@@ -118,6 +173,28 @@ class TestClipPrimer < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :PRIMER_CLIP_DIRECTION=>"FORWARD", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with reverse middle miss and search_distance returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse, search_distance: 26).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actgactgaTCGTATGCCGTCTTCTGCTTactacgt"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with reverse middle match and search_distance returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse, search_distance: 27).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :PRIMER_CLIP_DIRECTION=>"REVERSE", :PRIMER_CLIP_POS=>9, :PRIMER_CLIP_LEN=>20, :PRIMER_CLIP_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
 
     assert_equal(expected, result)
   end
