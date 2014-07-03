@@ -26,10 +26,6 @@
 
 module BioPieces
   module Commands
-    def percent2real(length, percent)
-      (length * percent * 0.01).round
-    end
-
     # == Clip sequences in the stream at a specified primer location.
     # 
     # +clip_primer+ locates a specified +primer+ in sequences in the stream and
@@ -129,9 +125,9 @@ module BioPieces
           run_options[:status][:residues_in]     = 0
           run_options[:status][:residues_out]    = 0
 
-          mis = percent2real(primer.length, options[:mismatch_percent])
-          ins = percent2real(primer.length, options[:insertion_percent])
-          del = percent2real(primer.length, options[:deletion_percent])
+          mis = (primer.length * options[:mismatch_percent]  * 0.01).round
+          ins = (primer.length * options[:insertion_percent] * 0.01).round
+          del = (primer.length * options[:deletion_percent]  * 0.01).round
 
           input.each do |record|
             if record[:SEQ]

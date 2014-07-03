@@ -26,10 +26,6 @@
 
 module BioPieces
   module Commands
-    def percent2real(length, percent)
-      (length * percent * 0.01).round
-    end
-
     # == Clip sequences in the stream at a specified primer location.
     # 
     # +trim_primer+ locates a specified +primer+ in sequences in the stream and
@@ -115,9 +111,9 @@ module BioPieces
               case options[:direction]
               when :reverse
                 while pat.length >= min
-                  mis = percent2real(pat.length, options[:mismatch_percent])
-                  ins = percent2real(pat.length, options[:insertion_percent])
-                  del = percent2real(pat.length, options[:deletion_percent])
+                  mis = (pat.length * options[:mismatch_percent]  * 0.01).round
+                  ins = (pat.length * options[:insertion_percent] * 0.01).round
+                  del = (pat.length * options[:deletion_percent]  * 0.01).round
 
                   if match = entry.patmatch(pat, start: entry.length - pat.length, max_mismatches: mis, max_insertions: ins, max_deletions: del)
                     run_options[:status][:pattern_hits] += 1
@@ -137,9 +133,9 @@ module BioPieces
                 end
               when :forward
                 while pat.length >= min
-                  mis = percent2real(pat.length, options[:mismatch_percent])
-                  ins = percent2real(pat.length, options[:insertion_percent])
-                  del = percent2real(pat.length, options[:deletion_percent])
+                  mis = (pat.length * options[:mismatch_percent]  * 0.01).round
+                  ins = (pat.length * options[:insertion_percent] * 0.01).round
+                  del = (pat.length * options[:deletion_percent]  * 0.01).round
 
                   if match = entry.patmatch(pat, start: 0, stop: 0, max_mismatches: mis, max_insertions: ins, max_deletions: del)
                     run_options[:status][:pattern_hits] += 1
