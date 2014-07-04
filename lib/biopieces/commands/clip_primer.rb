@@ -41,10 +41,10 @@ module BioPieces
     #
     # The following keys are added to clipped records:
     #
-    # * CLIP_PRIMERT_DIR - Direction of clip.
-    # * CLIP_PRIMERT_POS       - Sequence position of clip (0 based).
-    # * CLIP_PRIMERT_LEN       - Length of clip match.
-    # * CLIP_PRIMERT_PAT       - Clip match pattern.
+    # * CLIP_PRIMER_DIR - Direction of clip.
+    # * CLIP_PRIMER_POS       - Sequence position of clip (0 based).
+    # * CLIP_PRIMER_LEN       - Length of clip match.
+    # * CLIP_PRIMER_PAT       - Clip match pattern.
     # == Usage
     # 
     #    clip_primer(<primer: <string>>, <direction: <:forward|:reverse>
@@ -77,10 +77,10 @@ module BioPieces
     #    {:SEQ_NAME=>"test",
     #     :SEQ=>"actacgt",
     #     :SEQ_LEN=>7,
-    #     :CLIP_PRIMERT_DIR=>"FORWARD",
-    #     :CLIP_PRIMERT_POS=>9,
-    #     :CLIP_PRIMERT_LEN=>20,
-    #     :CLIP_PRIMERT_PAT=>"TGACTACGACTACGACTACT"}
+    #     :CLIP_PRIMER_DIR=>"FORWARD",
+    #     :CLIP_PRIMER_POS=>9,
+    #     :CLIP_PRIMER_LEN=>20,
+    #     :CLIP_PRIMER_PAT=>"TGACTACGACTACGACTACT"}
     #
     # Or in the reverse direction:
     #
