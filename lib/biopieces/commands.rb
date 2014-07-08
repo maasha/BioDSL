@@ -31,6 +31,7 @@ module BioPieces
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
     require 'biopieces/commands/plot_histogram'
+    require 'biopieces/commands/plot_scores'
     require 'biopieces/commands/read_fasta'
     require 'biopieces/commands/read_fastq'
     require 'biopieces/commands/trim_primer'
