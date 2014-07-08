@@ -30,5 +30,6 @@ module BioPieces
     LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
     STATUS_SAVE_INTERVAL = 1
     DEBUG                = false
+    SCORES_MAX           = 100_000  # maximum score string length in plot_scores
   end
 end
