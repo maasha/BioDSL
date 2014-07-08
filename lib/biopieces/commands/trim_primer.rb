@@ -138,7 +138,7 @@ module BioPieces
             if record[:SEQ] and record[:SEQ].length > 0
               miss  = true
               entry = BioPieces::Seq.new_bp(record)
-              pat   = options[:primer]
+              pat   = primer
               min   = options[:overlap_min]
 
               run_options[:status][:sequences_in] += 1

@@ -100,10 +100,32 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::ClipPrimer with forward and partial match and reverse_complment: true returns correctly" do
+    @output.write({SEQ: "TATGactgactgatcgca"})
+    @output.close
+    @p.trim_primer(primer: "CATACGA", direction: :forward, reverse_complement: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actgactgatcgca", :SEQ_LEN=>14, :TRIM_PRIMER_DIR=>"FORWARD", :TRIM_PRIMER_POS=>0, :TRIM_PRIMER_LEN=>4, :TRIM_PRIMER_PAT=>"TATG"}'
+
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::ClipPrimer with reverse and partial match returns correctly" do
     @output.write({SEQ: "ctgactgatcgcaaTCGT"})
     @output.close
     @p.trim_primer(primer: "TCGTATG", direction: :reverse).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"ctgactgatcgcaa", :SEQ_LEN=>14, :TRIM_PRIMER_DIR=>"REVERSE", :TRIM_PRIMER_POS=>14, :TRIM_PRIMER_LEN=>4, :TRIM_PRIMER_PAT=>"TCGT"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with reverse and partial match and reverse_complment: true returns correctly" do
+    @output.write({SEQ: "ctgactgatcgcaaTCGT"})
+    @output.close
+    @p.trim_primer(primer: "CATACGA", direction: :reverse, reverse_complement: true).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"ctgactgatcgcaa", :SEQ_LEN=>14, :TRIM_PRIMER_DIR=>"REVERSE", :TRIM_PRIMER_POS=>14, :TRIM_PRIMER_LEN=>4, :TRIM_PRIMER_PAT=>"TCGT"}'
