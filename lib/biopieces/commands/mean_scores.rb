@@ -66,6 +66,8 @@ module BioPieces
     #    ---
     def mean_scores(options = {})
       options_orig = options.dup
+      @options = options
+      options_allowed nil
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
