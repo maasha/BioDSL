@@ -535,6 +535,13 @@ module BioPieces
       na_qual.mean
     end
 
+    # Method to run a sliding window of a specified size across a Phred type
+    # scores string and calculate for each window the mean score and return
+    # the minimum mean score.
+    def scores_mean_local(window_size)
+      scores_mean_local_C(self.qual, self.qual.length, SCORE_BASE, window_size)
+    end
+
     # Method to find open reading frames (ORFs).
     def each_orf(options = {})
       size_min     = options[:size_min]     || 0
@@ -590,6 +597,51 @@ module BioPieces
         @start = start
         @stop  = stop
       end
+    end
+
+    private
+
+    inline do |builder|
+      builder.c %{
+        VALUE scores_mean_local_C(
+          VALUE _qual,
+          VALUE _qual_len,
+          VALUE _score_base,
+          VALUE _window_size
+        )
+        {
+          unsigned char *qual        = (unsigned char *) StringValuePtr(_qual);
+          unsigned int   qual_len    = FIX2UINT(_qual_len);
+          unsigned int   score_base  = FIX2UINT(_score_base);
+          unsigned int   window_size = FIX2UINT(_window_size);
+          unsigned int   sum         = 0;
+          unsigned int   i           = 0;
+          float          mean        = 0.0;
+          float          new_mean    = 0.0;
+
+          // fill window
+          for (i = 0; i < window_size; i++)
+            sum += qual[i] - score_base;
+
+          mean = sum / window_size;
+
+          // run window across the rest of the scores
+          while (i < qual_len)
+          {
+            sum += qual[i] - score_base;
+            sum -= qual[i - window_size] - score_base;
+
+            new_mean = sum / window_size;
+
+            if (new_mean < mean)
+              mean = new_mean;
+
+            i++;
+          }
+
+          return rb_float_new(mean);
+        }
+      }
     end
   end
 end
