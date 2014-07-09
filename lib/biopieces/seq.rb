@@ -539,6 +539,8 @@ module BioPieces
     # scores string and calculate for each window the mean score and return
     # the minimum mean score.
     def scores_mean_local(window_size)
+      raise SeqError, "Missing qual in entry" if self.qual.nil?
+
       scores_mean_local_C(self.qual, self.qual.length, SCORE_BASE, window_size)
     end
 

@@ -673,6 +673,16 @@ class TestSeq < Test::Unit::TestCase
     assert_equal(20.0, @entry.scores_mean)
   end
 
+  test "#scores_mean_local without qual raises" do
+    @entry.qual = nil
+    assert_raise(BioPieces::SeqError) { @entry.scores_mean_local(2) }
+  end
+
+  test "#scores_mean_local returns correctly" do
+    @entry.qual = '!!II'
+    assert_equal(0.0, @entry.scores_mean_local(2))
+  end
+
   test "#each_orf returns correctly" do
     @entry.seq = "atATGcgatcgATGcatcgatcagcatcgatcgatTAAcg"
     orfs = @entry.each_orf
