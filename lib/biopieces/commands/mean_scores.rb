@@ -26,48 +26,75 @@
 
 module BioPieces
   module Commands
-    # == Trim sequence ends removing residues with a low quality score.
+    # == Calculate the mean or local mean of quality SCORES in the stream.
     # 
-    # +trim_seq+ removes subquality residues from the ends of sequences in the
-    # stream based on quality SCORES in a FASTQ type quality score string.
-    # Trimming progresses until a stretch, specified with the +length_min+
-    # option, is found thus preventing premature termination of the trimming
-    # by e.g. a single good quality residue at the end. It is possible, using
-    # the +mode+ option to indicate if the sequence should be trimmed from the
-    # left or right end or both (default=:both).
+    # +mean_scores+ calculates either the global or local mean value or quality
+    # SCORES in the stream. The quality SCORES are encoded Phred style in
+    # character string.
+    #
+    # The global (default) behaviour calculates the SCORES_MEAN as the sum of
+    # all the scores over the length of the SCORES string.
+    #
+    # The local means SCORES_MEAN_LOCAL are calculated using means from a
+    # sliding window, where the smallest mean is returned.
+    #
+    # Thus, subquality records, with either an overall low mean quality or with
+    # local dip in quality, can be filtered using +grab+.
     #
     # == Usage
     # 
-    #    trim_seq([quality_min: <uint>[, length_min: <uint>[, mode: <:left|:right|:both>]]])
+    #    trim_seq([local: <bool>[, window_size: <uint>]])
     #
     # === Options
     #
-    # * quality_min: <uint> - Minimum quality (default=20).
-    # * length_min: <uint>  - Minimum stretch length (default=3).
-    # * mode: <string>      - Trim mode :left|:right|:both (default=:both).
-    # 
+    # * local:       <bool> - Calculate local mean score (default=false).
+    # * window_size: <uint> - Size of sliding window (defaul=5).
+    #
     # == Examples
     # 
     # Consider the following FASTQ entry in the file test.fq:
     # 
-    #    @test
-    #    gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
+    #    @HWI-EAS157_20FFGAAXX:2:1:888:434
+    #    TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG
     #    +
-    #    @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
+    #    BCDEFGHIIIIIII,,,,,IFFIIIIIIIIIII
+    #
+    # The values of the scores in decimal are:
+    #
+    #    SCORES: 33;34;35;36;37;38;39;40;40;40;40;40;40;40;11;11;11;11;11;40;
+    #            37;37;40;40;40;40;40;40;40;40;40;40;40;
     # 
-    # To trim both ends simply do:
+    # To calculate the mean score do:
     # 
-    #    BP.new.read_fastq(input: "test.fq").trim_seq.dump.run
-    # 
-    #    SEQ_NAME: test
-    #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
-    #    SEQ_LEN: 62
-    #    SCORES: TUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDChhh
-    #    ---
+    #    BP.new.read_fastq(input: "test.fq").mean_scores.dump.run
+    #
+    #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
+    #     :SEQ=>"TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG",
+    #     :SEQ_LEN=>33,
+    #     :SCORES=>"BCDEFGHIIIIIII,,,,,IFFIIIIIIIIIII",
+    #     :SCORES_MEAN=>34.58}
+    #
+    # To calculate local means for a sliding window, do:
+    #
+    #    BP.new.read_fastq(input: "test.fq").mean_scores(local: true).dump.run
+    #
+    #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
+    #     :SEQ=>"TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG",
+    #     :SEQ_LEN=>33,
+    #     :SCORES=>"BCDEFGHIIIIIII,,,,,IFFIIIIIIIIIII",
+    #     :SCORES_MEAN_LOCAL=>11.0}
+    #
+    # Which indicates a local minimum was located at the stretch of ,,,,, =
+    # 11+11+11+11+11 / 5 = 11.0
     def mean_scores(options = {})
       options_orig = options.dup
       @options = options
-      options_allowed nil
+      options_allowed :local, :window_size
+      options_tie window_size: :local
+      options_allowed_values local: [true, false]
+      options_assert ":window_size > 1"
+
+      @options[:window_size] ||= 5
 
       lmb = lambda do |input, output, run_options|
         status_track(input, output, run_options) do
@@ -75,7 +102,11 @@ module BioPieces
             if record[:SCORES] and record[:SCORES].length > 0
               entry = BioPieces::Seq.new_bp(record)
 
-              record[:SCORES_MEAN] = entry.scores_mean.round(2)
+              if options[:local]
+                record[:SCORES_MEAN_LOCAL] = entry.scores_mean_local(options[:window_size]).round(2)
+              else
+                record[:SCORES_MEAN] = entry.scores_mean.round(2)
+              end
             end
 
             output.write record

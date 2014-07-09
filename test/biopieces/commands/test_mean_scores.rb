@@ -34,7 +34,9 @@ class TestMeanScores < Test::Unit::TestCase
     @input, @output   = BioPieces::Pipeline::Stream.pipe
     @input2, @output2 = BioPieces::Pipeline::Stream.pipe
 
-    @output.write({SCORES: %q[56789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III]})
+    @output.write({SCORES: %q{IIIIIIIIIIIIIIIIIIII}})
+    @output.write({SCORES: %q{!!!!!IIIIIIIIIIIIIII}})
+    @output.write({SCORES: %q{IIIIIIIIIIIIIII!!!!!}})
     @output.close
 
     @p = BioPieces::Pipeline.new
@@ -44,12 +46,46 @@ class TestMeanScores < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { @p.mean_scores(foo: "bar") }
   end
 
+  test "BioPieces::Pipeline::MeanScores with valid options don't raise" do
+    assert_nothing_raised { @p.mean_scores(local: true) }
+  end
+
+  test "BioPieces::Pipeline::MeanScores with window_size and local: false raises" do
+    assert_raise(BioPieces::OptionError) { @p.mean_scores(window_size: 10) }
+  end
+
   test "BioPieces::Pipeline::MeanScores returns correctly" do
     @p.mean_scores.run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
-    expected << %Q{{:SCORES=>"56789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III", :SCORES_MEAN=>25.27}}
+    expected << %q{{:SCORES=>"IIIIIIIIIIIIIIIIIIII", :SCORES_MEAN=>40.0}}
+    expected << %q{{:SCORES=>"!!!!!IIIIIIIIIIIIIII", :SCORES_MEAN=>30.0}}
+    expected << %q{{:SCORES=>"IIIIIIIIIIIIIII!!!!!", :SCORES_MEAN=>30.0}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::MeanScores with local: true returns correctly" do
+    @p.mean_scores(local: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %q{{:SCORES=>"IIIIIIIIIIIIIIIIIIII", :SCORES_MEAN_LOCAL=>40.0}}
+    expected << %q{{:SCORES=>"!!!!!IIIIIIIIIIIIIII", :SCORES_MEAN_LOCAL=>0.0}}
+    expected << %q{{:SCORES=>"IIIIIIIIIIIIIII!!!!!", :SCORES_MEAN_LOCAL=>0.0}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::MeanScores with local: true and :window_size returns correctly" do
+    @p.mean_scores(local: true, window_size: 10).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %q{{:SCORES=>"IIIIIIIIIIIIIIIIIIII", :SCORES_MEAN_LOCAL=>40.0}}
+    expected << %q{{:SCORES=>"!!!!!IIIIIIIIIIIIIII", :SCORES_MEAN_LOCAL=>20.0}}
+    expected << %q{{:SCORES=>"IIIIIIIIIIIIIII!!!!!", :SCORES_MEAN_LOCAL=>20.0}}
 
     assert_equal(expected, result)
   end
