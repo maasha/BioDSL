@@ -105,7 +105,7 @@ module BioPieces
           expanded_paths = []
           @options[option].split(/, */).each do |glob_expression|
             if glob_expression.include? '*'
-              expanded_paths += Dir.glob(glob_expression).select { |file| File.file? file }
+              expanded_paths += Dir.glob(glob_expression).sort.select { |file| File.file? file }
             else
               expanded_paths << glob_expression
             end
