@@ -260,6 +260,7 @@ module BioPieces
         run_options[:time_start]  = @time_start
         run_options[:progress]    = true if self.progress
         run_options[:commands]    = commands
+        run_options[:status]      = {}
 
         @lmb.call(input, output, run_options)
 

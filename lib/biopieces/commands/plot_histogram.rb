@@ -28,12 +28,12 @@ module BioPieces
   module Commands
     # == Plot a histogram of numerical values for a specified key.
     # 
-    # +plot_distribution+ create a histogram plot of the values for a specified
+    # +plot_histogram+ create a histogram plot of the values for a specified
     # key from all records in the stream. Plotting is done using GNUplot which
     # allows for different types of output the default one being crufty ASCII
     # graphics.
     #
-    # GNUplot must be installed for plot_distribution to work. Read more here:
+    # GNUplot must be installed for plot_histogram to work. Read more here:
     #
     # http://www.gnuplot.info/
     # 
@@ -59,7 +59,7 @@ module BioPieces
     # 
     # Here we plot a histogram of sequence lengths from a FASTA file:
     # 
-    #    read_fasta(input: "test.fna").plot_distribution(key: :SEQ_LEN).run
+    #    read_fasta(input: "test.fna").plot_histogram(key: :SEQ_LEN).run
     # 
     #                                      Histogram
     #           +             +            +            +            +             +
@@ -87,12 +87,12 @@ module BioPieces
     # To render X11 output (i.e. instant view) use the +terminal+ option:
     # 
     #    read_fasta(input: "test.fna").
-    #    plot_distribution(key: :SEQ_LEN, terminal: :x11).run
+    #    plot_histogram(key: :SEQ_LEN, terminal: :x11).run
     # 
     # To generate a PNG image and save to file:
     # 
     #    read_fasta(input: "test.fna").
-    #    plot_distribution(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
+    #    plot_histogram(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
       options_orig = options.dup
       @options = options
