@@ -40,9 +40,9 @@ module BioPieces
     include BioPieces::StatusHelper
 
     def initialize
-      @commands = []
       @options  = {}
-      @status   = {}
+      @commands = []
+      @status   = []
     end
 
     # Returns the size or number of commands in a pipeline.
@@ -69,64 +69,83 @@ module BioPieces
 
     # Run a Pipeline.
     def run(options = {})
-      @options = options
-      options_allowed :verbose, :email, :progress, :subject, :input, :output
-      options_tie subject: :email
-
-      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
-
-      out        = @options[:output]
-      wait_pid   = nil
-      time_start = Time.now
-
-      @status[:status] = []
-      @commands.last.progress = :true if @options[:progress]
-
-      @commands.reverse.each_cons(2) do |command2, command1|
-        input, output = Stream.pipe
-
-        pid = fork do
-          output.close
-          command2.run(input, out, @commands)
-        end
-
-        input.close
-        out.close if out
-        out = output
-
-        wait_pid ||= pid # only the first created process which is tail of pipeline
-      end
-
-      @commands.first.run(@options[:input], out, @commands)
-
-      Process.waitpid(wait_pid) if wait_pid
-
-      @status[:status] = status_load(@commands)
-
-      time_stop = Time.now
-
-      @status[:time_start]   = time_start
-      @status[:time_stop]    = time_stop
-      @status[:time_elapsed] = time_stop - time_start
-
-      pp @status if @options[:verbose]
-      email_send if @options[:email]
-
-      log_ok
+#      run_fork
+      run_enumerate
 
       self
-    rescue Exception => exception
-      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
-        STDERR.puts "Error in run: " + exception.to_s
-        STDERR.puts exception.backtrace if @options[:verbose]
-        log_error(exception)
-        exit 2
-      else
-        raise exception
-      end
-    ensure
-      history_save
     end
+
+    def run_enumerate
+      enums = [[]]
+
+      @commands.each_with_index do |command, i|
+        enums << Enumerator.new do |output|
+          @status << command.run(enums[i], output)
+        end
+      end
+
+      enums.last.each {}
+    end
+
+    # Run a Pipeline.
+#    def run_old(options = {})
+#      @options = options
+#      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output)
+#      options_tie(options, subject: :email)
+#
+#      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
+#
+#      out        = @options[:output]
+#      wait_pid   = nil
+#      time_start = Time.now
+#
+#      @commands.last.progress = :true if @options[:progress]
+#
+#      @commands.reverse.each_cons(2) do |command2, command1|
+#        input, output = Stream.pipe
+#
+#        pid = fork do
+#          output.close
+#          command2.run(input, out, @commands)
+#        end
+#
+#        input.close
+#        out.close if out
+#        out = output
+#
+#        wait_pid ||= pid # only the first created process which is tail of pipeline
+#      end
+#
+#      @commands.first.run(@options[:input], out, @commands)
+#
+#      Process.waitpid(wait_pid) if wait_pid
+#
+#      @status[:status] = status_load(@commands)
+#
+#      time_stop = Time.now
+#
+#      @status[:time_start]   = time_start
+#      @status[:time_stop]    = time_stop
+#      @status[:time_elapsed] = time_stop - time_start
+#
+#      pp @status if @options[:verbose]
+#      email_send if @options[:email]
+#
+#      log_ok
+#
+#      self
+#    rescue Exception => exception
+#      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+#        STDERR.puts "Error in run: " + exception.to_s
+#        STDERR.puts exception.backtrace if @options[:verbose]
+#        log_error(exception)
+#        exit 2
+#      else
+#        raise exception
+#      end
+#    ensure
+#      history_save
+#    end
 
     # format a Pipeline to a pretty string which is returned.
     def to_s
@@ -219,9 +238,9 @@ module BioPieces
     end
 
     class Command
-      attr_reader :command
-      attr_accessor :progress, :status_file
+      attr_reader :name, :options, :lmb
 
+      include BioPieces::StatusHelper
       include BioPieces::LogHelper
       include BioPieces::OptionsHelper
 
@@ -247,28 +266,37 @@ module BioPieces
         end
       end
 
-      def run(input, output, commands)
-        @input      = input
-        @output     = output
-        @time_start = Time.now
-        @time_stop  = Time.now
-
-        run_options = {}
-        run_options[:command]     = @command
-        run_options[:options]     = @options
-        run_options[:status_file] = @status_file
-        run_options[:time_start]  = @time_start
-        run_options[:progress]    = true if self.progress
-        run_options[:commands]    = commands
-        run_options[:status]      = {}
-
-        @lmb.call(input, output, run_options)
-
-        @time_stop  = Time.now
+      def run(input, output)
+        status = status_init(@name, @options)
+        self.lmb.call(input, output, status)
+        status
       ensure
-        @output.close if @output
-        @input.close  if @input
+        input.close if input.respond_to? :close
+        output.close if output.respond_to? :close
       end
+
+#      def run_old(input, output, commands)
+#        @input      = input
+#        @output     = output
+#        @time_start = Time.now
+#        @time_stop  = Time.now
+#
+#        run_options = {}
+#        run_options[:command]     = @command
+#        run_options[:options]     = @options
+#        run_options[:status_file] = @status_file
+#        run_options[:time_start]  = @time_start
+#        run_options[:progress]    = true if self.progress
+#        run_options[:commands]    = commands
+#        run_options[:status]      = {}
+#
+#        @lmb.call(input, output, run_options)
+#
+#        @time_stop  = Time.now
+#      ensure
+#        @output.close if @output
+#        @input.close  if @input
+#      end
 
       def to_s
         options_list = []

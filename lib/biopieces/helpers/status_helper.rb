@@ -26,18 +26,19 @@
 
 module BioPieces
   module StatusHelper
-    def status_track(input, output, run_options, &block)
-      time = Time.now
+    def status_init(name, options)
+      status = {}
+      status[:name]        = name
+      status[:options]     = options
+      status[:records_in]  = 0
+      status[:records_out] = 0
+      status
+    end
 
+    def status_track(status, &block)
       Thread.new do
         loop do
-          status_save(input, output, time, run_options)
-
-          if run_options[:progress]
-            system("clear")
-    
-            pp status_load(run_options[:commands])
-          end
+          pp status
 
           sleep BioPieces::Config::STATUS_SAVE_INTERVAL
         end
@@ -45,7 +46,7 @@ module BioPieces
 
       block.call
 
-      status_save(input, output, time, run_options)
+      pp status
     end
 
     def status_load(commands)

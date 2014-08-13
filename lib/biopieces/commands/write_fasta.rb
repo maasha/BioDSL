@@ -80,18 +80,15 @@ module BioPieces
     # 
     #    write_fasta(output: "test.fna.bz2", bzip2: true)
     def write_fasta(options = {})
-      options_orig = options.dup
-      @options     = options
-      options_allowed :force, :output, :wrap, :gzip, :bzip2
-      options_unique :gzip, :bzip2
-      options_tie gzip: :output, bzip2: :output
-      options_files_exists_force :output
+      options_allowed(options, :force, :output, :wrap, :gzip, :bzip2)
+      options_unique(options, :gzip, :bzip2)
+      options_tie(options, gzip: :output, bzip2: :output)
+      options_files_exists_force(options, :output)
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
-
-          run_options[:status][:sequences_out] = 0
-          run_options[:status][:residues_out] = 0
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_out] = 0
+          status[:residues_out]  = 0
 
           options[:output] ||= $stdout
 
@@ -101,11 +98,11 @@ module BioPieces
                 entry = BioPieces::Seq.new_bp(record)
 
                 $stdout.puts entry.to_fasta(options[:wrap])
-                run_options[:status][:sequences_out] += 1
-                run_options[:status][:residues_out] += entry.length
+                status[:sequences_out] += 1
+                status[:residues_out]  += entry.length
               end
 
-              output.write record if output
+              output << record if output
             end
           else
             if options[:gzip]
@@ -122,18 +119,18 @@ module BioPieces
                   entry = BioPieces::Seq.new_bp(record)
 
                   ios.puts entry.to_fasta(options[:wrap])
-                  run_options[:status][:sequences_out] += 1
-                  run_options[:status][:residues_out] += entry.length
+                  status[:sequences_out] += 1
+                  status[:residues_out]  += entry.length
                 end
 
-                output.write record if output
+                output << record if output
               end
             end
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
 
       self
     end
