@@ -69,10 +69,32 @@ module BioPieces
 
     # Run a Pipeline.
     def run(options = {})
-#      run_fork
-      run_enumerate
+      run_fork
+#      run_enumerate
 
       self
+    end
+
+    def run_fork
+      out      = []
+      wait_pid = nil
+
+      @commands.reverse.each_cons(2) do |cmd2, cmd1|
+        io_read, io_write = Stream.pipe
+
+        pid = Process.fork do
+          io_write.close
+          status = cmd2.run(io_read, out)
+        end
+
+        io_read.close if io_read.respond_to? :close
+        out.close     if out.respond_to? :close
+        out = io_write
+
+        wait_pid ||= pid # only the first created process which is tail of pipeline
+      end
+
+      @status << @commands.first.run([], out)
     end
 
     def run_enumerate
@@ -235,6 +257,8 @@ module BioPieces
         @size += 1
         @stream.write(arg)
       end
+
+      alias :<< :write
     end
 
     class Command
