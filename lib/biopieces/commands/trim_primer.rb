@@ -150,7 +150,7 @@ module BioPieces
                   del = (pat.length * options[:deletion_percent]  * 0.01).round
 
                   if match = entry.patmatch(pat, start: entry.length - pat.length, max_mismatches: mis, max_insertions: ins, max_deletions: del)
-                    run_options[:status][:pattern_hits] += 1
+                    status[:pattern_hits] += 1
 
                     entry = entry[0 ... match.pos]
 
@@ -173,7 +173,7 @@ module BioPieces
                   del = (pat.length * options[:deletion_percent]  * 0.01).round
 
                   if match = entry.patmatch(pat, start: 0, stop: 0, max_mismatches: mis, max_insertions: ins, max_deletions: del)
-                    run_options[:status][:pattern_hits] += 1
+                    status[:pattern_hits] += 1
 
                     entry = entry[match.pos + match.length .. -1]
 

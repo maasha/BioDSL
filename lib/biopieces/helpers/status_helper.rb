@@ -36,17 +36,17 @@ module BioPieces
     end
 
     def status_track(status, &block)
-      Thread.new do
-        loop do
-          pp status
-
-          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
-        end
-      end
+#      Thread.new do
+#        loop do
+#          pp status
+#
+#          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
+#        end
+#      end
 
       block.call
 
-      pp status
+#      pp status
     end
 
     def status_load(commands)

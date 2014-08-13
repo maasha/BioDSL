@@ -132,13 +132,13 @@ module BioPieces
               entry = BioPieces::Seq.new_bp(record)
               dist  = options[:search_distance] || entry.length  
 
-              run_options[:status][:sequences_in] += 1
-              run_options[:status][:residues_in]  += entry.length
+              status[:sequences_in] += 1
+              status[:residues_in]  += entry.length
 
               case options[:direction]
               when :reverse
                 if match = entry.patmatch(primer, start: entry.length - dist, stop: entry.length - 1, max_mismatches: mis, max_insertions: ins, max_deletions: del)
-                  run_options[:status][:pattern_hits] += 1
+                  status[:pattern_hits] += 1
 
                   entry = entry[0 ... match.pos]
 
@@ -148,14 +148,14 @@ module BioPieces
                   record[:CLIP_PRIMER_LEN]       = match.length
                   record[:CLIP_PRIMER_PAT]       = match.match
                 else
-                  run_options[:status][:pattern_misses] += 1
+                  status[:pattern_misses] += 1
                 end
               when :forward
                 stop = dist - primer.length
                 stop = 0 if stop < 0
 
                 if match = entry.patmatch(primer, start: 0, stop: stop, max_mismatches: mis, max_insertions: ins, max_deletions: del)
-                  run_options[:status][:pattern_hits] += 1
+                  status[:pattern_hits] += 1
 
                   if match.pos + match.length <= entry.length
                     entry = entry[match.pos + match.length .. -1]
@@ -167,14 +167,14 @@ module BioPieces
                     record[:CLIP_PRIMER_PAT]       = match.match
                   end
                 else
-                  run_options[:status][:pattern_misses] += 1
+                  status[:pattern_misses] += 1
                 end
               else
                 raise RunTimeError, "This should never happen"
               end
 
-              run_options[:status][:sequences_out] += 1
-              run_options[:status][:residues_out]  += entry.length
+              status[:sequences_out] += 1
+              status[:residues_out]  += entry.length
             end
 
             output << record
