@@ -69,8 +69,12 @@ module BioPieces
 
     # Run a Pipeline.
     def run(options = {})
-      run_fork
-#      run_enumerate
+      @options = options
+      if @options[:fork]
+        run_fork
+      else
+        run_enumerate
+      end
 
       self
     end
@@ -207,14 +211,6 @@ module BioPieces
     end
 
     private
-
-    # Add a command to the pipeline.
-    def add(command, options, options_orig, lmb)
-      @commands << Command.new(command, options, options_orig, lmb)
-
-      self
-    end
-
 
     class Stream
       include Enumerable
