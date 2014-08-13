@@ -102,22 +102,20 @@ module BioPieces
     #      :TRIM_PRIMER_LEN=>7,
     #      :TRIM_PRIMER_PAT=>"ACTACGT"}
     def trim_primer(options = {})
-      options_orig = options.dup
-      @options = options
-      options_allowed :primer, :direction, :overlap_min, :reverse_complement,
-                      :mismatch_percent, :insertion_percent, :deletion_percent
-      options_required :primer, :direction
-      options_allowed_values direction: [:forward, :reverse]
-      options_allowed_values reverse_complement: [true, false]
-      options_assert ":overlap_min        >  0"
-      options_assert ":mismatch_percent  >= 0"
-      options_assert ":insertion_percent >= 0"
-      options_assert ":deletion_percent  >= 0"
+      options_allowed(options, :primer, :direction, :overlap_min, :reverse_complement,
+                      :mismatch_percent, :insertion_percent, :deletion_percent)
+      options_required(options, :primer, :direction)
+      options_allowed_values(options, direction: [:forward, :reverse])
+      options_allowed_values(options, reverse_complement: [true, false])
+      options_assert(options, ":overlap_min        >  0")
+      options_assert(options, ":mismatch_percent  >= 0")
+      options_assert(options, ":insertion_percent >= 0")
+      options_assert(options, ":deletion_percent  >= 0")
 
-      @options[:overlap_min]        ||= 1
-      @options[:mismatch_percent]  ||= 0
-      @options[:insertion_percent] ||= 0
-      @options[:deletion_percent]  ||= 0
+      options[:overlap_min]       ||= 1
+      options[:mismatch_percent]  ||= 0
+      options[:insertion_percent] ||= 0
+      options[:deletion_percent]  ||= 0
 
       if options[:reverse_complement]
         primer = Seq.new(seq: options[:primer], type: :dna).reverse.complement.seq
@@ -125,14 +123,14 @@ module BioPieces
         primer = options[:primer]
       end
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
-          run_options[:status][:sequences_in]   = 0
-          run_options[:status][:sequences_out]  = 0
-          run_options[:status][:pattern_hits]   = 0
-          run_options[:status][:pattern_misses] = 0
-          run_options[:status][:residues_in]    = 0
-          run_options[:status][:residues_out]   = 0
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_in]   = 0
+          status[:sequences_out]  = 0
+          status[:pattern_hits]   = 0
+          status[:pattern_misses] = 0
+          status[:residues_in]    = 0
+          status[:residues_out]   = 0
 
           input.each do |record|
             if record[:SEQ] and record[:SEQ].length > 0
@@ -141,8 +139,8 @@ module BioPieces
               pat   = primer
               min   = options[:overlap_min]
 
-              run_options[:status][:sequences_in] += 1
-              run_options[:status][:residues_in]  += entry.length
+              status[:sequences_in] += 1
+              status[:residues_in]  += entry.length
 
               case options[:direction]
               when :reverse
@@ -195,17 +193,17 @@ module BioPieces
                 raise RunTimeError, "This should never happen"
               end
 
-              run_options[:status][:sequences_out]  += 1
-              run_options[:status][:residues_out]   += entry.length
-              run_options[:status][:pattern_misses] += 1 if miss
+              status[:sequences_out]  += 1
+              status[:residues_out]   += entry.length
+              status[:pattern_misses] += 1 if miss
             end
 
-            output.write record
+            output << record
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
 
       self
     end
