@@ -94,22 +94,20 @@ module BioPieces
     #    read_fasta(input: "test.fna").
     #    plot_histogram(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
-      options_orig = options.dup
-      @options = options
-      options_allowed :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale
-      options_allowed_values terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf]
-      options_required :key
-      options_files_exists_force :output
+      options_allowed(options, :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_required(options, :key)
+      options_files_exists_force(options, :output)
 
-      key = @options[:key]
-      @options[:terminal] ||= :dumb
-      @options[:title]    ||= "Histogram"
-      @options[:xlabel]   ||= @options[:key]
-      @options[:ylabel]   ||= "n"
-      @options[:ylabel]   = "log10(#{@options[:ylabel]})" if @options[:ylogscale]
+      key = options[:key]
+      options[:terminal] ||= :dumb
+      options[:title]    ||= "Histogram"
+      options[:xlabel]   ||= options[:key]
+      options[:ylabel]   ||= "n"
+      options[:ylabel]   = "log10(#{options[:ylabel]})" if options[:ylogscale]
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
+      lmb = lambda do |input, output, status|
+        status_track(status) do
           count_hash = Hash.new(0)
 
           input.each do |record|
@@ -117,7 +115,7 @@ module BioPieces
               count_hash[record[key].to_i] += 1
             end
 
-            output.write record if output
+            output << record if output
           end
 
           x_max = count_hash.keys.max
@@ -152,7 +150,7 @@ module BioPieces
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
 
       self
     end
