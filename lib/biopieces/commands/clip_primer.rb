@@ -94,21 +94,19 @@ module BioPieces
     #     :CLIP_PRIMER_LEN=>20,
     #     :CLIP_PRIMER_PAT=>"TGACTACGACTACGACTACT"}
     def clip_primer(options = {})
-      options_orig = options.dup
-      @options = options
-      options_allowed :primer, :direction, :search_distance, :reverse_complement,
-                      :mismatch_percent, :insertion_percent, :deletion_percent
-      options_required :primer, :direction
-      options_allowed_values direction: [:forward, :reverse]
-      options_allowed_values reverse_complement: [true, false]
-      options_assert ":search_distance   >  0"
-      options_assert ":mismatch_percent  >= 0"
-      options_assert ":insertion_percent >= 0"
-      options_assert ":deletion_percent  >= 0"
+      options_allowed(options, :primer, :direction, :search_distance, :reverse_complement,
+                      :mismatch_percent, :insertion_percent, :deletion_percent)
+      options_required(options, :primer, :direction)
+      options_allowed_values(options, direction: [:forward, :reverse])
+      options_allowed_values(options, reverse_complement: [true, false])
+      options_assert(options, ":search_distance   >  0")
+      options_assert(options, ":mismatch_percent  >= 0")
+      options_assert(options, ":insertion_percent >= 0")
+      options_assert(options, ":deletion_percent  >= 0")
 
-      @options[:mismatch_percent]  ||= 0
-      @options[:insertion_percent] ||= 0
-      @options[:deletion_percent]  ||= 0
+      options[:mismatch_percent]  ||= 0
+      options[:insertion_percent] ||= 0
+      options[:deletion_percent]  ||= 0
 
       if options[:reverse_complement]
         primer = Seq.new(seq: options[:primer], type: :dna).reverse.complement.seq
@@ -116,14 +114,14 @@ module BioPieces
         primer = options[:primer]
       end
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
-          run_options[:status][:sequences_in]   = 0
-          run_options[:status][:sequences_out]  = 0
-          run_options[:status][:pattern_hits]   = 0
-          run_options[:status][:pattern_misses] = 0
-          run_options[:status][:residues_in]    = 0
-          run_options[:status][:residues_out]   = 0
+      lmb = lambda do |input, output, status|
+        status_track(input, output, status) do
+          status[:sequences_in]   = 0
+          status[:sequences_out]  = 0
+          status[:pattern_hits]   = 0
+          status[:pattern_misses] = 0
+          status[:residues_in]    = 0
+          status[:residues_out]   = 0
 
           mis = (primer.length * options[:mismatch_percent]  * 0.01).round
           ins = (primer.length * options[:insertion_percent] * 0.01).round
@@ -179,12 +177,12 @@ module BioPieces
               run_options[:status][:residues_out]  += entry.length
             end
 
-            output.write record
+            output << record
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
 
       self
     end
