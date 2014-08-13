@@ -52,6 +52,15 @@ class FilesysTest < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
+
+  test "#which with non-existing executable returns nil" do
+    assert_nil(BioPieces::Filesys.which("__env__"))
+  end
+
+  test "#which with existing executable returns correctly" do
+    assert_equal("/usr/bin/env", BioPieces::Filesys.which("env"))
+  end
+
   test "#tmpfile returns correctly" do
     assert_equal(@tmpdir, BioPieces::Filesys.tmpfile(@tmpdir).match(/^#{@tmpdir}/).to_s)
   end
