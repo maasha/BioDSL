@@ -53,22 +53,20 @@ module BioPieces
     # 
     #    dump(last: 10)
     def dump(options = {})
-      options_orig = options.dup
-      @options = options
-      options_allowed :first, :last
-      options_unique :first, :last
-      options_assert ":first > 0"
-      options_assert ":last > 0"
+      options_allowed(options, :first, :last)
+      options_unique(options, :first, :last)
+      options_assert(options, ":first > 0")
+      options_assert(options, ":last > 0")
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
+      lmb = lambda do |input, output, status|
+        status_track(status) do
           if options[:first]
             input.each_with_index do |record, i|
               break if options[:first] == i
 
               pp record
 
-              output.write record if output
+              output << record if output
             end
           elsif options[:last]
             buffer = []
@@ -81,19 +79,19 @@ module BioPieces
             buffer.each do |record|
               pp record
 
-              output.write record if output
+              output << record if output
             end
           else
             input.each do |record|
               pp record
 
-              output.write record if output
+              output << record if output
             end
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
 
       self
     end
