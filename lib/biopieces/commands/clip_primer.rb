@@ -115,7 +115,7 @@ module BioPieces
       end
 
       lmb = lambda do |input, output, status|
-        status_track(input, output, status) do
+        status_track(status) do
           status[:sequences_in]   = 0
           status[:sequences_out]  = 0
           status[:pattern_hits]   = 0
