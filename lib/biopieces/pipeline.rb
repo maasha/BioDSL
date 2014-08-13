@@ -30,8 +30,7 @@ module BioPieces
   class PipelineError < StandardError; end
 
   class Pipeline
-    attr_reader :status
-    attr_accessor :commands
+    attr_accessor :commands, :status
 
     include BioPieces::Commands
     include BioPieces::HistoryHelper
@@ -69,12 +68,21 @@ module BioPieces
 
     # Run a Pipeline.
     def run(options = {})
+      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork)
+      options_allowed_values(options, fork: [true, false, nil])
+      options_tie(options, subject: :email)
+
       @options = options
+      
+      status_init
+
       if @options[:fork]
         run_fork
       else
         run_enumerate
       end
+
+      @status = status_load
 
       self
     end
@@ -98,7 +106,7 @@ module BioPieces
         wait_pid ||= pid # only the first created process which is tail of pipeline
       end
 
-      @status << @commands.first.run([], out)
+      @commands.first.run([], out)
     end
 
     def run_enumerate
@@ -106,7 +114,7 @@ module BioPieces
 
       @commands.each_with_index do |command, i|
         enums << Enumerator.new do |output|
-          @status << command.run(enums[i], output)
+          command.run(enums[i], output)
         end
       end
 
@@ -116,8 +124,6 @@ module BioPieces
     # Run a Pipeline.
 #    def run_old(options = {})
 #      @options = options
-#      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output)
-#      options_tie(options, subject: :email)
 #
 #      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 #
@@ -215,8 +221,6 @@ module BioPieces
     class Stream
       include Enumerable
 
-      attr_reader :size
-
       def self.pipe
         input, output = IO.pipe
 
@@ -229,7 +233,6 @@ module BioPieces
       def initialize(io, stream)
         @io     = io
         @stream = stream
-        @size   = 0
       end
 
       def close
@@ -238,19 +241,16 @@ module BioPieces
       end
 
       def read
-        @size += 1
         @stream.read
       end
 
       def each
         @stream.each do |record|
-          @size += 1
           yield record
         end
       end
 
       def write(arg)
-        @size += 1
         @stream.write(arg)
       end
 
@@ -258,6 +258,7 @@ module BioPieces
     end
 
     class Command
+      attr_accessor :status
       attr_reader :name, :options, :lmb
 
       include BioPieces::StatusHelper
@@ -271,41 +272,18 @@ module BioPieces
       end
 
       def run(input, output)
-        status = status_init(@name, @options)
-        self.lmb.call(input, output, status)
-        status
+        self.lmb.call(input, output, self.status)
+
+        self.status
       ensure
         input.close if input.respond_to? :close
         output.close if output.respond_to? :close
       end
 
-#      def run_old(input, output, commands)
-#        @input      = input
-#        @output     = output
-#        @time_start = Time.now
-#        @time_stop  = Time.now
-#
-#        run_options = {}
-#        run_options[:command]     = @command
-#        run_options[:options]     = @options
-#        run_options[:status_file] = @status_file
-#        run_options[:time_start]  = @time_start
-#        run_options[:progress]    = true if self.progress
-#        run_options[:commands]    = commands
-#        run_options[:status]      = {}
-#
-#        @lmb.call(input, output, run_options)
-#
-#        @time_stop  = Time.now
-#      ensure
-#        @output.close if @output
-#        @input.close  if @input
-#      end
-
       def to_s
         options_list = []
 
-        @options_dup.each do |key, value|
+        @options.each do |key, value|
           if value.is_a? String
             value = Regexp::quote(value) if key == :delimiter
             options_list << %{#{key}: "#{value}"}

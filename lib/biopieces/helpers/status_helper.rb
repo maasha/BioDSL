@@ -26,35 +26,46 @@
 
 module BioPieces
   module StatusHelper
-    def status_init(name, options)
-      status = {}
-      status[:name]        = name
-      status[:options]     = options
-      status[:records_in]  = 0
-      status[:records_out] = 0
-      status
+    def status_init
+      @commands.map do |command|
+        command.status = {
+          __status_file__: Tempfile.new(command.name.to_s),
+          name:            command.name,
+          options:         command.options,
+          records_in:      0,
+          records_out:     0
+        }
+      end
+
+      @commands.last.status[:__progress__] = true if @options[:progress]
     end
 
     def status_track(status, &block)
-#      Thread.new do
-#        loop do
-#          pp status
-#
-#          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
-#        end
-#      end
+      Thread.new do
+        loop do
+          status_save(status)
+
+          if status[:__progress__]
+            system("clear")
+
+            pp status_load
+          end
+
+          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
+        end
+      end
 
       block.call
 
-#      pp status
+      status_save(status)
     end
 
-    def status_load(commands)
+    def status_load
       status = []
 
-      commands.each do |command|
+      @commands.each do |command|
         begin
-          status << Marshal.load(File.read(command.status_file))
+          status << Marshal.load(File.read(command.status[:__status_file__]))
         rescue ArgumentError
           retry
         end
@@ -63,26 +74,10 @@ module BioPieces
       status
     end
 
-    def status_save(input, output, time, run_options)
-      options = {}
-
-      # Remove unmashallable objects
-      run_options[:options].each do |key, value|
-        unless value.is_a? StringIO or value.is_a? IO
-          options[key] = value
-        end
-      end
-
-      status = {
-        command:      run_options[:command],
-        options:      options,
-        records_in:   input  ? input.size  : 0,
-        records_out:  output ? output.size : 0,
-        time_elapsed: (Time.now - time).to_s,
-      }.merge(run_options[:status])
-
-      File.open(run_options[:status_file], 'w') do |ios|
-        ios.write(Marshal.dump(status))
+    def status_save(status)
+      File.open(status[:__status_file__], 'w') do |ios|
+        ios.write(Marshal.dump(status.dup.tap { |h| h.delete(:__status_file__) }.tap { |h| h.delete(:__progress__) } ))
+        #ios.write(Marshal.dump(status.reject { |key, value| key == :__status_file__ || key == :__progress__ } ))
       end
 
       status
