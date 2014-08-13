@@ -98,25 +98,23 @@ module BioPieces
     #    read_fastq(input: "test.fq").
     #    plot_scores(terminal: :png, output: "plot.png").run
     def plot_scores(options = {})
-      options_orig = options.dup
-      @options = options
-      options_allowed :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale
-      options_allowed_values count: [true, false]
-      options_allowed_values terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf]
-      options_files_exists_force :output
+      options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed_values(options, count: [true, false])
+      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_files_exists_force(options, :output)
 
-      key = @options[:key]
-      @options[:terminal] ||= :dumb
-      @options[:title]    ||= "Mean Quality Scores"
-      @options[:xlabel]   ||= "Sequence Position"
-      @options[:ylabel]   ||= "Mean Score"
+      key = options[:key]
+      options[:terminal] ||= :dumb
+      options[:title]    ||= "Mean Quality Scores"
+      options[:xlabel]   ||= "Sequence Position"
+      options[:ylabel]   ||= "Mean Score"
 
       scores_vec = NArray.int(Config::SCORES_MAX)
       count_vec  = NArray.int(Config::SCORES_MAX)
       max        = 0
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
+      lmb = lambda do |input, output, status|
+        status_track(status) do
           input.each do |record|
             if record[:SCORES]
               scores = record[:SCORES]
@@ -131,7 +129,7 @@ module BioPieces
               end
             end
 
-            output.write record if output
+            output << record if output
           end
 
           mean_vec   = NArray.sfloat(max)
@@ -172,7 +170,7 @@ module BioPieces
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
 
       self
     end
