@@ -94,6 +94,8 @@ module BioPieces
 
           if options[:output] === $stdout
             input.each do |record|
+              status[:records_in] += 1
+
               if record[:SEQ_NAME] and record[:SEQ]
                 entry = BioPieces::Seq.new_bp(record)
 
@@ -102,7 +104,10 @@ module BioPieces
                 status[:residues_out]  += entry.length
               end
 
-              output << record if output
+              if output
+                output << record
+                status[:records_out] += 1
+              end
             end
           else
             if options[:gzip]
@@ -115,6 +120,8 @@ module BioPieces
 
             Fasta.open(options[:output], 'w', compress: compress) do |ios|
               input.each do |record|
+                status[:records_in] += 1
+
                 if record[:SEQ_NAME] and record[:SEQ]
                   entry = BioPieces::Seq.new_bp(record)
 
@@ -123,7 +130,10 @@ module BioPieces
                   status[:residues_out]  += entry.length
                 end
 
-                output << record if output
+                if output
+                  output << record
+                  status[:records_out] += 1
+                end
               end
             end
           end

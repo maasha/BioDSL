@@ -88,7 +88,13 @@ module BioPieces
 
       lmb = lambda do |input, output, status|
         status_track(status) do
-          input.each { |record| output << record } if input
+          if input
+            input.each do |record|
+              output << record
+              status[:records_in]  += 1
+              status[:records_out] += 1
+            end
+          end
 
           status[:sequences_in] = 0
           status[:residues_in]  = 0
@@ -103,7 +109,9 @@ module BioPieces
                   ios.each do |entry|
                     throw :break if options[:first] == count
 
-                    output << entry.to_bp if output
+                    output << entry.to_bp
+
+                    status[:records_out]  += 1
                     status[:sequences_in] += 1
                     status[:residues_in]  += entry.length
 
@@ -116,7 +124,9 @@ module BioPieces
                   end
                 else
                   ios.each do |entry|
-                    output << entry.to_bp if output
+                    output << entry.to_bp
+
+                    status[:records_out]  += 1
                     status[:sequences_in] += 1
                     status[:residues_in]  += entry.length
                   end
@@ -126,9 +136,11 @@ module BioPieces
 
             if options[:last]
               buffer.each do |entry|
-                output << entry.to_bp if output
+                output << entry.to_bp
+
+                status[:records_out]  += 1
                 status[:sequences_in] += 1
-                status[:residues_in] += entry.length
+                status[:residues_in]  += entry.length
               end
             end
           end

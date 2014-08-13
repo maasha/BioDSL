@@ -154,6 +154,8 @@ module BioPieces
           lookup  = compile_lookup(options)
 
           input.each do |record|
+            status[:records_in] += 1
+
             match = false
 
             if options[:exact]
@@ -166,8 +168,10 @@ module BioPieces
             
             if match and not invert
               output << record
+              status[:records_out] += 1
             elsif not match and invert
               output << record
+              status[:records_out] += 1
             end
           end
         end

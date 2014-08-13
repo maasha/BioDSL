@@ -116,6 +116,8 @@ module BioPieces
       lmb = lambda do |input, output, status|
         status_track(status) do
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SCORES]
               scores = record[:SCORES]
 
@@ -130,6 +132,8 @@ module BioPieces
             end
 
             output << record if output
+
+            status[:records_out] += 1
           end
 
           mean_vec   = NArray.sfloat(max)

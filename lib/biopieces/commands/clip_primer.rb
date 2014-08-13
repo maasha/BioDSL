@@ -128,6 +128,8 @@ module BioPieces
           del = (primer.length * options[:deletion_percent]  * 0.01).round
 
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SEQ]
               entry = BioPieces::Seq.new_bp(record)
               dist  = options[:search_distance] || entry.length  
@@ -178,6 +180,8 @@ module BioPieces
             end
 
             output << record
+
+            status[:records_out] += 1
           end
         end
       end

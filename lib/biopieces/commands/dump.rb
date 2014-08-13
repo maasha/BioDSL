@@ -66,12 +66,19 @@ module BioPieces
 
               pp record
 
-              output << record if output
+              status[:records_in] += 1
+
+              if output
+                output << record
+                status[:records_out] += 1
+              end
             end
           elsif options[:last]
             buffer = []
 
             input.each do |record|
+              status[:records_in] += 1
+
               buffer << record
               buffer.shift if buffer.size > options[:last]
             end
@@ -83,9 +90,14 @@ module BioPieces
             end
           else
             input.each do |record|
+              status[:records_in] += 1
+
               pp record
 
-              output << record if output
+              if output
+                output << record
+                status[:records_out] += 1
+              end
             end
           end
         end

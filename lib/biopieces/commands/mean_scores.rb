@@ -97,6 +97,8 @@ module BioPieces
       lmb = lambda do |input, output, status|
         status_track(status) do
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SCORES] and record[:SCORES].length > 0
               entry = BioPieces::Seq.new_bp(record)
 
@@ -108,6 +110,8 @@ module BioPieces
             end
 
             output << record
+
+            status[:records_out] += 1
           end
         end
       end

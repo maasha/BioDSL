@@ -89,6 +89,8 @@ module BioPieces
           status[:residues_out]  = 0
 
           input.each_slice(2) do |record1, record2|
+            status[:records_in] += 2
+
             if record1[:SEQ] and record2[:SEQ]
               entry1 = BioPieces::Seq.new_bp(record1)
               entry2 = BioPieces::Seq.new_bp(record2)
@@ -122,6 +124,7 @@ module BioPieces
 
                   output << new_record
 
+                  status[:records_out]   += 1
                   status[:sequences_out] += 1
                   status[:residues_out]  += merged.length
                 end
@@ -129,6 +132,8 @@ module BioPieces
             else
               output << record1
               output << record2
+
+              status[:records_out] += 2
             end
           end
         end

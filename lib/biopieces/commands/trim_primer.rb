@@ -133,6 +133,8 @@ module BioPieces
           status[:residues_out]   = 0
 
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SEQ] and record[:SEQ].length > 0
               miss  = true
               entry = BioPieces::Seq.new_bp(record)
@@ -199,6 +201,8 @@ module BioPieces
             end
 
             output << record
+
+            status[:records_out] += 1
           end
         end
       end

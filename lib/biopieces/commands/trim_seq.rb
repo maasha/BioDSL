@@ -116,6 +116,8 @@ module BioPieces
           mode = options[:mode].to_sym
 
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SEQ] and record[:SCORES]
               entry = BioPieces::Seq.new_bp(record)
 
@@ -135,6 +137,8 @@ module BioPieces
             end
 
             output << record
+
+            status[:records_out] += 1
           end
         end
       end

@@ -111,11 +111,17 @@ module BioPieces
           count_hash = Hash.new(0)
 
           input.each do |record|
+            status[:records_in] += 1
+
             if record[key]
               count_hash[record[key].to_i] += 1
             end
 
-            output << record if output
+            if output
+              output << record
+
+              status[:records_out] += 1
+            end
           end
 
           x_max = count_hash.keys.max
