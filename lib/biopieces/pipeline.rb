@@ -268,26 +268,10 @@ module BioPieces
       include BioPieces::LogHelper
       include BioPieces::OptionsHelper
 
-      def initialize(command, options = {}, options_orig = {}, lmb)
-        @command     = command
-        @options     = options
-        @options_dup = options_orig
-        @lmb         = lmb
-        @status_file = Tempfile.new(command.to_s)
-        @progress    = nil
-        @time_start  = nil
-        @time_stop   = nil
-        @input       = nil
-        @output      = nil
-      rescue Exception => exception
-        unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
-          STDERR.puts "Error in #{@command}: " + exception.to_s
-          STDERR.puts exception.backtrace if @options[:verbose]
-          log_error(exception)
-          exit 2
-        else
-          raise exception
-        end
+      def initialize(name, options, lmb)
+        @name    = name
+        @options = options
+        @lmb     = lmb
       end
 
       def run(input, output)

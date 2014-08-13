@@ -80,26 +80,24 @@ module BioPieces
     #
     #    read_fastq(input: "*.fq")
     def read_fastq(options = {})
-      options_orig = options.dup
-      @options     = options
-      @options[:encoding] ||= :auto
-      options_allowed :encoding, :input, :input2, :first, :last
-      options_allowed_values encoding: [:auto, :base_33, :base_64]
-      options_required :input
-      options_glob :input, :input2
-      options_files_exist :input, :input2
-      options_unique :first, :last
-      options_assert ":first >= 0"
-      options_assert ":last >= 0"
+      options[:encoding] ||= :auto
+      options_allowed(options, :encoding, :input, :input2, :first, :last)
+      options_allowed_values(options, encoding: [:auto, :base_33, :base_64])
+      options_required(options, :input)
+      options_glob(options, :input, :input2)
+      options_files_exist(options, :input, :input2)
+      options_unique(options, :first, :last)
+      options_assert(options, ":first >= 0")
+      options_assert(options, ":last >= 0")
 
-      encoding = @options[:encoding].to_sym
+      encoding = options[:encoding].to_sym
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
-          input.each { |record| output.write record } if input
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          input.each { |record| output << record } if input
 
-          run_options[:status][:sequences_in] = 0
-          run_options[:status][:residues_in] = 0
+          status[:sequences_in] = 0
+          status[:residues_in]  = 0
 
           count  = 0
           buffer = []
@@ -141,11 +139,11 @@ module BioPieces
                   if options[:first]
                     throw :break if options[:first] == count
 
-                    output.write entry1.to_bp
-                    output.write entry2.to_bp
+                    output << entry1.to_bp
+                    output << entry2.to_bp
 
-                    run_options[:status][:sequences_in] += 2
-                    run_options[:status][:residues_in] += entry1.length + entry2.length
+                    status[:sequences_in] += 2
+                    status[:residues_in]  += entry1.length + entry2.length
 
                     count += 2
                   elsif options[:last]
@@ -154,11 +152,11 @@ module BioPieces
                       buffer << entry2
                       buffer.shift if buffer.size > options[:last]
                   else
-                    output.write entry1.to_bp if output
-                    output.write entry2.to_bp if output
+                    output << entry1.to_bp if output
+                    output << entry2.to_bp if output
 
-                    run_options[:status][:sequences_in] += 2
-                    run_options[:status][:residues_in] += entry1.length + entry2.length
+                    status[:sequences_in] += 2
+                    status[:residues_in]  += entry1.length + entry2.length
                   end
                 end
 
@@ -189,18 +187,18 @@ module BioPieces
                     if options[:first]
                       throw :break if options[:first] == count
 
-                      output.write entry.to_bp
-                      run_options[:status][:sequences_in] += 1
-                      run_options[:status][:residues_in] += entry.length
+                      output << entry.to_bp
+                      status[:sequences_in] += 1
+                      status[:residues_in] += entry.length
 
                       count += 1
                     elsif options[:last]
                       buffer << entry
                       buffer.shift if buffer.size > options[:last]
                     else
-                      output.write entry.to_bp if output
-                      run_options[:status][:sequences_in] += 1
-                      run_options[:status][:residues_in] += entry.length
+                      output << entry.to_bp if output
+                      status[:sequences_in] += 1
+                      status[:residues_in] += entry.length
                     end
                   end
                 end
@@ -209,15 +207,15 @@ module BioPieces
 
             if options[:last]
               buffer.each do |entry|
-                output.write entry.to_bp
-                run_options[:status][:residues_in] += entry.length
+                output << entry.to_bp
+                status[:residues_in] += entry.length
               end
             end
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
 
       self
     end
