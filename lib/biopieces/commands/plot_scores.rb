@@ -98,6 +98,7 @@ module BioPieces
     #    read_fastq(input: "test.fq").
     #    plot_scores(terminal: :png, output: "plot.png").run
     def plot_scores(options = {})
+      options_orig = options.dup
       options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
       options_allowed_values(options, count: [true, false])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
@@ -174,7 +175,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

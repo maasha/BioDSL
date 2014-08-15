@@ -80,6 +80,7 @@ module BioPieces
     #
     #    read_fastq(input: "*.fq")
     def read_fastq(options = {})
+      options_orig = options.dup
       options[:encoding] ||= :auto
       options_allowed(options, :encoding, :input, :input2, :first, :last)
       options_allowed_values(options, encoding: [:auto, :base_33, :base_64])
@@ -229,7 +230,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

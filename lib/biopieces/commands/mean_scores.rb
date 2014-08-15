@@ -87,6 +87,7 @@ module BioPieces
     # Which indicates a local minimum was located at the stretch of ,,,,, =
     # 11+11+11+11+11 / 5 = 11.0
     def mean_scores(options = {})
+      options_orig = options.dup
       options_allowed(options, :local, :window_size)
       options_tie(options, window_size: :local)
       options_allowed_values(options, local: [true, false])
@@ -116,7 +117,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

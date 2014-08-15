@@ -102,6 +102,7 @@ module BioPieces
     #      :TRIM_PRIMER_LEN=>7,
     #      :TRIM_PRIMER_PAT=>"ACTACGT"}
     def trim_primer(options = {})
+      options_orig = options.dup
       options_allowed(options, :primer, :direction, :overlap_min, :reverse_complement,
                       :mismatch_percent, :insertion_percent, :deletion_percent)
       options_required(options, :primer, :direction)
@@ -207,7 +208,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

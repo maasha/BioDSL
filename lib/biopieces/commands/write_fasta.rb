@@ -80,6 +80,7 @@ module BioPieces
     # 
     #    write_fasta(output: "test.fna.bz2", bzip2: true)
     def write_fasta(options = {})
+      options_orig = options.dup
       options_allowed(options, :force, :output, :wrap, :gzip, :bzip2)
       options_unique(options, :gzip, :bzip2)
       options_tie(options, gzip: :output, bzip2: :output)
@@ -140,7 +141,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

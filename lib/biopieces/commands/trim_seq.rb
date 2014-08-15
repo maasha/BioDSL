@@ -96,6 +96,7 @@ module BioPieces
     #    SCORES: TUVWXYZ[\]^_`abcdefghhgfedcba`_^]\[ZYXWVUT
     #    ---
     def trim_seq(options = {})
+      options_orig = options.dup
       options_allowed(options, :quality_min, :length_min, :mode)
       options_allowed_values(options, mode: [:left, :right, :both])
       options_assert(options, ":quality_min >= 0")
@@ -143,7 +144,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

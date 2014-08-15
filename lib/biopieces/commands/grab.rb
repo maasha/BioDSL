@@ -139,6 +139,7 @@ module BioPieces
     # 
     #    grab(select_file: "ids.txt", keys: :ID, exact: true)
     def grab(options = {})
+      options_orig = options.dup
       options_allowed(options, :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case)
       options_required_unique(options, :select, :select_file, :reject, :reject_file, :evaluate)
       options_conflict(options, keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate)
@@ -177,7 +178,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

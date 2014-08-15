@@ -41,19 +41,21 @@ module BioPieces
     end
 
     def status_track(status, &block)
-      Thread.new do
-        loop do
-          status_save(status)
-
-          if status[:__progress__]
-            system("clear")
-
-            pp status_load
-          end
-
-          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
-        end
-      end
+#      if @options[:progress]
+#        Thread.new do
+#          loop do
+#            status_save(status)
+#
+#            if status[:__progress__]
+#              system("clear")
+#
+#              pp status_load
+#            end
+#
+#            sleep BioPieces::Config::STATUS_SAVE_INTERVAL
+#          end
+#        end
+#      end
 
       block.call
 
@@ -64,23 +66,37 @@ module BioPieces
       status = []
 
       @commands.each do |command|
-        begin
+#        begin
           status << Marshal.load(File.read(command.status[:__status_file__]))
-        rescue ArgumentError
-          retry
-        end
+#        rescue ArgumentError
+#          retry
+#        end
       end
 
       status
     end
 
     def status_save(status)
-      File.open(status[:__status_file__], 'w') do |ios|
-        ios.write(Marshal.dump(status.dup.tap { |h| h.delete(:__status_file__) }.tap { |h| h.delete(:__progress__) } ))
-        #ios.write(Marshal.dump(status.reject { |key, value| key == :__status_file__ || key == :__progress__ } ))
+      data = {}
+
+      status.each do |key, value|
+        next if key == :__status_file__ || key == :__progress__
+
+        begin
+          Marshal.dump(key)
+          Marshal.dump(value)
+        rescue TypeError
+          next
+        end
+
+        data[key] = value
       end
 
-      status
+      File.open(status[:__status_file__], 'w') do |ios|
+        ios.write(Marshal.dump(data))
+      end
+
+      data
     end
   end
 end

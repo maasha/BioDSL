@@ -53,6 +53,7 @@ module BioPieces
     # 
     #    dump(last: 10)
     def dump(options = {})
+      options_orig = options
       options_allowed(options, :first, :last)
       options_unique(options, :first, :last)
       options_assert(options, ":first > 0")
@@ -103,7 +104,7 @@ module BioPieces
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

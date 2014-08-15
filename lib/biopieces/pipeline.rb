@@ -1,5 +1,4 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
@@ -41,7 +40,7 @@ module BioPieces
     def initialize
       @options  = {}
       @commands = []
-      @status   = []
+      @status   = {}
     end
 
     # Returns the size or number of commands in a pipeline.
@@ -49,14 +48,25 @@ module BioPieces
       @commands.size
     end
 
+    # Method for adding two pipes and returning a new pipe.
+    def +(pipe)
+    end
+
+    # Method for merging one pipeline onto another.
+    def <<(pipeline)
+      pipeline.commands.map { |command| self.commands << command }
+      pipeline.status.map   { |status|  self.status   << status }
+
+      self
+    end
+
     # Method that adds two Pipelines and return a new Pipeline.
     def +(pipeline)
       raise ArgumentError, "Not a pipeline: #{pipeline.inspect}" unless self.class === pipeline
 
       p = self.class.new
-      p.commands = @commands + pipeline.commands
-      p.commands.map { |c| c.status_file = Tempfile.new(c.command.to_s) }
-      p
+      p << self
+      p << pipeline
     end
 
     # Removes last command from a Pipeline and returns a new Pipeline with this command.
@@ -68,12 +78,14 @@ module BioPieces
 
     # Run a Pipeline.
     def run(options = {})
+      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
+
       options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork)
       options_allowed_values(options, fork: [true, false, nil])
       options_tie(options, subject: :email)
 
       @options = options
-      
+
       status_init
 
       if @options[:fork]
@@ -82,13 +94,17 @@ module BioPieces
         run_enumerate
       end
 
-      @status = status_load
+      @status[:status] = status_load
+
+      pp @status if @options[:verbose]
+      email_send if @options[:email]
 
       self
     end
 
     def run_fork
-      out      = []
+      input    = @options[:input]  || []
+      output   = @options[:output] || []
       wait_pid = nil
 
       @commands.reverse.each_cons(2) do |cmd2, cmd1|
@@ -96,21 +112,21 @@ module BioPieces
 
         pid = Process.fork do
           io_write.close
-          status = cmd2.run(io_read, out)
+          status = cmd2.run(io_read, output)
         end
 
         io_read.close if io_read.respond_to? :close
-        out.close     if out.respond_to? :close
-        out = io_write
+        output.close  if output.respond_to? :close
+        output = io_write
 
         wait_pid ||= pid # only the first created process which is tail of pipeline
       end
 
-      @commands.first.run([], out)
+      @commands.first.run(input, output)
     end
 
     def run_enumerate
-      enums = [[]]
+      enums = [@options[:input]]
 
       @commands.each_with_index do |command, i|
         enums << Enumerator.new do |output|
@@ -118,7 +134,12 @@ module BioPieces
         end
       end
 
-      enums.last.each {}
+      if @options[:output]
+        enums.last.each { |record| @options[:output].write record }
+        @options[:output].close
+      else
+        enums.last.each {}
+      end
     end
 
     # Run a Pipeline.
@@ -259,16 +280,17 @@ module BioPieces
 
     class Command
       attr_accessor :status
-      attr_reader :name, :options, :lmb
+      attr_reader :name, :options, :options_orig, :lmb
 
       include BioPieces::StatusHelper
       include BioPieces::LogHelper
       include BioPieces::OptionsHelper
 
-      def initialize(name, options, lmb)
-        @name    = name
-        @options = options
-        @lmb     = lmb
+      def initialize(name, options, options_orig, lmb)
+        @name         = name
+        @options      = options
+        @options_orig = options_orig
+        @lmb          = lmb
       end
 
       def run(input, output)
@@ -283,7 +305,7 @@ module BioPieces
       def to_s
         options_list = []
 
-        @options.each do |key, value|
+        @options_orig.each do |key, value|
           if value.is_a? String
             value = Regexp::quote(value) if key == :delimiter
             options_list << %{#{key}: "#{value}"}
@@ -295,9 +317,9 @@ module BioPieces
         end
 
         if @options.empty?
-          ".#{@command}"
+          ".#{@name}"
         else
-          ".#{@command}(#{options_list.join(", ")})"
+          ".#{@name}(#{options_list.join(", ")})"
         end
       end
     end
