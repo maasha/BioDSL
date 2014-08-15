@@ -41,21 +41,21 @@ module BioPieces
     end
 
     def status_track(status, &block)
-#      if @options[:progress]
-#        Thread.new do
-#          loop do
-#            status_save(status)
-#
-#            if status[:__progress__]
-#              system("clear")
-#
-#              pp status_load
-#            end
-#
-#            sleep BioPieces::Config::STATUS_SAVE_INTERVAL
-#          end
-#        end
-#      end
+      if @options[:progress]
+        Thread.new do
+          loop do
+            status_save(status)
+
+            if status[:__progress__]
+              system("clear")
+
+              pp status_load
+            end
+
+            sleep BioPieces::Config::STATUS_SAVE_INTERVAL
+          end
+        end
+      end
 
       block.call
 

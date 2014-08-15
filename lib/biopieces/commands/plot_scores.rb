@@ -104,7 +104,6 @@ module BioPieces
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_files_exists_force(options, :output)
 
-      key = options[:key]
       options[:terminal] ||= :dumb
       options[:title]    ||= "Mean Quality Scores"
       options[:xlabel]   ||= "Sequence Position"

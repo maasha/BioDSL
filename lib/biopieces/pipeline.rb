@@ -48,10 +48,6 @@ module BioPieces
       @commands.size
     end
 
-    # Method for adding two pipes and returning a new pipe.
-    def +(pipe)
-    end
-
     # Method for merging one pipeline onto another.
     def <<(pipeline)
       pipeline.commands.map { |command| self.commands << command }
@@ -112,7 +108,7 @@ module BioPieces
 
         pid = Process.fork do
           io_write.close
-          status = cmd2.run(io_read, output)
+          cmd2.run(io_read, output)
         end
 
         io_read.close if io_read.respond_to? :close
