@@ -95,20 +95,19 @@ module BioPieces
     #     :CLIP_PRIMER_PAT=>"TGACTACGACTACGACTACT"}
     def clip_primer(options = {})
       options_orig = options.dup
-      @options = options
-      options_allowed :primer, :direction, :search_distance, :reverse_complement,
-                      :mismatch_percent, :insertion_percent, :deletion_percent
-      options_required :primer, :direction
-      options_allowed_values direction: [:forward, :reverse]
-      options_allowed_values reverse_complement: [true, false]
-      options_assert ":search_distance   >  0"
-      options_assert ":mismatch_percent  >= 0"
-      options_assert ":insertion_percent >= 0"
-      options_assert ":deletion_percent  >= 0"
+      options_allowed(options, :primer, :direction, :search_distance, :reverse_complement,
+                      :mismatch_percent, :insertion_percent, :deletion_percent)
+      options_required(options, :primer, :direction)
+      options_allowed_values(options, direction: [:forward, :reverse])
+      options_allowed_values(options, reverse_complement: [true, false])
+      options_assert(options, ":search_distance   >  0")
+      options_assert(options, ":mismatch_percent  >= 0")
+      options_assert(options, ":insertion_percent >= 0")
+      options_assert(options, ":deletion_percent  >= 0")
 
-      @options[:mismatch_percent]  ||= 0
-      @options[:insertion_percent] ||= 0
-      @options[:deletion_percent]  ||= 0
+      options[:mismatch_percent]  ||= 0
+      options[:insertion_percent] ||= 0
+      options[:deletion_percent]  ||= 0
 
       if options[:reverse_complement]
         primer = Seq.new(seq: options[:primer], type: :dna).reverse.complement.seq
@@ -116,31 +115,33 @@ module BioPieces
         primer = options[:primer]
       end
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
-          run_options[:status][:sequences_in]   = 0
-          run_options[:status][:sequences_out]  = 0
-          run_options[:status][:pattern_hits]   = 0
-          run_options[:status][:pattern_misses] = 0
-          run_options[:status][:residues_in]    = 0
-          run_options[:status][:residues_out]   = 0
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_in]   = 0
+          status[:sequences_out]  = 0
+          status[:pattern_hits]   = 0
+          status[:pattern_misses] = 0
+          status[:residues_in]    = 0
+          status[:residues_out]   = 0
 
           mis = (primer.length * options[:mismatch_percent]  * 0.01).round
           ins = (primer.length * options[:insertion_percent] * 0.01).round
           del = (primer.length * options[:deletion_percent]  * 0.01).round
 
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SEQ]
               entry = BioPieces::Seq.new_bp(record)
               dist  = options[:search_distance] || entry.length  
 
-              run_options[:status][:sequences_in] += 1
-              run_options[:status][:residues_in]  += entry.length
+              status[:sequences_in] += 1
+              status[:residues_in]  += entry.length
 
               case options[:direction]
               when :reverse
                 if match = entry.patmatch(primer, start: entry.length - dist, stop: entry.length - 1, max_mismatches: mis, max_insertions: ins, max_deletions: del)
-                  run_options[:status][:pattern_hits] += 1
+                  status[:pattern_hits] += 1
 
                   entry = entry[0 ... match.pos]
 
@@ -150,14 +151,14 @@ module BioPieces
                   record[:CLIP_PRIMER_LEN]       = match.length
                   record[:CLIP_PRIMER_PAT]       = match.match
                 else
-                  run_options[:status][:pattern_misses] += 1
+                  status[:pattern_misses] += 1
                 end
               when :forward
                 stop = dist - primer.length
                 stop = 0 if stop < 0
 
                 if match = entry.patmatch(primer, start: 0, stop: stop, max_mismatches: mis, max_insertions: ins, max_deletions: del)
-                  run_options[:status][:pattern_hits] += 1
+                  status[:pattern_hits] += 1
 
                   if match.pos + match.length <= entry.length
                     entry = entry[match.pos + match.length .. -1]
@@ -169,22 +170,24 @@ module BioPieces
                     record[:CLIP_PRIMER_PAT]       = match.match
                   end
                 else
-                  run_options[:status][:pattern_misses] += 1
+                  status[:pattern_misses] += 1
                 end
               else
                 raise RunTimeError, "This should never happen"
               end
 
-              run_options[:status][:sequences_out] += 1
-              run_options[:status][:residues_out]  += entry.length
+              status[:sequences_out] += 1
+              status[:residues_out]  += entry.length
             end
 
-            output.write record
+            output << record
+
+            status[:records_out] += 1
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

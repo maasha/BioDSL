@@ -73,30 +73,31 @@ module BioPieces
     #    run
     def assemble_pairs(options = {})
       options_orig = options.dup
-      @options = options
-      options_allowed :mismatch_percent, :overlap_min, :overlap_max, :reverse_complement
-      options_allowed_values reverse_complement: [true, false, nil]
-      options_assert ":mismatch_percent >= 0"
-      options_assert ":mismatch_percent <= 100"
-      options_assert ":overlap_min > 0"
+      options_allowed(options, :mismatch_percent, :overlap_min, :overlap_max, :reverse_complement)
+      options_allowed_values(options, reverse_complement: [true, false, nil])
+      options_assert(options, ":mismatch_percent >= 0")
+      options_assert(options, ":mismatch_percent <= 100")
+      options_assert(options, ":overlap_min > 0")
 
-      @options[:mismatch_percent] ||= 20
-      @options[:overlap_min]      ||= 1
+      options[:mismatch_percent] ||= 20
+      options[:overlap_min]      ||= 1
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
-          run_options[:status][:sequences_in] = 0
-          run_options[:status][:sequences_out] = 0
-          run_options[:status][:residues_in] = 0
-          run_options[:status][:residues_out] = 0
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_in]  = 0
+          status[:sequences_out] = 0
+          status[:residues_in]   = 0
+          status[:residues_out]  = 0
 
           input.each_slice(2) do |record1, record2|
+            status[:records_in] += 2
+
             if record1[:SEQ] and record2[:SEQ]
               entry1 = BioPieces::Seq.new_bp(record1)
               entry2 = BioPieces::Seq.new_bp(record2)
 
-              run_options[:status][:sequences_in] += 2
-              run_options[:status][:residues_in]  += entry1.length + entry2.length
+              status[:sequences_in] += 2
+              status[:residues_in]  += entry1.length + entry2.length
 
               if entry1.length >= options[:overlap_min] and
                 entry2.length >= options[:overlap_min]
@@ -122,21 +123,24 @@ module BioPieces
                     new_record[:HAMMING_DIST] = $2
                   end
 
-                  output.write new_record
+                  output << new_record
 
-                  run_options[:status][:sequences_out] += 1
-                  run_options[:status][:residues_out]  += merged.length
+                  status[:records_out]   += 1
+                  status[:sequences_out] += 1
+                  status[:residues_out]  += merged.length
                 end
               end
             else
-              output.write record1
-              output.write record2
+              output << record1
+              output << record2
+
+              status[:records_out] += 2
             end
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

@@ -77,34 +77,38 @@ module BioPieces
     #    write_fastq(output: "test.fq.bz2", bzip2: true)
     def write_fastq(options = {})
       options_orig = options.dup
-      @options     = options
-      options_allowed :encoding, :force, :output, :gzip, :bzip2
-      options_allowed_values encoding: [:base_33, :base_64]
-      options_unique :gzip, :bzip2
-      options_tie gzip: :output, bzip2: :output
-      options_files_exists_force :output
+      options_allowed(options, :encoding, :force, :output, :gzip, :bzip2)
+      options_allowed_values(options, encoding: [:base_33, :base_64])
+      options_unique(options, :gzip, :bzip2)
+      options_tie(options, gzip: :output, bzip2: :output)
+      options_files_exists_force(options, :output)
 
-      encoding = @options[:encoding] || :base_33
+      encoding = options[:encoding] || :base_33
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
+      lmb = lambda do |input, output, status|
+        status_track(status) do
           options[:output] ||= $stdout
 
-          run_options[:status][:sequences_out] = 0
-          run_options[:status][:residues_out] = 0
+          status[:sequences_out] = 0
+          status[:residues_out]  = 0
 
           if options[:output] === $stdout
             input.each do |record|
+              status[:records_in] += 1
+
               if record[:SEQ_NAME] and record[:SEQ] and record[:SCORES]
                 entry = BioPieces::Seq.new_bp(record)
                 entry.qual_convert!(:base_33, encoding)
 
                 $stdout.puts entry.to_fastq
-                run_options[:status][:sequences_out] += 1
-                run_options[:status][:residues_out] += entry.length
+                status[:sequences_out] += 1
+                status[:residues_out]  += entry.length
               end
 
-              output.write record if output
+              if output
+                output << record
+                status[:records_out] += 1
+              end
             end
           else
             if options[:gzip]
@@ -117,23 +121,28 @@ module BioPieces
 
             Fastq.open(options[:output], 'w', compress: compress) do |ios|
               input.each do |record|
+                status[:records_in] += 1
+
                 if record[:SEQ_NAME] and record[:SEQ] and record[:SCORES]
                   entry = BioPieces::Seq.new_bp(record)
                   entry.qual_convert!(:base_33, encoding)
 
                   ios.puts entry.to_fastq
-                  run_options[:status][:sequences_out] += 1
-                  run_options[:status][:residues_out] += entry.length
+                  status[:sequences_out] += 1
+                  status[:residues_out]  += entry.length
                 end
 
-                output.write record if output
+                if output
+                  output << record
+                  status[:records_out] += 1
+                end
               end
             end
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end
