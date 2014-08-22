@@ -31,6 +31,8 @@ require 'test/helper'
 
 class TestWriteFastq < Test::Unit::TestCase 
   def setup
+    @zcat = BioPieces::Filesys::which('gzcat') || BioPieces::Filesys::which('zcat')
+
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.fq')
     @file2  = File.join(@tmpdir, 'test.fq')
@@ -114,7 +116,7 @@ class TestWriteFastq < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::WriteFastq to file outputs gzipped data correctly" do
     @p.write_fastq(output: @file, gzip: true).run(input: @input)
-    result = `zcat #{@file}`
+    result = `#{@zcat} #{@file}`
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"
     assert_equal(expected, result)
   end

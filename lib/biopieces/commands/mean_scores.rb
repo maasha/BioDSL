@@ -88,17 +88,18 @@ module BioPieces
     # 11+11+11+11+11 / 5 = 11.0
     def mean_scores(options = {})
       options_orig = options.dup
-      @options = options
-      options_allowed :local, :window_size
-      options_tie window_size: :local
-      options_allowed_values local: [true, false]
-      options_assert ":window_size > 1"
+      options_allowed(options, :local, :window_size)
+      options_tie(options, window_size: :local)
+      options_allowed_values(options, local: [true, false])
+      options_assert(options, ":window_size > 1")
 
-      @options[:window_size] ||= 5
+      options[:window_size] ||= 5
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
+      lmb = lambda do |input, output, status|
+        status_track(status) do
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SCORES] and record[:SCORES].length > 0
               entry = BioPieces::Seq.new_bp(record)
 
@@ -109,12 +110,14 @@ module BioPieces
               end
             end
 
-            output.write record
+            output << record
+
+            status[:records_out] += 1
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

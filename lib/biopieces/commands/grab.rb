@@ -140,22 +140,23 @@ module BioPieces
     #    grab(select_file: "ids.txt", keys: :ID, exact: true)
     def grab(options = {})
       options_orig = options.dup
-      @options = options
-      options_allowed :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case
-      options_required_unique :select, :select_file, :reject, :reject_file, :evaluate
-      options_conflict keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate
-      options_conflict keys_only: :keys, values_only: :keys
-      options_unique :keys_only, :values_only
-      options_files_exist :select_file, :reject_file
+      options_allowed(options, :select, :select_file, :reject, :reject_file, :evaluate, :exact, :keys, :keys_only, :values_only, :ignore_case)
+      options_required_unique(options, :select, :select_file, :reject, :reject_file, :evaluate)
+      options_conflict(options, keys: :evaluate, keys_only: :evaluate, values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate)
+      options_conflict(options, keys_only: :keys, values_only: :keys)
+      options_unique(options, :keys_only, :values_only)
+      options_files_exist(options, :select_file, :reject_file)
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
+      lmb = lambda do |input, output, status|
+        status_track(status) do
           invert  = options[:reject] || options[:reject_file]
           keys    = compile_keys(options)
           regexes = compile_regexes(options)
           lookup  = compile_lookup(options)
 
           input.each do |record|
+            status[:records_in] += 1
+
             match = false
 
             if options[:exact]
@@ -167,15 +168,17 @@ module BioPieces
             end
             
             if match and not invert
-              output.write record
+              output << record
+              status[:records_out] += 1
             elsif not match and invert
-              output.write record
+              output << record
+              status[:records_out] += 1
             end
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end
