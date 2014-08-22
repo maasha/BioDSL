@@ -37,7 +37,7 @@ module BioPieces
         }
       end
 
-      @commands.last.status[:__progress__] = true if @options[:progress]
+      @commands.first.status[:__last__] = true
     end
 
     def status_track(status, &block)
@@ -45,12 +45,6 @@ module BioPieces
         Thread.new do
           loop do
             status_save(status)
-
-            if status[:__progress__]
-              system("clear")
-
-              pp status_load
-            end
 
             sleep BioPieces::Config::STATUS_SAVE_INTERVAL
           end
@@ -62,15 +56,27 @@ module BioPieces
       status_save(status)
     end
 
+    def status_progress(&block)
+      Thread.new do
+        loop do
+          pp status_load
+
+          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
+        end
+      end
+
+      block.call
+    end
+
     def status_load
       status = []
 
       @commands.each do |command|
-#        begin
+        begin
           status << Marshal.load(File.read(command.status[:__status_file__]))
-#        rescue ArgumentError
-#          retry
-#        end
+        rescue ArgumentError
+          retry
+        end
       end
 
       status
@@ -80,8 +86,9 @@ module BioPieces
       data = {}
 
       status.each do |key, value|
-        next if key == :__status_file__ || key == :__progress__
+        next if key == :__status_file__ || key == :__last__
 
+        # Skip unmarshallable objects
         begin
           Marshal.dump(key)
           Marshal.dump(value)
@@ -93,10 +100,8 @@ module BioPieces
       end
 
       File.open(status[:__status_file__], 'w') do |ios|
-        ios.write(Marshal.dump(data))
+        Marshal.dump(data, ios)
       end
-
-      data
     end
   end
 end

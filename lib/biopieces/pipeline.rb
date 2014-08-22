@@ -85,9 +85,9 @@ module BioPieces
       status_init
 
       if @options[:fork]
-        run_fork
+        @options[:progress] ? status_progress { run_fork }      : run_fork
       else
-        run_enumerate
+        @options[:progress] ? status_progress { run_enumerate } : run_enumerate
       end
 
       @status[:status] = status_load
@@ -119,6 +119,8 @@ module BioPieces
       end
 
       @commands.first.run(input, output)
+
+      Process.waitpid(wait_pid) if wait_pid
     end
 
     def run_enumerate
