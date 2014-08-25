@@ -97,32 +97,33 @@ module BioPieces
     #    ---
     def trim_seq(options = {})
       options_orig = options.dup
-      @options = options
-      options_allowed :quality_min, :length_min, :mode
-      options_allowed_values mode: [:left, :right, :both]
-      options_assert ":quality_min >= 0"
-      options_assert ":quality_min <= 40"
-      options_assert ":length_min > 0"
+      options_allowed(options, :quality_min, :length_min, :mode)
+      options_allowed_values(options, mode: [:left, :right, :both])
+      options_assert(options, ":quality_min >= 0")
+      options_assert(options, ":quality_min <= 40")
+      options_assert(options, ":length_min > 0")
 
-      @options[:quality_min] ||= 20
-      @options[:mode]        ||= :both
-      @options[:length_min]  ||= 3
+      options[:quality_min] ||= 20
+      options[:mode]        ||= :both
+      options[:length_min]  ||= 3
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
-          run_options[:status][:sequences_in] = 0
-          run_options[:status][:sequences_out] = 0
-          run_options[:status][:residues_in] = 0
-          run_options[:status][:residues_out] = 0
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_in]  = 0
+          status[:sequences_out] = 0
+          status[:residues_in]   = 0
+          status[:residues_out]  = 0
 
           mode = options[:mode].to_sym
 
           input.each do |record|
+            status[:records_in] += 1
+
             if record[:SEQ] and record[:SCORES]
               entry = BioPieces::Seq.new_bp(record)
 
-              run_options[:status][:sequences_in] += 1
-              run_options[:status][:residues_in]  += entry.length
+              status[:sequences_in] += 1
+              status[:residues_in]  += entry.length
 
               case mode
               when :both  then entry.quality_trim!(options[:quality_min], options[:length_min])
@@ -130,18 +131,20 @@ module BioPieces
               when :right then entry.quality_trim_right!(options[:quality_min], options[:length_min])
               end
 
-              run_options[:status][:sequences_out] += 1
-              run_options[:status][:residues_out]  += entry.length
+              status[:sequences_out] += 1
+              status[:residues_out]  += entry.length
 
               record.merge! entry.to_bp
             end
 
-            output.write record
+            output << record
+
+            status[:records_out] += 1
           end
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

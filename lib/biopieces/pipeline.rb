@@ -1,5 +1,4 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
@@ -30,8 +29,7 @@ module BioPieces
   class PipelineError < StandardError; end
 
   class Pipeline
-    attr_reader :status
-    attr_accessor :commands
+    attr_accessor :commands, :status
 
     include BioPieces::Commands
     include BioPieces::HistoryHelper
@@ -40,8 +38,8 @@ module BioPieces
     include BioPieces::StatusHelper
 
     def initialize
-      @commands = []
       @options  = {}
+      @commands = []
       @status   = {}
     end
 
@@ -50,14 +48,21 @@ module BioPieces
       @commands.size
     end
 
+    # Method for merging one pipeline onto another.
+    def <<(pipeline)
+      pipeline.commands.map { |command| self.commands << command }
+      pipeline.status.map   { |status|  self.status   << status }
+
+      self
+    end
+
     # Method that adds two Pipelines and return a new Pipeline.
     def +(pipeline)
       raise ArgumentError, "Not a pipeline: #{pipeline.inspect}" unless self.class === pipeline
 
       p = self.class.new
-      p.commands = @commands + pipeline.commands
-      p.commands.map { |c| c.status_file = Tempfile.new(c.command.to_s) }
-      p
+      p << self
+      p << pipeline
     end
 
     # Removes last command from a Pipeline and returns a new Pipeline with this command.
@@ -69,64 +74,129 @@ module BioPieces
 
     # Run a Pipeline.
     def run(options = {})
-      @options = options
-      options_allowed :verbose, :email, :progress, :subject, :input, :output
-      options_tie subject: :email
-
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      out        = @options[:output]
-      wait_pid   = nil
-      time_start = Time.now
+      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork)
+      options_allowed_values(options, fork: [true, false, nil])
+      options_tie(options, subject: :email)
 
-      @status[:status] = []
-      @commands.last.progress = :true if @options[:progress]
+      @options = options
 
-      @commands.reverse.each_cons(2) do |command2, command1|
-        input, output = Stream.pipe
+      status_init
 
-        pid = fork do
-          output.close
-          command2.run(input, out, @commands)
-        end
-
-        input.close
-        out.close if out
-        out = output
-
-        wait_pid ||= pid # only the first created process which is tail of pipeline
+      if @options[:fork]
+        @options[:progress] ? status_progress { run_fork }      : run_fork
+      else
+        @options[:progress] ? status_progress { run_enumerate } : run_enumerate
       end
 
-      @commands.first.run(@options[:input], out, @commands)
-
-      Process.waitpid(wait_pid) if wait_pid
-
-      @status[:status] = status_load(@commands)
-
-      time_stop = Time.now
-
-      @status[:time_start]   = time_start
-      @status[:time_stop]    = time_stop
-      @status[:time_elapsed] = time_stop - time_start
+      @status[:status] = status_load
 
       pp @status if @options[:verbose]
       email_send if @options[:email]
 
-      log_ok
-
       self
-    rescue Exception => exception
-      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
-        STDERR.puts "Error in run: " + exception.to_s
-        STDERR.puts exception.backtrace if @options[:verbose]
-        log_error(exception)
-        exit 2
-      else
-        raise exception
-      end
-    ensure
-      history_save
     end
+
+    def run_fork
+      input    = @options[:input]  || []
+      output   = @options[:output] || []
+      wait_pid = nil
+
+      @commands.reverse.each_cons(2) do |cmd2, cmd1|
+        io_read, io_write = Stream.pipe
+
+        pid = Process.fork do
+          io_write.close
+          cmd2.run(io_read, output)
+        end
+
+        io_read.close if io_read.respond_to? :close
+        output.close  if output.respond_to? :close
+        output = io_write
+
+        wait_pid ||= pid # only the first created process which is tail of pipeline
+      end
+
+      @commands.first.run(input, output)
+
+      Process.waitpid(wait_pid) if wait_pid
+    end
+
+    def run_enumerate
+      enums = [@options[:input]]
+
+      @commands.each_with_index do |command, i|
+        enums << Enumerator.new do |output|
+          command.run(enums[i], output)
+        end
+      end
+
+      if @options[:output]
+        enums.last.each { |record| @options[:output].write record }
+        @options[:output].close
+      else
+        enums.last.each {}
+      end
+    end
+
+    # Run a Pipeline.
+#    def run_old(options = {})
+#      @options = options
+#
+#      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
+#
+#      out        = @options[:output]
+#      wait_pid   = nil
+#      time_start = Time.now
+#
+#      @commands.last.progress = :true if @options[:progress]
+#
+#      @commands.reverse.each_cons(2) do |command2, command1|
+#        input, output = Stream.pipe
+#
+#        pid = fork do
+#          output.close
+#          command2.run(input, out, @commands)
+#        end
+#
+#        input.close
+#        out.close if out
+#        out = output
+#
+#        wait_pid ||= pid # only the first created process which is tail of pipeline
+#      end
+#
+#      @commands.first.run(@options[:input], out, @commands)
+#
+#      Process.waitpid(wait_pid) if wait_pid
+#
+#      @status[:status] = status_load(@commands)
+#
+#      time_stop = Time.now
+#
+#      @status[:time_start]   = time_start
+#      @status[:time_stop]    = time_stop
+#      @status[:time_elapsed] = time_stop - time_start
+#
+#      pp @status if @options[:verbose]
+#      email_send if @options[:email]
+#
+#      log_ok
+#
+#      self
+#    rescue Exception => exception
+#      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+#        STDERR.puts "Error in run: " + exception.to_s
+#        STDERR.puts exception.backtrace if @options[:verbose]
+#        log_error(exception)
+#        exit 2
+#      else
+#        raise exception
+#      end
+#    ensure
+#      history_save
+#    end
 
     # format a Pipeline to a pretty string which is returned.
     def to_s
@@ -167,18 +237,8 @@ module BioPieces
 
     private
 
-    # Add a command to the pipeline.
-    def add(command, options, options_orig, lmb)
-      @commands << Command.new(command, options, options_orig, lmb)
-
-      self
-    end
-
-
     class Stream
       include Enumerable
-
-      attr_reader :size
 
       def self.pipe
         input, output = IO.pipe
@@ -192,7 +252,6 @@ module BioPieces
       def initialize(io, stream)
         @io     = io
         @stream = stream
-        @size   = 0
       end
 
       def close
@@ -201,79 +260,50 @@ module BioPieces
       end
 
       def read
-        @size += 1
         @stream.read
       end
 
       def each
         @stream.each do |record|
-          @size += 1
           yield record
         end
       end
 
       def write(arg)
-        @size += 1
         @stream.write(arg)
       end
+
+      alias :<< :write
     end
 
     class Command
-      attr_reader :command
-      attr_accessor :progress, :status_file
+      attr_accessor :status
+      attr_reader :name, :options, :options_orig, :lmb
 
+      include BioPieces::StatusHelper
       include BioPieces::LogHelper
       include BioPieces::OptionsHelper
 
-      def initialize(command, options = {}, options_orig = {}, lmb)
-        @command     = command
-        @options     = options
-        @options_dup = options_orig
-        @lmb         = lmb
-        @status_file = Tempfile.new(command.to_s)
-        @progress    = nil
-        @time_start  = nil
-        @time_stop   = nil
-        @input       = nil
-        @output      = nil
-      rescue Exception => exception
-        unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
-          STDERR.puts "Error in #{@command}: " + exception.to_s
-          STDERR.puts exception.backtrace if @options[:verbose]
-          log_error(exception)
-          exit 2
-        else
-          raise exception
-        end
+      def initialize(name, options, options_orig, lmb)
+        @name         = name
+        @options      = options
+        @options_orig = options_orig
+        @lmb          = lmb
       end
 
-      def run(input, output, commands)
-        @input      = input
-        @output     = output
-        @time_start = Time.now
-        @time_stop  = Time.now
+      def run(input, output)
+        self.lmb.call(input, output, self.status)
 
-        run_options = {}
-        run_options[:command]     = @command
-        run_options[:options]     = @options
-        run_options[:status_file] = @status_file
-        run_options[:time_start]  = @time_start
-        run_options[:progress]    = true if self.progress
-        run_options[:commands]    = commands
-        run_options[:status]      = {}
-
-        @lmb.call(input, output, run_options)
-
-        @time_stop  = Time.now
+        self.status
       ensure
-        @output.close if @output
-        @input.close  if @input
+        input.close if input.respond_to? :close
+        output.close if output.respond_to? :close
       end
 
       def to_s
         options_list = []
 
-        @options_dup.each do |key, value|
+        @options_orig.each do |key, value|
           if value.is_a? String
             value = Regexp::quote(value) if key == :delimiter
             options_list << %{#{key}: "#{value}"}
@@ -285,9 +315,9 @@ module BioPieces
         end
 
         if @options.empty?
-          ".#{@command}"
+          ".#{@name}"
         else
-          ".#{@command}(#{options_list.join(", ")})"
+          ".#{@name}(#{options_list.join(", ")})"
         end
       end
     end

@@ -188,7 +188,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with reverse and partial match and overlap_min returns correctly" do
+  test "BioPieces::Pipeline::ClipPrimer with reverse and partial miss due to overlap_min returns correctly" do
     @output.write({SEQ: "ctgactgatcgcaaTCGT"})
     @output.close
     @p.trim_primer(primer: "TCGTATG", direction: :reverse, overlap_min: 5).run(input: @input, output: @output2)
