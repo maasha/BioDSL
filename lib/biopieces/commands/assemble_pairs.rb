@@ -92,7 +92,7 @@ module BioPieces
           input.each_slice(2) do |record1, record2|
             status[:records_in] += 2
 
-            if record1[:SEQ] and record2[:SEQ]
+            if record1 and record2 and record1[:SEQ] and record2[:SEQ]
               entry1 = BioPieces::Seq.new_bp(record1)
               entry2 = BioPieces::Seq.new_bp(record2)
 
@@ -131,8 +131,8 @@ module BioPieces
                 end
               end
             else
-              output << record1
-              output << record2
+              output << record1 if record1
+              output << record2 if record2
 
               status[:records_out] += 2
             end
