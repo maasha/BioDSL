@@ -136,6 +136,8 @@ module BioPieces
             status[:records_out] += 1
           end
 
+          max = 1 if max == 0   # ugly fix to avaid index error
+
           mean_vec   = NArray.sfloat(max)
           mean_vec   = scores_vec[0 ... max].to_f / count_vec[0 ... max]
           count_vec  = count_vec[0 ... max].to_f
