@@ -37,6 +37,7 @@ module BioPieces
   require 'open3'
   require 'stringio'
   require 'tempfile'
+  require 'terminal-table'
   require 'biopieces/commands'
   require 'biopieces/helpers'
   require 'biopieces/seq'
