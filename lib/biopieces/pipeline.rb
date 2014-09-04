@@ -96,6 +96,17 @@ module BioPieces
       email_send if @options[:email]
 
       self
+#    rescue Exception => exception
+#      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+#        STDERR.puts "Error in run: " + exception.to_s
+#        STDERR.puts exception.backtrace if @options[:verbose]
+#        log_error(exception)
+#        exit 2
+#      else
+#        raise exception
+#      end
+#    ensure
+#      history_save
     end
 
     def run_fork
@@ -139,64 +150,6 @@ module BioPieces
         enums.last.each {}
       end
     end
-
-    # Run a Pipeline.
-#    def run_old(options = {})
-#      @options = options
-#
-#      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
-#
-#      out        = @options[:output]
-#      wait_pid   = nil
-#      time_start = Time.now
-#
-#      @commands.last.progress = :true if @options[:progress]
-#
-#      @commands.reverse.each_cons(2) do |command2, command1|
-#        input, output = Stream.pipe
-#
-#        pid = fork do
-#          output.close
-#          command2.run(input, out, @commands)
-#        end
-#
-#        input.close
-#        out.close if out
-#        out = output
-#
-#        wait_pid ||= pid # only the first created process which is tail of pipeline
-#      end
-#
-#      @commands.first.run(@options[:input], out, @commands)
-#
-#      Process.waitpid(wait_pid) if wait_pid
-#
-#      @status[:status] = status_load(@commands)
-#
-#      time_stop = Time.now
-#
-#      @status[:time_start]   = time_start
-#      @status[:time_stop]    = time_stop
-#      @status[:time_elapsed] = time_stop - time_start
-#
-#      pp @status if @options[:verbose]
-#      email_send if @options[:email]
-#
-#      log_ok
-#
-#      self
-#    rescue Exception => exception
-#      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
-#        STDERR.puts "Error in run: " + exception.to_s
-#        STDERR.puts exception.backtrace if @options[:verbose]
-#        log_error(exception)
-#        exit 2
-#      else
-#        raise exception
-#      end
-#    ensure
-#      history_save
-#    end
 
     # format a Pipeline to a pretty string which is returned.
     def to_s
@@ -292,7 +245,13 @@ module BioPieces
       end
 
       def run(input, output)
+        self.status[:time_start] = Time.now
+        self.status[:status]     = "running"
         self.lmb.call(input, output, self.status)
+        self.status[:time_stop]  = Time.now
+        self.status[:status]     = "done"
+
+        status_save(self.status)
 
         self.status
       ensure
