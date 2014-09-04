@@ -50,7 +50,7 @@ module BioPieces
 
     def status_track(status, &block)
       if @options[:progress]
-        Thread.new do
+        thr = Thread.new do
           loop do
             status_save(status)
 
@@ -60,6 +60,8 @@ module BioPieces
       end
 
       block.call
+
+      thr.terminate if @options[:progress]
 
       status_save(status)
     end
