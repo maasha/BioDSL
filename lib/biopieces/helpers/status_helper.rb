@@ -24,6 +24,14 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
+#TODO This monkey patch should be moved somewhere sane.
+# Commify numbers.
+class Numeric
+  def commify
+    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+  end
+end
+
 module BioPieces
   module StatusHelper
     def status_init
@@ -57,15 +65,48 @@ module BioPieces
     end
 
     def status_progress(&block)
+      system("clear")
       Thread.new do
         loop do
-          pp status_load
+          status = status_load
+
+          status.map { |s| s[:time_elapsed] = (s[:time_stop] || Time.now) - s[:time_start] }
+
+          table  = status_tabulate(status).to_s
+
+          print "\e[1;1H"   # Console code to move cursor to 1,1 coordinate.
+          puts "Started: #{status.first[:time_start]}"
+          puts table 
 
           sleep BioPieces::Config::STATUS_SAVE_INTERVAL
         end
       end
 
       block.call
+    end
+
+    def status_tabulate(status)
+      rows = []
+      rows <<  %w{name records_in records_out time_elapsed status}
+
+      status.each do |s|
+        row = []
+        row << s[:name]
+        row << s[:records_in].commify
+        row << s[:records_out].commify
+        row << (Time.mktime(0) + s[:time_elapsed]).strftime("%H:%M:%S")
+        row << s[:status]
+        rows << row
+      end
+
+      table = Terminal::Table.new
+      table.style = {border_x: '', border_y: '', border_i: '' }
+      table.rows = rows
+
+      table.align_column(1, :right)
+      table.align_column(2, :right)
+
+      table
     end
 
     def status_load

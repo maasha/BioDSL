@@ -125,7 +125,7 @@ module BioPieces
             end
           end
 
-          x_max = count_hash.keys.max
+          x_max = count_hash.keys.max || 0
 
           x = []
           y = []
