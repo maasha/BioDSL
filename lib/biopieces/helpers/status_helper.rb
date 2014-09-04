@@ -65,8 +65,10 @@ module BioPieces
     end
 
     def status_progress(&block)
-      system("clear")
-      Thread.new do
+
+      thr = Thread.new do
+        print "\e[H\e[2J"   # Console code to clear screen
+
         loop do
           status = status_load
 
@@ -74,7 +76,7 @@ module BioPieces
 
           table  = status_tabulate(status).to_s
 
-          print "\e[1;1H"   # Console code to move cursor to 1,1 coordinate.
+          print "\e[1;1H"    # Console code to move cursor to 1,1 coordinate.
           puts "Started: #{status.first[:time_start]}"
           puts table 
 
@@ -83,6 +85,8 @@ module BioPieces
       end
 
       block.call
+
+      thr.terminate
     end
 
     def status_tabulate(status)
