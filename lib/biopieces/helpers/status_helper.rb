@@ -150,6 +150,10 @@ module BioPieces
         Marshal.dump(data, ios)
       end
     end
+
+    def status_dump(path)
+      File.open(path, 'w') { |file| file.write @status.to_yaml }
+    end
   end
 end
 
