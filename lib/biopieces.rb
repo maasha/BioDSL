@@ -26,6 +26,13 @@
 
 raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
 
+# Commify numbers.
+class Numeric
+  def commify
+    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+  end
+end
+
 module BioPieces
   require 'pp'
   require 'msgpack'

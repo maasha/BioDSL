@@ -24,14 +24,6 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-#TODO This monkey patch should be moved somewhere sane.
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
-  end
-end
-
 module BioPieces
   module StatusHelper
     def status_init
