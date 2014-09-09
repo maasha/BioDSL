@@ -31,8 +31,8 @@ require 'test/helper'
 
 class TestClipPrimer < Test::Unit::TestCase 
   def setup
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     @p = BioPieces::Pipeline.new
   end
