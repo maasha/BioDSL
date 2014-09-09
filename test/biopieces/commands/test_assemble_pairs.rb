@@ -31,8 +31,8 @@ require 'test/helper'
 
 class TestAssemblePairs < Test::Unit::TestCase 
   def setup
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     @output.write({SEQ_NAME: "test1/1", SEQ: "aaaaaaaagagtcat", SCORES: "IIIIIIIIIIIIIII", SEQ_LEN: 15})
     @output.write({SEQ_NAME: "test1/2", SEQ: "gagtcataaaaaaaa", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})

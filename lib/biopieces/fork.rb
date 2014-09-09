@@ -24,40 +24,58 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+module BioPieces
+  class Fork
+    attr_reader :input, :output
 
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+    def initialize(&block)
+      raise ArgumentError, "No block given" unless block
+
+      @parent = true
+      @alive  = false
+      @pid    = nil
+      @input  = nil
+      @output = nil
+      @block  = block
+    end
+
+    def execute
+      @alive = true
+
+      child_read, parent_write = BioPieces::Stream.pipe
+      parent_read, child_write = BioPieces::Stream.pipe
+
+      pid = Process.fork do
+        parent_write.close
+        parent_read.close
+
+        @parent = false
+        @pid    = Process.pid
+        @input  = child_read
+        @output = child_write
+
+        begin
+          @block.call(self)
+        ensure
+          #@input.close
+          #@output.close
+        end
+      end
+
+      child_write.close
+      child_read.close
+
+      @pid    = pid
+      @input  = parent_read
+      @output = parent_write
+
+      self
+    end
+
+    def wait
+      raise RunTimeError, "Not running" unless @pid
+
+      Process.wait(@pid)
+    end
   end
 end
-
-module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'gnuplot'
-  require 'narray'
-  require 'parallel'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'terminal-table'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  autoload :Config,   'biopieces/config'
-  autoload :Hamming,  'biopieces/hamming'
-  autoload :Version,  'biopieces/version'
-  autoload :Filesys,  'biopieces/filesys'
-  autoload :Fork,     'biopieces/fork'
-  autoload :Pipeline, 'biopieces/pipeline'
-  autoload :Fasta,    'biopieces/fasta'
-  autoload :Fastq,    'biopieces/fastq'
-  autoload :Math,     'biopieces/math'
-  autoload :Stream,   'biopieces/stream'
-end
-
-BP = BioPieces::Pipeline # Module alias for irb short hand
