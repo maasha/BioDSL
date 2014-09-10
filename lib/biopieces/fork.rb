@@ -61,12 +61,7 @@ module BioPieces
         @input  = child_read
         @output = child_write
 
-        begin
-          @block.call(self)
-        ensure
-          @input.close
-          @output.close
-        end
+        @block.call(self)
       end
 
       child_write.close

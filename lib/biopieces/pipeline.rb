@@ -114,25 +114,21 @@ module BioPieces
     def run_fork
       input  = @options[:input]  || []
       output = @options[:output] || []
-#      first  = nil
+      first  = nil
 
       @commands[1 .. -1].reverse.each do |cmd|
-        parent = BioPieces::Fork.new do |child|
+        parent = BioPieces::Fork.execute do |child|
           cmd.run(child.input, output)
         end
         
-        parent.execute
-
         output = parent.output
 
-#        first ||= parent
+        first ||= parent
       end
 
       @commands.first.run(input, output)
 
-#      first.input.close
-#      first.output.close
-#      first.wait
+      first.wait
     end
 
     def run_enumerate
