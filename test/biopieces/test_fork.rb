@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,83 +27,59 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  class ForkError < StandardError; end
+require 'test/helper'
 
-  class Fork
-    attr_reader :input, :output
+class TestFork < Test::Unit::TestCase 
+  def setup
+    @obj = {foo: "bar"}
+  end
 
-    def self.execute(&block)
-      parent = self.new(&block)
-      parent.execute
+  test "BioPieces::Fork.new without block raises" do
+    assert_raise(ArgumentError) { BioPieces::Fork.new }
+  end
+
+  test "BioPieces::Fork.read with no running fork raises" do
+    parent = BioPieces::Fork.new do |child|
     end
 
-    def initialize(&block)
-      raise ArgumentError, "No block given" unless block
+    assert_raise(BioPieces::ForkError) { parent.read }
+  end
 
-      @parent = true
-      @alive  = false
-      @pid    = nil
-      @input  = nil
-      @output = nil
-      @block  = block
+  test "BioPieces::Fork.write with no running fork raises" do
+    parent = BioPieces::Fork.new do |child|
     end
 
-    def execute
-      @alive = true
+    assert_raise(BioPieces::ForkError) { parent.write @obj }
+  end
 
-      child_read, parent_write = BioPieces::Stream.pipe
-      parent_read, child_write = BioPieces::Stream.pipe
-
-      pid = Process.fork do
-        parent_write.close
-        parent_read.close
-
-        @parent = false
-        @pid    = Process.pid
-        @input  = child_read
-        @output = child_write
-
-        begin
-          @block.call(self)
-        ensure
-          @input.close
-          @output.close
-        end
-      end
-
-      child_write.close
-      child_read.close
-
-      @pid    = pid
-      @input  = parent_read
-      @output = parent_write
-
-      self
+  test "BioPieces::Fork.wait with no running fork raises" do
+    parent = BioPieces::Fork.new do |child|
     end
 
-    def running?
-      @pid
+    assert_raise(BioPieces::ForkError) { parent.wait }
+  end
+
+  test "BioPieces::Fork.wait with running fork don't raise" do
+    parent = BioPieces::Fork.execute do |child|
     end
 
-    def read
-      raise BioPieces::ForkError, "Not running" unless running?
+    assert_nothing_raised { parent.wait }
+  end
 
-      @input.read
+  test "BioPieces::Fork IPC returns correctly" do
+    parent = BioPieces::Fork.execute do |child|
+      obj = child.read
+      obj[:child] = true
+      child.write obj
     end
 
-    def write(obj)
-      raise BioPieces::ForkError, "Not running" unless running?
+    parent.write @obj
+    parent.output.close
 
-      @output.write(obj)
-    end
+    result = parent.read
 
-    def wait
-      raise BioPieces::ForkError, "Not running" unless running?
-      @input.close  unless @input.closed?
-      @output.close unless @output.closed?
+    parent.wait
 
-      Process.wait(@pid)
-    end
+    assert_equal({foo: "bar", child: true}, result)
   end
 end
