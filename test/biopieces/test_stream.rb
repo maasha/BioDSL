@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,54 +27,29 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Class for Inter Process Communication between forked processes using msgpack
-  # to serialize and deserialize objects.
-  class Stream
-    include Enumerable
+require 'test/helper'
 
-    # Create a pair of connected pipe endpoints. The connection uses msgpack
-    # allowing objects to be written and read.
-    #
-    # Stream.pipe ->  [read_io, write_io]
-    def self.pipe
-      read, write = IO.pipe(Encoding::BINARY)
+class TestStream < Test::Unit::TestCase 
+  def setup
+    @obj = {foo: "bar"}
+    @reader, @writer = BioPieces::Stream.pipe
+  end
 
-      [self.new(read), self.new(write)]
-    end
+  def teardown
+    @reader.close unless @reader.closed?
+    @writer.close unless @writer.closed?
+  end
 
-    def initialize(io)
-      @io = io
-    end
+  test "BioPieces::Stream.pipe writing and reading an object returns correctly" do
+    @writer.write @obj
+    @writer.close
+    assert_equal(@obj, @reader.read)
+  end
 
-    def close
-      @io.close
-    end
-
-    def closed?
-      @io.closed?
-    end
-
-    def each
-      while ! @io.eof?
-        yield read
-      end
-    end
-
-    def read
-      size = @io.read(4)
-      raise EOFError unless size
-      size = size.unpack("I").first
-      msg  = @io.read(size)
-      MessagePack.unpack(msg, symbolize_keys: true)
-    end
-
-    def write(obj)
-      msg = MessagePack.pack(obj)
-      @io.write([msg.size].pack("I"))
-      @io.write(msg)
-    end
-
-    alias :<< :write
+  test "BioPieces::Stream.pipe writing and reading multiple object returns correctly" do
+    10.times { @writer.write @obj }
+    @writer.close
+    result = @reader.inject([]) { |memo, obj| memo << obj }
+    assert_equal(Array.new(10, @obj), result)
   end
 end
