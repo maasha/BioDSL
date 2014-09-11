@@ -139,25 +139,19 @@ module BioPieces
       output  = @options[:output] || []
       threads = []
 
-      @commands.each do |command|
-        t = Thread.new(command, input, output) do |command, input, output|
-          enum = Enumerator.new do |output|
-            command.run(input, output)
-          end
+      @commands[1 .. -1].reverse.each do |command|
+        io_read, io_write = BioPieces::Stream.pipe
 
-          Thread.current[:return] = enum
+        threads << Thread.new(command, io_read, output) do |cmd, iin, iout|
+          cmd.run(iin, iout)
         end
 
-        t.join
-
-        input = t[:return]
-
-        threads << t
+        output = io_write
       end
 
-#      threads.each { |t| t.join }
+      @commands.first.run(input, output)
 
-      input.each {}
+      threads.reverse.each { |t| t.join }
     end
 
     def run_enumerate
