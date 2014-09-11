@@ -31,8 +31,8 @@ require 'test/helper'
 
 class TestMeanScores < Test::Unit::TestCase 
   def setup
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     @output.write({SCORES: %q{IIIIIIIIIIIIIIIIIIII}})
     @output.write({SCORES: %q{!!!!!IIIIIIIIIIIIIII}})

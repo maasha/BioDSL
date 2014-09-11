@@ -24,40 +24,54 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+module BioPieces
+  # Class for Inter Process Communication between forked processes using msgpack
+  # to serialize and deserialize objects.
+  class Stream
+    include Enumerable
 
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+    # Create a pair of connected pipe endpoints. The connection uses msgpack
+    # allowing objects to be written and read.
+    #
+    # Stream.pipe ->  [read_io, write_io]
+    def self.pipe
+      read, write = IO.pipe(Encoding::BINARY)
+
+      [self.new(read), self.new(write)]
+    end
+
+    def initialize(io)
+      @io = io
+    end
+
+    def close
+      @io.close
+    end
+
+    def closed?
+      @io.closed?
+    end
+
+    def each
+      while ! @io.eof?
+        yield read
+      end
+    end
+
+    def read
+      size = @io.read(4)
+      raise EOFError unless size
+      size = size.unpack("I").first
+      msg  = @io.read(size)
+      MessagePack.unpack(msg, symbolize_keys: true)
+    end
+
+    def write(obj)
+      msg = MessagePack.pack(obj)
+      @io.write([msg.size].pack("I"))
+      @io.write(msg)
+    end
+
+    alias :<< :write
   end
 end
-
-module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'gnuplot'
-  require 'narray'
-  require 'parallel'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'terminal-table'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  autoload :Config,   'biopieces/config'
-  autoload :Hamming,  'biopieces/hamming'
-  autoload :Version,  'biopieces/version'
-  autoload :Filesys,  'biopieces/filesys'
-  autoload :Fork,     'biopieces/fork'
-  autoload :Pipeline, 'biopieces/pipeline'
-  autoload :Fasta,    'biopieces/fasta'
-  autoload :Fastq,    'biopieces/fastq'
-  autoload :Math,     'biopieces/math'
-  autoload :Stream,   'biopieces/stream'
-end
-
-BP = BioPieces::Pipeline # Module alias for irb short hand

@@ -112,28 +112,23 @@ module BioPieces
     end
 
     def run_fork
-      input    = @options[:input]  || []
-      output   = @options[:output] || []
-      wait_pid = nil
+      input  = @options[:input]  || []
+      output = @options[:output] || []
+      forks  = []
 
-      @commands.reverse.each_cons(2) do |cmd2, cmd1|
-        io_read, io_write = Stream.pipe
-
-        pid = Process.fork do
-          io_write.close
-          cmd2.run(io_read, output)
+      @commands[1 .. -1].reverse.each do |cmd|
+        parent = BioPieces::Fork.execute do |child|
+          cmd.run(child.input, output)
         end
+        
+        output = parent.output
 
-        io_read.close if io_read.respond_to? :close
-        output.close  if output.respond_to? :close
-        output = io_write
-
-        wait_pid ||= pid # only the first created process which is tail of pipeline
+        forks << parent
       end
 
       @commands.first.run(input, output)
 
-      Process.waitpid(wait_pid) if wait_pid
+      forks.reverse.each { |f| f.wait }
     end
 
     def run_enumerate
@@ -191,45 +186,6 @@ module BioPieces
     end
 
     private
-
-    class Stream
-      include Enumerable
-
-      def self.pipe
-        input, output = IO.pipe
-
-        minput  = MessagePack::Unpacker.new(input, symbolize_keys: true)
-        moutput = MessagePack::Packer.new(output)
-
-        [self.new(input, minput), self.new(output, moutput)]
-      end
-
-      def initialize(io, stream)
-        @io     = io
-        @stream = stream
-      end
-
-      def close
-        @stream.flush if @stream.respond_to? :flush
-        @io.close
-      end
-
-      def read
-        @stream.read
-      end
-
-      def each
-        @stream.each do |record|
-          yield record
-        end
-      end
-
-      def write(arg)
-        @stream.write(arg)
-      end
-
-      alias :<< :write
-    end
 
     class Command
       attr_accessor :status

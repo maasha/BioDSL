@@ -34,8 +34,8 @@ class TestPlotScores < Test::Unit::TestCase
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.plot')
 
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     @output.write({SCORES: %q{!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI}})
     @output.write({SCORES: %q{"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI}})

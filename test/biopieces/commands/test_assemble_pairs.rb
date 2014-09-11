@@ -31,8 +31,8 @@ require 'test/helper'
 
 class TestAssemblePairs < Test::Unit::TestCase 
   def setup
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     @output.write({SEQ_NAME: "test1/1", SEQ: "aaaaaaaagagtcat", SCORES: "IIIIIIIIIIIIIII", SEQ_LEN: 15})
     @output.write({SEQ_NAME: "test1/2", SEQ: "gagtcataaaaaaaa", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})
@@ -60,9 +60,9 @@ class TestAssemblePairs < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
-    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
-    expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>"3", :HAMMING_DIST=>"1"}'
-    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>3, :HAMMING_DIST=>1}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
     expected << '{:FOO=>"SEQ"}'
 
     assert_equal(expected, result)
@@ -73,9 +73,9 @@ class TestAssemblePairs < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
-    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
-    expected << '{:SEQ_NAME=>"test2/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagaggcaGagtcataaaaaaaa", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
-    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test2/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagaggcaGagtcataaaaaaaa", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
     expected << '{:FOO=>"SEQ"}'
 
     assert_equal(expected, result)
@@ -86,7 +86,7 @@ class TestAssemblePairs < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
-    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
     expected << '{:FOO=>"SEQ"}'
 
     assert_equal(expected, result)
@@ -97,8 +97,8 @@ class TestAssemblePairs < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
-    expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>"3", :HAMMING_DIST=>"1"}'
-    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>3, :HAMMING_DIST=>1}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
     expected << '{:FOO=>"SEQ"}'
 
     assert_equal(expected, result)
@@ -109,8 +109,8 @@ class TestAssemblePairs < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
-    expected << '{:SEQ_NAME=>"test1/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>"1", :HAMMING_DIST=>"0"}'
-    expected << '{:SEQ_NAME=>"test3/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>"7", :HAMMING_DIST=>"0"}'
+    expected << '{:SEQ_NAME=>"test1/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
     expected << '{:FOO=>"SEQ"}'
 
     assert_equal(expected, result)

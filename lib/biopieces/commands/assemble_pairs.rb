@@ -84,10 +84,15 @@ module BioPieces
 
       lmb = lambda do |input, output, status|
         status_track(status) do
+          overlap_sum = 0
+          hamming_sum = 0
+
           status[:sequences_in]  = 0
           status[:sequences_out] = 0
           status[:residues_in]   = 0
           status[:residues_out]  = 0
+          status[:assembled]     = 0
+          status[:unassembled]   = 0
 
           input.each_slice(2) do |record1, record2|
             status[:records_in] += 2
@@ -116,11 +121,17 @@ module BioPieces
                 )
 
                 if merged
+                  status[:assembled] += 1
+
                   new_record = merged.to_bp
 
                   if merged.seq_name =~ /overlap=(\d+):hamming=(\d+)$/
-                    new_record[:OVERLAP_LEN]  = $1
-                    new_record[:HAMMING_DIST] = $2
+                    overlap = $1.to_i
+                    hamming = $2.to_i
+                    overlap_sum += overlap
+                    hamming_sum += hamming
+                    new_record[:OVERLAP_LEN]  = overlap
+                    new_record[:HAMMING_DIST] = hamming
                   end
 
                   output << new_record
@@ -128,6 +139,8 @@ module BioPieces
                   status[:records_out]   += 1
                   status[:sequences_out] += 1
                   status[:residues_out]  += merged.length
+                else
+                  status[:unassembled] += 1
                 end
               end
             else
@@ -137,6 +150,10 @@ module BioPieces
               status[:records_out] += 2
             end
           end
+
+          status[:assembled_percent] = 100 * (status[:assembled] - status[:unassembled]).abs.to_f / [status[:assembled], status[:unassembled]].max
+          status[:overlap_mean]      = overlap_sum.to_f / status[:records_out]
+          status[:hamming_dist_mean] = hamming_sum.to_f / status[:records_out]
         end
       end
 

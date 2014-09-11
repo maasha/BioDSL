@@ -24,14 +24,6 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-#TODO This monkey patch should be moved somewhere sane.
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
-  end
-end
-
 module BioPieces
   module StatusHelper
     def status_init
@@ -50,7 +42,7 @@ module BioPieces
 
     def status_track(status, &block)
       if @options[:progress]
-        Thread.new do
+        thr = Thread.new do
           loop do
             status_save(status)
 
@@ -61,12 +53,16 @@ module BioPieces
 
       block.call
 
+      thr.terminate if @options[:progress]
+
       status_save(status)
     end
 
     def status_progress(&block)
-      system("clear")
-      Thread.new do
+
+      thr = Thread.new do
+        print "\e[H\e[2J"   # Console code to clear screen
+
         loop do
           status = status_load
 
@@ -74,7 +70,7 @@ module BioPieces
 
           table  = status_tabulate(status).to_s
 
-          print "\e[1;1H"   # Console code to move cursor to 1,1 coordinate.
+          print "\e[1;1H"    # Console code to move cursor to 1,1 coordinate.
           puts "Started: #{status.first[:time_start]}"
           puts table 
 
@@ -83,6 +79,8 @@ module BioPieces
       end
 
       block.call
+
+      thr.terminate
     end
 
     def status_tabulate(status)
@@ -143,6 +141,10 @@ module BioPieces
       File.open(status[:__status_file__], 'w') do |ios|
         Marshal.dump(data, ios)
       end
+    end
+
+    def status_dump(path)
+      File.open(path, 'w') { |file| file.write @status.to_yaml }
     end
   end
 end

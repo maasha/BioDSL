@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,40 +27,59 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+require 'test/helper'
 
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+class TestFork < Test::Unit::TestCase 
+  def setup
+    @obj = {foo: "bar"}
+  end
+
+  test "BioPieces::Fork.new without block raises" do
+    assert_raise(ArgumentError) { BioPieces::Fork.new }
+  end
+
+  test "BioPieces::Fork.read with no running fork raises" do
+    parent = BioPieces::Fork.new do |child|
+    end
+
+    assert_raise(BioPieces::ForkError) { parent.read }
+  end
+
+  test "BioPieces::Fork.write with no running fork raises" do
+    parent = BioPieces::Fork.new do |child|
+    end
+
+    assert_raise(BioPieces::ForkError) { parent.write @obj }
+  end
+
+  test "BioPieces::Fork.wait with no running fork raises" do
+    parent = BioPieces::Fork.new do |child|
+    end
+
+    assert_raise(BioPieces::ForkError) { parent.wait }
+  end
+
+  test "BioPieces::Fork.wait with running fork don't raise" do
+    parent = BioPieces::Fork.execute do |child|
+    end
+
+    assert_nothing_raised { parent.wait }
+  end
+
+  test "BioPieces::Fork IPC returns correctly" do
+    parent = BioPieces::Fork.execute do |child|
+      obj = child.read
+      obj[:child] = true
+      child.write obj
+    end
+
+    parent.write @obj
+    parent.output.close
+
+    result = parent.read
+
+    parent.wait
+
+    assert_equal({foo: "bar", child: true}, result)
   end
 end
-
-module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'gnuplot'
-  require 'narray'
-  require 'parallel'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'terminal-table'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  autoload :Config,   'biopieces/config'
-  autoload :Hamming,  'biopieces/hamming'
-  autoload :Version,  'biopieces/version'
-  autoload :Filesys,  'biopieces/filesys'
-  autoload :Fork,     'biopieces/fork'
-  autoload :Pipeline, 'biopieces/pipeline'
-  autoload :Fasta,    'biopieces/fasta'
-  autoload :Fastq,    'biopieces/fastq'
-  autoload :Math,     'biopieces/math'
-  autoload :Stream,   'biopieces/stream'
-end
-
-BP = BioPieces::Pipeline # Module alias for irb short hand

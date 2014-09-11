@@ -37,8 +37,8 @@ class TestWriteFastq < Test::Unit::TestCase
     @file   = File.join(@tmpdir, 'test.fq')
     @file2  = File.join(@tmpdir, 'test.fq')
 
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4, SCORES: "!!II"}
     hash2 = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4, SCORES: "!!II"}

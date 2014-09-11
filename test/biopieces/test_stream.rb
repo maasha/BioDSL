@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,40 +27,29 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+require 'test/helper'
 
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+class TestStream < Test::Unit::TestCase 
+  def setup
+    @obj = {foo: "bar"}
+    @reader, @writer = BioPieces::Stream.pipe
+  end
+
+  def teardown
+    @reader.close unless @reader.closed?
+    @writer.close unless @writer.closed?
+  end
+
+  test "BioPieces::Stream.pipe writing and reading an object returns correctly" do
+    @writer.write @obj
+    @writer.close
+    assert_equal(@obj, @reader.read)
+  end
+
+  test "BioPieces::Stream.pipe writing and reading multiple object returns correctly" do
+    10.times { @writer.write @obj }
+    @writer.close
+    result = @reader.inject([]) { |memo, obj| memo << obj }
+    assert_equal(Array.new(10, @obj), result)
   end
 end
-
-module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'gnuplot'
-  require 'narray'
-  require 'parallel'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'terminal-table'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  autoload :Config,   'biopieces/config'
-  autoload :Hamming,  'biopieces/hamming'
-  autoload :Version,  'biopieces/version'
-  autoload :Filesys,  'biopieces/filesys'
-  autoload :Fork,     'biopieces/fork'
-  autoload :Pipeline, 'biopieces/pipeline'
-  autoload :Fasta,    'biopieces/fasta'
-  autoload :Fastq,    'biopieces/fastq'
-  autoload :Math,     'biopieces/math'
-  autoload :Stream,   'biopieces/stream'
-end
-
-BP = BioPieces::Pipeline # Module alias for irb short hand
