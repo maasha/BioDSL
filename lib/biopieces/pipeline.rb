@@ -76,8 +76,9 @@ module BioPieces
     def run(options = {})
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork)
-      options_allowed_values(options, fork: [true, false, nil])
+      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread)
+      options_allowed_values(options, fork: [true, false, nil], thread: [true, false, nil])
+      options_conflict(options, fork: :thread)
       options_tie(options, subject: :email)
 
       @options = options
@@ -86,6 +87,8 @@ module BioPieces
 
       if @options[:fork]
         @options[:progress] ? status_progress { run_fork }      : run_fork
+      elsif @options[:thread]
+        @options[:progress] ? status_progress { run_thread }    : run_thread
       else
         @options[:progress] ? status_progress { run_enumerate } : run_enumerate
       end
@@ -129,6 +132,32 @@ module BioPieces
       @commands.first.run(input, output)
 
       forks.reverse.each { |f| f.wait }
+    end
+
+    def run_thread
+      input   = @options[:input]  || []
+      output  = @options[:output] || []
+      threads = []
+
+      @commands.each do |command|
+        t = Thread.new(command, input, output) do |command, input, output|
+          enum = Enumerator.new do |output|
+            command.run(input, output)
+          end
+
+          Thread.current[:return] = enum
+        end
+
+        t.join
+
+        input = t[:return]
+
+        threads << t
+      end
+
+#      threads.each { |t| t.join }
+
+      input.each {}
     end
 
     def run_enumerate
