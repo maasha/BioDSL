@@ -116,7 +116,7 @@ module BioPieces
 
     def run_fork
       input  = @options[:input]  || []
-      output = @options[:output] || []
+      output = @options[:output]
       forks  = []
 
       @commands[1 .. -1].reverse.each do |cmd|
@@ -136,7 +136,7 @@ module BioPieces
 
     def run_thread
       input   = @options[:input]  || []
-      output  = @options[:output] || []
+      output  = @options[:output]
       threads = []
 
       @commands[1 .. -1].reverse.each do |command|
