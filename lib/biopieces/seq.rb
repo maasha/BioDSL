@@ -225,7 +225,7 @@ module BioPieces
         seq.chomp!
       end
 
-      ">" + seq_name + $/ + seq + $/
+      ">#{seq_name}#{$/}#{seq}#{$/}"
     end
 
     # Method that given a Seq entry returns a FASTQ entry (a string).
@@ -238,7 +238,7 @@ module BioPieces
       seq      = self.seq.to_s
       qual     = self.qual.to_s
 
-      "@" + seq_name + $/ + seq + $/ + "+" + $/ + qual + $/
+      "@#{seq_name}#{$/}#{seq}#{$/}+#{$/}#{qual}#{$/}"
     end
 
     # Method that generates a unique key for a
