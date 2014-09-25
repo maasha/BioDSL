@@ -535,6 +535,26 @@ module BioPieces
       na_qual.mean
     end
 
+    # Method to calculate and return the min quality score.
+    def scores_min
+      raise SeqError, "Missing qual in entry" if self.qual.nil?
+
+      na_qual = NArray.to_na(self.qual, "byte")
+      na_qual -= SCORE_BASE
+
+      na_qual.min
+    end
+
+    # Method to calculate and return the max quality score.
+    def scores_max
+      raise SeqError, "Missing qual in entry" if self.qual.nil?
+
+      na_qual = NArray.to_na(self.qual, "byte")
+      na_qual -= SCORE_BASE
+
+      na_qual.max
+    end
+
     # Method to run a sliding window of a specified size across a Phred type
     # scores string and calculate for each window the mean score and return
     # the minimum mean score.
