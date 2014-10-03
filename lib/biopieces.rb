@@ -58,6 +58,7 @@ module BioPieces
   autoload :Fastq,    'biopieces/fastq'
   autoload :Math,     'biopieces/math'
   autoload :Stream,   'biopieces/stream'
+  autoload :Channel,  'biopieces/stream'
 end
 
 BP = BioPieces::Pipeline # Module alias for irb short hand

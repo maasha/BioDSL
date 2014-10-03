@@ -74,4 +74,38 @@ module BioPieces
 
     alias :<< :write
   end
+
+  class Channel
+    include Enumerable
+
+    def self.pair
+      queue = Queue.new
+
+      [self.new(queue), self.new(queue)]
+    end
+
+    def initialize(queue)
+      @queue = queue
+    end
+
+    def each
+      while obj = read
+        yield obj
+      end
+    end
+
+    def read
+      @queue.pop
+    end
+
+    def write(obj)
+      @queue << obj
+    end
+
+    def terminate
+      @queue << nil
+    end
+
+    alias :<< :write
+  end
 end

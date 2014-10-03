@@ -32,36 +32,28 @@ module BioPieces
     # Method to get the next FASTA entry form an ios and return this
     # as a Seq object. If no entry is found or eof then nil is returned.
     def get_entry
-      block = @io.gets($/ + '>')
-      return nil if block.nil?
+      return nil if @io.eof?
 
-      block.chomp!($/ + '>')
-
-      (seq_name, seq) = block.split($/, 2)
+      seq_name, seq = @io.gets($/ + '>').chomp($/ + '>').split($/, 2)
 
       raise FastaError, "Bad FASTA format" if seq_name.nil? or seq.nil?
 
-      entry          = BioPieces::Seq.new
-      entry.seq      = seq.gsub(/\s/, '')
-      entry.seq_name = seq_name.sub(/^>/, '').rstrip
-      entry.type     = nil
+      seq.gsub!(/\s/, '')
+      seq_name = seq_name.sub(/^>/, '').rstrip
 
-      raise FastaError, "Bad FASTA format" if entry.seq_name.empty?
-      raise FastaError, "Bad FASTA format" if entry.seq.empty?
+      raise FastaError, "Bad FASTA format" if seq_name.empty?
+      raise FastaError, "Bad FASTA format" if seq.empty?
 
-      entry
+      Seq.new(seq_name: seq_name, seq: seq)
     end
 
     # Method to get the next pseudo FASTA entry consisting of a sequence name and
     # space seperated quality scores in decimals instead of sequence. This is
     # the quality format used by Sanger and 454.
     def get_decimal_qual
-      block = @io.gets($/ + '>')
-      return nil if block.nil?
+      return nil if @io.eof?
 
-      block.chomp!($/ + '>')
-
-      (seq_name, qual) = block.split($/, 2)
+      seq_name, qual = @io.gets($/ + '>').chomp($/ + '>').split($/, 2)
 
       raise FastaError, "Bad FASTA qual format" if seq_name.nil? or qual.nil?
 

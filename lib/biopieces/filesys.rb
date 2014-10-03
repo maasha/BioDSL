@@ -120,6 +120,8 @@ module BioPieces
 
     # Iterator method for parsing entries.
     def each
+      return to_enum :each unless block_given?
+
       while entry = get_entry do
         yield entry
       end
