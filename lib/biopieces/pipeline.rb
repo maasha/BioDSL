@@ -140,16 +140,18 @@ module BioPieces
       threads = []
 
       @commands[1 .. -1].reverse.each do |command|
-        io_read, io_write = BioPieces::Stream.pipe
+        io_read, io_write = BioPieces::Channel.pair
 
         threads << Thread.new(command, io_read, output) do |cmd, iin, iout|
           cmd.run(iin, iout)
+          iout.terminate if iout
         end
 
         output = io_write
       end
 
       @commands.first.run(input, output)
+      output.terminate
 
       threads.reverse.each { |t| t.join }
     end
