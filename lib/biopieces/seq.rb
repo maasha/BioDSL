@@ -498,10 +498,8 @@ module BioPieces
       raise SeqError, "Missing qual" if self.qual.nil?
 
       case encoding
-      #when :base_33 then self.qual.tr!("[J-~]", "I")
-      #when :base_64 then self.qual.tr!("[i-~]", "h")
-      when :base_33 then qual_coerce_C(self.qual, self.qual.length, "I".ord)
-      when :base_64 then qual_coerce_C(self.qual, self.qual.length, "h".ord)
+      when :base_33 then qual_coerce_C(self.qual, self.qual.length, 33, 73)  # !-J
+      when :base_64 then qual_coerce_C(self.qual, self.qual.length, 64, 104) # @-h
       else
         raise SeqError, "unknown quality score encoding: #{encoding}"
       end 
@@ -515,14 +513,10 @@ module BioPieces
       raise SeqError, "unknown quality score encoding: #{to}"   unless to   == :base_33 or to   == :base_64
 
       if from == :base_33 and to == :base_64
-        na_qual   = NArray.to_na(self.qual, "byte")
-        na_qual  += 64 - 33
-        self.qual = na_qual.to_s
+        qual_convert_C(self.qual, self.qual.length, 31)    # += 64 - 33
       elsif from == :base_64 and to == :base_33
-        self.qual.tr!("[;-?]", "@")  # Handle negative Solexa values from -5 to -1 (set these to 0).
-        na_qual   = NArray.to_na(self.qual, "byte")
-        na_qual  -= 64 - 33
-        self.qual = na_qual.to_s
+        qual_coerce_C(self.qual, self.qual.length, 64, 104) # Handle negative Solexa values from -5 to -1 (set these to 0).
+        qual_convert_C(self.qual, self.qual.length, -31)    # -= 64 - 33
       end
 
       self
@@ -631,19 +625,44 @@ module BioPieces
         VALUE qual_coerce_C(
           VALUE _qual,
           VALUE _qual_len,
+          VALUE _min_value,
           VALUE _max_value
         )
         {
           unsigned char *qual      = (unsigned char *) StringValuePtr(_qual);
           unsigned int   qual_len  = FIX2UINT(_qual_len);
+          unsigned int   min_value = FIX2UINT(_min_value);
           unsigned int   max_value = FIX2UINT(_max_value);
-          unsigned int i = 0;
+          unsigned int   i         = 0;
 
           for (i = 0; i < qual_len; i++)
           {
             if (qual[i] > max_value) {
               qual[i] = max_value;
+            } else if (qual[i] < min_value) {
+              qual[i] = min_value;
             }
+          }
+
+          return Qnil;
+        }
+      }
+
+      builder.c %{
+        VALUE qual_convert_C(
+          VALUE _qual,
+          VALUE _qual_len,
+          VALUE _value
+        )
+        {
+          unsigned char *qual     = (unsigned char *) StringValuePtr(_qual);
+          unsigned int   qual_len = FIX2UINT(_qual_len);
+          unsigned int   value    = FIX2UINT(_value);
+          unsigned int   i        = 0;
+
+          for (i = 0; i < qual_len; i++)
+          {
+            qual[i] += value;
           }
 
           return Qnil;

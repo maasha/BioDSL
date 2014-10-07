@@ -660,7 +660,7 @@ class TestSeq < Test::Unit::TestCase
     @entry.qual = ('!' .. '~').to_a.join
     assert_equal(%q{!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII}, @entry.qual_coerce!(:base_33).qual)
     @entry.qual = ('!' .. '~').to_a.join
-    assert_equal(%q{!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghhhhhhhhhhhhhhhhhhhhhhh}, @entry.qual_coerce!(:base_64).qual)
+    assert_equal(%q{@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghhhhhhhhhhhhhhhhhhhhhhh}, @entry.qual_coerce!(:base_64).qual)
   end
 
   test "#scores_mean without qual raises" do
