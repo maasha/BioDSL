@@ -498,8 +498,10 @@ module BioPieces
       raise SeqError, "Missing qual" if self.qual.nil?
 
       case encoding
-      when :base_33 then self.qual.tr!("[J-~]", "I")
-      when :base_64 then self.qual.tr!("[i-~]", "h")
+      #when :base_33 then self.qual.tr!("[J-~]", "I")
+      #when :base_64 then self.qual.tr!("[i-~]", "h")
+      when :base_33 then qual_coerce_C(self.qual, self.qual.length, "I".ord)
+      when :base_64 then qual_coerce_C(self.qual, self.qual.length, "h".ord)
       else
         raise SeqError, "unknown quality score encoding: #{encoding}"
       end 
@@ -625,6 +627,29 @@ module BioPieces
     private
 
     inline do |builder|
+      builder.c %{
+        VALUE qual_coerce_C(
+          VALUE _qual,
+          VALUE _qual_len,
+          VALUE _max_value
+        )
+        {
+          unsigned char *qual      = (unsigned char *) StringValuePtr(_qual);
+          unsigned int   qual_len  = FIX2UINT(_qual_len);
+          unsigned int   max_value = FIX2UINT(_max_value);
+          unsigned int i = 0;
+
+          for (i = 0; i < qual_len; i++)
+          {
+            if (qual[i] > max_value) {
+              qual[i] = max_value;
+            }
+          }
+
+          return Qnil;
+        }
+      }
+
       builder.c %{
         VALUE scores_mean_local_C(
           VALUE _qual,
