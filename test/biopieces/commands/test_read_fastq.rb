@@ -342,7 +342,7 @@ EOF
     @p.read_fastq(input: @file4).run(output: @output2)
 
     expected = ""
-    expected << %Q{{:SEQ_NAME=>"base_64", :SEQ=>"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", :SEQ_LEN=>68, :SCORES=>"!!!!!!\\\"\\\#$%&'()*+,-./0123456789:;!=!?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIII\"}}
+    expected << %Q{{:SEQ_NAME=>"base_64", :SEQ=>"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", :SEQ_LEN=>68, :SCORES=>"!!!!!!\\\"\\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIII\"}}
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
@@ -353,8 +353,8 @@ EOF
     @p.read_fastq(input: @file4, input2: @file5).run(output: @output2)
 
     expected = ""
-    expected << %Q{{:SEQ_NAME=>"base_64", :SEQ=>"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", :SEQ_LEN=>68, :SCORES=>"!!!!!!\\\"\\\#$%&'()*+,-./0123456789:;!=!?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIII\"}}
-    expected << %Q{{:SEQ_NAME=>"base_64_2", :SEQ=>"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", :SEQ_LEN=>64, :SCORES=>"!!!!\\\"\\\#$%&'()*+,-./0123456789:;!=!?@ABCDEFGHIIIIIIIIIIIIIIIIIIIII\"}}
+    expected << %Q{{:SEQ_NAME=>"base_64", :SEQ=>"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", :SEQ_LEN=>68, :SCORES=>"!!!!!!\\\"\\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIII\"}}
+    expected << %Q{{:SEQ_NAME=>"base_64_2", :SEQ=>"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", :SEQ_LEN=>64, :SCORES=>"!!!!\\\"\\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIIIIIIIIIIIIIIIIIIII\"}}
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 

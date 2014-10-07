@@ -28,6 +28,8 @@ module BioPieces
   # Class for Inter Process Communication between forked processes using msgpack
   # to serialize and deserialize objects.
   class Stream
+    require 'msgpack'
+
     include Enumerable
 
     # Create a pair of connected pipe endpoints. The connection uses msgpack

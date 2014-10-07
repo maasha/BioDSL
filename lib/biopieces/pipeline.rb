@@ -29,13 +29,15 @@ module BioPieces
   class PipelineError < StandardError; end
 
   class Pipeline
-    attr_accessor :commands, :status
+    require 'mail'
 
     include BioPieces::Commands
     include BioPieces::HistoryHelper
     include BioPieces::LogHelper
     include BioPieces::OptionsHelper
     include BioPieces::StatusHelper
+
+    attr_accessor :commands, :status
 
     def initialize
       @options  = {}

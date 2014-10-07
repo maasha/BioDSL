@@ -29,6 +29,8 @@ module BioPieces
   class AssembleError < StandardError; end
 
   class Assemble
+    require 'inline'
+
     extend Ambiguity
 
     # Class method to assemble two Seq objects.
