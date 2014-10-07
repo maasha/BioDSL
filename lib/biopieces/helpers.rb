@@ -25,8 +25,8 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  autoload :HistoryHelper, 'biopieces/helpers/history_helper'
-  autoload :LogHelper,     'biopieces/helpers/log_helper'
-  autoload :OptionsHelper, 'biopieces/helpers/options_helper'
-  autoload :StatusHelper,  'biopieces/helpers/status_helper'
+  require :HistoryHelper, 'biopieces/helpers/history_helper'
+  require :LogHelper,     'biopieces/helpers/log_helper'
+  require :OptionsHelper, 'biopieces/helpers/options_helper'
+  require :StatusHelper,  'biopieces/helpers/status_helper'
 end
