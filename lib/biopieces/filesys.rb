@@ -29,6 +29,8 @@ module BioPieces
   class FilesysError < StandardError; end
 
   class Filesys
+    require 'open3'
+
     include Enumerable
 
     # Class method that returns a path to a unique temporary file.

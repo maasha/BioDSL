@@ -26,6 +26,9 @@
 
 module BioPieces
   module StatusHelper
+    require 'tempfile'
+    require 'terminal-table'
+
     def status_init
       @commands.map do |command|
         command.status = {

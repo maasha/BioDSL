@@ -34,17 +34,6 @@ class Numeric
 end
 
 module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'gnuplot'
-  require 'narray'
-  require 'parallel'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
-  require 'terminal-table'
   require 'biopieces/commands'
   require 'biopieces/helpers'
   require 'biopieces/seq'
