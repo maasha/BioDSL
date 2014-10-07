@@ -26,6 +26,8 @@
 
 module BioPieces
   module LogHelper
+    require 'pp'
+
     def log_ok
       unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
         File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|

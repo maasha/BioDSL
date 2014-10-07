@@ -25,6 +25,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  require 'narray'
   require 'biopieces/seq/ambiguity'
   require 'biopieces/seq/assemble'
   require 'biopieces/seq/digest'

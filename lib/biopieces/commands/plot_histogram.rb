@@ -94,6 +94,8 @@ module BioPieces
     #    read_fasta(input: "test.fna").
     #    plot_histogram(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
+      require 'gnuplot'
+
       options_orig = options.dup
       options_allowed(options, :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])

@@ -98,6 +98,9 @@ module BioPieces
     #    read_fastq(input: "test.fq").
     #    plot_scores(terminal: :png, output: "plot.png").run
     def plot_scores(options = {})
+      require 'gnuplot'
+      require 'narray'
+
       options_orig = options.dup
       options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
       options_allowed_values(options, count: [true, false])
