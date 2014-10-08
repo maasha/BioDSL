@@ -26,7 +26,6 @@
 
 module BioPieces
   module Commands
-    require 'rocksdb'
     require 'google_hash'
 
     # == Dereplicate sequences in the stream.
@@ -90,23 +89,22 @@ module BioPieces
           status[:sequences_in]  = 0
           status[:sequences_out] = 0
 
-          #hash = Hash.new(0)
           hash = GoogleHashDenseLongToInt.new
 
-          Dir.mktmpdir("db") do |tmpdir|
-            db = RocksDB::DB.new(tmpdir)
+          tmpfile = Tempfile.new('tmp')
 
+          File.open(tmpfile, 'w') do |ios|
             input.each do |record|
               status[:records_in] += 1
 
               if seq = record[:SEQ]
-                seq.downcase! if options[:ignore_case]
+                seq.dup.downcase! if options[:ignore_case]
                 key = seq.hash
 
                 status[:sequences_in] += 1
 
                 unless hash.has_key? key
-                  db[seq]   = Marshal.dump(record)
+                  ios.puts Marshal.dump(record)
                   hash[key] = 0
                 end
 
@@ -117,24 +115,20 @@ module BioPieces
                 status[:records_out] += 1
               end
             end
+          end
 
-            iterator = db.new_iterator
-
-            iterator.seek_to_first
-
-            while(iterator.valid)
-              record = Marshal.load(iterator.value)
-              record[:SEQ_COUNT] = hash[iterator.key.hash]
+          File.open(tmpfile) do |ios|
+            ios.each do |msg|
+              record = Marshal.load(msg)
+              seq = record[:SEQ]
+              seq.dup.downcase! if options[:ignore_case]
+              record[:SEQ_COUNT] = hash[seq.hash]
 
               output << record
 
               status[:records_out] += 1
               status[:sequences_out] += 1
-
-              iterator.next
             end
-
-            iterator.close
           end
 
           status[:sequences_delta]         = status[:sequences_out] - status[:sequences_in]
