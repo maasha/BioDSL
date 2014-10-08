@@ -28,6 +28,7 @@ module BioPieces
   module Commands
     require 'biopieces/commands/assemble_pairs'
     require 'biopieces/commands/clip_primer'
+    require 'biopieces/commands/dereplicate_seq'
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
     require 'biopieces/commands/mean_scores'
