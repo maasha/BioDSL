@@ -26,8 +26,6 @@
 
 module BioPieces
   module Commands
-    require 'google_hash'
-
     # == Dereplicate sequences in the stream.
     # 
     # +dereplicate_seq+ removes all duplicate sequence records. Dereplicated
@@ -79,6 +77,8 @@ module BioPieces
     #    SEQ_COUNT: 3
     #    ---
     def dereplicate_seq(options = {})
+      require 'google_hash'
+
       options_orig = options.dup
       options_allowed(options, :revcomp, :ignore_case)
       options_allowed_values(options, revcomp: [nil, true, false])
