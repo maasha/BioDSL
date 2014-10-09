@@ -30,17 +30,15 @@ module BioPieces
     # 
     # +dereplicate_seq+ removes all duplicate sequence records. Dereplicated
     # sequences are output along with the count of replicates. Using the
-    # +revcomp+ option also checks reverse-complement sequences. Using the
     # +ignore_case+ option disables the default case sensitive sequence
     # matching.
     #
     # == Usage
     # 
-    #    dereplicate_seq([revcomp: <bool>[, ignore_case: <bool>]])
+    #    dereplicate_seq([ignore_case: <bool>])
     #
     # === Options
     #
-    # * revcomp: <bool>     - Also check reverse-complement sequence.
     # * ignore_case: <bool> - Ignore sequence case.
     # 
     # == Examples
@@ -58,24 +56,8 @@ module BioPieces
     # 
     #    BP.new.read_fasta(input: "test.fna").dereplicate_seq.dump.run
     # 
-    #    SEQ: ATGC
-    #    SEQ_LEN: 4
-    #    SEQ_COUNT: 2
-    #    ---
-    #    SEQ: GCAT
-    #    SEQ_LEN: 4
-    #    SEQ_COUNT: 1
-    #    ---
-    # 
-    # Using the +revcomp+ switch we can further reduce the records be checking the
-    # complement sequences for uniqueness:
-    # 
-    #    BP.new.read_fasta(input: "test.fna").dereplicate_seq(revcomp: true).dump.run
-    # 
-    #    SEQ: GCAT
-    #    SEQ_LEN: 4
-    #    SEQ_COUNT: 3
-    #    ---
+    # {:SEQ_NAME=>"test1", :SEQ=>"ATGC", :SEQ_LEN=>4, :SEQ_COUNT=>2}
+    # {:SEQ_NAME=>"test3", :SEQ=>"GCAT", :SEQ_LEN=>4, :SEQ_COUNT=>1}
     def dereplicate_seq(options = {})
       require 'google_hash'
 
@@ -104,7 +86,10 @@ module BioPieces
                 status[:sequences_in] += 1
 
                 unless hash.has_key? key
-                  ios.puts Marshal.dump(record)
+                  msg = Marshal.dump(record)
+                  ios.write([msg.size].pack("I"))
+                  ios.write(msg)
+
                   hash[key] = 0
                 end
 
@@ -118,9 +103,13 @@ module BioPieces
           end
 
           File.open(tmpfile) do |ios|
-            ios.each do |msg|
+            while ! ios.eof?
+              size   = ios.read(4)
+              raise EOFError unless size
+              size   = size.unpack("I").first
+              msg    = ios.read(size)
               record = Marshal.load(msg)
-              seq = record[:SEQ]
+              seq    = record[:SEQ]
               seq.dup.downcase! if options[:ignore_case]
               record[:SEQ_COUNT] = hash[seq.hash]
 
