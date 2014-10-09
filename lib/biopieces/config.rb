@@ -28,8 +28,9 @@ module BioPieces
   module Config
     HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
     LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1
+    STATUS_SAVE_INTERVAL = 1           # save status every n second.
     DEBUG                = false
-    SCORES_MAX           = 100_000  # maximum score string length in plot_scores
+    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
+    SORT_BLOCK_SIZE      = 500_000_000 # max bytes to hold in memory when sorting.
   end
 end

@@ -36,6 +36,7 @@ module BioPieces
     require 'biopieces/commands/plot_scores'
     require 'biopieces/commands/read_fasta'
     require 'biopieces/commands/read_fastq'
+    require 'biopieces/commands/sort'
     require 'biopieces/commands/trim_primer'
     require 'biopieces/commands/trim_seq'
     require 'biopieces/commands/write_fasta'

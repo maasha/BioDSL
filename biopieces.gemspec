@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
   s.add_dependency("msgpack",        ">= 0.5.8")
   s.add_dependency("gnuplot",        ">= 2.6.2")
   s.add_dependency("parallel",       ">= 1.0.0")
+  s.add_dependency("pqueue",         ">= 2.0.2")
   s.add_dependency("google_hash",    ">= 0.8.4")
   s.add_dependency("terminal-table", ">= 1.4.5")
   s.add_development_dependency("simplecov", ">= 0.7.1")
