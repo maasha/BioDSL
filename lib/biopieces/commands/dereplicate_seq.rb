@@ -62,8 +62,7 @@ module BioPieces
       require 'google_hash'
 
       options_orig = options.dup
-      options_allowed(options, :revcomp, :ignore_case)
-      options_allowed_values(options, revcomp: [nil, true, false])
+      options_allowed(options, :ignore_case)
       options_allowed_values(options, ignore_case: [nil, true, false])
 
       lmb = lambda do |input, output, status|
@@ -80,7 +79,7 @@ module BioPieces
               status[:records_in] += 1
 
               if seq = record[:SEQ]
-                seq.dup.downcase! if options[:ignore_case]
+                seq = seq.dup.downcase if options[:ignore_case]
                 key = seq.hash
 
                 status[:sequences_in] += 1
@@ -109,8 +108,8 @@ module BioPieces
               size   = size.unpack("I").first
               msg    = ios.read(size)
               record = Marshal.load(msg)
-              seq    = record[:SEQ]
-              seq.dup.downcase! if options[:ignore_case]
+              seq    = record[:SEQ].dup
+              seq.downcase! if options[:ignore_case]
               record[:SEQ_COUNT] = hash[seq.hash]
 
               output << record
