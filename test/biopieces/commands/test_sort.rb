@@ -68,4 +68,31 @@ class TestSort < Test::Unit::TestCase
 
     assert_equal(expected, result)
   end
+
+  test "BioPieces::Pipeline::Sort reverse returns correctly" do
+    @p.sort(key: :COUNT, reverse: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:NAME=>"test3", :COUNT=>9}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::Sort with block_size returns correctly" do
+    @p.sort(key: :COUNT, block_size: 60).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:NAME=>"test2", :COUNT=>2}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test3", :COUNT=>9}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::Sort with block_size and reverse returns correctly" do
+    @p.sort(key: :COUNT, block_size: 30, reverse: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:NAME=>"test3", :COUNT=>9}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}}
+
+    assert_equal(expected, result)
+  end
 end

@@ -32,12 +32,13 @@ module BioPieces
     #
     # == Usage
     # 
-    #    sort(key: <value>[, reverse: <bool>])
+    #    sort(key: <value>[, reverse: <bool>[, block_size: <uint>]])
     #
     # === Options
     #
-    # * key: <value>    - Sort records on the value for key.
-    # * reverse: <bool> - Reverse sort.
+    # * key: <value>       - Sort records on the value for key.
+    # * reverse: <bool>    - Reverse sort.
+    # * block_size: <uint> - Block size used for disk based sorting (default=250_000_000).
     # 
     # == Examples
     # 
@@ -45,9 +46,12 @@ module BioPieces
       require 'pqueue'
 
       options_orig = options.dup
-      options_allowed(options, :key, :reverse)
+      options_allowed(options, :key, :reverse, :block_size)
       options_required(options, :key)
       options_allowed_values(options, reverse: [nil, true, false])
+      options_assert(options, ":block_size >  0")
+
+      options[:block_size] ||= BioPieces::Config::SORT_BLOCK_SIZE
 
       lmb = lambda do |input, output, status|
         status_track(status) do
@@ -61,7 +65,7 @@ module BioPieces
             list << record
             size += record.to_s.size
 
-            if size > BioPieces::Config::SORT_BLOCK_SIZE
+            if size > options[:block_size]
               file = Tempfile.new('sort')
 
               File.open(file, 'w') do |ios|
@@ -107,13 +111,15 @@ module BioPieces
               end
 
               fds.each_with_index do |fd, i|
-                size   = fd.read(4)
-                raise EOFError unless size
-                size   = size.unpack("I").first
-                msg    = fd.read(size)
-                record = Marshal.load(msg)
+                unless fd.eof?
+                  size   = fd.read(4)
+                  raise EOFError unless size
+                  size   = size.unpack("I").first
+                  msg    = fd.read(size)
+                  record = Marshal.load(msg)
 
-                queue << [record, i]
+                  queue << [record, i]
+                end
               end
 
               while ! queue.empty?
