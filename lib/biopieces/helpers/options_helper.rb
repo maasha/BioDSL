@@ -143,7 +143,7 @@ module BioPieces
           files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
 
           files.each do |file|
-            unless File.file? file
+            unless File.file? File.expand_path(file)
               raise BioPieces::OptionError, "For option #{arg} - no such file: #{file}"
             end
           end
