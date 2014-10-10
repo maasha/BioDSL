@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,22 +27,45 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
+require 'test/helper'
+
+class TestSort < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    @output.write({NAME: "test2", COUNT: 4})
+    @output.write({NAME: "test1", COUNT: 4})
+    @output.write({NAME: "test2", COUNT: 2})
+    @output.write({NAME: "test3", COUNT: 9})
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::Sort with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.sort(key: :COUNT, foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::Sort with valid options don't raise" do
+    assert_nothing_raised { @p.sort(key: :COUNT) }
+  end
+
+  test "BioPieces::Pipeline::Sort alphabetical returns correctly" do
+    @p.sort(key: "NAME").run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}{:NAME=>"test3", :COUNT=>9}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::Sort numerical returns correctly" do
+    @p.sort(key: :COUNT).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:NAME=>"test2", :COUNT=>2}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test3", :COUNT=>9}}
+
+    assert_equal(expected, result)
   end
 end

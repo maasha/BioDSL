@@ -47,7 +47,6 @@ module BioPieces
   require 'biopieces/fastq'
   require 'biopieces/math'
   require 'biopieces/stream'
-  require 'biopieces/stream'
 end
 
 BP = BioPieces::Pipeline # Module alias for irb short hand
