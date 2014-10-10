@@ -32,28 +32,22 @@ module BioPieces
     #
     # == Usage
     # 
-    #    sort(key: <value>[, reverse: <bool>[, cpus: <uint>]]])
+    #    sort(key: <value>[, reverse: <bool>])
     #
     # === Options
     #
     # * key: <value>    - Sort records on the value for key.
     # * reverse: <bool> - Reverse sort.
-    # * cpus: <uint>    - Number of CPUs to use.
     # 
     # == Examples
     # 
     def sort(options = {})
-      require 'parallel'
       require 'pqueue'
 
       options_orig = options.dup
-      options_allowed(options, :key, :reverse, :cpus)
+      options_allowed(options, :key, :reverse)
       options_required(options, :key)
       options_allowed_values(options, reverse: [nil, true, false])
-      options_assert(options, ":cpus >= 0")
-      options_assert(options, ":cpus <= #{Parallel.processor_count}")
-
-      options[:cpus] ||= Parallel.processor_count
 
       lmb = lambda do |input, output, status|
         status_track(status) do
