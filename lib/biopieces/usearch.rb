@@ -55,6 +55,7 @@ module BioPieces
       command << "usearch"
       command << "-cluster_otus #{@options[:input].path}"
       command << "-otus #{@options[:output].path}"
+      command << "‑threads #{@options[:cpus]}"
 
       execute(command)
 
@@ -68,6 +69,7 @@ module BioPieces
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}"
       command << "-nonchimeras #{@options[:output].path}"
+      command << "‑threads #{@options[:cpus]}"
 
       execute(command)
 

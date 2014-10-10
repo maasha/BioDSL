@@ -47,17 +47,23 @@ module BioPieces
     # == Examples
     # 
     def usearch(options = {})
+      require 'parallel'
+
       options_orig = options.dup
-      options_allowed(options, :program, :database)
+      options_allowed(options, :program, :database, :cpus)
       options_required(options, :program)
       options_allowed_values(options, program: [:cluster_otus, :uchime_ref])
       options_files_exist(options, :database)
+      options_assert(options, ":cpus > 0")
+      options_assert(options, ":cpus <= #{Parallel.processor_count}")
 
       if options[:program] == :uchime_ref and not options[:database]
         raise BioPieces::OptionError, "Database missing"
       end
 
       options[:strand] ||= "plus"  # This option cannot be changed in usearch7.0
+
+      options[:cpus] ||= Parallel.processor_count
 
       lmb = lambda do |input, output, status|
         status[:sequences_in]  = 0
@@ -94,9 +100,17 @@ module BioPieces
 
             case options[:program]
             when :cluster_otus 
-              BioPieces::Usearch.cluster_otus(input: tmp_in, output: tmp_out, verbose: options[:verbose])
+              BioPieces::Usearch.cluster_otus(input: tmp_in,
+                                              output: tmp_out,
+                                              cpus: options[:cpus],
+                                              verbose: options[:verbose])
             when :uchime_ref 
-              BioPieces::Usearch.uchime_ref(input: tmp_in,  output: tmp_out, database: options[:database], strand: options[:strand], verbose: options[:verbose])
+              BioPieces::Usearch.uchime_ref(input: tmp_in, 
+                                            output: tmp_out,
+                                            database: options[:database],
+                                            strand: options[:strand],
+                                            cpus: options[:cpus],
+                                            verbose: options[:verbose])
             end
 
             Fasta.open(tmp_out) do |ios|
