@@ -65,11 +65,11 @@ module BioPieces
               file = Tempfile.new('sort')
 
               File.open(file, 'w') do |ios|
-                list.sort_by! { |record| record[options[:key].to_sym] }
+                list.sort_by! { |r| r[options[:key].to_sym] }
                 list.reverse! if options[:reverse]
 
-                list.each do |record|
-                  msg = Marshal.dump(record)
+                list.each do |r|
+                  msg = Marshal.dump(r)
                   ios.write([msg.size].pack("I"))
                   ios.write(msg)
                 end
@@ -135,11 +135,11 @@ module BioPieces
                 end
               end
             ensure
-              fds.each { |fd| fd.close }
+              fds.each { |f| f.close }
             end
           else
-            list.each do |record|
-              output << record
+            list.each do |r|
+              output << r
               status[:records_out] += 1
             end
           end
