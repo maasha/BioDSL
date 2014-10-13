@@ -30,4 +30,37 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 require 'test/helper'
 
 class TestUchimeRef < Test::Unit::TestCase 
+  def setup
+    @db = File.join(File.dirname(__FILE__), '..', '..', '..', 'data', 'chimera_db.fna')
+  end
+
+  test "BioPieces::Pipeline#uchime_ref with disallowed option raises" do
+    p = BioPieces::Pipeline.new
+    assert_raise(BioPieces::OptionError) { p.uchime_ref(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#uchime_ref with allowed option don't raise" do
+    p = BioPieces::Pipeline.new
+    assert_nothing_raised { p.uchime_ref(database: @db) }
+  end
+
+  test "BioPieces::Pipeline#uchime_ref outputs correctly" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write({one: 1, two: 2, three: 3})
+    output.write({SEQ_COUNT: 5, SEQ: "atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.write({SEQ_COUNT: 4, SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.close
+
+    p = BioPieces::Pipeline.new
+    p.uchime_ref(database: @db).run(input: input, output: output2)
+    result   = input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:one=>1, :two=>2, :three=>3}}
+    expected << %Q{{:SEQ_NAME=>\"1\", :SEQ=>\"atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct\", :SEQ_LEN=>40}}
+    expected << %Q{{:SEQ_NAME=>\"2\", :SEQ=>\"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct\", :SEQ_LEN=>40}}
+
+    assert_equal(expected, result)
+  end
 end
