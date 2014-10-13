@@ -94,7 +94,7 @@ module BioPieces
       command << "usearch"
       command << "-usearch_global #{@options[:input].path}"
       command << "-db #{@options[:database]}"
-      command << "-strand #{@options[:strand]}"
+      command << "-strand #{@options[:strand]}" if @options[:strand]
       command << "-id #{@options[:identity]}"
       command << "-uc #{@options[:output].path}"
 

@@ -61,8 +61,6 @@ module BioPieces
       options_assert(options, ":identity >  0.0")
       options_assert(options, ":identity <= 1.0")
 
-      options[:strand] ||= "plus"  # This option cannot be changed in usearch7.0
-
       lmb = lambda do |input, output, status|
         status[:sequences_in] = 0
         status[:hits_out]     = 0
@@ -76,6 +74,10 @@ module BioPieces
               input.each_with_index do |record, i|
                 status[:records_in] += 1
 
+                output << record
+
+                status[:records_out] += 1
+
                 if record[:SEQ]
                   status[:sequences_in] += 1
                   seq_name = record[:SEQ_NAME] || i.to_s
@@ -83,9 +85,6 @@ module BioPieces
                   entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
                   ios.puts entry.to_fasta
-                else
-                  output << record
-                  status[:records_out] += 1
                 end
               end
             end
@@ -99,6 +98,7 @@ module BioPieces
 
             BioPieces::Usearch.open(tmp_out) do |ios|
               ios.each(:uc) do |record|
+                record[:record_type] = "usearch"
                 output << record
                 status[:hits_out]    += 1
                 status[:records_out] += 1

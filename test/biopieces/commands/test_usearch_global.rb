@@ -29,37 +29,39 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-class TestUchimeRef < Test::Unit::TestCase 
+class TestUsearchGlobal < Test::Unit::TestCase 
   def setup
     @db = File.join(File.dirname(__FILE__), '..', '..', '..', 'data', 'chimera_db.fna')
   end
 
-  test "BioPieces::Pipeline#uchime_ref with disallowed option raises" do
+  test "BioPieces::Pipeline#usearch_global with disallowed option raises" do
     p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.uchime_ref(foo: "bar") }
+    assert_raise(BioPieces::OptionError) { p.usearch_global(foo: "bar") }
   end
 
-  test "BioPieces::Pipeline#uchime_ref with allowed option don't raise" do
+  test "BioPieces::Pipeline#usearch_global with allowed option don't raise" do
     p = BioPieces::Pipeline.new
-    assert_nothing_raised { p.uchime_ref(database: @db) }
+    assert_nothing_raised { p.usearch_global(database: @db, identity: 1) }
   end
 
-  test "BioPieces::Pipeline#uchime_ref outputs correctly" do
+  test "BioPieces::Pipeline#usearch_global outputs correctly" do
     input, output   = BioPieces::Stream.pipe
     input2, output2 = BioPieces::Stream.pipe
 
     output.write({one: 1, two: 2, three: 3})
-    output.write({SEQ_COUNT: 5, SEQ: "atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct"})
-    output.write({SEQ_COUNT: 4, SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.write({SEQ: "gtgtgtagctacgatcagctagcgatcgagctatatgttt"})
+    output.write({SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
     output.close
 
     p = BioPieces::Pipeline.new
-    p.uchime_ref(database: @db).run(input: input, output: output2)
+    p.usearch_global(database: @db, identity: 0.97, strand: "plus").run(input: input, output: output2)
     result   = input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
     expected << %Q{{:one=>1, :two=>2, :three=>3}}
-    expected << %Q{{:SEQ_NAME=>\"1\", :SEQ=>\"atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct\", :SEQ_LEN=>40}}
-    expected << %Q{{:SEQ_NAME=>\"2\", :SEQ=>\"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct\", :SEQ_LEN=>40}}
+    expected << %Q{{:SEQ=>"gtgtgtagctacgatcagctagcgatcgagctatatgttt"}}
+    expected << %Q{{:SEQ=>"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"}}
+    expected << %Q{{:TYPE=>"N", :CLUSTER=>0, :SEQ_LEN=>0, :STRAND=>".", :CIGAR=>"*", :Q_ID=>"2", :record_type=>"usearch"}}
+    expected << %Q{{:TYPE=>"H", :CLUSTER=>0, :SEQ_LEN=>40, :IDENT=>100.0, :STRAND=>"+", :CIGAR=>"40M", :Q_ID=>"1", :S_ID=>"test1", :record_type=>"usearch"}}
 
     assert_equal(expected, result)
   end
