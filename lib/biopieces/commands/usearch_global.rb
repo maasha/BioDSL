@@ -26,16 +26,15 @@
 
 module BioPieces
   module Commands
-    # == Run uchime_ref on sequences in the stream.
+    # == Run usearch_global on sequences in the stream.
     # 
-    # This is a wrapper for the +usearch+ tool to run the program uchime_ref.
+    # This is a wrapper for the +usearch+ tool to run the program usearch_global.
     # Basically sequence type records are searched against a reference database
-    # or non-chimeric sequences, and chimirec sequences are filtered out so
-    # only non-chimeric sequences are output.
+    # and records with hit information are output.
     #
     # Please refer to the manual:
     #
-    # http://drive5.com/usearch/manual/uchime_ref.html
+    # http://drive5.com/usearch/manual/usearch_global.html
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
     #
@@ -43,25 +42,28 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    uchime_ref(<database: <file>)
+    #    usearch_global(<database: <file>, <identity: float>, <strand: "plus|both">)
     # 
     # === Options
     #
-    # * database: <file> - Database to search (in FASTA format).
+    # * database: <file>   - Database to search (in FASTA format).
+    # * identity: <float>  - Similarity for matching in percent between 0.0 and 1.0.
+    # * strand:   <string> - For nucleotide search report hits from plus or both strands.
     #
     # == Examples
     # 
-    def uchime_ref(options = {})
+    def usearch_global(options = {})
       options_orig = options.dup
-      options_allowed(options, :database)
-      options_required(options, :database)
+      options_allowed(options, :database, :identity, :strand)
+      options_required(options, :database, :identity)
+      options_allowed_values(options, strand: ["plus", "both"])
       options_files_exist(options, :database)
-
-      options[:strand] ||= "plus"  # This option cannot be changed in usearch7.0
+      options_assert(options, ":identity >  0.0")
+      options_assert(options, ":identity <= 1.0")
 
       lmb = lambda do |input, output, status|
-        status[:sequences_in]  = 0
-        status[:sequences_out] = 0
+        status[:sequences_in] = 0
+        status[:hits_out]     = 0
 
         status_track(status) do
           begin
@@ -72,6 +74,10 @@ module BioPieces
               input.each_with_index do |record, i|
                 status[:records_in] += 1
 
+                output << record
+
+                status[:records_out] += 1
+
                 if record[:SEQ]
                   status[:sequences_in] += 1
                   seq_name = record[:SEQ_NAME] || i.to_s
@@ -79,26 +85,23 @@ module BioPieces
                   entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
                   ios.puts entry.to_fasta
-                else
-                  output << record
-                  status[:records_out] += 1
                 end
               end
             end
 
-            BioPieces::Usearch.uchime_ref(input: tmp_in, 
-                                          output: tmp_out,
-                                          database: options[:database],
-                                          strand: options[:strand],
-                                          verbose: options[:verbose])
+            BioPieces::Usearch.usearch_global(input: tmp_in, 
+                                              output: tmp_out,
+                                              database: options[:database],
+                                              strand: options[:strand],
+                                              identity: options[:identity],
+                                              verbose: options[:verbose])
 
-            Fasta.open(tmp_out) do |ios|
-              ios.each do |entry|
-                record = entry.to_bp
-
+            BioPieces::Usearch.open(tmp_out) do |ios|
+              ios.each(:uc) do |record|
+                record[:record_type] = "usearch"
                 output << record
-                status[:sequences_out] += 1
-                status[:records_out]   += 1
+                status[:hits_out]    += 1
+                status[:records_out] += 1
               end
             end
           ensure
