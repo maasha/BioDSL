@@ -20,29 +20,67 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
   module Commands
-    require 'biopieces/commands/add_key'
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/cluster_otus'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/uchime_ref'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
+    # == Add a key/value pair to all records in stream.
+    # 
+    # == Usage
+    # 
+    #    add_key(<key: <string>[, value: <string> | prefix: <string>])
+    # 
+    # === Options
+    #
+    # * key: <string>    - Key to add or overwrite.
+    # * value: <string>  - Value to use with +key+.
+    # * prefix: <string> - Prefix to use with +key+.
+    # 
+    # == Examples
+    # 
+    # To add_key all records in the stream:
+    #
+    #    add_key
+    #
+    # To add_key only the _first_ 10 records:
+    #
+    #    add_key(first: 10)
+    #
+    # To add_key only the _last_ 10 records:
+    # 
+    #    add_key(last: 10)
+    def add_key(options = {})
+      options_orig = options
+      options_allowed(options, :key, :value, :prefix)
+      options_required(options, :key)
+      options_required_unique(options, :value, :prefix)
+
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          input.each_with_index do |record, i|
+            status[:records_in] += 1
+
+            if options[:value]
+              value = options[:value]
+            else
+              value = "#{options[:prefix]}#{i}"
+            end
+
+            record[options[:key].to_sym] = value
+
+            output << record
+
+            status[:records_out] += 1
+          end
+        end
+      end
+
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+
+      self
+    end
   end
 end
+
