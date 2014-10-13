@@ -28,24 +28,34 @@ module BioPieces
   module Commands
     # == Create OTUs from sequences in the stream.
     # 
-    # Use +usearch+ to process sequences in the stream:
+    # Use the +usearch+ program cluster_otus to cluster sequences in the stream
+    # and output a representative sequence from each cluster. Sequences must
+    # be dereplicated and sorted according to +SEQ_COUNT+ in decreasing order.
+    #
+    # Please refer to the manual:
+    #
+    # http://drive5.com/usearch/manual/cluster_otus.html
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
-    #
-    # Must have SEQ_COUNT sorted in decreasing order.
     #
     # http://www.drive5.com/usearch/
     # 
     # == Usage
     # 
-    #    cluster_otus(<program: <string>)
+    #    cluster_otus()
     # 
     # === Options
     #
-    # * program: <string> - Usearch program to run.
-    #
     # == Examples
-    # 
+    #
+    # To create OTU clusters do:
+    #
+    #     BP.new.
+    #     read_fasta(input: "in.fna").
+    #     dereplicate_seq.
+    #     sort(key: :SEQ_COUNT, reverse: true).
+    #     cluster_otus.
+    #     run
     def cluster_otus(options = {})
       options_orig = options.dup
       options_allowed(options, nil)
