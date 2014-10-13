@@ -26,19 +26,19 @@
 
 module BioPieces
   module Commands
-    # == Run usearch on sequences in the stream.
+    # == Create OTUs from sequences in the stream.
     # 
     # Use +usearch+ to process sequences in the stream:
-    # Avaliable programs:
-    # * cluster_otus - Does what?
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
+    #
+    # Must have SEQ_COUNT sorted in decreasing order.
     #
     # http://www.drive5.com/usearch/
     # 
     # == Usage
     # 
-    #    usearch(<program: <string>)
+    #    cluster_otus(<program: <string>)
     # 
     # === Options
     #
@@ -46,18 +46,8 @@ module BioPieces
     #
     # == Examples
     # 
-    def usearch(options = {})
+    def cluster_otus(options = {})
       options_orig = options.dup
-      options_allowed(options, :program, :database)
-      options_required(options, :program)
-      options_allowed_values(options, program: [:cluster_otus, :uchime_ref])
-      options_files_exist(options, :database)
-
-      if options[:program] == :uchime_ref and not options[:database]
-        raise BioPieces::OptionError, "Database missing"
-      end
-
-      options[:strand] ||= "plus"  # This option cannot be changed in usearch7.0
 
       lmb = lambda do |input, output, status|
         status[:sequences_in]  = 0
@@ -78,7 +68,7 @@ module BioPieces
 
                   if record[:SEQ_COUNT]
                     seq_name << ";size=#{record[:SEQ_COUNT]}"
-                  elsif options[:program] == :cluster_otus
+                  else
                     raise BioPieces::SeqError, "Missing SEQ_COUNT"
                   end
 
@@ -92,30 +82,17 @@ module BioPieces
               end
             end
 
-            case options[:program]
-            when :cluster_otus 
-              BioPieces::Usearch.cluster_otus(input: tmp_in,
-                                              output: tmp_out,
-                                              verbose: options[:verbose])
-            when :uchime_ref 
-              BioPieces::Usearch.uchime_ref(input: tmp_in, 
-                                            output: tmp_out,
-                                            database: options[:database],
-                                            strand: options[:strand],
-                                            verbose: options[:verbose])
-            end
+            BioPieces::Usearch.cluster_otus(input: tmp_in, output: tmp_out, verbose: options[:verbose])
 
             Fasta.open(tmp_out) do |ios|
               ios.each do |entry|
                 record = entry.to_bp
 
-                if options[:program] == :cluster_otus
-                  if record[:SEQ_NAME] =~ /;size=(\d+)$/
-                    record[:SEQ_COUNT] = $1.to_i
-                    record[:SEQ_NAME].sub!(/;size=\d+$/, '')
-                  else
-                    raise BioPieces::UsearchError, "Missing size in SEQ_NAME: #{record[:SEQ_NAME]}"
-                  end
+                if record[:SEQ_NAME] =~ /;size=(\d+)$/
+                  record[:SEQ_COUNT] = $1.to_i
+                  record[:SEQ_NAME].sub!(/;size=\d+$/, '')
+                else
+                  raise BioPieces::UsearchError, "Missing size in SEQ_NAME: #{record[:SEQ_NAME]}"
                 end
 
                 output << record

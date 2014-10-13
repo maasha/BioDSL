@@ -29,5 +29,5 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 
 require 'test/helper'
 
-class TestUsearch < Test::Unit::TestCase 
+class TestClusterOtus < Test::Unit::TestCase 
 end
