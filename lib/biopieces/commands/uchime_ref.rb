@@ -43,11 +43,11 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    uchime_ref(<program: <string>)
+    #    uchime_ref(<database: <file>)
     # 
     # === Options
     #
-    # * program: <string> - Usearch program to run.
+    # * database: <file> - Database to search (in FASTA format).
     #
     # == Examples
     # 
