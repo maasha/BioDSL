@@ -166,7 +166,7 @@ module BioPieces
 
         unless exit_status.success?
           # TODO write error message to log.
-          raise "Command failed: #{command_str} + #{@stderr.join $/}"
+          raise UsearchError, "Command failed: #{command_str} + #{@stderr.join $/}"
         end
       end
     end

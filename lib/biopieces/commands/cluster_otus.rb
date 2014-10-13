@@ -48,6 +48,7 @@ module BioPieces
     # 
     def cluster_otus(options = {})
       options_orig = options.dup
+      options_allowed(options, nil)
 
       lmb = lambda do |input, output, status|
         status[:sequences_in]  = 0
