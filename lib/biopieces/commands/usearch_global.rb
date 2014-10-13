@@ -98,7 +98,7 @@ module BioPieces
 
             BioPieces::Usearch.open(tmp_out) do |ios|
               ios.each(:uc) do |record|
-                record[:record_type] = "usearch"
+                record[:RECORD_TYPE] = "usearch"
                 output << record
                 status[:hits_out]    += 1
                 status[:records_out] += 1
