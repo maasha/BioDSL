@@ -134,8 +134,7 @@ module BioPieces
     # Method to parse a FASTA file with Ustar alignments and for each alignment
     # yield an Align object.
     def each_alignment
-      old_cluster = 0
-      entries     = []
+      entries = []
 
       Fasta.open(@outfile, "r") do |ios|
         ios.each do |entry|
@@ -166,7 +165,7 @@ module BioPieces
 
         unless exit_status.success?
           # TODO write error message to log.
-          raise "Command failed: #{command_str} + #{@stderr.join $/}"
+          raise UsearchError, "Command failed: #{command_str} + #{@stderr.join $/}"
         end
       end
     end
