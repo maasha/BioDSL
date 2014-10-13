@@ -30,8 +30,7 @@ module BioPieces
     # 
     # This is a wrapper for the +usearch+ tool to run the program usearch_global.
     # Basically sequence type records are searched against a reference database
-    # or non-chimeric sequences, and chimirec sequences are filtered out so
-    # only non-chimeric sequences are output.
+    # and records with hit information are output.
     #
     # Please refer to the manual:
     #
@@ -43,11 +42,13 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    usearch_global(<program: <string>)
+    #    usearch_global(<database: <file>, <identity: float>, <strand: "plus|both">)
     # 
     # === Options
     #
-    # * program: <string> - Usearch program to run.
+    # * database: <file>   - Database to search (in FASTA format).
+    # * identity: <float>  - Similarity for matching in percent between 0.0 and 1.0.
+    # * strand:   <string> - For nucleotide search report hits from plus or both strands.
     #
     # == Examples
     # 
