@@ -28,6 +28,10 @@ module BioPieces
   module Commands
     # == Add a key/value pair to all records in stream.
     # 
+    # +add_key+ can be used to add a fixed value to a specified key to all
+    # records in the stream, or add a numeric forth running number (zero-based)
+    # with a specified prefix.
+    #
     # == Usage
     # 
     #    add_key(<key: <string>[, value: <string> | prefix: <string>])
@@ -40,17 +44,17 @@ module BioPieces
     # 
     # == Examples
     # 
-    # To add_key all records in the stream:
+    # To add a value to all records in the stream do:
     #
-    #    add_key
+    #    add_key(key: "FOO", value: "BAR")
     #
-    # To add_key only the _first_ 10 records:
-    #
-    #    add_key(first: 10)
-    #
-    # To add_key only the _last_ 10 records:
+    # To add a forth running number to all records in the stream do:
     # 
-    #    add_key(last: 10)
+    #    add_key(key: :ID, prefix: "")
+    #
+    # Finally, to add a forth running number with a prefix do:
+    #
+    #    add_key(key: :ID, prefix: "ID_")
     def add_key(options = {})
       options_orig = options
       options_allowed(options, :key, :value, :prefix)
