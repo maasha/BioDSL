@@ -28,7 +28,14 @@ module BioPieces
   module Commands
     # == Run uchime_ref on sequences in the stream.
     # 
-    # Use +usearch+ to process sequences in the stream:
+    # This is a wrapper for the +usearch+ tool to run the program uchime_ref.
+    # Basically sequence type records are searched against a reference database
+    # or non-chimeric sequences, and chimirec sequences are filtered out so
+    # only non-chimeric sequences are output.
+    #
+    # Please refer to the manual:
+    #
+    # http://drive5.com/usearch/manual/uchime_ref.html
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
     #
