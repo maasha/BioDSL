@@ -46,6 +46,8 @@ class TestClusterOtus < Test::Unit::TestCase
 
     p = BioPieces::Pipeline.new
     assert_raise(BioPieces::SeqError) { p.cluster_otus.run(input: input, output: output2) }
+
+    input2.close
   end
 
   test "BioPieces::Pipeline#cluster_otus with SEQ and unsorted SEQ_COUNT raises" do
@@ -59,6 +61,8 @@ class TestClusterOtus < Test::Unit::TestCase
 
     p = BioPieces::Pipeline.new
     assert_raise(BioPieces::UsearchError) { p.cluster_otus.run(input: input, output: output2) }
+
+    input2.close
   end
 
   test "BioPieces::Pipeline#cluster_otus outputs correctly" do

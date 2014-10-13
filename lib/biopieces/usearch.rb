@@ -134,8 +134,7 @@ module BioPieces
     # Method to parse a FASTA file with Ustar alignments and for each alignment
     # yield an Align object.
     def each_alignment
-      old_cluster = 0
-      entries     = []
+      entries = []
 
       Fasta.open(@outfile, "r") do |ios|
         ios.each do |entry|
