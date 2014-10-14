@@ -40,11 +40,11 @@ class TestWriteTable < Test::Unit::TestCase
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
-    hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
-    hash2 = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4}
+    @output.write({ORGANISM: "Human", COUNT: 23524, SEQ: "ATACGTCAG"})
+    @output.write({ORGANISM: "Dog",   COUNT: 2442,  SEQ: "AGCATGAC"})
+    @output.write({ORGANISM: "Mouse", COUNT: 234,   SEQ: "GACTG"})
+    @output.write({ORGANISM: "Cat",   COUNT: 2342,  SEQ: "AAATGCA"})
 
-    @output.write hash1
-    @output.write hash2
     @output.close
 
     @p = BioPieces::Pipeline.new
@@ -58,28 +58,77 @@ class TestWriteTable < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { @p.write_table(foo: "bar") }
   end
 
+  test "BioPieces::Pipeline::WriteTable with valid options don't raise" do
+    assert_nothing_raised { @p.write_table(keys: [:SEQ]) }
+  end
+
   test "BioPieces::Pipeline::WriteTable to stdout outputs correctly" do
     result = capture_stdout { @p.write_table.run(input: @input) }
-    expected = ">test1\natcg\n>test2\ngtac\n"
+    expected = "Human\t23524\tATACGTCAG\nDog\t2442\tAGCATGAC\nMouse\t234\tGACTG\nCat\t2342\tAAATGCA\n"
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::WriteTable status outputs correctly" do
-    capture_stdout { @p.write_table.run(input: @input) }
-    assert_equal(2, @p.status[:status].first[:sequences_out])
-    assert_equal(8, @p.status[:status].first[:residues_out])
+  test "BioPieces::Pipeline::WriteTable with options[:keys] outputs correctly" do
+    result = capture_stdout { @p.write_table(keys:[:SEQ, "COUNT"]).run(input: @input) }
+    expected = "ATACGTCAG\t23524\nAGCATGAC\t2442\nGACTG\t234\nAAATGCA\t2342\n"
+    assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::WriteTable with options[:wrap] outputs correctly" do
-    result = capture_stdout { @p.write_table(wrap: 2).run(input: @input) }
-    expected = ">test1\nat\ncg\n>test2\ngt\nac\n"
+  test "BioPieces::Pipeline::WriteTable with options[:skip] outputs correctly" do
+    result = capture_stdout { @p.write_table(skip:[:SEQ, "COUNT"]).run(input: @input) }
+    expected = "Human\nDog\nMouse\nCat\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable with options[:header] outputs correctly" do
+    result = capture_stdout { @p.write_table(header: true).run(input: @input) }
+    expected = "#ORGANISM\tCOUNT\tSEQ\nHuman\t23524\tATACGTCAG\nDog\t2442\tAGCATGAC\nMouse\t234\tGACTG\nCat\t2342\tAAATGCA\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable with options[:delimiter] outputs correctly" do
+    result = capture_stdout { @p.write_table(delimiter: ";").run(input: @input) }
+    expected = "Human;23524;ATACGTCAG\nDog;2442;AGCATGAC\nMouse;234;GACTG\nCat;2342;AAATGCA\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable with options[:delimiter] with options[:pretty] raises" do
+    assert_raise(BioPieces::OptionError) { @p.write_table(delimiter: ";", pretty: true) }
+  end
+
+  test "BioPieces::Pipeline::WriteTable with options[:commify] with options[:pretty] raises" do
+    assert_raise(BioPieces::OptionError) { @p.write_table(commify: true) }
+  end
+
+  test "BioPieces::Pipeline::WriteTable with options[:pretty] outputs correctly" do
+    result = capture_stdout { @p.write_table(pretty: true).run(input: @input) }
+    expected = "+-------+-------+-----------+\n| Human | 23524 | ATACGTCAG |\n| Dog   |  2442 | AGCATGAC  |\n| Mouse |   234 | GACTG     |\n| Cat   |  2342 | AAATGCA   |\n+-------+-------+-----------+\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable with options[:pretty] and options[:header] outputs correctly" do
+    result = capture_stdout { @p.write_table(pretty: true, header: true).run(input: @input) }
+    expected = "+----------+-------+-----------+\n| ORGANISM | COUNT | SEQ       |\n+----------+-------+-----------+\n| Human    | 23524 | ATACGTCAG |\n| Dog      |  2442 | AGCATGAC  |\n| Mouse    |   234 | GACTG     |\n| Cat      |  2342 | AAATGCA   |\n+----------+-------+-----------+\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable with options[:pretty] and options[:commify] outputs correctly" do
+    result = capture_stdout { @p.write_table(pretty: true, commify: true).run(input: @input) }
+    expected = "+-------+--------+-----------+\n| Human | 23,524 | ATACGTCAG |\n| Dog   |  2,442 | AGCATGAC  |\n| Mouse |    234 | GACTG     |\n| Cat   |  2,342 | AAATGCA   |\n+-------+--------+-----------+\n"
     assert_equal(expected, result)
   end
 
   test "BioPieces::Pipeline::WriteTable to file outputs correctly" do
     @p.write_table(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
-    expected = ">test1\natcg\n>test2\ngtac\n"
+    expected = "Human\t23524\tATACGTCAG\nDog\t2442\tAGCATGAC\nMouse\t234\tGACTG\nCat\t2342\tAAATGCA\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable to file with options[:pretty] outputs correctly" do
+    @p.write_table(output: @file, pretty: true, header: true, commify: true).run(input: @input, output: @output2)
+    result = File.open(@file).read
+    expected = "+----------+--------+-----------+\n| ORGANISM | COUNT  | SEQ       |\n+----------+--------+-----------+\n| Human    | 23,524 | ATACGTCAG |\n| Dog      |  2,442 | AGCATGAC  |\n| Mouse    |    234 | GACTG     |\n| Cat      |  2,342 | AAATGCA   |\n+----------+--------+-----------+\n"
     assert_equal(expected, result)
   end
 
@@ -92,7 +141,7 @@ class TestWriteTable < Test::Unit::TestCase
     `touch #{@file}`
     @p.write_table(output: @file, force: true).run(input: @input)
     result = File.open(@file).read
-    expected = ">test1\natcg\n>test2\ngtac\n"
+    expected = "Human\t23524\tATACGTCAG\nDog\t2442\tAGCATGAC\nMouse\t234\tGACTG\nCat\t2342\tAAATGCA\n"
     assert_equal(expected, result)
   end
 
@@ -107,14 +156,14 @@ class TestWriteTable < Test::Unit::TestCase
   test "BioPieces::Pipeline::WriteTable to file outputs gzipped data correctly" do
     @p.write_table(output: @file, gzip: true).run(input: @input)
     result = `#{@zcat} #{@file}`
-    expected = ">test1\natcg\n>test2\ngtac\n"
+    expected = "Human\t23524\tATACGTCAG\nDog\t2442\tAGCATGAC\nMouse\t234\tGACTG\nCat\t2342\tAAATGCA\n"
     assert_equal(expected, result)
   end
 
   test "BioPieces::Pipeline::WriteTable to file outputs bzip2'ed data correctly" do
     @p.write_table(output: @file, bzip2: true).run(input: @input)
     result = `bzcat #{@file}`
-    expected = ">test1\natcg\n>test2\ngtac\n"
+    expected = "Human\t23524\tATACGTCAG\nDog\t2442\tAGCATGAC\nMouse\t234\tGACTG\nCat\t2342\tAAATGCA\n"
     assert_equal(expected, result)
   end
 
@@ -125,13 +174,15 @@ class TestWriteTable < Test::Unit::TestCase
   test "BioPieces::Pipeline::WriteTable with flux outputs correctly" do
     @p.write_table(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
-    expected = ">test1\natcg\n>test2\ngtac\n"
+    expected = "Human\t23524\tATACGTCAG\nDog\t2442\tAGCATGAC\nMouse\t234\tGACTG\nCat\t2342\tAAATGCA\n"
     assert_equal(expected, result)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
-    stream_expected << '{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}'
-    stream_expected << '{:SEQ_NAME=>"test2", :SEQ=>"gtac", :SEQ_LEN=>4}'
+    stream_expected << %Q{{:ORGANISM=>"Human", :COUNT=>23524, :SEQ=>"ATACGTCAG"}}
+    stream_expected << %Q{{:ORGANISM=>"Dog", :COUNT=>2442, :SEQ=>"AGCATGAC"}}
+    stream_expected << %Q{{:ORGANISM=>"Mouse", :COUNT=>234, :SEQ=>"GACTG"}}
+    stream_expected << %Q{{:ORGANISM=>"Cat", :COUNT=>2342, :SEQ=>"AAATGCA"}}
     assert_equal(stream_expected, stream_result)
   end
 end

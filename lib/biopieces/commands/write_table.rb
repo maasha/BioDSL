@@ -85,6 +85,8 @@ module BioPieces
       options_unique(options, :gzip, :bzip2)
       options_allowed_values(options, force: [nil, true, false])
       options_allowed_values(options, header: [nil, true, false])
+      options_tie(options, commify: :pretty)
+      options_conflict(options, delimiter: :pretty)
       options_allowed_values(options, pretty: [nil, true, false])
       options_allowed_values(options, commify: [nil, true, false])
       options_allowed_values(options, gzip: [nil, true, false])
@@ -99,8 +101,16 @@ module BioPieces
         header    = true if options[:header]
         rows      = []
         skip_keys = options[:skip].each_with_object({}) { |i, h| h[i.to_sym] = true } if options[:skip]
-        compress  = options[:compress] ? options[:compress].to_sym : nil
-        tab_out   = options[:output] ? Filesys.open(options[:output], 'w', compress: compress) : STDOUT
+
+        if options[:gzip]
+          compress = :gzip
+        elsif options[:bzip2]
+          compress = :bzip2
+        else
+          compress = nil
+        end
+
+        tab_out = options[:output] ? Filesys.open(options[:output], 'w', compress: compress) : $stdout
 
         status_track(status) do
           input.each do |record|
@@ -171,7 +181,7 @@ module BioPieces
           end
         end
 
-        tab_out.close unless tab_out === STDOUT
+        tab_out.close unless tab_out === $stdout
       end
 
       @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
