@@ -52,29 +52,102 @@ module BioPieces
     # 
     # == Examples
     # 
-    # To write FASTA entries to STDOUT.
+    # Consider the following records in the stream:
     # 
-    #    write_table
+    #    {ORGANISM: Human
+    #     COUNT: 23524
+    #     SEQ: ATACGTCAG},
+    #    {ORGANISM: Dog
+    #     COUNT: 2442
+    #     SEQ: AGCATGAC},
+    #    {ORGANISM: Mouse
+    #     COUNT: 234
+    #     SEQ: GACTG},
+    #    {ORGANISM: Cat
+    #     COUNT: 2342
+    #     SEQ: AAATGCA}
+    # 
+    # To write all records from the stream as a table, do:
+    # 
+    #    write_table()
+    # 
+    #    Human  23524 ATACGTCAG
+    #    Dog  2442  AGCATGAC
+    #    Mouse  234 GACTG
+    #    Cat  2342  AAATGCA
+    # 
+    # If you supply the +header+ option, then the first row in the table will be a
+    # 'header' line prefixed with a '#':
+    # 
+    #    write_table(header: true)
+    # 
+    #    #ORGANISM  COUNT SEQ
+    #    Human  23524 ATACGTCAG
+    #    Dog  2442  AGCATGAC
+    #    Mouse  234 GACTG
+    #    Cat  2342  AAATGCA
+    # 
+    # You can also change the delimiter from the default (tab) to e.g. ',':
+    # 
+    #    write_table(delimiter: ',')
+    # 
+    #    Human,23524,ATACGTCAG
+    #    Dog,2442,AGCATGAC
+    #    Mouse,234,GACTG
+    #    Cat,2342,AAATGCA
+    # 
+    # If you want the values output in a specific order you have to supply a comma
+    # separated list using the +keys+ option that will print only those keys in that
+    # order:
+    # 
+    #    write_table(keys: [:SEQ, :COUNT])
+    # 
+    #    ATACGTCAG  23524
+    #    AGCATGAC 2442
+    #    GACTG  234
+    #    AAATGCA  2342
+    # 
+    # Keys in the format V0, V1, V2 ... Vn, is automagically sorted numerically.
+    # 
+    # Alternatively, if you have some keys that you don't want in the tabular output,
+    # use the +skip+ option. So to print all keys except SEQ and SEQ_TYPE do:
+    # 
+    #    write_table(skip: [:SEQ])
+    # 
+    #    Human  23524
+    #    Dog  2442
+    #    Mouse  234
+    #    Cat  2342
+    # 
+    # And if you want a pretty printed table use the +pretty+ option and throw
+    # in the +commify+ option if you want commified numbers.
+    # 
+    #    write_tab(pretty: true, header: true, commify: true)
+    # 
+    #    +----------+--------+-----------+
+    #    | ORGANISM | COUNT  | SEQ       |
+    #    +----------+--------+-----------+
+    #    | Human    | 23,524 | ATACGTCAG |
+    #    | Dog      |  2,442 | AGCATGAC  |
+    #    | Mouse    |    234 | GACTG     |
+    #    | Cat      |  2,342 | AAATGCA   |
+    #    +----------+--------+-----------+
     #
-    # To write FASTA entries wrapped in lines of length of 80 to STDOUT.
+    # To write table to a file 'test.tab'.
     # 
-    #    write_table(wrap: 80)
+    #    write_table(output: "test.tab")
     # 
-    # To write FASTA entries to a file 'test.fna'.
-    # 
-    #    write_table(output: "test.fna")
-    # 
-    # To overwrite output file if this exists use the force option:
+    # To overwrite output file if this exists use the +force+ option:
     #
-    #    write_table(output: "test.fna", force: true)
+    #    write_table(output: "test.tab", force: true)
     #
-    # To write gzipped FASTA entries to file 'test.fna.gz'.
+    # To write gzipped output to a file 'test.tab.gz'.
     # 
-    #    write_table(output: "test.fna.gz", gzip: true)
+    #    write_table(output: "test.tab.gz", gzip: true)
     #
-    # To write bzipped FASTA entries to file 'test.fna.bz2'.
+    # To write bzipped output to a file 'test.tab.bz2'.
     # 
-    #    write_table(output: "test.fna.bz2", bzip2: true)
+    #    write_table(output: "test.tab.bz2", bzip2: true)
     def write_table(options = {})
       require 'terminal-table'
 
