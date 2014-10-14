@@ -217,16 +217,6 @@ class TestSeq < Test::Unit::TestCase
     assert_equal({:SEQ_NAME=>"test", :SEQ=>"ATCG", :SEQ_LEN=>4}, @entry.to_bp)
   end
 
-  test "#to_bp with missing seq_name raises" do
-    @entry.seq = 'ATCG'
-    assert_raise(BioPieces::SeqError) { @entry.to_bp }
-  end
-
-  test "#to_bp with missing sequence raises" do
-    @entry.seq_name = 'test'
-    assert_raise(BioPieces::SeqError) { @entry.to_bp }
-  end
-
   test "#to_fasta with missing seq_name raises" do
     @entry.seq = 'ATCG'
     assert_raise(BioPieces::SeqError) { @entry.to_fasta }
@@ -668,9 +658,9 @@ class TestSeq < Test::Unit::TestCase
 
   test "#qual_coerce! returns correctly" do
     @entry.qual = ('!' .. '~').to_a.join
-    assert_equal("!\"\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", @entry.qual_coerce!(:base_33).qual)
+    assert_equal(%q{!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII}, @entry.qual_coerce!(:base_33).qual)
     @entry.qual = ('!' .. '~').to_a.join
-    assert_equal("!\"\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZh\\h^_`abcdefghhhhhhhhhhhhhhhhhhhhhhh", @entry.qual_coerce!(:base_64).qual)
+    assert_equal(%q{@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghhhhhhhhhhhhhhhhhhhhhhh}, @entry.qual_coerce!(:base_64).qual)
   end
 
   test "#scores_mean without qual raises" do
@@ -681,6 +671,36 @@ class TestSeq < Test::Unit::TestCase
   test "#scores_mean returns correctly" do
     @entry.qual = '!!II'
     assert_equal(20.0, @entry.scores_mean)
+  end
+
+  test "#scores_min without qual raises" do
+    @entry.qual = nil
+    assert_raise(BioPieces::SeqError) { @entry.scores_min }
+  end
+
+  test "#scores_min returns correctly" do
+    @entry.qual = '!!II'
+    assert_equal(0, @entry.scores_min)
+  end
+
+  test "#scores_max without qual raises" do
+    @entry.qual = nil
+    assert_raise(BioPieces::SeqError) { @entry.scores_max }
+  end
+
+  test "#scores_max returns correctly" do
+    @entry.qual = '!!II'
+    assert_equal(40.0, @entry.scores_max)
+  end
+
+  test "#scores_mean_local without qual raises" do
+    @entry.qual = nil
+    assert_raise(BioPieces::SeqError) { @entry.scores_mean_local(2) }
+  end
+
+  test "#scores_mean_local returns correctly" do
+    @entry.qual = '!!II'
+    assert_equal(0.0, @entry.scores_mean_local(2))
   end
 
   test "#each_orf returns correctly" do

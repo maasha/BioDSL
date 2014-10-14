@@ -31,15 +31,15 @@ Or using an interactive shell using the alias ibp:
 
     $ ibp
     irb(main):001:0> p = BP.new
-    => BioPieces::Pipeline.new
+    => BP.new
     irb(main):002:0> p.read_fasta(input: "input.fna")
-    => BioPieces::Pipeline.new.read_fasta(input: "input.fna")
+    => BP.new.read_fasta(input: "input.fna")
     irb(main):003:0> p.grab(select: "ATC$", keys: :SEQ)
-    => BioPieces::Pipeline.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ)
+    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ)
     irb(main):004:0> p.write_fasta(output: "output.fna")
-    => BioPieces::Pipeline.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna")
+    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna")
     irb(main):005:0> p.run(progress: true)
-    => BioPieces::Pipeline.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
     irb(main):006:0>
 
 
@@ -47,7 +47,7 @@ Or chaining commands directly:
 
     $ ibp
     irb(main):001:0> BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
-    => BioPieces::Pipeline.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
     irb(main):002:0>
 
 Or run on the command line with the alias bp:
@@ -56,13 +56,25 @@ Or run on the command line with the alias bp:
 
 Available Biopieces
 -------------------
-*  `read_fasta`
-*  `write_fasta`
-*  `read_fastq`
-*  `write_fastq`
-*  `grab`
-*  `plot_histogram`
+*  `add_key`
+*  `assemble_pairs`
+*  `clip_primer`
+*  `cluster_otus`
+*  `dereplicate_seq`
 *  `dump`
+*  `grab`
+*  `mean_scores`
+*  `plot_histogram`
+*  `plot_scores`
+*  `read_fasta`
+*  `read_fastq`
+*  `sort`
+*  `trim_primer`
+*  `trim_seq`
+*  `uchime_ref`
+*  `usearch_global`
+*  `write_fasta`
+*  `write_fastq`
 
 Log and History
 ---------------

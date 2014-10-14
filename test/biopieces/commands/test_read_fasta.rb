@@ -57,8 +57,8 @@ EOF
     hash1 = '{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}'
     hash2 = '{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}'
 
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     @output.write hash1
     @output.write hash2
@@ -105,6 +105,13 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     assert_equal(expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::ReadFasta status returns correctly" do
+    @p.read_fasta(input: @file).run(output: @output2)
+
+    assert_equal(2, @p.status[:status].first[:sequences_in])
+    assert_equal(19, @p.status[:status].first[:residues_in])
   end
 
   test "BioPieces::Pipeline::ReadFasta with gzipped data returns correctly" do

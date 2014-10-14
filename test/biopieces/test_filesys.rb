@@ -31,6 +31,8 @@ require 'test/helper'
 
 class FilesysTest < Test::Unit::TestCase
   def setup
+    @zcat = BioPieces::Filesys::which('gzcat') || BioPieces::Filesys::which('zcat')
+
     @tmpdir     = Dir.mktmpdir("BioPieces")
     @file       = File.join(@tmpdir, 'test.txt')
     file_gzip   = File.join(@tmpdir, 'test_gzip.txt')
@@ -48,6 +50,15 @@ class FilesysTest < Test::Unit::TestCase
 
   def teardown
     FileUtils.rm_r @tmpdir
+  end
+
+
+  test "#which with non-existing executable returns nil" do
+    assert_nil(BioPieces::Filesys.which("__env__"))
+  end
+
+  test "#which with existing executable returns correctly" do
+    assert_equal("/usr/bin/env", BioPieces::Filesys.which("env"))
   end
 
   test "#tmpfile returns correctly" do
@@ -90,13 +101,13 @@ class FilesysTest < Test::Unit::TestCase
     ios = BioPieces::Filesys.open(@file, 'w', compress: :gzip)
     ios.write "foobar"
     ios.close
-    result = `zcat #{@file}`
+    result = `#{@zcat} #{@file}`
     assert_equal("foobar", result)
   end
 
   test "#open gzip in write mode with block context outputs correctly" do
     BioPieces::Filesys.open(@file, 'w', compress: :gzip) { |ios| ios.write "foobar" }
-    result = `zcat #{@file}`
+    result = `#{@zcat} #{@file}`
     assert_equal("foobar", result)
   end
 

@@ -21,12 +21,15 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files  = Dir["wiki/*.rdoc"]
   s.require_paths     = ["lib"]
 
-  s.add_dependency("RubyInline", ">= 3.12.2")
-  s.add_dependency("narray",     ">= 0.6.0")
-  s.add_dependency("mail",       ">= 2.5.4")
-  s.add_dependency("msgpack",    ">= 0.5.8")
-  s.add_dependency("gnuplot",    ">= 2.6.2")
-  s.add_dependency("parallel",   ">= 1.0.0")
+  s.add_dependency("RubyInline",     ">= 3.12.2")
+  s.add_dependency("narray",         ">= 0.6.0")
+  s.add_dependency("mail",           ">= 2.5.4")
+  s.add_dependency("msgpack",        ">= 0.5.8")
+  s.add_dependency("gnuplot",        ">= 2.6.2")
+  s.add_dependency("parallel",       ">= 1.0.0")
+  s.add_dependency("pqueue",         ">= 2.0.2")
+  s.add_dependency("google_hash",    ">= 0.8.4")
+  s.add_dependency("terminal-table", ">= 1.4.5")
   s.add_development_dependency("simplecov", ">= 0.7.1")
   s.add_development_dependency("mocha",     ">= 1.0.0")
 end

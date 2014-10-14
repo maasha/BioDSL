@@ -35,8 +35,8 @@ class TestDump < Test::Unit::TestCase
     hash2 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
     hash3 = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4}
 
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     @output.write hash1
     @output.write hash2

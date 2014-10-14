@@ -26,28 +26,28 @@
 
 raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
 
+# Commify numbers.
+class Numeric
+  def commify
+    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+  end
+end
+
 module BioPieces
-  require 'pp'
-  require 'msgpack'
-  require 'inline'
-  require 'mail'
-  require 'gnuplot'
-  require 'narray'
-  require 'parallel'
-  require 'open3'
-  require 'stringio'
-  require 'tempfile'
   require 'biopieces/commands'
   require 'biopieces/helpers'
   require 'biopieces/seq'
-  autoload :Config,   'biopieces/config'
-  autoload :Hamming,  'biopieces/hamming'
-  autoload :Version,  'biopieces/version'
-  autoload :Filesys,  'biopieces/filesys'
-  autoload :Pipeline, 'biopieces/pipeline'
-  autoload :Fasta,    'biopieces/fasta'
-  autoload :Fastq,    'biopieces/fastq'
-  autoload :Math,     'biopieces/math'
+  require 'biopieces/config'
+  require 'biopieces/hamming'
+  require 'biopieces/version'
+  require 'biopieces/filesys'
+  require 'biopieces/fork'
+  require 'biopieces/pipeline'
+  require 'biopieces/fasta'
+  require 'biopieces/fastq'
+  require 'biopieces/math'
+  require 'biopieces/stream'
+  require 'biopieces/usearch'
 end
 
 BP = BioPieces::Pipeline # Module alias for irb short hand

@@ -26,12 +26,26 @@
 
 module BioPieces
   module Commands
+    require 'biopieces/commands/add_key'
+    require 'biopieces/commands/assemble_pairs'
+    require 'biopieces/commands/clip_primer'
+    require 'biopieces/commands/cluster_otus'
+    require 'biopieces/commands/collect_otus'
+    require 'biopieces/commands/dereplicate_seq'
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
+    require 'biopieces/commands/mean_scores'
     require 'biopieces/commands/plot_histogram'
+    require 'biopieces/commands/plot_scores'
     require 'biopieces/commands/read_fasta'
     require 'biopieces/commands/read_fastq'
+    require 'biopieces/commands/sort'
+    require 'biopieces/commands/trim_primer'
+    require 'biopieces/commands/trim_seq'
+    require 'biopieces/commands/uchime_ref'
+    require 'biopieces/commands/usearch_global'
     require 'biopieces/commands/write_fasta'
     require 'biopieces/commands/write_fastq'
+    require 'biopieces/commands/write_table'
   end
 end

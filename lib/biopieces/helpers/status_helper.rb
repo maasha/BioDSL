@@ -26,18 +26,56 @@
 
 module BioPieces
   module StatusHelper
-    def status_track(input, output, run_options, &block)
-      time = Time.now
+    require 'tempfile'
+    require 'terminal-table'
 
-      Thread.new do
-        loop do
-          status_save(input, output, time, run_options)
+    def status_init
+      @commands.map do |command|
+        command.status = {
+          __status_file__: Tempfile.new(command.name.to_s),
+          name:            command.name,
+          options:         command.options,
+          records_in:      0,
+          records_out:     0
+        }
+      end
 
-          if run_options[:progress]
-            system("clear")
-    
-            pp status_load(run_options[:commands])
+      @commands.first.status[:__last__] = true
+    end
+
+    def status_track(status, &block)
+      if @options[:progress]
+        thr = Thread.new do
+          loop do
+            status_save(status)
+
+            sleep BioPieces::Config::STATUS_SAVE_INTERVAL
           end
+        end
+      end
+
+      block.call
+
+      thr.terminate if @options[:progress]
+
+      status_save(status)
+    end
+
+    def status_progress(&block)
+
+      thr = Thread.new do
+        print "\e[H\e[2J"   # Console code to clear screen
+
+        loop do
+          status = status_load
+
+          status.map { |s| s[:time_elapsed] = (s[:time_stop] || Time.now) - s[:time_start] }
+
+          table  = status_tabulate(status).to_s
+
+          print "\e[1;1H"    # Console code to move cursor to 1,1 coordinate.
+          puts "Started: #{status.first[:time_start]}"
+          puts table 
 
           sleep BioPieces::Config::STATUS_SAVE_INTERVAL
         end
@@ -45,15 +83,39 @@ module BioPieces
 
       block.call
 
-      status_save(input, output, time, run_options)
+      thr.terminate
     end
 
-    def status_load(commands)
+    def status_tabulate(status)
+      rows = []
+      rows <<  %w{name records_in records_out time_elapsed status}
+
+      status.each do |s|
+        row = []
+        row << s[:name]
+        row << s[:records_in].commify
+        row << s[:records_out].commify
+        row << (Time.mktime(0) + s[:time_elapsed]).strftime("%H:%M:%S")
+        row << s[:status]
+        rows << row
+      end
+
+      table = Terminal::Table.new
+      table.style = {border_x: '', border_y: '', border_i: '' }
+      table.rows = rows
+
+      table.align_column(1, :right)
+      table.align_column(2, :right)
+
+      table
+    end
+
+    def status_load
       status = []
 
-      commands.each do |command|
+      @commands.each do |command|
         begin
-          status << Marshal.load(File.read(command.status_file))
+          status << Marshal.load(File.read(command.status[:__status_file__]))
         rescue ArgumentError
           retry
         end
@@ -62,29 +124,30 @@ module BioPieces
       status
     end
 
-    def status_save(input, output, time, run_options)
-      options = {}
+    def status_save(status)
+      data = {}
 
-      # Remove unmashallable objects
-      run_options[:options].each do |key, value|
-        unless value.is_a? StringIO or value.is_a? IO
-          options[key] = value
+      status.each do |key, value|
+        next if key == :__status_file__ || key == :__last__
+
+        # Skip unmarshallable objects
+        begin
+          Marshal.dump(key)
+          Marshal.dump(value)
+        rescue TypeError
+          next
         end
+
+        data[key] = value
       end
 
-      status = {
-        command:      run_options[:command],
-        options:      options,
-        records_in:   input  ? input.size  : 0,
-        records_out:  output ? output.size : 0,
-        time_elapsed: (Time.now - time).to_s
-      }
-
-      File.open(run_options[:status_file], 'w') do |ios|
-        ios.write(Marshal.dump(status))
+      File.open(status[:__status_file__], 'w') do |ios|
+        Marshal.dump(data, ios)
       end
+    end
 
-      status
+    def status_dump(path)
+      File.open(path, 'w') { |file| file.write @status.to_yaml }
     end
   end
 end

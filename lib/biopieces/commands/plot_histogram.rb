@@ -28,12 +28,12 @@ module BioPieces
   module Commands
     # == Plot a histogram of numerical values for a specified key.
     # 
-    # +plot_distribution+ create a histogram plot of the values for a specified
+    # +plot_histogram+ create a histogram plot of the values for a specified
     # key from all records in the stream. Plotting is done using GNUplot which
     # allows for different types of output the default one being crufty ASCII
     # graphics.
     #
-    # GNUplot must be installed for plot_distribution to work. Read more here:
+    # GNUplot must be installed for plot_histogram to work. Read more here:
     #
     # http://www.gnuplot.info/
     # 
@@ -59,7 +59,7 @@ module BioPieces
     # 
     # Here we plot a histogram of sequence lengths from a FASTA file:
     # 
-    #    read_fasta(input: "test.fna").plot_distribution(key: :SEQ_LEN).run
+    #    read_fasta(input: "test.fna").plot_histogram(key: :SEQ_LEN).run
     # 
     #                                      Histogram
     #           +             +            +            +            +             +
@@ -87,40 +87,47 @@ module BioPieces
     # To render X11 output (i.e. instant view) use the +terminal+ option:
     # 
     #    read_fasta(input: "test.fna").
-    #    plot_distribution(key: :SEQ_LEN, terminal: :x11).run
+    #    plot_histogram(key: :SEQ_LEN, terminal: :x11).run
     # 
     # To generate a PNG image and save to file:
     # 
     #    read_fasta(input: "test.fna").
-    #    plot_distribution(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
+    #    plot_histogram(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
+      require 'gnuplot'
+
       options_orig = options.dup
-      @options = options
-      options_allowed :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale
-      options_allowed_values terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf]
-      options_required :key
-      options_files_exists_force :output
+      options_allowed(options, :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_required(options, :key)
+      options_files_exists_force(options, :output)
 
-      key = @options[:key]
-      @options[:terminal] ||= :dumb
-      @options[:title]    ||= "Histogram"
-      @options[:xlabel]   ||= @options[:key]
-      @options[:ylabel]   ||= "n"
-      @options[:ylabel]   = "log10(#{@options[:ylabel]})" if @options[:ylogscale]
+      key = options[:key]
+      options[:terminal] ||= :dumb
+      options[:title]    ||= "Histogram"
+      options[:xlabel]   ||= options[:key]
+      options[:ylabel]   ||= "n"
+      options[:ylabel]   = "log10(#{options[:ylabel]})" if options[:ylogscale]
 
-      lmb = lambda do |input, output, run_options|
-        status_track(input, output, run_options) do
+      lmb = lambda do |input, output, status|
+        status_track(status) do
           count_hash = Hash.new(0)
 
           input.each do |record|
+            status[:records_in] += 1
+
             if record[key]
               count_hash[record[key].to_i] += 1
             end
 
-            output.write record if output
+            if output
+              output << record
+
+              status[:records_out] += 1
+            end
           end
 
-          x_max = count_hash.keys.max
+          x_max = count_hash.keys.max || 0
 
           x = []
           y = []
@@ -152,7 +159,7 @@ module BioPieces
         end
       end
 
-      add(__method__, options, options_orig, lmb)
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
 
       self
     end

@@ -45,8 +45,8 @@ class TestGrab < Test::Unit::TestCase
       ios.puts "SEQ"
     end
 
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
     hash2 = {SEQ_NAME: "test2", SEQ: "DSEQM", SEQ_LEN: 5}

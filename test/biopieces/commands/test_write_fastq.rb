@@ -31,12 +31,14 @@ require 'test/helper'
 
 class TestWriteFastq < Test::Unit::TestCase 
   def setup
+    @zcat = BioPieces::Filesys::which('gzcat') || BioPieces::Filesys::which('zcat')
+
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.fq')
     @file2  = File.join(@tmpdir, 'test.fq')
 
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4, SCORES: "!!II"}
     hash2 = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4, SCORES: "!!II"}
@@ -69,6 +71,12 @@ class TestWriteFastq < Test::Unit::TestCase
     result = capture_stdout { @p.write_fastq.run(input: @input) }
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"
     assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteFastq status outputs correctly" do
+    capture_stdout { @p.write_fastq.run(input: @input) }
+    assert_equal(2, @p.status[:status].first[:sequences_out])
+    assert_equal(8, @p.status[:status].first[:residues_out])
   end
 
   test "BioPieces::Pipeline::WriteFastq to stdout with base 64 encoding outputs correctly" do
@@ -108,7 +116,7 @@ class TestWriteFastq < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::WriteFastq to file outputs gzipped data correctly" do
     @p.write_fastq(output: @file, gzip: true).run(input: @input)
-    result = `zcat #{@file}`
+    result = `#{@zcat} #{@file}`
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"
     assert_equal(expected, result)
   end

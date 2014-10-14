@@ -29,6 +29,8 @@ module BioPieces
   class FilesysError < StandardError; end
 
   class Filesys
+    require 'open3'
+
     include Enumerable
 
     # Class method that returns a path to a unique temporary file.
@@ -78,6 +80,22 @@ module BioPieces
       end
     end
 
+    # Cross-platform way of finding an executable in the $PATH.
+    #
+    #   which('ruby') #=> /usr/bin/ruby
+    def self.which(cmd)
+      exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+
+      ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+        exts.each { |ext|
+          exe = File.join(path, "#{cmd}#{ext}")
+          return exe if File.executable?(exe) && !File.directory?(exe)
+        }
+      end
+
+      nil
+    end
+
     def initialize(ios)
       @io = ios
     end
@@ -104,6 +122,8 @@ module BioPieces
 
     # Iterator method for parsing entries.
     def each
+      return to_enum :each unless block_given?
+
       while entry = get_entry do
         yield entry
       end

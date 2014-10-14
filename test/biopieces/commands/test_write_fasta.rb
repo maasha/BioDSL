@@ -31,12 +31,14 @@ require 'test/helper'
 
 class TestWriteFasta < Test::Unit::TestCase 
   def setup
+    @zcat = BioPieces::Filesys::which('gzcat') || BioPieces::Filesys::which('zcat')
+
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.fna')
     @file2  = File.join(@tmpdir, 'test.fna')
 
-    @input, @output   = BioPieces::Pipeline::Stream.pipe
-    @input2, @output2 = BioPieces::Pipeline::Stream.pipe
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
     hash1 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
     hash2 = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4}
@@ -60,6 +62,12 @@ class TestWriteFasta < Test::Unit::TestCase
     result = capture_stdout { @p.write_fasta.run(input: @input) }
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteFasta status outputs correctly" do
+    capture_stdout { @p.write_fasta.run(input: @input) }
+    assert_equal(2, @p.status[:status].first[:sequences_out])
+    assert_equal(8, @p.status[:status].first[:residues_out])
   end
 
   test "BioPieces::Pipeline::WriteFasta with options[:wrap] outputs correctly" do
@@ -98,7 +106,7 @@ class TestWriteFasta < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::WriteFasta to file outputs gzipped data correctly" do
     @p.write_fasta(output: @file, gzip: true).run(input: @input)
-    result = `zcat #{@file}`
+    result = `#{@zcat} #{@file}`
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
   end
