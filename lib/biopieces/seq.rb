@@ -25,6 +25,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  require 'narray'
   require 'biopieces/seq/ambiguity'
   require 'biopieces/seq/assemble'
   require 'biopieces/seq/digest'
@@ -225,7 +226,7 @@ module BioPieces
         seq.chomp!
       end
 
-      ">" + seq_name + $/ + seq + $/
+      ">#{seq_name}#{$/}#{seq}#{$/}"
     end
 
     # Method that given a Seq entry returns a FASTQ entry (a string).
@@ -238,7 +239,7 @@ module BioPieces
       seq      = self.seq.to_s
       qual     = self.qual.to_s
 
-      "@" + seq_name + $/ + seq + $/ + "+" + $/ + qual + $/
+      "@#{seq_name}#{$/}#{seq}#{$/}+#{$/}#{qual}#{$/}"
     end
 
     # Method that generates a unique key for a
@@ -497,8 +498,8 @@ module BioPieces
       raise SeqError, "Missing qual" if self.qual.nil?
 
       case encoding
-      when :base_33 then self.qual.tr!("[J-~]", "I")
-      when :base_64 then self.qual.tr!("[i-~]", "h")
+      when :base_33 then qual_coerce_C(self.qual, self.qual.length, 33, 73)  # !-J
+      when :base_64 then qual_coerce_C(self.qual, self.qual.length, 64, 104) # @-h
       else
         raise SeqError, "unknown quality score encoding: #{encoding}"
       end 
@@ -512,14 +513,10 @@ module BioPieces
       raise SeqError, "unknown quality score encoding: #{to}"   unless to   == :base_33 or to   == :base_64
 
       if from == :base_33 and to == :base_64
-        na_qual   = NArray.to_na(self.qual, "byte")
-        na_qual  += 64 - 33
-        self.qual = na_qual.to_s
+        qual_convert_C(self.qual, self.qual.length, 31)    # += 64 - 33
       elsif from == :base_64 and to == :base_33
-        self.qual.tr!("[;-?]", "@")  # Handle negative Solexa values from -5 to -1 (set these to 0).
-        na_qual   = NArray.to_na(self.qual, "byte")
-        na_qual  -= 64 - 33
-        self.qual = na_qual.to_s
+        qual_coerce_C(self.qual, self.qual.length, 64, 104) # Handle negative Solexa values from -5 to -1 (set these to 0).
+        qual_convert_C(self.qual, self.qual.length, -31)    # -= 64 - 33
       end
 
       self
@@ -533,6 +530,26 @@ module BioPieces
       na_qual -= SCORE_BASE
 
       na_qual.mean
+    end
+
+    # Method to calculate and return the min quality score.
+    def scores_min
+      raise SeqError, "Missing qual in entry" if self.qual.nil?
+
+      na_qual = NArray.to_na(self.qual, "byte")
+      na_qual -= SCORE_BASE
+
+      na_qual.min
+    end
+
+    # Method to calculate and return the max quality score.
+    def scores_max
+      raise SeqError, "Missing qual in entry" if self.qual.nil?
+
+      na_qual = NArray.to_na(self.qual, "byte")
+      na_qual -= SCORE_BASE
+
+      na_qual.max
     end
 
     # Method to run a sliding window of a specified size across a Phred type
@@ -604,6 +621,54 @@ module BioPieces
     private
 
     inline do |builder|
+      builder.c %{
+        VALUE qual_coerce_C(
+          VALUE _qual,
+          VALUE _qual_len,
+          VALUE _min_value,
+          VALUE _max_value
+        )
+        {
+          unsigned char *qual      = (unsigned char *) StringValuePtr(_qual);
+          unsigned int   qual_len  = FIX2UINT(_qual_len);
+          unsigned int   min_value = FIX2UINT(_min_value);
+          unsigned int   max_value = FIX2UINT(_max_value);
+          unsigned int   i         = 0;
+
+          for (i = 0; i < qual_len; i++)
+          {
+            if (qual[i] > max_value) {
+              qual[i] = max_value;
+            } else if (qual[i] < min_value) {
+              qual[i] = min_value;
+            }
+          }
+
+          return Qnil;
+        }
+      }
+
+      builder.c %{
+        VALUE qual_convert_C(
+          VALUE _qual,
+          VALUE _qual_len,
+          VALUE _value
+        )
+        {
+          unsigned char *qual     = (unsigned char *) StringValuePtr(_qual);
+          unsigned int   qual_len = FIX2UINT(_qual_len);
+          unsigned int   value    = FIX2UINT(_value);
+          unsigned int   i        = 0;
+
+          for (i = 0; i < qual_len; i++)
+          {
+            qual[i] += value;
+          }
+
+          return Qnil;
+        }
+      }
+
       builder.c %{
         VALUE scores_mean_local_C(
           VALUE _qual,

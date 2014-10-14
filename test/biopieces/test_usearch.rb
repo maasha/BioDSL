@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,9 +27,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  require 'biopieces/helpers/history_helper'
-  require 'biopieces/helpers/log_helper'
-  require 'biopieces/helpers/options_helper'
-  require 'biopieces/helpers/status_helper'
+require 'test/helper'
+
+class TestUsearch < Test::Unit::TestCase 
 end

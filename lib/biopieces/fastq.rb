@@ -33,20 +33,13 @@ module BioPieces
     # Method to get the next FASTQ entry from an ios and return this
     # as a Seq object. If no entry is found or eof then nil is returned.
     def get_entry
-      seq_name       = @io.gets.chomp!
-      seq            = @io.gets.chomp!
+      return nil if @io.eof?
+      seq_name       = @io.gets[1 .. -2]
+      seq            = @io.gets.chomp
       @io.gets
-      qual           = @io.gets.chomp!
+      qual           = @io.gets.chomp
 
-      entry          = Seq.new
-      entry.seq      = seq
-      entry.seq_name = seq_name[1 .. seq_name.length]
-      entry.qual     = qual
-      entry.type     = nil
-
-      entry
-    rescue
-      nil
+      Seq.new(seq_name: seq_name, seq: seq, qual: qual)
     end
   end
 end

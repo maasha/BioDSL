@@ -29,6 +29,8 @@ module BioPieces
   class FilesysError < StandardError; end
 
   class Filesys
+    require 'open3'
+
     include Enumerable
 
     # Class method that returns a path to a unique temporary file.
@@ -120,6 +122,8 @@ module BioPieces
 
     # Iterator method for parsing entries.
     def each
+      return to_enum :each unless block_given?
+
       while entry = get_entry do
         yield entry
       end

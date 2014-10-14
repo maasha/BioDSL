@@ -29,13 +29,15 @@ module BioPieces
   class PipelineError < StandardError; end
 
   class Pipeline
-    attr_accessor :commands, :status
+    require 'mail'
 
     include BioPieces::Commands
     include BioPieces::HistoryHelper
     include BioPieces::LogHelper
     include BioPieces::OptionsHelper
     include BioPieces::StatusHelper
+
+    attr_accessor :commands, :status
 
     def initialize
       @options  = {}
@@ -76,8 +78,9 @@ module BioPieces
     def run(options = {})
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork)
-      options_allowed_values(options, fork: [true, false, nil])
+      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread)
+      options_allowed_values(options, fork: [true, false, nil], thread: [true, false, nil])
+      options_conflict(options, fork: :thread)
       options_tie(options, subject: :email)
 
       @options = options
@@ -86,6 +89,8 @@ module BioPieces
 
       if @options[:fork]
         @options[:progress] ? status_progress { run_fork }      : run_fork
+      elsif @options[:thread]
+        @options[:progress] ? status_progress { run_thread }    : run_thread
       else
         @options[:progress] ? status_progress { run_enumerate } : run_enumerate
       end
@@ -113,7 +118,7 @@ module BioPieces
 
     def run_fork
       input  = @options[:input]  || []
-      output = @options[:output] || []
+      output = @options[:output]
       forks  = []
 
       @commands[1 .. -1].reverse.each do |cmd|
@@ -129,6 +134,28 @@ module BioPieces
       @commands.first.run(input, output)
 
       forks.reverse.each { |f| f.wait }
+    end
+
+    def run_thread
+      input   = @options[:input]  || []
+      output  = @options[:output]
+      threads = []
+
+      @commands[1 .. -1].reverse.each do |command|
+        io_read, io_write = BioPieces::Channel.pair
+
+        threads << Thread.new(command, io_read, output) do |cmd, iin, iout|
+          cmd.run(iin, iout)
+          iout.terminate if iout
+        end
+
+        output = io_write
+      end
+
+      @commands.first.run(input, output)
+      output.terminate
+
+      threads.reverse.each { |t| t.join }
     end
 
     def run_enumerate

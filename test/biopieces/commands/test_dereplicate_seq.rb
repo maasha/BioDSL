@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,9 +27,48 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  require 'biopieces/helpers/history_helper'
-  require 'biopieces/helpers/log_helper'
-  require 'biopieces/helpers/options_helper'
-  require 'biopieces/helpers/status_helper'
+require 'test/helper'
+
+class TestDereplicateSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    @output.write({SEQ_NAME: "test1", SEQ: "ATCG"})
+    @output.write({SEQ_NAME: "test2", SEQ: "ATCG"})
+    @output.write({SEQ_NAME: "test3", SEQ: "atcg"})
+    @output.write({SEQ_NAME: "test4", SEQ: "GCTA"})
+    @output.write({FISH: "eel"})
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::DereplicateSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.dereplicate_seq(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::DereplicateSeq with valid options don't raise" do
+    assert_nothing_raised { @p.dereplicate_seq(ignore_case: true) }
+  end
+
+  test "BioPieces::Pipeline::DereplicateSeq returns correctly" do
+    @p.dereplicate_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:FISH=>"eel"}{:SEQ_NAME=>"test1", :SEQ=>"ATCG", :SEQ_COUNT=>2}{:SEQ_NAME=>"test3", :SEQ=>"atcg", :SEQ_COUNT=>1}{:SEQ_NAME=>"test4", :SEQ=>"GCTA", :SEQ_COUNT=>1}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::DereplicateSeq with ignore_case returns correctly" do
+    @p.dereplicate_seq(ignore_case: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:FISH=>"eel"}{:SEQ_NAME=>"test1", :SEQ=>"ATCG", :SEQ_COUNT=>3}{:SEQ_NAME=>"test4", :SEQ=>"GCTA", :SEQ_COUNT=>1}}
+
+    assert_equal(expected, result)
+  end
 end
