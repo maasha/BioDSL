@@ -46,5 +46,6 @@ module BioPieces
     require 'biopieces/commands/usearch_global'
     require 'biopieces/commands/write_fasta'
     require 'biopieces/commands/write_fastq'
+    require 'biopieces/commands/write_table'
   end
 end
