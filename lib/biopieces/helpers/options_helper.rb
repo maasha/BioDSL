@@ -98,6 +98,16 @@ module BioPieces
       end
     end
 
+    # Method that raises if options include lists with duplicate elements.
+    # Usage options_unique_list(options, :keys, :skip)
+    def options_list_unique(options, *lists)
+      lists.each do |list|
+        if options[list] and options[list].uniq.size != options[list].size
+          raise BioPieces::OptionError, "Duplicate elements found in list #{list}: #{options[list]}"
+        end
+      end
+    end
+
     # Method to expand all options in the glob list into lists of paths.
     def options_glob(options, *globs)
       globs.each do |option|
