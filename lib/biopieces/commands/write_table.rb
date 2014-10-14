@@ -229,13 +229,10 @@ module BioPieces
             if options[:commify]
               rows.each do |row|
                 row.each_with_index do |cell, i|
-                  begin Integer(cell)
+                  if cell.is_a? Integer
                     row[i] = cell.to_i.commify
-                  rescue
-                    begin Float(cell)
-                      row[i] = cell.to_f.commify
-                    rescue
-                    end
+                  elsif cell.is_a? Float
+                    row[i] = cell.to_f.commify
                   end
                 end
               end

@@ -118,6 +118,40 @@ class TestWriteTable < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::WriteTable with options[:pretty] and options[:commify] and floats outputs correctly" do
+    input, output   = BioPieces::Stream.pipe
+
+    output.write({ORGANISM: "Human", COUNT: 23524, SEQ: "ATACGTCAG"})
+    output.write({ORGANISM: "Dog",   COUNT: 244.1, SEQ: "AGCATGAC"})
+    output.write({ORGANISM: "Mouse", COUNT: 234,   SEQ: "GACTG"})
+    output.write({ORGANISM: "Cat",   COUNT: 2342,  SEQ: "AAATGCA"})
+
+    output.close
+
+    p = BioPieces::Pipeline.new
+
+    result = capture_stdout { p.write_table(pretty: true, commify: true).run(input: input) }
+    expected = "+-------+--------+-----------+\n| Human | 23,524 | ATACGTCAG |\n| Dog   |  244.1 | AGCATGAC  |\n| Mouse |    234 | GACTG     |\n| Cat   |  2,342 | AAATGCA   |\n+-------+--------+-----------+\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable with V<num> keys are output correctly" do
+    input, output   = BioPieces::Stream.pipe
+
+    output.write({V1: "Human", V2: 23524, V0: "ATACGTCAG"})
+    output.write({V1: "Dog",   V2: 244.1, V0: "AGCATGAC"})
+    output.write({V1: "Mouse", V2: 234,   V0: "GACTG"})
+    output.write({V1: "Cat",   V2: 2342,  V0: "AAATGCA"})
+
+    output.close
+
+    p = BioPieces::Pipeline.new
+
+    result = capture_stdout { p.write_table.run(input: input) }
+    expected = "ATACGTCAG\tHuman\t23524\nAGCATGAC\tDog\t244.1\nGACTG\tMouse\t234\nAAATGCA\tCat\t2342\n"
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::WriteTable to file outputs correctly" do
     @p.write_table(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
