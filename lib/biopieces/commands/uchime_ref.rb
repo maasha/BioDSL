@@ -26,11 +26,16 @@
 
 module BioPieces
   module Commands
-    # == Run usearch on sequences in the stream.
+    # == Run uchime_ref on sequences in the stream.
     # 
-    # Use +usearch+ to process sequences in the stream:
-    # Avaliable programs:
-    # * cluster_otus - Does what?
+    # This is a wrapper for the +usearch+ tool to run the program uchime_ref.
+    # Basically sequence type records are searched against a reference database
+    # or non-chimeric sequences, and chimirec sequences are filtered out so
+    # only non-chimeric sequences are output.
+    #
+    # Please refer to the manual:
+    #
+    # http://drive5.com/usearch/manual/uchime_ref.html
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
     #
@@ -38,24 +43,19 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    usearch(<program: <string>)
+    #    uchime_ref(<database: <file>)
     # 
     # === Options
     #
-    # * program: <string> - Usearch program to run.
+    # * database: <file> - Database to search (in FASTA format).
     #
     # == Examples
     # 
-    def usearch(options = {})
+    def uchime_ref(options = {})
       options_orig = options.dup
-      options_allowed(options, :program, :database)
-      options_required(options, :program)
-      options_allowed_values(options, program: [:cluster_otus, :uchime_ref])
+      options_allowed(options, :database)
+      options_required(options, :database)
       options_files_exist(options, :database)
-
-      if options[:program] == :uchime_ref and not options[:database]
-        raise BioPieces::OptionError, "Database missing"
-      end
 
       options[:strand] ||= "plus"  # This option cannot be changed in usearch7.0
 
@@ -76,12 +76,6 @@ module BioPieces
                   status[:sequences_in] += 1
                   seq_name = record[:SEQ_NAME] || i.to_s
 
-                  if record[:SEQ_COUNT]
-                    seq_name << ";size=#{record[:SEQ_COUNT]}"
-                  elsif options[:program] == :cluster_otus
-                    raise BioPieces::SeqError, "Missing SEQ_COUNT"
-                  end
-
                   entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
                   ios.puts entry.to_fasta
@@ -92,31 +86,15 @@ module BioPieces
               end
             end
 
-            case options[:program]
-            when :cluster_otus 
-              BioPieces::Usearch.cluster_otus(input: tmp_in,
-                                              output: tmp_out,
-                                              verbose: options[:verbose])
-            when :uchime_ref 
-              BioPieces::Usearch.uchime_ref(input: tmp_in, 
-                                            output: tmp_out,
-                                            database: options[:database],
-                                            strand: options[:strand],
-                                            verbose: options[:verbose])
-            end
+            BioPieces::Usearch.uchime_ref(input: tmp_in, 
+                                          output: tmp_out,
+                                          database: options[:database],
+                                          strand: options[:strand],
+                                          verbose: options[:verbose])
 
             Fasta.open(tmp_out) do |ios|
               ios.each do |entry|
                 record = entry.to_bp
-
-                if options[:program] == :cluster_otus
-                  if record[:SEQ_NAME] =~ /;size=(\d+)$/
-                    record[:SEQ_COUNT] = $1.to_i
-                    record[:SEQ_NAME].sub!(/;size=\d+$/, '')
-                  else
-                    raise BioPieces::UsearchError, "Missing size in SEQ_NAME: #{record[:SEQ_NAME]}"
-                  end
-                end
 
                 output << record
                 status[:sequences_out] += 1

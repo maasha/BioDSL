@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,10 +23,45 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  VERSION = "0.3.4"
+require 'test/helper'
+
+class TestCollectOtus < Test::Unit::TestCase 
+  test "BioPieces::Pipeline#collect_otus with disallowed option raises" do
+    p = BioPieces::Pipeline.new
+    assert_raise(BioPieces::OptionError) { p.collect_otus(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#collect_otus outputs correctly" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write({one: 1, two: 2, three: 3})
+    output.write({TYPE: 'H', S_ID: "OTU_0", SAMPLE: "Sample0"})
+    output.write({TYPE: 'H', S_ID: "OTU_0", SAMPLE: "Sample0"})
+    output.write({TYPE: 'H', S_ID: "OTU_0", SAMPLE: "Sample1"})
+    output.write({TYPE: 'H', S_ID: "OTU_1", SAMPLE: "Sample0"})
+    output.write({TYPE: 'H', S_ID: "OTU_1", SAMPLE: "Sample1"})
+    output.write({TYPE: 'H', S_ID: "OTU_1", SAMPLE: "Sample1"})
+    output.close
+
+    p = BioPieces::Pipeline.new
+    p.collect_otus.run(input: input, output: output2)
+    result   = input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:one=>1, :two=>2, :three=>3}}
+    expected << %Q{{:TYPE=>"H", :S_ID=>"OTU_0", :SAMPLE=>"Sample0"}}
+    expected << %Q{{:TYPE=>"H", :S_ID=>"OTU_0", :SAMPLE=>"Sample0"}}
+    expected << %Q{{:TYPE=>"H", :S_ID=>"OTU_0", :SAMPLE=>"Sample1"}}
+    expected << %Q{{:TYPE=>"H", :S_ID=>"OTU_1", :SAMPLE=>"Sample0"}}
+    expected << %Q{{:TYPE=>"H", :S_ID=>"OTU_1", :SAMPLE=>"Sample1"}}
+    expected << %Q{{:TYPE=>"H", :S_ID=>"OTU_1", :SAMPLE=>"Sample1"}}
+    expected << %Q{{:RECORD_TYPE=>"OTU", :OTU=>"OTU_0", :SAMPLE0_COUNT=>2, :SAMPLE1_COUNT=>1}}
+    expected << %Q{{:RECORD_TYPE=>"OTU", :OTU=>"OTU_1", :SAMPLE0_COUNT=>1, :SAMPLE1_COUNT=>2}}
+
+    assert_equal(expected, result)
+  end
 end

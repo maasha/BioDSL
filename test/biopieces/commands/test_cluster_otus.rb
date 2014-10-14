@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,28 +27,58 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    require 'biopieces/commands/add_key'
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/cluster_otus'
-    require 'biopieces/commands/collect_otus'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/uchime_ref'
-    require 'biopieces/commands/usearch_global'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
-    require 'biopieces/commands/write_table'
+require 'test/helper'
+
+class TestClusterOtus < Test::Unit::TestCase 
+  test "BioPieces::Pipeline#cluster_otus with disallowed option raises" do
+    p = BioPieces::Pipeline.new
+    assert_raise(BioPieces::OptionError) { p.cluster_otus(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#cluster_otus with SEQ and missing SEQ_COUNT raises" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write({one: 1, two: 2, three: 3})
+    output.write({SEQ: "atcg"})
+    output.write({SEQ: "atcg"})
+    output.close
+
+    p = BioPieces::Pipeline.new
+    assert_raise(BioPieces::SeqError) { p.cluster_otus.run(input: input, output: output2) }
+
+    input2.close
+  end
+
+  test "BioPieces::Pipeline#cluster_otus with SEQ and unsorted SEQ_COUNT raises" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write({one: 1, two: 2, three: 3})
+    output.write({SEQ_COUNT: 3, SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.write({SEQ_COUNT: 4, SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.close
+
+    p = BioPieces::Pipeline.new
+    assert_raise(BioPieces::UsearchError) { p.cluster_otus.run(input: input, output: output2) }
+
+    input2.close
+  end
+
+  test "BioPieces::Pipeline#cluster_otus outputs correctly" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write({one: 1, two: 2, three: 3})
+    output.write({SEQ_COUNT: 5, SEQ: "atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.write({SEQ_COUNT: 4, SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.close
+
+    p = BioPieces::Pipeline.new
+    p.cluster_otus.run(input: input, output: output2)
+    result   = input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:one=>1, :two=>2, :three=>3}{:SEQ_NAME=>"1", :SEQ=>"ATCGAACGATCGATCGATCGATCGATCGTACGACGTAGCT", :SEQ_LEN=>40, :SEQ_COUNT=>5}}
+
+    assert_equal(expected, result)
   end
 end
