@@ -78,10 +78,20 @@ module BioPieces
     def run(options = {})
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread)
+      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir)
       options_allowed_values(options, fork: [true, false, nil], thread: [true, false, nil])
       options_conflict(options, fork: :thread)
       options_tie(options, subject: :email)
+
+      if options[:output_dir]
+        FileUtils.mkdir_p(options[:output_dir]) unless File.exists?(options[:output_dir])
+
+        @commands.each do |command|
+          if value = command.options[:output]
+            command.options[:output] = File.join(options[:output_dir], value)
+          end
+        end
+      end
 
       @options = options
 
