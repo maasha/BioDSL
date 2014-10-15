@@ -26,41 +26,54 @@
 
 module BioPieces
   module Commands
-    # == Merge values of specified keys.
+    # == Split the values of a key into new key/value pairs.
     # 
-    # +merge_values+ merges the values of a list of keys using a given
-    # delimiter and saves the new value as the value of the first key.
+    # +split_values+ splits the value of a given key into multiple values that
+    # are added to the record. The keys used for the values are per default
+    # based on the given key with an added index, but using the +keys+ option
+    # allows specifying a list of keys to use instead.
     #
     # == Usage
     # 
-    #    merge_values(<keys: <list>>[, delimiter: <string>])
+    #    split_values(<key>: <string>>[, delimiter: <string>[, keys: <list>]])
     #
     # === Options
     #
-    # * keys:      <list>   - List of keys to merge.
+    # # key:       <string> - Key who's value to split.
+    # * keys:      <list>   - List of keys to use with split values.
     # * delimiter: <string> - Delimiter (default='_').
     #
     # == Examples
     # 
-    # Consider the following record:
+    # Consider the following records:
     #
-    #    {ID: "FOO", COUNT: 10, SEQ: "gataag"}
-    # 
-    # To merge the values so that the COUNT and ID is merged in that order do:
-    # 
-    #    merge_values(keys: [:COUNT, :ID])
+    #    {ID: "FOO:count=10", SEQ: "gataag"}
+    #    {ID: "FOO_10_20", SEQ: "gataag"}
     #
-    #    {:ID=>"FOO", :COUNT=>"10_FOO", :SEQ=>"gataag"}
+    # To split the value belinging to ID do:
     #
-    # Changing the +delimiter+ and order:
+    #    split_values(key: :ID)
     #
-    #    merge_values(keys: [:ID, :COUNT], delimiter: ':count=')
+    #    {:ID=>"FOO:count=10", :SEQ=>"gataag"}
+    #    {:ID=>"FOO_10_20", :SEQ=>"gataag", :ID_0=>"FOO", :ID_1=>10, :ID_2=>20}
     #
-    #    {:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}
-    def merge_values(options = {})
+    # Using a different delimiter:
+    #
+    #    split_values(key: "ID", delimiter: ':count=')
+    #
+    #    {:ID=>"FOO:count=10", :SEQ=>"gataag", :ID_0=>"FOO", :ID_1=>10}
+    #    {:ID=>"FOO_10_20", :SEQ=>"gataag"}
+    #
+    # Using a different delimiter and a list of keys:
+    #
+    #    split_values(key: "ID", keys: ["ID", :COUNT], delimiter: ':count=')
+    #
+    #    {:ID=>"FOO", :SEQ=>"gataag", :COUNT=>10}
+    #    {:ID=>"FOO_10_20", :SEQ=>"gataag"}
+    def split_values(options = {})
       options_orig = options.dup
-      options_allowed(options, :keys, :delimiter)
-      options_required(options, :keys)
+      options_allowed(options, :key, :keys, :delimiter)
+      options_required(options, :key)
 
       options[:delimiter] ||= '_'
 
@@ -69,9 +82,18 @@ module BioPieces
           input.each do |record|
             status[:records_in] += 1
 
-            if options[:keys].all? { |key| record.key? key }
-              values = options[:keys].inject([]) { |memo, obj| memo << record[obj.to_sym] }
-              record[options[:keys].first] = values.join(options[:delimiter])
+            if value = record[options[:key].to_sym]
+              values = value.split(options[:delimiter])
+
+              if values.size > 1
+                if options[:keys]
+                  options[:keys].zip(values) { |key, val| record[key.to_sym] = val.to_num }
+                else
+                  values.each_with_index do |val, i|
+                    record["#{options[:key]}_#{i}".to_sym] = val.to_num
+                  end
+                end
+              end
             end
 
             output << record

@@ -112,7 +112,7 @@ module BioPieces
 
       log_ok
 
-      self
+     self
  #   rescue Exception => exception
  #     unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
  #       STDERR.puts "Error in run: " + exception.to_s
@@ -122,7 +122,7 @@ module BioPieces
  #     else
  #       raise exception
  #     end
- #   ensure
+    ensure
       history_save
     end
 

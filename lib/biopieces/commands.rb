@@ -42,6 +42,7 @@ module BioPieces
     require 'biopieces/commands/read_fastq'
     require 'biopieces/commands/read_table'
     require 'biopieces/commands/sort'
+    require 'biopieces/commands/split_values'
     require 'biopieces/commands/trim_primer'
     require 'biopieces/commands/trim_seq'
     require 'biopieces/commands/uchime_ref'

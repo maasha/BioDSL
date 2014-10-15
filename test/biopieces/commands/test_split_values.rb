@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,71 +23,56 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    # == Merge values of specified keys.
-    # 
-    # +merge_values+ merges the values of a list of keys using a given
-    # delimiter and saves the new value as the value of the first key.
-    #
-    # == Usage
-    # 
-    #    merge_values(<keys: <list>>[, delimiter: <string>])
-    #
-    # === Options
-    #
-    # * keys:      <list>   - List of keys to merge.
-    # * delimiter: <string> - Delimiter (default='_').
-    #
-    # == Examples
-    # 
-    # Consider the following record:
-    #
-    #    {ID: "FOO", COUNT: 10, SEQ: "gataag"}
-    # 
-    # To merge the values so that the COUNT and ID is merged in that order do:
-    # 
-    #    merge_values(keys: [:COUNT, :ID])
-    #
-    #    {:ID=>"FOO", :COUNT=>"10_FOO", :SEQ=>"gataag"}
-    #
-    # Changing the +delimiter+ and order:
-    #
-    #    merge_values(keys: [:ID, :COUNT], delimiter: ':count=')
-    #
-    #    {:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}
-    def merge_values(options = {})
-      options_orig = options.dup
-      options_allowed(options, :keys, :delimiter)
-      options_required(options, :keys)
+require 'test/helper'
 
-      options[:delimiter] ||= '_'
+class TestSplitValues < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
-      lmb = lambda do |input, output, status|
-        status_track(status) do
-          input.each do |record|
-            status[:records_in] += 1
+    @output.write({ID: "FOO:count=10", SEQ: "gataag"})
+    @output.write({ID: "FOO_10_20", SEQ: "gataag"})
+    @output.close
 
-            if options[:keys].all? { |key| record.key? key }
-              values = options[:keys].inject([]) { |memo, obj| memo << record[obj.to_sym] }
-              record[options[:keys].first] = values.join(options[:delimiter])
-            end
+    @p = BioPieces::Pipeline.new
+  end
 
-            output << record
+  test "BioPieces::Pipeline::SplitValues with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.split_values(foo: "bar") }
+  end
 
-            status[:records_out] += 1
-          end
-        end
-      end
+  test "BioPieces::Pipeline::SplitValues with valid options don't raise" do
+    assert_nothing_raised { @p.split_values(key: :ID) }
+  end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+  test "BioPieces::Pipeline::SplitValues returns correctly" do
+    @p.split_values(key: :ID).run(input: @input, output: @output2)
 
-      self
-    end
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:ID=>"FOO:count=10", :SEQ=>"gataag"}{:ID=>"FOO_10_20", :SEQ=>"gataag", :ID_0=>"FOO", :ID_1=>10, :ID_2=>20}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::SplitValues with :delimiter returns correctly" do
+    @p.split_values(key: "ID", delimiter: ':count=').run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:ID=>"FOO:count=10", :SEQ=>"gataag", :ID_0=>"FOO", :ID_1=>10}{:ID=>"FOO_10_20", :SEQ=>"gataag"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::SplitValues with :delimiter and :keys returns correctly" do
+    @p.split_values(key: "ID", keys: ["ID", :COUNT], delimiter: ':count=').run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:ID=>"FOO", :SEQ=>"gataag", :COUNT=>10}{:ID=>"FOO_10_20", :SEQ=>"gataag"}'
+
+    assert_equal(expected, result)
   end
 end
-
