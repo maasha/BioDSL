@@ -89,29 +89,29 @@ module BioPieces
     # 
     #    BP.new.read_tab(input: "test.tab").dump.run
     # 
-    #    {:Organism=>"Human", :Sequence=>"ATACGTCAG", :Count=>"23524"}
-    #    {:Organism=>"Dog", :Sequence=>"AGCATGAC", :Count=>"2442"}
-    #    {:Organism=>"Mouse", :Sequence=>"GACTG", :Count=>"234"}
-    #    {:Organism=>"Cat", :Sequence=>"AAATGCA", :Count=>"2342"}
+    #    {:Organism=>"Human", :Sequence=>"ATACGTCAG", :Count=>23524}
+    #    {:Organism=>"Dog", :Sequence=>"AGCATGAC", :Count=>2442}
+    #    {:Organism=>"Mouse", :Sequence=>"GACTG", :Count=>234}
+    #    {:Organism=>"Cat", :Sequence=>"AAATGCA", :Count=>2342}
     # 
     # However, if the first line is skipped using the +skip+ option the keys
     # will default to V0, V1, V2 ... Vn:
     #
     #    BP.new.read_table(input: "test.tab", skip: 1).dump.run
     #
-    #    {:V0=>"Human", :V1=>"ATACGTCAG", :V2=>"23524"}
-    #    {:V0=>"Dog", :V1=>"AGCATGAC", :V2=>"2442"}
-    #    {:V0=>"Mouse", :V1=>"GACTG", :V2=>"234"}
-    #    {:V0=>"Cat", :V1=>"AAATGCA", :V2=>"2342"}
+    #    {:V0=>"Human", :V1=>"ATACGTCAG", :V2=>23524}
+    #    {:V0=>"Dog", :V1=>"AGCATGAC", :V2=>2442}
+    #    {:V0=>"Mouse", :V1=>"GACTG", :V2=>234}
+    #    {:V0=>"Cat", :V1=>"AAATGCA", :V2=>2342}
     # 
     # To explicitly name the columns (or the keys) use the +keys+ option:
     # 
     #    BP.new.read_table(input: "test.tab", skip: 1, keys: [:ORGANISM, :SEQ, :COUNT]).dump.run
     #
-    #    {:ORGANISM=>"Human", :SEQ=>"ATACGTCAG", :COUNT=>"23524"}
-    #    {:ORGANISM=>"Dog", :SEQ=>"AGCATGAC", :COUNT=>"2442"}
-    #    {:ORGANISM=>"Mouse", :SEQ=>"GACTG", :COUNT=>"234"}
-    #    {:ORGANISM=>"Cat", :SEQ=>"AAATGCA", :COUNT=>"2342"}
+    #    {:ORGANISM=>"Human", :SEQ=>"ATACGTCAG", :COUNT=>23524}
+    #    {:ORGANISM=>"Dog", :SEQ=>"AGCATGAC", :COUNT=>2442}
+    #    {:ORGANISM=>"Mouse", :SEQ=>"GACTG", :COUNT=>234}
+    #    {:ORGANISM=>"Cat", :SEQ=>"AAATGCA", :COUNT=>2342}
     # 
     # It is possible to select a subset of columns to read by using the
     # +columns+ option which takes a comma separated list of columns numbers
@@ -120,19 +120,19 @@ module BioPieces
     # 
     #    BP.new.read_table(input: "test.tab", skip: 1, columns: [2, 1]).dump.run
     #
-    #    {:V0=>"23524", :V1=>"ATACGTCAG"}
-    #    {:V0=>"2442", :V1=>"AGCATGAC"}
-    #    {:V0=>"234", :V1=>"GACTG"}
-    #    {:V0=>"2342", :V1=>"AAATGCA"}
+    #    {:V0=>23524, :V1=>"ATACGTCAG"}
+    #    {:V0=>2442, :V1=>"AGCATGAC"}
+    #    {:V0=>234, :V1=>"GACTG"}
+    #    {:V0=>2342, :V1=>"AAATGCA"}
     # 
     # It is also possible to rename the columns with the +keys+ option:
     # 
     #    BP.new.read_table(input: "test.tab", skip: 1, columns: [2, 1], keys: [:COUNT, :SEQ]).dump.run
     #
-    #    {:COUNT=>"23524", :SEQ=>"ATACGTCAG"}
-    #    {:COUNT=>"2442", :SEQ=>"AGCATGAC"}
-    #    {:COUNT=>"234", :SEQ=>"GACTG"}
-    #    {:COUNT=>"2342", :SEQ=>"AAATGCA"}
+    #    {:COUNT=>23524, :SEQ=>"ATACGTCAG"}
+    #    {:COUNT=>2442, :SEQ=>"AGCATGAC"}
+    #    {:COUNT=>234, :SEQ=>"GACTG"}
+    #    {:COUNT=>2342, :SEQ=>"AAATGCA"}
     def read_table(options = {})
       options_orig = options.dup
       options_allowed(options, :input, :first, :last, :keys, :columns, :skip, :delimiter)
@@ -189,9 +189,9 @@ module BioPieces
                   record = {}
 
                   if keys
-                    fields.each_with_index { |field, i| record[keys[i]] = field }
+                    fields.each_with_index { |field, i| record[keys[i]] = field.to_num }
                   else
-                    fields.each_with_index { |field, i| record["V#{i}".to_sym] = field }
+                    fields.each_with_index { |field, i| record["V#{i}".to_sym] = field.to_num }
                   end
 
                   if options[:last]

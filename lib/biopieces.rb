@@ -33,6 +33,23 @@ class Numeric
   end
 end
 
+# Convert string to float or integer if applicable.
+class String
+  def to_num
+    begin
+      Integer(self)
+      self.to_i
+    rescue ArgumentError
+      begin
+        Float(self)
+        self.to_f
+      rescue ArgumentError
+        self
+      end
+    end
+  end
+end
+
 module BioPieces
   require 'biopieces/commands'
   require 'biopieces/helpers'
