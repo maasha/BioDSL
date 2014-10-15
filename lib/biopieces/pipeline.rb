@@ -113,16 +113,16 @@ module BioPieces
       log_ok
 
       self
-    rescue Exception => exception
-      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
-        STDERR.puts "Error in run: " + exception.to_s
-        STDERR.puts exception.backtrace if @options[:verbose]
-        log_error(exception)
-        exit 2
-      else
-        raise exception
-      end
-    ensure
+ #   rescue Exception => exception
+ #     unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+ #       STDERR.puts "Error in run: " + exception.to_s
+ #       STDERR.puts exception.backtrace if @options[:verbose]
+ #       log_error(exception)
+ #       exit 2
+ #     else
+ #       raise exception
+ #     end
+ #   ensure
       history_save
     end
 
