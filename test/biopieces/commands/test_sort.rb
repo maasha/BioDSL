@@ -35,7 +35,7 @@ class TestSort < Test::Unit::TestCase
     @input2, @output2 = BioPieces::Stream.pipe
 
     @output.write({NAME: "test2", COUNT: 4})
-    @output.write({NAME: "test1", COUNT: 4})
+    @output.write({NAME: "test1", COUNT: 21})
     @output.write({NAME: "test2", COUNT: 2})
     @output.write({NAME: "test3", COUNT: 9})
     @output.close
@@ -55,7 +55,7 @@ class TestSort < Test::Unit::TestCase
     @p.sort(key: "NAME").run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = %Q{{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}{:NAME=>"test3", :COUNT=>9}}
+    expected = %Q{{:NAME=>"test1", :COUNT=>21}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}{:NAME=>"test3", :COUNT=>9}}
 
     assert_equal(expected, result)
   end
@@ -64,7 +64,7 @@ class TestSort < Test::Unit::TestCase
     @p.sort(key: :COUNT).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = %Q{{:NAME=>"test2", :COUNT=>2}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test3", :COUNT=>9}}
+    expected = %Q{{:NAME=>"test2", :COUNT=>2}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test3", :COUNT=>9}{:NAME=>"test1", :COUNT=>21}}
 
     assert_equal(expected, result)
   end
@@ -73,7 +73,7 @@ class TestSort < Test::Unit::TestCase
     @p.sort(key: :COUNT, reverse: true).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = %Q{{:NAME=>"test3", :COUNT=>9}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}}
+    expected = %Q{{:NAME=>"test1", :COUNT=>21}{:NAME=>"test3", :COUNT=>9}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}}
 
     assert_equal(expected, result)
   end
@@ -82,7 +82,7 @@ class TestSort < Test::Unit::TestCase
     @p.sort(key: :COUNT, block_size: 60).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = %Q{{:NAME=>"test2", :COUNT=>2}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test3", :COUNT=>9}}
+    expected = %Q{{:NAME=>"test2", :COUNT=>2}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test3", :COUNT=>9}{:NAME=>"test1", :COUNT=>21}}
 
     assert_equal(expected, result)
   end
@@ -91,7 +91,7 @@ class TestSort < Test::Unit::TestCase
     @p.sort(key: :COUNT, block_size: 30, reverse: true).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = %Q{{:NAME=>"test3", :COUNT=>9}{:NAME=>"test1", :COUNT=>4}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}}
+    expected = %Q{{:NAME=>"test1", :COUNT=>21}{:NAME=>"test3", :COUNT=>9}{:NAME=>"test2", :COUNT=>4}{:NAME=>"test2", :COUNT=>2}}
 
     assert_equal(expected, result)
   end

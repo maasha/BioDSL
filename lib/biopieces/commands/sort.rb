@@ -68,10 +68,10 @@ module BioPieces
             if size > options[:block_size]
               file = Tempfile.new('sort')
 
-              File.open(file, 'w') do |ios|
-                list.sort_by! { |r| r[options[:key].to_sym] }
-                list.reverse! if options[:reverse]
+              list.sort_by! { |r| r[options[:key].to_sym] }
+              list.reverse! if options[:reverse]
 
+              File.open(file, 'w') do |ios|
                 list.each do |r|
                   msg = Marshal.dump(r)
                   ios.write([msg.size].pack("I"))
