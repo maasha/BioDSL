@@ -30,6 +30,8 @@ module BioPieces
     # 
     # +collect_otus+ count the number of times each OTU is found in a set of
     # samples. OTUs are given by the :S_ID key and samples by the :SAMPLE key.
+    # If a :SEQ_COUNT key is present it will be used to increment the OTU count,
+    # allowing for dereplicated sequences to be used.
     #
     # == Usage
     # 
@@ -55,7 +57,7 @@ module BioPieces
 
             if record[:TYPE] and record[:TYPE] == 'H'
               status[:hits_in] += 1
-              count_hash[record[:S_ID].to_sym][record[:SAMPLE].upcase.to_sym] += 1
+              count_hash[record[:S_ID].to_sym][record[:SAMPLE].upcase.to_sym] += (record[:SEQ_COUNT] || 1)
             end
 
             output << record
