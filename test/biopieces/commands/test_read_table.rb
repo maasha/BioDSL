@@ -108,9 +108,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -121,9 +121,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:V0=>"TCMID104", :V1=>"12"}}
-    expected << %Q{{:V0=>"TCMID105", :V1=>"123"}}
-    expected << %Q{{:V0=>"TCMID106", :V1=>"1231"}}
+    expected << %Q{{:V0=>"TCMID104", :V1=>12}}
+    expected << %Q{{:V0=>"TCMID105", :V1=>123}}
+    expected << %Q{{:V0=>"TCMID106", :V1=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -147,9 +147,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:FOO=>"TCMID104", :BAR=>"12"}}
-    expected << %Q{{:FOO=>"TCMID105", :BAR=>"123"}}
-    expected << %Q{{:FOO=>"TCMID106", :BAR=>"1231"}}
+    expected << %Q{{:FOO=>"TCMID104", :BAR=>12}}
+    expected << %Q{{:FOO=>"TCMID105", :BAR=>123}}
+    expected << %Q{{:FOO=>"TCMID106", :BAR=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -160,9 +160,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:FOO=>"12"}}
-    expected << %Q{{:FOO=>"123"}}
-    expected << %Q{{:FOO=>"1231"}}
+    expected << %Q{{:FOO=>12}}
+    expected << %Q{{:FOO=>123}}
+    expected << %Q{{:FOO=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -173,9 +173,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:FOO=>"TCMID104", :BAR=>"12"}}
-    expected << %Q{{:FOO=>"TCMID105", :BAR=>"123"}}
-    expected << %Q{{:FOO=>"TCMID106", :BAR=>"1231"}}
+    expected << %Q{{:FOO=>"TCMID104", :BAR=>12}}
+    expected << %Q{{:FOO=>"TCMID105", :BAR=>123}}
+    expected << %Q{{:FOO=>"TCMID106", :BAR=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -186,9 +186,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:COUNT=>"12"}}
-    expected << %Q{{:COUNT=>"123"}}
-    expected << %Q{{:COUNT=>"1231"}}
+    expected << %Q{{:COUNT=>12}}
+    expected << %Q{{:COUNT=>123}}
+    expected << %Q{{:COUNT=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -199,9 +199,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:V0=>"12", :V1=>"TCMID104"}}
-    expected << %Q{{:V0=>"123", :V1=>"TCMID105"}}
-    expected << %Q{{:V0=>"1231", :V1=>"TCMID106"}}
+    expected << %Q{{:V0=>12, :V1=>"TCMID104"}}
+    expected << %Q{{:V0=>123, :V1=>"TCMID105"}}
+    expected << %Q{{:V0=>1231, :V1=>"TCMID106"}}
 
     assert_equal(expected, stream_result)
   end
@@ -214,9 +214,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -229,9 +229,9 @@ EOF
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
     expected = ""
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     assert_equal(expected, stream_result)
   end
@@ -240,12 +240,12 @@ EOF
     @p.read_table(input: [@file, @file2]).run(output: @output2)
 
     expected = ""
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
@@ -256,12 +256,12 @@ EOF
     @p.read_table(input: File.join(@tmpdir, "test*.tab")).run(output: @output2)
 
     expected = ""
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
@@ -272,9 +272,9 @@ EOF
     @p.read_table(input: [@file, @file2], first: 3).run(output: @output2)
 
     expected = ""
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
@@ -293,8 +293,8 @@ EOF
     @p.read_table(input: [@file, @file2], last: 2).run(output: @output2)
 
     expected = ""
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
@@ -307,9 +307,9 @@ EOF
     expected = ""
     expected << %Q{{:SEQ_NAME=>"test1", :SEQ=>"atgcagcac", :SEQ_LEN=>9}}
     expected << %Q{{:SEQ_NAME=>"test2", :SEQ=>"acagcactgA", :SEQ_LEN=>10}}
-    expected << %Q{{:ID=>"TCMID104", :COUNT=>"12"}}
-    expected << %Q{{:ID=>"TCMID105", :COUNT=>"123"}}
-    expected << %Q{{:ID=>"TCMID106", :COUNT=>"1231"}}
+    expected << %Q{{:ID=>"TCMID104", :COUNT=>12}}
+    expected << %Q{{:ID=>"TCMID105", :COUNT=>123}}
+    expected << %Q{{:ID=>"TCMID106", :COUNT=>1231}}
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
 
