@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,30 +27,43 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    require 'biopieces/commands/add_key'
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/cluster_otus'
-    require 'biopieces/commands/collect_otus'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/merge_values'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/read_table'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/uchime_ref'
-    require 'biopieces/commands/usearch_global'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
-    require 'biopieces/commands/write_table'
+require 'test/helper'
+
+class TestMergeValues < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    @output.write({ID: "FOO", COUNT: 10, SEQ: "gataag"})
+    @output.write({ID: "FOO", SEQ: "gataag"})
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::MergeValues with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.merge_values(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::MergeValues with valid options don't raise" do
+    assert_nothing_raised { @p.merge_values(keys: [:ID]) }
+  end
+
+  test "BioPieces::Pipeline::MergeValues returns correctly" do
+    @p.merge_values(keys: [:COUNT, :ID]).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:ID=>"FOO", :COUNT=>"10_FOO", :SEQ=>"gataag"}{:ID=>"FOO", :SEQ=>"gataag"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::MergeValues with :delimiter returns correctly" do
+    @p.merge_values(keys: [:ID, :COUNT], delimiter: ':count=').run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}{:ID=>"FOO", :SEQ=>"gataag"}'
+
+    assert_equal(expected, result)
   end
 end
