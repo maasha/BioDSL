@@ -57,13 +57,6 @@ module BioPieces
     #    merge_values(keys: [:ID, :COUNT], delimiter: ':count=')
     #
     #    {:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}
-  end
-
-  test "BioPieces::Pipeline::MergeValues with :delimiter returns correctly" do
-    @p.merge_values(keys: [:ID, :COUNT], delimiter: ':count=').run(input: @input, output: @output2)
-
-    result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}{:ID=>"FOO", :SEQ=>"gataag"}'
     def merge_values(options = {})
       options_orig = options.dup
       options_allowed(options, :keys, :delimiter)
