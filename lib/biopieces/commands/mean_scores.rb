@@ -43,7 +43,7 @@ module BioPieces
     #
     # == Usage
     # 
-    #    trim_seq([local: <bool>[, window_size: <uint>]])
+    #    mean_scores([local: <bool>[, window_size: <uint>]])
     #
     # === Options
     #
