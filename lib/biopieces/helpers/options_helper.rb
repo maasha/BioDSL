@@ -192,6 +192,7 @@ module BioPieces
     end
 
     # Method to assert a given expression.
+    # Usage: options_assert(options, ":overlap_min > 0")
     def options_assert(options, expression)
       options.each do |key, value|
         expression.gsub!(/:#{key}/, value.to_s)

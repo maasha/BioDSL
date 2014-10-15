@@ -70,6 +70,7 @@ module BioPieces
       command << "usearch"
       command << "-cluster_otus #{@options[:input].path}"
       command << "-otus #{@options[:output].path}"
+      command << "-threads #{@options[:cpus]}" if @options[:cpus]
 
       execute(command)
 
@@ -82,6 +83,7 @@ module BioPieces
       command << "-uchime_ref #{@options[:input].path}"
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}"
+      command << "-threads #{@options[:cpus]}" if @options[:cpus]
       command << "-nonchimeras #{@options[:output].path}"
 
       execute(command)
@@ -95,6 +97,7 @@ module BioPieces
       command << "-usearch_global #{@options[:input].path}"
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}" if @options[:strand]
+      command << "-threads #{@options[:cpus]}"  if @options[:cpus]
       command << "-id #{@options[:identity]}"
       command << "-uc #{@options[:output].path}"
 
