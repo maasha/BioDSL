@@ -54,6 +54,7 @@ module BioPieces
     # 
     def uchime_ref(options = {})
       require 'parallel'
+
       options_orig = options.dup
       options_allowed(options, :database, :cpus)
       options_required(options, :database)
