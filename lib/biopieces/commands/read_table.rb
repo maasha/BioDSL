@@ -134,6 +134,8 @@ module BioPieces
     #    {:COUNT=>234, :SEQ=>"GACTG"}
     #    {:COUNT=>2342, :SEQ=>"AAATGCA"}
     def read_table(options = {})
+      require 'scanf'
+
       options_orig = options.dup
       options_allowed(options, :input, :first, :last, :keys, :columns, :skip, :delimiter)
       options_required(options, :input)
@@ -157,9 +159,11 @@ module BioPieces
             end
           end
 
-          keys   = options[:keys].map { |key| key.to_sym } if options[:keys]
-          count  = 0
-          buffer = []
+          keys    = options[:keys].map { |key| key.to_sym } if options[:keys]
+          count   = 0
+          first   = true
+          convert = []
+          buffer  = []
 
           catch :break do
             options[:input].each do |file|
@@ -179,31 +183,49 @@ module BioPieces
                     end
 
                     next
-                  end
-
-                  fields = line.split(options[:delimiter])
-                  fields = fields.values_at(*options[:columns]) if options[:columns]
-
-                  raise ArgumentError, "Number of columns and keys don't match: #{fields.size} != #{keys.size}" if keys and fields.size != keys.size
-
-                  record = {}
-
-                  if keys
-                    fields.each_with_index { |field, i| record[keys[i]] = field.to_num }
                   else
-                    fields.each_with_index { |field, i| record["V#{i}".to_sym] = field.to_num }
-                  end
+                    fields = line.split(options[:delimiter])
+                    fields = fields.values_at(*options[:columns]) if options[:columns]
 
-                  if options[:last]
-                    buffer << record
-                    buffer.shift if buffer.size > options[:last]
-                  else
-                    output << record
-                    status[:records_out] += 1
+                    raise ArgumentError, "Number of columns and keys don't match: #{fields.size} != #{keys.size}" if keys and fields.size != keys.size
 
-                    count += 1
+                    if first
+                      fields.each_with_index do |field, i|
+                        field = field.to_num
 
-                    throw :break if options[:first] and count == options[:first]
+                        if field.is_a? Fixnum
+                          convert[i] = :to_i
+                        elsif field.is_a? Float
+                          convert[i] = :to_f
+                        end
+                      end
+
+                      first = false
+                    end
+
+                    record = {}
+
+                    fields.each_with_index do |field, i|
+                      field = field.send(convert[i]) if convert[i]
+                      
+                      if keys
+                        record[keys[i]] = field
+                      else
+                        record["V#{i}".to_sym] = field
+                      end
+                    end
+
+                    if options[:last]
+                      buffer << record
+                      buffer.shift if buffer.size > options[:last]
+                    else
+                      output << record
+                      status[:records_out] += 1
+
+                      count += 1
+
+                      throw :break if options[:first] and count == options[:first]
+                    end
                   end
                 end
               end
