@@ -78,6 +78,10 @@ module BioPieces
       options[:delimiter] ||= '_'
 
       lmb = lambda do |input, output, status|
+        first   = true
+        convert = []
+        keys    = options[:keys]
+
         status_track(status) do
           input.each do |record|
             status[:records_in] += 1
@@ -86,11 +90,27 @@ module BioPieces
               values = value.split(options[:delimiter])
 
               if values.size > 1
-                if options[:keys]
-                  options[:keys].zip(values) { |key, val| record[key.to_sym] = val.to_num }
-                else
+                if first
                   values.each_with_index do |val, i|
-                    record["#{options[:key]}_#{i}".to_sym] = val.to_num
+                    val = val.to_num
+
+                    if val.is_a? Fixnum
+                      convert[i] = :to_i
+                    elsif val.is_a? Float
+                      convert[i] = :to_f
+                    end
+                  end
+
+                  first = false
+                end
+
+                values.each_with_index do |val, i|
+                  val = val.send(convert[i]) if convert[i]
+
+                  if keys
+                    record[keys[i].to_sym] = val
+                  else
+                    record["#{options[:key]}_#{i}".to_sym] = val
                   end
                 end
               end
