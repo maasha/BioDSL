@@ -83,6 +83,16 @@ module BioPieces
 
       block.call
 
+      status = status_load
+
+      status.map { |s| s[:time_elapsed] = (s[:time_stop] || Time.now) - s[:time_start] }
+
+      table  = status_tabulate(status).to_s
+
+      print "\e[1;1H"    # Console code to move cursor to 1,1 coordinate.
+      puts "Started: #{status.first[:time_start]}"
+      puts table 
+
       thr.terminate
     end
 
