@@ -42,8 +42,6 @@ module BioPieces
     # == Examples
     # 
     def collect_otus(options = {})
-      require 'google_hash'
-
       options_orig = options.dup
       options_allowed(options, nil)
 
