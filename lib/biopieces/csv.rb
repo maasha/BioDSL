@@ -58,7 +58,7 @@ module BioPieces
     def initialize(io)
       @io        = io
       @delimiter = "\s"
-      @header    = false
+      @header    = nil
     end
 
     # Method to return a table header prefixed with '#'
@@ -66,20 +66,22 @@ module BioPieces
     # with '#' will be skipped.
     # The header is returned as an array.
     def header(options = {})
+      return @header if @header
+
       @io.each_with_index do |line, i|
         line.chomp!
         next if line.empty?
 
         if line[0] == '#'
-          @header = true
-
           delimiter = options[:delimiter] || @delimiter
 
           if columns = options[:columns]
-            return line[1 .. -1].split(delimiter).values_at(*columns).map { |h| h.to_sym }
+            @header = line[1 .. -1].split(delimiter).values_at(*columns).map { |h| h.to_sym }
           else
-            return line[1 .. -1].split(delimiter).map { |h| h.to_sym }
+            @header = line[1 .. -1].split(delimiter).map { |h| h.to_sym }
           end
+
+          return @header
         end
 
         if i == 10
@@ -102,8 +104,12 @@ module BioPieces
       return to_enum :each unless block_given?
 
       @io.each do |line|
+        next if line.chomp.empty? or line[0] == '#'
+
         yield line
       end
+
+      self
     end
 
     # Method to iterate over a CSV IO object yielding arrays or an enumerator
@@ -124,21 +130,15 @@ module BioPieces
         if columns = options[:columns]
           types = determine_types(line, delimiter).values_at(*columns) unless types
 
-          if types
-            yield line.split(delimiter).values_at(*columns).convert_types(types)
-          else
-            yield line.split(delimiter).values_at(*columns)
-          end
+          yield line.split(delimiter).values_at(*columns).convert_types(types)
         else
           types = determine_types(line, delimiter) unless types
 
-          if types
-            yeild line.split(delimiter).convert_types(types)
-          else
-            yield line.split(delimiter)
-          end
+          yield line.split(delimiter).convert_types(types)
         end
       end
+
+      self
     end
 
     # Method to iterate over a CSV IO object yielding hashes or an enumerator
@@ -159,44 +159,28 @@ module BioPieces
         next if line.empty? or line[0] == '#'
         hash = {}
 
-        # FIXME - learn more metaprogramming and de-mess this.
-
         if columns = options[:columns]
           types = determine_types(line, delimiter).values_at(*columns) unless types
 
           if header = options[:header]
-            if types
-              line.split(delimiter).values_at(*columns).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
-            else
-              line.split(delimiter).values_at(*columns).each_with_index { |e, i| hash[header[i].to_sym] = e }
-            end
+            line.split(delimiter).values_at(*columns).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
           else
-            if types
-              line.split(delimiter).values_at(*columns).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
-            else
-              line.split(delimiter).values_at(*columns).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
-            end
+            line.split(delimiter).values_at(*columns).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
           end
         else
           types = determine_types(line, delimiter) unless types
 
           if header = options[:header]
-            if types
-              line.split(delimiter).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
-            else
-              line.split(delimiter).each_with_index { |e, i| hash[header[i].to_sym] = e }
-            end
+            line.split(delimiter).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
           else
-            if types
-              line.split(delimiter).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
-            else
-              line.split(delimiter).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
-            end
+            line.split(delimiter).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
           end
         end
 
         yield hash
       end
+
+      self
     end
 
     private
