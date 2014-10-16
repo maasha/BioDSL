@@ -85,11 +85,13 @@ module BioPieces
         end
 
         if i == 10
-          raise CSVError, "No header found in the first 10 lines"
+          break
         end
       end
 
-      raise CSVError, "No header found"
+      @io.rewind
+
+      nil
     end
 
     # Method to skip a given number or lines.
@@ -207,6 +209,9 @@ module BioPieces
     end
 
     class IO < Filesys
+      def rewind
+        @io.rewind
+      end
     end
   end
 end

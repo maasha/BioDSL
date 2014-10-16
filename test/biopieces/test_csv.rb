@@ -218,12 +218,4 @@ END
 
     assert_equal(expected, result)
   end
-
-  test "CSV#each_hash with missing header and :header raises" do
-    assert_raise(BioPieces::CSVError) { @csv2.header }
-  end
-
-  test "CSV#each_hash with missing header in first 10 lines and :header raises" do
-    assert_raise(BioPieces::CSVError) { @csv3.header }
-  end
 end
