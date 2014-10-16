@@ -58,6 +58,7 @@ module BioPieces
   require 'biopieces/hamming'
   require 'biopieces/version'
   require 'biopieces/filesys'
+  require 'biopieces/csv'
   require 'biopieces/fork'
   require 'biopieces/pipeline'
   require 'biopieces/fasta'
