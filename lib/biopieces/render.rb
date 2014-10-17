@@ -24,49 +24,18 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+module BioPieces
+  module Render
+    require 'tilt/haml'
 
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
-  end
-end
+    def www_dir
+      File.join(File.dirname(__FILE__), '..', '..', 'www')
+    end
 
-# Convert string to float or integer if applicable.
-class String
-  def to_num
-    begin
-      Integer(self)
-      self.to_i
-    rescue ArgumentError
-      begin
-        Float(self)
-        self.to_f
-      rescue ArgumentError
-        self
+    def render
+      Tilt.new(File.join(www_dir, "layout.html.haml")).render do
+        Tilt.new(File.join(www_dir, "status.html.haml")).render { PP.pp(status, '') }
       end
     end
   end
 end
-
-module BioPieces
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  require 'biopieces/config'
-  require 'biopieces/hamming'
-  require 'biopieces/version'
-  require 'biopieces/filesys'
-  require 'biopieces/csv'
-  require 'biopieces/fork'
-  require 'biopieces/render'
-  require 'biopieces/pipeline'
-  require 'biopieces/fasta'
-  require 'biopieces/fastq'
-  require 'biopieces/math'
-  require 'biopieces/stream'
-  require 'biopieces/usearch'
-end
-
-BP = BioPieces::Pipeline # Module alias for irb short hand
