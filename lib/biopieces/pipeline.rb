@@ -225,11 +225,9 @@ module BioPieces
     # Render status as html.
     
     def render_html
-      template = "layout.html.haml"
       commands = self.status[:status]
-      commands.map { |c| c[:time_elapsed] = (Time.mktime(0) + (c[:time_stop] - c[:time_start])).strftime("%H:%M:%S") }
 
-      BioPieces::Render.html(template, commands)
+      BioPieces::Render.html(commands)
     end
 
     private

@@ -3,5 +3,6 @@
   %title Biopieces 2.0 report
 %body
   %h1 Biopieces 2.0 report
+  = render_overview commands
   - commands.each do |command|
-    = render "command.html.haml", command
+    = render_command command

@@ -1,0 +1,13 @@
+%h2 Overview
+%table
+  %tr
+    %th Command
+    %th Records in
+    %th Records out
+    %th Time elapsed
+  - commands.each do |command|
+    %tr
+      %td #{command[:name]}
+      %td #{command[:records_in]}
+      %td #{command[:records_out]}
+      %td #{command[:time_elapsed]}

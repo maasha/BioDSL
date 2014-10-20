@@ -29,43 +29,52 @@ module BioPieces
     require 'tilt/haml'
     require 'base64'
 
-    def self.html(template, commands)
-      r = self.new(commands: commands)
-      r.render(template)
+    def self.html(commands)
+      renderer = self.new
+      
+      commands.map { |c| c[:time_elapsed] = (Time.mktime(0) + (c[:time_stop] - c[:time_start])).strftime("%H:%M:%S") }
+
+      renderer.render("layout.html.haml", renderer, commands: commands)
     end
 
-    attr_accessor :object
-
-    def initialize(options)
-      @options = options
+    def render(template, scope, args = {})
+      Tilt.new(File.join(root_dir, template)).render(scope, args)
     end
 
-    def render(template, object = nil)
-      @options = object if template =~ /command/
-
-      Tilt.new(File.join(www_dir, template)).render(self, @options) {}
+    def render_overview(commands)
+      render("overview.html.haml", self, commands: commands)
     end
 
-    def has_png?
-      if @options[:options][:terminal] == :png
+    def render_command(command)
+      render("command.html.haml", self, command)
+    end
+
+    def render_time(time_start, time_stop, time_elapsed)
+      render("time.html.haml", self, time_start: time_start, time_stop: time_stop, time_elapsed: time_elapsed)
+    end
+
+    def render_png(options)
+      path = options[:output]
+      png_data = "data:image/png;base64,"
+
+      File.open(path, "r") do |ios|
+        png_data << Base64.encode64(ios.read)
+      end
+
+      render("png.html.haml", self, path: path, png_data: png_data)
+    end
+
+    def has_png?(options)
+      if options[:output]   and
+         options[:terminal] and
+         options[:terminal] == :png
         true
       else
         false
       end
     end
 
-    def insert_png
-      path = @options[:options][:output]
-      png  = ""
-
-      File.open(path, "r") do |ios|
-        png = ios.read
-      end
-
-      "data:image/png;base64," + Base64.encode64(png)
-    end
-
-    def www_dir
+    def root_dir
       File.join(File.dirname(__FILE__), '..', '..', 'www')
     end
   end
