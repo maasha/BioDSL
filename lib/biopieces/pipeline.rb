@@ -225,9 +225,7 @@ module BioPieces
     # Render status as html.
     
     def render_html
-      commands = self.status[:status]
-
-      BioPieces::Render.html(commands)
+      BioPieces::Render.html(self)
     end
 
     private

@@ -29,16 +29,28 @@ module BioPieces
     require 'tilt/haml'
     require 'base64'
 
-    def self.html(commands)
+    def self.html(pipeline)
       renderer = self.new
-      
-      commands.map { |c| c[:time_elapsed] = (Time.mktime(0) + (c[:time_stop] - c[:time_start])).strftime("%H:%M:%S") }
 
-      renderer.render("layout.html.haml", renderer, commands: commands)
+      commands = pipeline.status[:status].dup
+      
+      commands.each_with_index do |command, i|
+        command[:time_elapsed] = (Time.mktime(0) + (command[:time_stop] - command[:time_start])).strftime("%H:%M:%S")
+        command[:command] = pipeline.commands[i].to_s
+      end
+
+      renderer.render("layout.html.haml", renderer, pipeline: pipeline.to_s, commands: commands)
     end
 
     def render(template, scope, args = {})
       Tilt.new(File.join(root_dir, template)).render(scope, args)
+    end
+
+    def render_pipeline(pipeline)
+      pipeline.sub!(/BP\.new\./, "BP.new.\n")
+      pipeline.gsub!(/\)\./, ").\n")
+
+      render("pipeline.html.haml", self, pipeline: pipeline)
     end
 
     def render_overview(commands)
@@ -62,6 +74,22 @@ module BioPieces
       end
 
       render("png.html.haml", self, path: path, png_data: png_data)
+    end
+
+    def has_input?(options)
+      if options[:input]
+        true
+      else
+        false
+      end
+    end
+
+    def has_output?(options)
+      if options[:output]
+        true
+      else
+        false
+      end
     end
 
     def has_png?(options)
