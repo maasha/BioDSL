@@ -36,7 +36,6 @@ module BioPieces
     include BioPieces::LogHelper
     include BioPieces::OptionsHelper
     include BioPieces::StatusHelper
-    include BioPieces::Render
 
     attr_accessor :commands, :status
 
@@ -221,6 +220,16 @@ module BioPieces
       mail[:body]    = "#{self.to_s}\n\n\n#{PP.pp(@status, '')}"
 
       mail.deliver!
+    end
+
+    # Render status as html.
+    
+    def render_html
+      template = "layout.html.haml"
+      commands = self.status[:status]
+      commands.map { |c| c[:time_elapsed] = (Time.mktime(0) + (c[:time_stop] - c[:time_start])).strftime("%H:%M:%S") }
+
+      BioPieces::Render.html(template, commands)
     end
 
     private

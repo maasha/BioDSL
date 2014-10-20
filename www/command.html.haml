@@ -1,0 +1,9 @@
+.section
+  %h2 Command: #{name}
+  %h3 Status: #{status}
+  %h3
+    = render "time.html.haml"
+  - if has_png?
+    %h3
+      %p
+        %img{:src => insert_png}/

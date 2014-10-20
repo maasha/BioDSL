@@ -25,17 +25,48 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Render
+  class Render
     require 'tilt/haml'
+    require 'base64'
+
+    def self.html(template, commands)
+      r = self.new(commands: commands)
+      r.render(template)
+    end
+
+    attr_accessor :object
+
+    def initialize(options)
+      @options = options
+    end
+
+    def render(template, object = nil)
+      @options = object if template =~ /command/
+
+      Tilt.new(File.join(www_dir, template)).render(self, @options) {}
+    end
+
+    def has_png?
+      if @options[:options][:terminal] == :png
+        true
+      else
+        false
+      end
+    end
+
+    def insert_png
+      path = @options[:options][:output]
+      png  = ""
+
+      File.open(path, "r") do |ios|
+        png = ios.read
+      end
+
+      "data:image/png;base64," + Base64.encode64(png)
+    end
 
     def www_dir
       File.join(File.dirname(__FILE__), '..', '..', 'www')
-    end
-
-    def render
-      Tilt.new(File.join(www_dir, "layout.html.haml")).render do
-        Tilt.new(File.join(www_dir, "status.html.haml")).render { PP.pp(status, '') }
-      end
     end
   end
 end
