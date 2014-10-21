@@ -42,9 +42,9 @@ module BioPieces
     # The following keys are added to clipped records:
     #
     # * CLIP_PRIMER_DIR - Direction of clip.
-    # * CLIP_PRIMER_POS       - Sequence position of clip (0 based).
-    # * CLIP_PRIMER_LEN       - Length of clip match.
-    # * CLIP_PRIMER_PAT       - Clip match pattern.
+    # * CLIP_PRIMER_POS - Sequence position of clip (0 based).
+    # * CLIP_PRIMER_LEN - Length of clip match.
+    # * CLIP_PRIMER_PAT - Clip match pattern.
     # == Usage
     # 
     #    clip_primer(<primer: <string>>, <direction: <:forward|:reverse>
@@ -132,6 +132,11 @@ module BioPieces
             status[:records_in] += 1
 
             if record[:SEQ]
+              record.delete :CLIP_PRIMER_DIR
+              record.delete :CLIP_PRIMER_POS
+              record.delete :CLIP_PRIMER_LEN
+              record.delete :CLIP_PRIMER_PAT
+
               entry = BioPieces::Seq.new_bp(record)
               dist  = options[:search_distance] || entry.length  
 
@@ -147,9 +152,9 @@ module BioPieces
 
                   record = record.merge(entry.to_bp)
                   record[:CLIP_PRIMER_DIR] = 'REVERSE'
-                  record[:CLIP_PRIMER_POS]       = match.pos
-                  record[:CLIP_PRIMER_LEN]       = match.length
-                  record[:CLIP_PRIMER_PAT]       = match.match
+                  record[:CLIP_PRIMER_POS] = match.pos
+                  record[:CLIP_PRIMER_LEN] = match.length
+                  record[:CLIP_PRIMER_PAT] = match.match
                 else
                   status[:pattern_misses] += 1
                 end
@@ -165,9 +170,9 @@ module BioPieces
 
                     record = record.merge(entry.to_bp)
                     record[:CLIP_PRIMER_DIR] = 'FORWARD'
-                    record[:CLIP_PRIMER_POS]       = match.pos
-                    record[:CLIP_PRIMER_LEN]       = match.length
-                    record[:CLIP_PRIMER_PAT]       = match.match
+                    record[:CLIP_PRIMER_POS] = match.pos
+                    record[:CLIP_PRIMER_LEN] = match.length
+                    record[:CLIP_PRIMER_PAT] = match.match
                   end
                 else
                   status[:pattern_misses] += 1
