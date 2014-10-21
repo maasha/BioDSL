@@ -161,8 +161,6 @@ module BioPieces
 
           keys    = options[:keys].map { |key| key.to_sym } if options[:keys]
           count   = 0
-          first   = true
-          convert = []
           buffer  = []
 
           catch :break do
