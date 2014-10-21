@@ -161,71 +161,26 @@ module BioPieces
 
           keys    = options[:keys].map { |key| key.to_sym } if options[:keys]
           count   = 0
-          first   = true
-          convert = []
           buffer  = []
 
           catch :break do
             options[:input].each do |file|
-              BioPieces::Filesys.open(file) do |ios|
-                options[:skip].times { ios.get_entry }
+              BioPieces::CSV.open(file) do |ios|
+                ios.skip(options[:skip])
+
+                header = keys || ios.header(delimiter: options[:delimiter], columns: options[:columns]) 
                 
-                ios.each do |line|
-                  line.chomp!
-                  next if line.empty?
-
-                  if line[0] == '#' 
-                    unless keys
-                      fields = line[1 .. -1].split(options[:delimiter])
-                      raise "Duplicate headers found" if fields.uniq.size != fields.size
-                      keys = fields.map { |key| key.to_sym }
-                      keys = keys.values_at(*options[:columns]) if options[:columns]
-                    end
-
-                    next
+                ios.each_hash(delimiter: options[:delimiter], header: header, columns: options[:columns]) do |record|
+                  if options[:last]
+                    buffer << record
+                    buffer.shift if buffer.size > options[:last]
                   else
-                    fields = line.split(options[:delimiter])
-                    fields = fields.values_at(*options[:columns]) if options[:columns]
+                    output << record
+                    status[:records_out] += 1
 
-                    raise ArgumentError, "Number of columns and keys don't match: #{fields.size} != #{keys.size}" if keys and fields.size != keys.size
+                    count += 1
 
-                    if first
-                      fields.each_with_index do |field, i|
-                        field = field.to_num
-
-                        if field.is_a? Fixnum
-                          convert[i] = :to_i
-                        elsif field.is_a? Float
-                          convert[i] = :to_f
-                        end
-                      end
-
-                      first = false
-                    end
-
-                    record = {}
-
-                    fields.each_with_index do |field, i|
-                      field = field.send(convert[i]) if convert[i]
-                      
-                      if keys
-                        record[keys[i]] = field
-                      else
-                        record["V#{i}".to_sym] = field
-                      end
-                    end
-
-                    if options[:last]
-                      buffer << record
-                      buffer.shift if buffer.size > options[:last]
-                    else
-                      output << record
-                      status[:records_out] += 1
-
-                      count += 1
-
-                      throw :break if options[:first] and count == options[:first]
-                    end
+                    throw :break if options[:first] and count == options[:first]
                   end
                 end
               end

@@ -177,6 +177,7 @@ module BioPieces
     end
 
     # Method that raises if files exists unless options[:force] == true.
+    # Usage: options_files_exists_force(options, :output)
     def options_files_exists_force(options, *args)
       args.each do |arg|
         if options[arg]
