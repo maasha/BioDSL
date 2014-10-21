@@ -1,3 +1,6 @@
 %h3 Status: #{status}
-- stats.each do |key, val|
-  %p #{key}: #{val.commify}
+%table
+  - stats.each do |key, val|
+    %tr
+      %td #{key}
+      %td #{val.commify}
