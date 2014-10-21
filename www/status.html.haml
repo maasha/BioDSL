@@ -1,4 +1,3 @@
-%h2
-  Status
-%pre
-  #{yield}
+%h3 Status: #{status}
+- stats.each do |key, val|
+  %p #{key}: #{val.commify}

@@ -32,7 +32,7 @@ module BioPieces
     def self.html(pipeline)
       renderer = self.new
 
-      commands = pipeline.status[:status].dup
+      commands = Marshal.load(Marshal.dump(pipeline.status[:status]))
       
       commands.each_with_index do |command, i|
         command[:time_elapsed] = (Time.mktime(0) + (command[:time_stop] - command[:time_start])).strftime("%H:%M:%S")
@@ -58,7 +58,27 @@ module BioPieces
     end
 
     def render_command(command)
+      stats = {}
+
+      command.each do |key, val|
+        next if key == :name
+        next if key == :options
+        next if key == :time_start
+        next if key == :time_stop
+        next if key == :time_elapsed
+        next if key == :command
+        stats[key] = val
+      end
+
+      command[:stats] = stats
+
       render("command.html.haml", self, command)
+    end
+
+    def render_status(status)
+      s = status[:status]
+      status.delete :status
+      render("status.html.haml", self, status: s, stats: status)
     end
 
     def render_time(time_start, time_stop, time_elapsed)

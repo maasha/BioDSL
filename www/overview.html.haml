@@ -8,6 +8,6 @@
   - commands.each do |command|
     %tr
       %td #{command[:name]}
-      %td #{command[:records_in]}
-      %td #{command[:records_out]}
+      %td #{command[:records_in].commify}
+      %td #{command[:records_out].commify}
       %td #{command[:time_elapsed]}
