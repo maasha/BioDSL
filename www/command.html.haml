@@ -1,0 +1,17 @@
+.section
+  %a{:name => anchor}
+  %h2 Command: #{name}
+  %p #{command}
+  = render_status stats
+  = render_time time_start, time_stop, time_elapsed
+  - if has_input? options
+    %h3 Input
+    - options[:input].each do |input|
+      %p 
+        %a{:href => input} #{input}
+  - if has_output? options
+    %h3 Output
+    %p 
+      %a{:href => options[:output]} #{options[:output]}
+  - if has_png? options
+    = render_png options

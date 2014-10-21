@@ -1,0 +1,14 @@
+%h2 Overview
+%table
+  %tr
+    %th Command
+    %th Records in
+    %th Records out
+    %th Time elapsed
+  - commands.each_with_index do |command, i|
+    %tr
+      %td
+        %a{:href => "##{command[:name]}#{i}"} #{command[:name]}
+      %td #{command[:records_in].commify}
+      %td #{command[:records_out].commify}
+      %td #{command[:time_elapsed]}

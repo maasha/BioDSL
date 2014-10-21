@@ -1,0 +1,10 @@
+!!!
+%head
+  %title Biopieces 2.0 report
+%body
+  %h1 Biopieces 2.0 report
+  %p Generated #{Time.now}
+  = render_pipeline pipeline
+  = render_overview commands
+  - commands.each_with_index do |command, i|
+    = render_command command, i
