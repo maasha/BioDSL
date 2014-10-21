@@ -57,7 +57,7 @@ module BioPieces
       render("overview.html.haml", self, commands: commands)
     end
 
-    def render_command(command)
+    def render_command(command, index)
       stats = {}
 
       command.each do |key, val|
@@ -70,7 +70,8 @@ module BioPieces
         stats[key] = val
       end
 
-      command[:stats] = stats
+      command[:stats]  = stats
+      command[:anchor] = "#{command[:name]}#{index}"
 
       render("command.html.haml", self, command)
     end

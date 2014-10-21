@@ -6,5 +6,5 @@
   %p Generated #{Time.now}
   = render_pipeline pipeline
   = render_overview commands
-  - commands.each do |command|
-    = render_command command
+  - commands.each_with_index do |command, i|
+    = render_command command, i
