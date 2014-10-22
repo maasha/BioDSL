@@ -70,6 +70,7 @@ module BioPieces
       command << "usearch"
       command << "-cluster_otus #{@options[:input].path}"
       command << "-otus #{@options[:output].path}"
+      command << "-otuid #{@options[:identity]}"
       command << "-threads #{@options[:cpus]}" if @options[:cpus]
 
       execute(command)
