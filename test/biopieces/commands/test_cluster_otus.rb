@@ -35,6 +35,11 @@ class TestClusterOtus < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { p.cluster_otus(foo: "bar") }
   end
 
+  test "BioPieces::Pipeline#cluster_otus with allowed option don't raise" do
+    p = BioPieces::Pipeline.new
+    assert_nothing_raised { p.cluster_otus(identity: 1) }
+  end
+
   test "BioPieces::Pipeline#cluster_otus with SEQ and missing SEQ_COUNT raises" do
     input, output   = BioPieces::Stream.pipe
     input2, output2 = BioPieces::Stream.pipe
