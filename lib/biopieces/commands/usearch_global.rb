@@ -96,21 +96,24 @@ module BioPieces
               end
             end
 
-            BioPieces::Usearch.usearch_global(input: tmp_in, 
-                                              output: tmp_out,
-                                              database: options[:database],
-                                              strand: options[:strand],
-                                              identity: options[:identity],
-                                              cpus: options[:cpus],
-                                              verbose: options[:verbose])
+            begin
+              BioPieces::Usearch.usearch_global(input: tmp_in, 
+                                                output: tmp_out,
+                                                database: options[:database],
+                                                strand: options[:strand],
+                                                identity: options[:identity],
+                                                cpus: options[:cpus],
+                                                verbose: options[:verbose])
 
-            BioPieces::Usearch.open(tmp_out) do |ios|
-              ios.each(:uc) do |record|
-                record[:RECORD_TYPE] = "usearch"
-                output << record
-                status[:hits_out]    += 1
-                status[:records_out] += 1
+              BioPieces::Usearch.open(tmp_out) do |ios|
+                ios.each(:uc) do |record|
+                  record[:RECORD_TYPE] = "usearch"
+                  output << record
+                  status[:hits_out]    += 1
+                  status[:records_out] += 1
+                end
               end
+            rescue UsearchError
             end
           ensure
             tmp_in.unlink
