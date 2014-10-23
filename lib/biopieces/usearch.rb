@@ -61,7 +61,7 @@ module BioPieces
       @stderr  = nil
 
       if File.size(@options[:input]) == 0
-        raise UsearchError, %{Empty input file -> "#{@options[:input]}"}
+        raise UsearchError, %{Empty input file -> "#{@options[:input].path}"}
       end
     end
 
