@@ -3,8 +3,8 @@
   %title Biopieces 2.0 report
   = render_css
 %body
-  %h1 Biopieces 2.0 report
-  %p Generated #{Time.now}
+  %h1.center Biopieces 2.0 report
+  %p.center Generated #{Time.now}
   = render_pipeline pipeline
   = render_overview commands
   - commands.each_with_index do |command, i|
