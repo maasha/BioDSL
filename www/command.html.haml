@@ -12,6 +12,6 @@
   - if has_output? options
     %h3 Output
     %p 
-      %a{:href => options[:output]} #{options[:output]}
+      %a{:href => File.basename(options[:output])} #{options[:output]}
   - if has_png? options
     = render_png options
