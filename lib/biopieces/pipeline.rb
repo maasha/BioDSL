@@ -226,7 +226,11 @@ module BioPieces
 
     # Save a HTML status report to file.
     def report_save
-      file = @options[:report]
+      if @options[:output_dir]
+        file = File.join(@options[:output_dir], @options[:report])
+      else
+        file = @options[:report]
+      end
 
       File.open(file, 'w') do |ios|
         ios.puts BioPieces::Render.html(self)
