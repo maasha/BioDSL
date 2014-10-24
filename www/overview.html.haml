@@ -9,6 +9,6 @@
     %tr
       %td
         %a{:href => "##{command[:name]}#{i}"} #{command[:name]}
-      %td #{command[:records_in].commify}
-      %td #{command[:records_out].commify}
-      %td #{command[:time_elapsed]}
+      %td.right #{command[:records_in].commify}
+      %td.right #{command[:records_out].commify}
+      %td.right #{command[:time_elapsed]}
