@@ -4,7 +4,7 @@
   = render_css
 %body
   %h1.center Biopieces 2.0 report
-  %p.center Generated #{Time.now}
+  %p.center.bold Generated #{Time.now}
   = render_pipeline pipeline
   = render_overview commands
   - commands.each_with_index do |command, i|
