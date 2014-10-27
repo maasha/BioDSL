@@ -29,7 +29,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-class TestWritePlotHistogram < Test::Unit::TestCase 
+class TestPlotMatches < Test::Unit::TestCase 
   def setup
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.plot')
@@ -37,38 +37,36 @@ class TestWritePlotHistogram < Test::Unit::TestCase
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
-    @output.write({LEN: 1})
-    @output.write({LEN: 2})
-    @output.write({LEN: 2})
-    @output.write({LEN: 3})
-    @output.write({LEN: 3})
-    @output.write({LEN: 3})
+    @output.write({Q_BEG: 0, S_BEG: 0, Q_END: 10, S_END: 10, STRAND: '+'})
+    @output.write({Q_BEG: 0, S_BEG: 0, Q_END: 10, S_END: 10, STRAND: '-'})
+    @output.write({Q_BEG: 3, S_BEG: 3, Q_END: 6, S_END: 6, DIRECTION: 'forward'})
+    @output.write({Q_BEG: 3, S_BEG: 3, Q_END: 6, S_END: 6, DIRECTION: 'reverse'})
     @output.close
 
     @expected = <<EOF
 \f
-                                     Histogram
-       +             +            +             +            +             +
-    3 ++-------------+------------+-------------+------**************------++
-       |                                               *            *      |
-       |                                               *            *      |
-  2.5 ++                                               *            *      ++
-       |                                               *            *      |
-    2 ++                                 ***************            *      ++
-       |                                 *             *            *      |
-       |                                 *             *            *      |
-  1.5 ++                                 *             *            *      ++
-       |                                 *             *            *      |
-       |                                 *             *            *      |
-    1 ++                   ***************             *            *      ++
-       |                   *             *             *            *      |
-  0.5 ++                   *             *             *            *      ++
-       |                   *             *             *            *      |
-       |                   *             *             *            *      |
-    0 ++-------------+-----******************************************------++
-       +             +            +             +            +             +
-      -1             0            1             2            3             4
-                                        LEN
+                                     Matches
+      +             +             +            +             +             +
+  10 +>>>-----------+-------------+------------+-------------+----------->>>+
+      |  >>>>       :             :            :             :       >>>>  |
+      |      >>>>   :             :            :             :   >>>>      |
+   8 ++..........>>>>>......................................>>>>>..........++
+      |             : >>>>        :            :        >>>> :             |
+      |             :     >>>>    :            :    >>>>     :             |
+   6 ++....................>>>>>>>>..........>>>>>>>.......................++
+      |             :         >>>>:>>>>  >>>>>>:             :             |
+      |             :             >>>>>>>>>    :             :             |
+      |             :            >>>>>>>>> >>>>:             :             |
+   4 ++......................>>>>>>.......>>>>.>>>>>.......................++
+      |             :     >>>>    :           >>    >>>>     :             |
+      |             : >>>>        :            :        >>>> :             |
+   2 ++..........>>>>>......................................>>>>>..........++
+      |      >>>>   :             :            :             :   >>>>      |
+      |  >>>>       :             :            :             :       >>>>  |
+   0 +>>>-----------+-------------+------------+-------------+----------->>>+
+      +             +             +            +             +             +
+      0             2             4            6             8             10
+                                        x
 
 EOF
 
@@ -79,60 +77,58 @@ EOF
     FileUtils.rm_r @tmpdir
   end
 
-  test "BioPieces::Pipeline::PlotHistogram with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.plot_histogram(key: :LEN, foo: "bar") }
+  test "BioPieces::Pipeline::PlotMatches with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.plot_matches(foo: "bar") }
   end
 
-  test "BioPieces::Pipeline::PlotHistogram with invalid terminal raises" do
-    assert_raise(BioPieces::OptionError) { @p.plot_histogram(key: :LEN, terminal: "foo") }
+  test "BioPieces::Pipeline::PlotMatches with invalid terminal raises" do
+    assert_raise(BioPieces::OptionError) { @p.plot_matches(terminal: "foo") }
   end
 
-  test "BioPieces::Pipeline::PlotHistogram with valid terminal don't raise" do
+  test "BioPieces::Pipeline::PlotMatches with valid terminal don't raise" do
     %w{dumb post svg x11 aqua png pdf}.each do |terminal|
-      assert_nothing_raised { @p.plot_histogram(key: :LEN, terminal: terminal.to_sym) }
+      assert_nothing_raised { @p.plot_matches(terminal: terminal.to_sym) }
     end
   end
 
-#  test "BioPieces::Pipeline::PlotHistogram to stdout outputs correctly" do
+#  test "BioPieces::Pipeline::PlotMatches to stdout outputs correctly" do
 #    flunk "capture of stdout issue"
 #    $VERBOSE = false
-#    result = capture_stderr { @p.plot_histogram(key: :LEN).run(input: @input) }
+#    result = capture_stdout { @p.plot_matches.run(input: @input) }
 #    assert_equal(@expected, result)
 #  end
 
-  test "BioPieces::Pipeline::PlotHistogram to file outputs correctly" do
+  test "BioPieces::Pipeline::PlotMatches to file outputs correctly" do
     $VERBOSE = false
-    @p.plot_histogram(key: :LEN, output: @file).run(input: @input, output: @output2)
+    @p.plot_matches(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     assert_equal(@expected, result)
   end
 
-  test "BioPieces::Pipeline::PlotHistogram to existing file raises" do
+  test "BioPieces::Pipeline::PlotMatches to existing file raises" do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { @p.plot_histogram(output: @file) }
+    assert_raise(BioPieces::OptionError) { @p.plot_matches(output: @file) }
   end
 
-  test "BioPieces::Pipeline::PlotHistogram to existing file with options[:force] outputs correctly" do
+  test "BioPieces::Pipeline::PlotMatches to existing file with options[:force] outputs correctly" do
     $VERBOSE = false
     `touch #{@file}`
-    @p.plot_histogram(key: :LEN, output: @file, force: true).run(input: @input)
+    @p.plot_matches(output: @file, force: true).run(input: @input)
     result = File.open(@file).read
     assert_equal(@expected, result)
   end
 
-  test "BioPieces::Pipeline::PlotHistogram with flux outputs correctly" do
-    @p.plot_histogram(key: :LEN, output: @file, force: true).run(input: @input, output: @output2)
+  test "BioPieces::Pipeline::PlotMatches with flux outputs correctly" do
+    @p.plot_matches(output: @file, force: true).run(input: @input, output: @output2)
     result = File.open(@file).read
     assert_equal(@expected, result)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
-    stream_expected << '{:LEN=>1}'
-    stream_expected << '{:LEN=>2}'
-    stream_expected << '{:LEN=>2}'
-    stream_expected << '{:LEN=>3}'
-    stream_expected << '{:LEN=>3}'
-    stream_expected << '{:LEN=>3}'
+    stream_expected << '{:Q_BEG=>0, :S_BEG=>0, :Q_END=>10, :S_END=>10, :STRAND=>"+"}'
+    stream_expected << '{:Q_BEG=>0, :S_BEG=>0, :Q_END=>10, :S_END=>10, :STRAND=>"-"}'
+    stream_expected << '{:Q_BEG=>3, :S_BEG=>3, :Q_END=>6, :S_END=>6, :DIRECTION=>"forward"}'
+    stream_expected << '{:Q_BEG=>3, :S_BEG=>3, :Q_END=>6, :S_END=>6, :DIRECTION=>"reverse"}'
     assert_equal(stream_expected, stream_result)
   end
 end
