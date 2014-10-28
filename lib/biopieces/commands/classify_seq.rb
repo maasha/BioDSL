@@ -28,15 +28,19 @@ module BioPieces
   module Commands
     # == Run classify_seq on sequences in the stream.
     # 
-    # This is a wrapper for the +usearch+ tool to run the program classify_seq.
+    # This is a wrapper for the +mothur+ command +classify.seqs()+. Basically,
+    # it classifies sequences in the stream given a database file and a taxonomy
+    # file which can be downloaded here:
+    #
+    # http://www.mothur.org/w/images/5/59/Trainset9_032012.pds.zip
     #
     # Please refer to the manual:
     #
-    # http://drive5.com/usearch/manual/classify_seq.html
+    # http://www.mothur.org/wiki/Classify.seqs
     #
-    # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
+    # Mothur must be installed for +classify_seqs+ to work. Read more here:
     #
-    # http://www.drive5.com/usearch/
+    # http://www.mothur.org/
     # 
     # == Usage
     # 
@@ -46,11 +50,22 @@ module BioPieces
     #
     # * database:   <file> - Database to search.
     # * taxonomy:   <file> - Taxonomy file for mapping names.
-    # * confidence: <uint> - Confidence cutoff threshold (defualt=80).
+    # * confidence: <uint> - Confidence threshold (defualt=80).
     # * cpus:       <uint> - Number of CPU cores to use (default=1).
     #
     # == Examples
     # 
+    # To classify a bunch of OTU sequences in the file +otus.fna+ we do:
+    #
+    #    database = "trainset9_032012.pds.fasta"
+    #    taxonomy = "trainset9_032012.pds.tax"
+    #
+    #    BP.new.
+    #    read_fasta(input: "otus.fna").
+    #    classify_seq(database: database, taxonomy: taxonomy).
+    #    grab(exact: true, keys: :RECORD_TYPE, select: "taxonomy").
+    #    write_table(output: "classified.tab", header: true, force: true, skip: [:RECORD_TYPE]).
+    #    run
     def classify_seq(options = {})
       require 'parallel'
 
