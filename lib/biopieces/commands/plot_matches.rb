@@ -26,12 +26,18 @@
 
 module BioPieces
   module Commands
-    # == Plot a histogram of numerical values for a specified key.
+    # == Plot matches from the stream as a dotplot.
     # 
-    # +plot_matches+ create a histogram plot of the values for a specified
-    # key from all records in the stream. Plotting is done using GNUplot which
-    # allows for different types of output the default one being crufty ASCII
-    # graphics.
+    # +plot_matches+ is used to create dotplots of matches in the stream.
+    # plot_matches uses Q_BEG, Q_END, S_BEG, S_END from the stream. If strand
+    # information is available either by a STRAND key with the value '+' or '-',
+    # or by a DIRECTION key with the value 'forward' or 'reverse' then forward
+    # matches will be output in green and reverse matches in red (in all terminals,
+    # but +dumb+).
+    #
+    # Default graphics are crufty ASCII and you probably want high resolution
+    # postscript or SVG output instead with is easy using the +terminal+ option.
+    # Plotting is done using GNUplot which allows for different types of output.
     #
     # GNUplot must be installed for plot_matches to work. Read more here:
     #
@@ -39,58 +45,58 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    plot_matches([direction: <string>[, output: <file>[, force: <bool>
-    #                 [, terminal: <string>[, title: <string>[, xlabel:
-    #                 <string>[, ylabel: <string>]]]]]]])
+    #    plot_matches([, output: <file>[, force: <bool> [, terminal: <string>
+    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>]]]]]])
     # 
     # === Options
     #
-    # * direction: <string> - Direction of matches to plot: forward|reverse|both (default=both).
     # * output: <file>      - Output file.
     # * force: <bool>       - Force overwrite existing output file.
     # * terminal: <string>  - Terminal for output: dumb|post|svg|x11|aqua|png|pdf (default=dumb).
-    # * title: <string>     - Plot title (default="Histogram").
-    # * xlabel: <string>    - X-axis label (default=<key>).
-    # * ylabel: <string>    - Y-axis label (default="n").
+    # * title: <string>     - Plot title (default="Matches").
+    # * xlabel: <string>    - X-axis label (default="x").
+    # * ylabel: <string>    - Y-axis label (default="y").
     #
     # == Examples
     # 
-    # Here we plot a histogram of sequence lengths from a FASTA file:
+    # Here we plot two matches from a table. The vector records are shown in the
+    # +dump+ output:
     # 
-    #    read_fasta(input: "test.fna").plot_matches(key: :SEQ_LEN).run
-    # 
-    #                                      Histogram
-    #           +             +            +            +            +             +
-    #      90 +++-------------+------------+------------+------------+-------------+++
-    #          |                                                                    |
-    #      80 ++                                                                  **++
-    #          |                                                                  **|
-    #      70 ++                                                                  **++
-    #      60 ++                                                                  **++
-    #          |                                                                  **|
-    #      50 ++                                                                  **++
-    #          |                                                                  **|
-    #      40 ++                                                                  **++
-    #          |                                                                  **|
-    #      30 ++                                                                  **++
-    #      20 ++                                                                  **++
-    #          |                                                                  **|
-    #      10 ++                                                                  **++
-    #          |                                                              ******|
-    #       0 +++-------------+------------+**--------**+--***-------+**--**********++
-    #           +             +            +            +            +             +
-    #           0             10           20           30           40            50
-    #                                         SEQ_LEN
-    # 
+    #    BP.new.read_table(input: "test.tab").dump.plot_matches.run
+    #
+    #    {:Q_BEG=>0, :Q_END=>10, :S_BEG=>0, :S_END=>10, :STRAND=>"+"}
+    #    {:Q_BEG=>0, :Q_END=>10, :S_BEG=>0, :S_END=>10, :STRAND=>"-"}
+    #    
+    #                                         Matches
+    #          +             +             +            +             +             +
+    #      10 +>>>-----------+-------------+------------+-------------+----------->>>+
+    #          |  >>>>       :             :            :             :       >>>>  |
+    #          |      >>>>   :             :            :             :   >>>>      |
+    #       8 ++..........>>>>>......................................>>>>>..........++
+    #          |             : >>>>        :            :        >>>> :             |
+    #          |             :     >>>>    :            :    >>>>     :             |
+    #       6 ++.......................>>>>>............>>>>>.......................++
+    #          |             :             :>>>>    >>>>:             :             |
+    #          |             :             :    >>>>    :             :             |
+    #          |             :             :>>>>    >>>>:             :             |
+    #       4 ++.......................>>>>>............>>>>>.......................++
+    #          |             :     >>>>    :            :    >>>>     :             |
+    #          |             : >>>>        :            :        >>>> :             |
+    #       2 ++..........>>>>>......................................>>>>>..........++
+    #          |      >>>>   :             :            :             :   >>>>      |
+    #          |  >>>>       :             :            :             :       >>>>  |
+    #       0 +>>>-----------+-------------+------------+-------------+----------->>>+
+    #          +             +             +            +             +             +
+    #          0             2             4            6             8             10
+    #                                            x
+    #    
     # To render X11 output (i.e. instant view) use the +terminal+ option:
     # 
-    #    read_fasta(input: "test.fna").
-    #    plot_matches(key: :SEQ_LEN, terminal: :x11).run
+    #    plot_matches(terminal: :x11).run
     # 
     # To generate a PNG image and save to file:
     # 
-    #    read_fasta(input: "test.fna").
-    #    plot_matches(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
+    #    plot_matches(terminal: :png, output: "plot.png").run
     def plot_matches(options = {})
       require 'gnuplot'
 
@@ -115,7 +121,7 @@ module BioPieces
           gp.set title:     options[:title]
           gp.set xlabel:    options[:xlabel]
           gp.set ylabel:    options[:ylabel]
-          gp.set output:    options[:output] || "/dev/stderr"
+          gp.set output:    options[:output] if options[:output]
           gp.set autoscale: "xfix"
           gp.set autoscale: "yfix"
           gp.set style:     "fill solid 0.5 border"
@@ -166,7 +172,7 @@ module BioPieces
             end
           end
 
-          gp.plot
+          puts gp.plot
         end
       end
 

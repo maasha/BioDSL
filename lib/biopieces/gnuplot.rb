@@ -96,6 +96,8 @@ module BioPieces
 
       @datasets.each { |dataset| dataset.close }
 
+      result = nil
+
       Open3.popen3("gnuplot -persist") do |stdin, stdout, stderr, wait_thr|
         lines = []
 
@@ -117,7 +119,7 @@ module BioPieces
         lines.map { |l| stdin.puts l }
 
         stdin.close
-        stdout.read
+        result = stdout.read
         stdout.close
 
         exit_status = wait_thr.value
@@ -128,6 +130,8 @@ module BioPieces
       end
 
       @datasets.each { |dataset| dataset.unlink }
+
+      result
     end
 
     # Nested class for GnuPlot datasets.
