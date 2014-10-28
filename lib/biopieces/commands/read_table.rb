@@ -134,8 +134,6 @@ module BioPieces
     #    {:COUNT=>234, :SEQ=>"GACTG"}
     #    {:COUNT=>2342, :SEQ=>"AAATGCA"}
     def read_table(options = {})
-      require 'scanf'
-
       options_orig = options.dup
       options_allowed(options, :input, :first, :last, :keys, :columns, :skip, :delimiter)
       options_required(options, :input)
