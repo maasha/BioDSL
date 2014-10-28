@@ -36,6 +36,7 @@ module BioPieces
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
     require 'biopieces/commands/mean_scores'
+    require 'biopieces/commands/merge_table'
     require 'biopieces/commands/merge_values'
     require 'biopieces/commands/plot_histogram'
     require 'biopieces/commands/plot_matches'
