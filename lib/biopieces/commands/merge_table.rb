@@ -57,6 +57,31 @@ module BioPieces
     #
     # == Examples
     #
+    # Consider the following two files:
+    #
+    # test1.tab:
+    #     #ID ORGANISM
+    #     1   parrot
+    #     2   eel
+    #     3   platypus
+    #     4   beetle
+    #
+    # test2.tab:
+    #
+    #     #ID COUNT
+    #     1   5423
+    #     2   34
+    #     3   2423
+    #     4   234
+    #
+    # We can merge the data with +merge_table+ like this:
+    #
+    #    BP.new.read_table(input: "test1.tab").merge_table(input: "test2.tab", key: :ID).dump.run
+    #
+    #    {:ID=>1, :ORGANISM=>"parrot", :COUNT=>5423}
+    #    {:ID=>2, :ORGANISM=>"eel", :COUNT=>34}
+    #    {:ID=>3, :ORGANISM=>"platypus", :COUNT=>2423}
+    #    {:ID=>4, :ORGANISM=>"beetle", :COUNT=>234}
     def merge_table(options = {})
       options_orig = options.dup
       options_allowed(options, :input, :key, :keys, :columns, :skip, :delimiter)
