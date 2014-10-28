@@ -29,7 +29,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-class TestWritePlotHistogram < Test::Unit::TestCase 
+class TestPlotHistogram < Test::Unit::TestCase 
   def setup
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.plot')
