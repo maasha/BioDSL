@@ -54,6 +54,7 @@ EOF
     @output.write({:ID=>2, :COUNT=>34})
     @output.write({:ID=>3, :COUNT=>2423})
     @output.write({:ID=>4, :COUNT=>234})
+    @output.write({:ID=>5, :COUNT=>2334})
 
     @output.close
 
@@ -98,6 +99,7 @@ EOF
     expected << %Q{{:ID=>2, :COUNT=>34, :ORGANISM=>"eel"}}
     expected << %Q{{:ID=>3, :COUNT=>2423, :ORGANISM=>"platypus"}}
     expected << %Q{{:ID=>4, :COUNT=>234, :ORGANISM=>"beetle"}}
+    expected << %Q{{:ID=>5, :COUNT=>2334}}
 
     assert_equal(expected, stream_result)
   end
