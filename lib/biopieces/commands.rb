@@ -28,6 +28,7 @@ module BioPieces
   module Commands
     require 'biopieces/commands/add_key'
     require 'biopieces/commands/assemble_pairs'
+    require 'biopieces/commands/classify_seq'
     require 'biopieces/commands/clip_primer'
     require 'biopieces/commands/cluster_otus'
     require 'biopieces/commands/collect_otus'
