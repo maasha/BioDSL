@@ -1,7 +1,7 @@
 .section
   %a{:name => anchor}
   %h2 Command: #{name}
-  %p #{command}
+  %p.command #{command}
   = render_status stats
   = render_time time_start, time_stop, time_elapsed
   - if has_input? options
