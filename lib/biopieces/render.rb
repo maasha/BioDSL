@@ -46,6 +46,10 @@ module BioPieces
       Tilt.new(File.join(root_dir, template)).render(scope, args)
     end
 
+    def render_css
+      render("css.html.haml", self)
+    end
+
     def render_pipeline(pipeline)
       pipeline.sub!(/BP\.new\./, "BP.new.\n")
       pipeline.gsub!(/\)\./, ").\n")

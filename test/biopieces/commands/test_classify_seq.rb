@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,33 +27,24 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    require 'biopieces/commands/add_key'
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/classify_seq'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/cluster_otus'
-    require 'biopieces/commands/collect_otus'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/merge_values'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_matches'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/read_table'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/split_values'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/uchime_ref'
-    require 'biopieces/commands/usearch_global'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
-    require 'biopieces/commands/write_table'
+require 'test/helper'
+
+class TestClassifySeq < Test::Unit::TestCase 
+  def setup
+    @p = BP.new
+    @database = __FILE__
+    @taxonomy = __FILE__
   end
+
+  test "BioPieces::Pipeline#classify_seq with disallowed option raises" do
+    assert_raise(BioPieces::OptionError) { @p.classify_seq(database: @database, taxonomy: @taxonomy, foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#classify_seq with allowed option don't raise" do
+    assert_nothing_raised { @p.classify_seq(database: @database, taxonomy: @taxonomy, cpus: 2) }
+  end
+
+  #test "BioPieces::Pipeline#classify_seq outputs correctly" do
+  #  # TODO mock this sucker.
+  #end
 end
