@@ -90,12 +90,7 @@ module BioPieces
           begin
             Dir.mkdir(tmp_dir)
 
-            tmp_cmd = File.join(tmp_dir, "mothur.batch")
             tmp_in  = File.join(tmp_dir, "input.fasta")
-
-            File.open(tmp_cmd, 'w') do |ios|
-              ios.puts "classify.seqs(fasta=#{tmp_in}, reference=#{options[:database]}, taxonomy=#{options[:taxonomy]}, processors=#{options[:cpus]})"
-            end
 
             BioPieces::Fasta.open(tmp_in, 'w') do |ios|
               input.each_with_index do |record, i|
@@ -115,11 +110,7 @@ module BioPieces
               end
             end
 
-            if $VERBOSE
-              system("mothur #{tmp_cmd}")
-            else
-              system("mothur #{tmp_cmd} > /dev/null 2&>1")
-            end
+            system(%Q{mothur "#set.dir(input=#{tmp_dir}); set.dir(output=#{tmp_dir}); classify.seqs(fasta=#{tmp_in}, reference=#{options[:database]}, taxonomy=#{options[:taxonomy]}, processors=#{options[:cpus]}, method=wang)"})
 
             raise "Mothur failed" unless $?.success?
 
