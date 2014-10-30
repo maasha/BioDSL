@@ -111,7 +111,23 @@ module BioPieces
               end
             end
 
-            system(%Q{mothur "#set.dir(input=#{tmp_dir}); set.dir(output=#{tmp_dir}); classify.seqs(fasta=#{tmp_in}, reference=#{options[:database]}, taxonomy=#{options[:taxonomy]}, processors=#{options[:cpus]}, method=wang)"})
+            if $VERBOSE
+              system(%Q{mothur "#set.dir(input=#{tmp_dir}); \
+                                 set.dir(output=#{tmp_dir}); \
+                                 classify.seqs(fasta=#{tmp_in}, \
+                                          reference=#{options[:database]}, \
+                                          taxonomy=#{options[:taxonomy]}, \
+                                          processors=#{options[:cpus]}, \
+                                          method=wang)"})
+            else
+              system(%Q{mothur "#set.dir(input=#{tmp_dir}); \
+                                 set.dir(output=#{tmp_dir}); \
+                                 classify.seqs(fasta=#{tmp_in}, \
+                                          reference=#{options[:database]}, \
+                                          taxonomy=#{options[:taxonomy]}, \
+                                          processors=#{options[:cpus]}, \
+                                          method=wang)" > /dev/null})
+            end
 
             raise "Mothur failed" unless $?.success?
 
