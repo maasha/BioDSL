@@ -104,7 +104,7 @@ module BioPieces
 
           table = {}
           key   = options[:key].to_sym
-          keys  = options[:keys].map { |key| key.to_sym } if options[:keys]
+          keys  = options[:keys].map { |k| k.to_sym } if options[:keys]
 
           options[:input].each do |file|
             BioPieces::CSV.open(file) do |ios|

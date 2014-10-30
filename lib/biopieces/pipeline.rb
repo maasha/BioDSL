@@ -85,7 +85,7 @@ module BioPieces
       options_files_exists_force(options, :report)
 
       if options[:output_dir]
-        FileUtils.mkdir_p(options[:output_dir]) unless File.exists?(options[:output_dir])
+        FileUtils.mkdir_p(options[:output_dir]) unless File.exist?(options[:output_dir])
 
         @commands.each do |command|
           if value = command.options[:output]
