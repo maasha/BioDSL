@@ -77,6 +77,7 @@ module BioPieces
     #    write_fastq(output: "test.fq.bz2", bzip2: true)
     def write_fastq(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :encoding, :force, :output, :gzip, :bzip2)
       options_allowed_values(options, encoding: [:base_33, :base_64])
       options_unique(options, :gzip, :bzip2)

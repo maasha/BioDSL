@@ -56,6 +56,7 @@ module BioPieces
       require 'parallel'
 
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :database, :cpus)
       options_required(options, :database)
       options_files_exist(options, :database)

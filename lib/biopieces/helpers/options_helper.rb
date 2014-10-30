@@ -205,6 +205,27 @@ module BioPieces
         end
       end
     end
+
+    def options_load_rc(options, command)
+      rc_file = File.join(ENV['HOME'], ".biopiecesrc")
+
+      if File.exists? rc_file
+        File.open(rc_file) do |ios|
+          ios.each do |line|
+            line.chomp!
+
+            next if line.empty?
+            next if line[0] == '#'
+
+            fields = line.split(/\s+/)
+
+            if fields.first.to_sym == command
+              options[fields[1].to_sym] = fields[2] unless options[fields[1].to_sym]
+            end
+          end
+        end
+      end
+    end
   end
 end
 
