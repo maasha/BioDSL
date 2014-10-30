@@ -130,8 +130,8 @@ module BioPieces
           gp.set ytics:     "border out"
           gp.set grid:      :true
           gp.set nokey:     :true
-          gp.set style:     "line 1 linetype 1 linecolor rgb 'green' linewidth 1 pointtype 6 pointsize default"
-          gp.set style:     "line 2 linetype 1 linecolor rgb 'red'   linewidth 1 pointtype 6 pointsize default"
+          gp.set style:     "line 1 linetype 1 linecolor rgb 'green' linewidth 2 pointtype 6 pointsize default"
+          gp.set style:     "line 2 linetype 1 linecolor rgb 'red'   linewidth 2 pointtype 6 pointsize default"
 
           gp.add_dataset(using: "1:2:3:4", with: "vectors nohead ls 1" ) do |forward|
             gp.add_dataset(using: "1:2:3:4", with: "vectors nohead ls 2") do |reverse|
