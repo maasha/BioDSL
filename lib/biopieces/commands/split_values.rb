@@ -72,6 +72,7 @@ module BioPieces
     #    {:ID=>"FOO_10_20", :SEQ=>"gataag"}
     def split_values(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :key, :keys, :delimiter)
       options_required(options, :key)
 

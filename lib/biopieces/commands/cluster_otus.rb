@@ -60,6 +60,7 @@ module BioPieces
     #     run
     def cluster_otus(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :identity)
       options_assert(options, ":identity >= 0.0")
       options_assert(options, ":identity <= 1.0")

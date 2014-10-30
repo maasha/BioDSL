@@ -59,6 +59,7 @@ module BioPieces
     #    {:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}
     def merge_values(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :keys, :delimiter)
       options_required(options, :keys)
 

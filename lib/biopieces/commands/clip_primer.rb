@@ -95,6 +95,7 @@ module BioPieces
     #     :CLIP_PRIMER_PAT=>"TGACTACGACTACGACTACT"}
     def clip_primer(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :primer, :direction, :search_distance, :reverse_complement,
                       :mismatch_percent, :insertion_percent, :deletion_percent)
       options_required(options, :primer, :direction)

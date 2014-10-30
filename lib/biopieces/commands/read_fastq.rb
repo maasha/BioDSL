@@ -81,6 +81,7 @@ module BioPieces
     #    read_fastq(input: "*.fq")
     def read_fastq(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options[:encoding] ||= :auto
       options_allowed(options, :encoding, :input, :input2, :first, :last)
       options_allowed_values(options, encoding: [:auto, :base_33, :base_64])

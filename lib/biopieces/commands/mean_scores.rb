@@ -88,6 +88,7 @@ module BioPieces
     # 11+11+11+11+11 / 5 = 11.0
     def mean_scores(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :local, :window_size)
       options_tie(options, window_size: :local)
       options_allowed_values(options, local: [true, false])

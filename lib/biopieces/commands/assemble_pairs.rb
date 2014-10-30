@@ -73,6 +73,7 @@ module BioPieces
     #    run
     def assemble_pairs(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :mismatch_percent, :overlap_min, :overlap_max, :reverse_complement)
       options_allowed_values(options, reverse_complement: [true, false, nil])
       options_assert(options, ":mismatch_percent >= 0")

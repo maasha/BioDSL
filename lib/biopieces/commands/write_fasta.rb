@@ -81,6 +81,7 @@ module BioPieces
     #    write_fasta(output: "test.fna.bz2", bzip2: true)
     def write_fasta(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :force, :output, :wrap, :gzip, :bzip2)
       options_unique(options, :gzip, :bzip2)
       options_tie(options, gzip: :output, bzip2: :output)
