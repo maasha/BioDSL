@@ -152,6 +152,7 @@ module BioPieces
       require 'terminal-table'
 
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :keys, :skip, :output, :force, :header, :pretty,
                                :commify, :delimiter, :gzip, :bzip2)
       options_unique(options, :keys, :skip)

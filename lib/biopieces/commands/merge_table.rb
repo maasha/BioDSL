@@ -84,6 +84,7 @@ module BioPieces
     #    {:ID=>4, :ORGANISM=>"beetle", :COUNT=>234}
     def merge_table(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :input, :key, :keys, :columns, :skip, :delimiter)
       options_required(options, :input, :key)
       options_glob(options, :input)

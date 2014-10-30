@@ -43,6 +43,7 @@ module BioPieces
     # 
     def collect_otus(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, nil)
 
       lmb = lambda do |input, output, status|

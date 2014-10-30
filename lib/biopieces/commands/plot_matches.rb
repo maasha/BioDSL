@@ -101,6 +101,7 @@ module BioPieces
       require 'gnuplot'
 
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :direction, :output, :force, :terminal, :title, :xlabel, :ylabel)
       options_allowed_values(options, direction: [:forward, :reverse, :both])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
