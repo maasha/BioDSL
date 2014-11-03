@@ -209,7 +209,7 @@ module BioPieces
     def options_load_rc(options, command)
       rc_file = File.join(ENV['HOME'], ".biopiecesrc")
 
-      if File.exists? rc_file
+      if File.exist? rc_file
         File.open(rc_file) do |ios|
           ios.each do |line|
             line.chomp!

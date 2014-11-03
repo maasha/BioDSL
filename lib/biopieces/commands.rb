@@ -32,6 +32,7 @@ module BioPieces
     require 'biopieces/commands/clip_primer'
     require 'biopieces/commands/cluster_otus'
     require 'biopieces/commands/collect_otus'
+    require 'biopieces/commands/count'
     require 'biopieces/commands/dereplicate_seq'
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
