@@ -66,7 +66,7 @@ module BioPieces
           status[:records_out] += 1
 
           if options[:output]
-            CVS.open(options[:output], 'w') do |ios|
+            Filesys.open(options[:output], 'w') do |ios|
               ios.puts "#RECORD_TYPE\tCOUNT"
               ios.puts "count\t#{status[:records_in]}"
             end
