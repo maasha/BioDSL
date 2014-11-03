@@ -26,9 +26,11 @@
 
 module BioPieces
   module Commands
-    # == Trim sequence ends removing residues with a low quality score.
+    # == Count the number of records in the stream.
     # 
-    # +count+ bla bla
+    # +count+ counts the number of records in the stream and outputs the
+    # count as a record who's count is _not_ included. Using the +output+
+    # option will output the count in a file as a table with header.
     #
     # == Usage
     # 
@@ -40,7 +42,28 @@ module BioPieces
     # * force: <bool>  - Force overwrite existing output file.
     # 
     # == Examples
-    # 
+    #
+    # To count the number of records in the file `test.fq`:
+    #
+    #    BP.new.read_fastq(input: "test.fq").count(output: "count.txt").dump.run
+    #
+    #    {:SEQ_NAME=>"ILLUMINA-52179E_0004:2:1:1040:5263#TTAGGC/1",
+    #     :SEQ=>"TTCGGCATCGGCGGCGACGTTGGCGGCGGGGCCGGGCGGGTCGANNNCAT",
+    #     :SEQ_LEN=>50,
+    #     :SCORES=>"GGFBGGEADFAFFDDD,-5AC5?>C:)7?#####################"}
+    #    {:SEQ_NAME=>"ILLUMINA-52179E_0004:2:1:1041:14486#TTAGGC/1",
+    #     :SEQ=>"CATGGCGTATGCCAGACGGCCAGAACGATGGCCGCCGGGCTTCANNNAAG",
+    #     :SEQ_LEN=>50,
+    #     :SCORES=>"FFFFDBD?EEEEEEEFGGFAGAGEFDF=BFGFFGGDDDD=ABAA######"}
+    #    {:SEQ_NAME=>"ILLUMINA-52179E_0004:2:1:1043:19446#TTAGGC/1",
+    #     :SEQ=>"CGGTACTGATCGAGTGTCAGGCTGTTGATCGCCGCGGGCGGGGGTNNGAC",
+    #     :SEQ_LEN=>50,
+    #     :SCORES=>"ECAEBEEEEEFFFFFEFFFFDDEEEGGGGGDEBEECBDAE@#########"}
+    #    {:RECORD_TYPE=>"count", :COUNT=>3}
+    #
+    # And the count is also saved in the file `count.txt`:
+    #    #RECORD_TYPE COUNT
+    #    count  3
     def count(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
