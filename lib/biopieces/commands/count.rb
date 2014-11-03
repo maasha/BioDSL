@@ -20,39 +20,64 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
   module Commands
-    require 'biopieces/commands/add_key'
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/classify_seq'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/cluster_otus'
-    require 'biopieces/commands/collect_otus'
-    require 'biopieces/commands/count'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/merge_table'
-    require 'biopieces/commands/merge_values'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_matches'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/read_table'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/split_values'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/uchime_ref'
-    require 'biopieces/commands/usearch_global'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
-    require 'biopieces/commands/write_table'
+    # == Trim sequence ends removing residues with a low quality score.
+    # 
+    # +count+ bla bla
+    #
+    # == Usage
+    # 
+    #    count([output: <file>[, force: <bool]])
+    #
+    # === Options
+    #
+    # * output: <file> - Output file.
+    # * force: <bool>  - Force overwrite existing output file.
+    # 
+    # == Examples
+    # 
+    def count(options = {})
+      options_orig = options.dup
+      options_load_rc(options, __method__)
+      options_allowed(options, :output, :force)
+      options_allowed_values(options, force: [true, false, nil])
+      options_files_exists_force(options, :output)
+
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          input.each do |record|
+            status[:records_in] += 1
+
+            output << record
+            status[:records_out] += 1
+          end
+
+          new_record = {
+            RECORD_TYPE: "count",
+            COUNT: status[:records_in]
+          }
+
+          output << new_record
+          status[:records_out] += 1
+
+          if options[:output]
+            CVS.open(options[:output], 'w') do |ios|
+              ios.puts "#RECORD_TYPE\tCOUNT"
+              ios.puts "count\t#{status[:records_in]}"
+            end
+          end
+        end
+      end
+
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+
+      self
+    end
   end
 end
+
