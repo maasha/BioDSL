@@ -37,38 +37,65 @@ class TestPlotHistogram < Test::Unit::TestCase
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
-    @output.write({LEN: 1})
-    @output.write({LEN: 2})
-    @output.write({LEN: 2})
-    @output.write({LEN: 3})
-    @output.write({LEN: 3})
-    @output.write({LEN: 3})
+    @output.write({ID: "x", LEN: 1})
+    @output.write({ID: "x", LEN: 2})
+    @output.write({ID: "x", LEN: 2})
+    @output.write({ID: "x", LEN: 3})
+    @output.write({ID: "y", LEN: 3})
+    @output.write({ID: "y", LEN: 3})
     @output.close
 
-    @expected = <<EOF
+    @expected1 = <<EOF
 \f
                                      Histogram
-       +             +            +             +            +             +
-    3 ++-------------+------------+-------------+------**************------++
-       |                                               *            *      |
-       |                                               *            *      |
-  2.5 ++                                               *            *      ++
-       |                                               *            *      |
-    2 ++                                 ***************            *      ++
-       |                                 *             *            *      |
-       |                                 *             *            *      |
-  1.5 ++                                 *             *            *      ++
-       |                                 *             *            *      |
-       |                                 *             *            *      |
-    1 ++                   ***************             *            *      ++
-       |                   *             *             *            *      |
-  0.5 ++                   *             *             *            *      ++
-       |                   *             *             *            *      |
-       |                   *             *             *            *      |
-    0 ++-------------+-----******************************************------++
-       +             +            +             +            +             +
-      -1             0            1             2            3             4
+       +        +       +        +       +        +       +        +       +
+    3 ++--------+-------+--------+-------+--------+-------******************+
+       |                                                  *                *
+       |                                                  *                *
+  2.5 ++                                                  *                *+
+       |                                                  *                *
+    2 ++                                 ******************                *+
+       |                                 *                *                *
+       |                                 *                *                *
+  1.5 ++                                 *                *                *+
+       |                                 *                *                *
+       |                                 *                *                *
+    1 ++                ******************                *                *+
+       |                *                *                *                *
+  0.5 ++                *                *                *                *+
+       |                *                *                *                *
+       |                *                *                *                *
+    0 ++--------+-------****************************************************+
+       +        +       +        +       +        +       +        +       +
+     -0.5       0      0.5       1      1.5       2      2.5       3      3.5
                                         LEN
+
+EOF
+
+    @expected2 = <<EOF
+\f
+                                     Histogram
+                        +                                 +
+    4 +***********************************----------------+----------------++
+       *                                 *                                 |
+  3.5 +*                                 *                                 ++
+       *                                 *                                 |
+    3 +*                                 *                                 ++
+       *                                 *                                 |
+  2.5 +*                                 *                                 ++
+       *                                 *                                 |
+    2 +*                                 ***********************************+
+       *                                 *                                 *
+  1.5 +*                                 *                                 *+
+       *                                 *                                 *
+    1 +*                                 *                                 *+
+       *                                 *                                 *
+  0.5 +*                                 *                                 *+
+       *                                 *                                 *
+    0 +*********************************************************************+
+                        +                                 +
+                        x                                 y
+                                        ID
 
 EOF
 
@@ -97,14 +124,21 @@ EOF
 #    flunk "capture of stdout issue"
 #    $VERBOSE = false
 #    result = capture_stderr { @p.plot_histogram(key: :LEN).run(input: @input) }
-#    assert_equal(@expected, result)
+#    assert_equal(@expected1, result)
 #  end
 
-  test "BioPieces::Pipeline::PlotHistogram to file outputs correctly" do
+  test "BioPieces::Pipeline::PlotHistogram to file with numeric outputs correctly" do
     $VERBOSE = false
     @p.plot_histogram(key: :LEN, output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
-    assert_equal(@expected, result)
+    assert_equal(@expected1, result)
+  end
+
+  test "BioPieces::Pipeline::PlotHistogram to file with non-numeric outputs correctly" do
+    $VERBOSE = false
+    @p.plot_histogram(key: :ID, output: @file).run(input: @input, output: @output2)
+    result = File.open(@file).read
+    assert_equal(@expected2, result)
   end
 
   test "BioPieces::Pipeline::PlotHistogram to existing file raises" do
@@ -117,22 +151,22 @@ EOF
     `touch #{@file}`
     @p.plot_histogram(key: :LEN, output: @file, force: true).run(input: @input)
     result = File.open(@file).read
-    assert_equal(@expected, result)
+    assert_equal(@expected1, result)
   end
 
   test "BioPieces::Pipeline::PlotHistogram with flux outputs correctly" do
     @p.plot_histogram(key: :LEN, output: @file, force: true).run(input: @input, output: @output2)
     result = File.open(@file).read
-    assert_equal(@expected, result)
+    assert_equal(@expected1, result)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
     stream_expected = ""
-    stream_expected << '{:LEN=>1}'
-    stream_expected << '{:LEN=>2}'
-    stream_expected << '{:LEN=>2}'
-    stream_expected << '{:LEN=>3}'
-    stream_expected << '{:LEN=>3}'
-    stream_expected << '{:LEN=>3}'
+    stream_expected << '{:ID=>"x", :LEN=>1}'
+    stream_expected << '{:ID=>"x", :LEN=>2}'
+    stream_expected << '{:ID=>"x", :LEN=>2}'
+    stream_expected << '{:ID=>"x", :LEN=>3}'
+    stream_expected << '{:ID=>"y", :LEN=>3}'
+    stream_expected << '{:ID=>"y", :LEN=>3}'
     assert_equal(stream_expected, stream_result)
   end
 end
