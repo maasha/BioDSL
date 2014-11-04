@@ -51,8 +51,7 @@ module BioPieces
     end
 
     def render_pipeline(pipeline)
-      pipeline.gsub!(/\./, ".\n")
-      pipeline.sub!(/\n/, '')
+      pipeline = pipeline.scan(/[^.]+\(.*?\)|[^.(]+/).join(".\n").sub(/\n/, '')
 
       render("pipeline.html.haml", self, pipeline: pipeline)
     end
