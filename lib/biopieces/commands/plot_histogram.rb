@@ -169,6 +169,11 @@ module BioPieces
               end
             end
           else
+            if count_hash.first.first.size > 2
+              gp.set xtics: "rotate right"
+              gp.set xlabel: ""
+            end
+
             gp.add_dataset(using: "2:xticlabels(1)", with: "boxes notitle") do |plotter|
               count_hash.each do |key, value|
                 plotter << [key, value]
