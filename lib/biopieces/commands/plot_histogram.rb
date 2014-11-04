@@ -42,14 +42,15 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    plot_histogram(<key: <string>>[, output: <file>[, force: <bool>
-    #                   [, terminal: <string>[, title: <string>
+    #    plot_histogram(<key: <string>>[, value: <string>[, output: <file>
+    #                   [, force: <bool>[, terminal: <string>[, title: <string>
     #                   [, xlabel: <string>[, ylabel: <string>
-    #                   [, ylogscale: <bool>]]]]]]])
+    #                   [, ylogscale: <bool>]]]]]]]])
     # 
     # === Options
     #
     # * key: <string>      - Key to use for plotting.
+    # * value: <string>    - Alternative key who's value to use.
     # * output: <file>     - Output file.
     # * force: <bool>      - Force overwrite existing output file.
     # * terminal: <string> - Terminal for output: dumb|post|svg|x11|aqua|png|pdf (default=dumb).
@@ -99,12 +100,14 @@ module BioPieces
     def plot_histogram(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed(options, :key, :value, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_allowed_values(options, force: [nil, true, false])
       options_required(options, :key)
       options_files_exists_force(options, :output)
 
-      key = options[:key]
+      key   = options[:key]
+      value = options[:value]
       options[:terminal] ||= :dumb
       options[:title]    ||= "Histogram"
       options[:xlabel]   ||= options[:key]
@@ -119,7 +122,15 @@ module BioPieces
             status[:records_in] += 1
 
             if record[key]
-              count_hash[record[key]] += 1
+              if value
+                if record[value]
+                  count_hash[record[key]] += record[value]
+                else
+                  raise "value: #{value} not found in record: #{record}"
+                end
+              else
+                count_hash[record[key]] += 1
+              end
             end
 
             if output

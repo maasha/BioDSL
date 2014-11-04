@@ -11,7 +11,8 @@
         %a{:href => input} #{input}
   - if has_output? options
     %h3 Output
-    %p 
-      %a{:href => File.basename(options[:output])} #{options[:output]}
+    %p
+      %a{:href => options[:output].sub(/[^\/]+\//, '')} #{options[:output]}
+    
   - if has_png? options
     = render_png options
