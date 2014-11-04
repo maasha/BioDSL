@@ -57,7 +57,7 @@ module BioPieces
     require 'open3'
     require 'tempfile'
 
-    NOQUOTE = [:autoscale, :style, :xrange, :yrange, :xtics, :ytics]
+    NOQUOTE = [:autoscale, :style, :logscale, :xrange, :yrange, :xtics, :ytics]
 
     # Constructor method for a GnuPlot object.
     def initialize
