@@ -8,7 +8,7 @@
     %h3 Input
     - options[:input].each do |input|
       %p 
-        %a{:href => input} #{input}
+        %a{:href => input.sub(/[^\/]+\//, '')} #{input}
   - if has_output? options
     %h3 Output
     %p
