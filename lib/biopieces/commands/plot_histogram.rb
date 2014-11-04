@@ -164,9 +164,7 @@ module BioPieces
             x_max = count_hash.keys.max || 0
 
             gp.add_dataset(using: "1:2", with: "boxes notitle") do |plotter|
-              (0 .. x_max).each do |x|
-                plotter << [x, count_hash[x]]
-              end
+              (0 .. x_max).each { |x| plotter << [x, count_hash[x]] }
             end
           else
             if count_hash.first.first.size > 2
@@ -175,13 +173,11 @@ module BioPieces
             end
 
             gp.add_dataset(using: "2:xticlabels(1)", with: "boxes notitle") do |plotter|
-              count_hash.each do |key, value|
-                plotter << [key, value]
-              end
+              count_hash.each { |k, v| plotter << [k, v] }
             end
           end
 
-          puts gp.plot
+          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
         end
       end
 
