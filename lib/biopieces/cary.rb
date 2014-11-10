@@ -194,7 +194,7 @@ module BioPieces
       }
 
       # Method that given a byte array and its size in bytes
-      # complements all bits.
+      # complements all bits using bitwise ~.
       builder.c %{
         void complement_ary_C(
           VALUE _ary,       // Byte array complement.
