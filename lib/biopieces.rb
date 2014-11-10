@@ -51,6 +51,7 @@ class String
 end
 
 module BioPieces
+  require 'biopieces/cary'
   require 'biopieces/commands'
   require 'biopieces/helpers'
   require 'biopieces/seq'
@@ -58,6 +59,7 @@ module BioPieces
   require 'biopieces/hamming'
   require 'biopieces/version'
   require 'biopieces/filesys'
+  require 'biopieces/findsim'
   require 'biopieces/csv'
   require 'biopieces/fork'
   require 'biopieces/gnuplot'
