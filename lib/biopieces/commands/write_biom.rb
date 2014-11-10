@@ -26,21 +26,27 @@
 
 module BioPieces
   module Commands
-    # == Write tabular output from the stream.
+    # == Write OTU tabular data to a biom-format file.
     # 
-    # Description
-    # 
-    # +write_biom+ writes sequence from the data stream in FASTA format.
+    # +write_biom+ outputs to file OTU data in biom-format (currently JSON).
+    # Records must contain +OTU+ and +TAXONOMY+ keys.
+    #
+    # biom must be installed for +write_biom+ to work. See more here:
+    #
+    # http://biom-format.org/
     # 
     # == Usage
-    #    write_biom([, output: <file>[, force: <bool>]]
+    #    write_biom(<output: <file>>[, force: <bool>])
     #
     # === Options
     # * output <file> - Output file.
     # * force <bool>  - Force overwrite existing output file.
     # 
     # == Examples
-    # 
+    #
+    # To convert an OTU table to BIOM json format do:
+    #
+    #    BP.new.read_table(input: "otu.tab").write_biom(output: "otu.json").run
     def write_biom(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
