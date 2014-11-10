@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,37 +27,35 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    require 'biopieces/commands/add_key'
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/classify_seq'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/cluster_otus'
-    require 'biopieces/commands/collapse_otus'
-    require 'biopieces/commands/collect_otus'
-    require 'biopieces/commands/count'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/merge_table'
-    require 'biopieces/commands/merge_values'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_matches'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/read_table'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/split_values'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/uchime_ref'
-    require 'biopieces/commands/usearch_global'
-    require 'biopieces/commands/write_biom'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
-    require 'biopieces/commands/write_table'
+require 'test/helper'
+
+class TestCollapseOtus < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    @output.write({OTU: 'OTU_0', SAMPLE1_COUNT: 3352, TAXONOMY: 'Streptococcaceae(100);Lactococcus(100)'})
+    @output.write({OTU: 'OTU_1', SAMPLE1_COUNT: 881,  TAXONOMY: 'Leuconostocaceae(100);Leuconostoc(100)'})
+    @output.write({OTU: 'OTU_2', SAMPLE1_COUNT: 228,  TAXONOMY: 'Streptococcaceae(100);Lactococcus(100)'})
+    @output.write({OTU: 'OTU_3', SAMPLE1_COUNT: 5,    TAXONOMY: 'Pseudomonadaceae(100);Pseudomonas(100)'})
+
+    @output.close
+
+    @p = BP.new
+  end
+
+  test "BioPieces::Pipeline::Count with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.collapse_otus(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::Count to file outputs correctly" do
+    @p.collapse_otus.run(input: @input, output: @output2)
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:OTU=>"OTU_0", :SAMPLE1_COUNT=>3580, :TAXONOMY=>"Streptococcaceae(100);Lactococcus(100)"}'
+    expected << '{:OTU=>"OTU_1", :SAMPLE1_COUNT=>881, :TAXONOMY=>"Leuconostocaceae(100);Leuconostoc(100)"}'
+    expected << '{:OTU=>"OTU_3", :SAMPLE1_COUNT=>5, :TAXONOMY=>"Pseudomonadaceae(100);Pseudomonas(100)"}'
+    assert_equal(expected, result)
   end
 end
+

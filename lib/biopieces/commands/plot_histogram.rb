@@ -33,20 +33,24 @@ module BioPieces
     # allows for different types of output the default one being crufty ASCII
     # graphics.
     #
+    # GNUplot's facility for setting the xrange labels is used for numeric
+    # values, while for non-numeric values these are used for xrange labels.
+    #
     # GNUplot must be installed for plot_histogram to work. Read more here:
     #
     # http://www.gnuplot.info/
     # 
     # == Usage
     # 
-    #    plot_histogram(<key: <string>>[, output: <file>[, force: <bool>
-    #                   [, terminal: <string>[, title: <string>
+    #    plot_histogram(<key: <string>>[, value: <string>[, output: <file>
+    #                   [, force: <bool>[, terminal: <string>[, title: <string>
     #                   [, xlabel: <string>[, ylabel: <string>
-    #                   [, ylogscale: <bool>]]]]]]])
+    #                   [, ylogscale: <bool>]]]]]]]])
     # 
     # === Options
     #
     # * key: <string>      - Key to use for plotting.
+    # * value: <string>    - Alternative key who's value to use.
     # * output: <file>     - Output file.
     # * force: <bool>      - Force overwrite existing output file.
     # * terminal: <string> - Terminal for output: dumb|post|svg|x11|aqua|png|pdf (default=dumb).
@@ -94,16 +98,16 @@ module BioPieces
     #    read_fasta(input: "test.fna").
     #    plot_histogram(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
-      require 'gnuplot'
-
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :key, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed(options, :key, :value, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_allowed_values(options, force: [nil, true, false])
       options_required(options, :key)
       options_files_exists_force(options, :output)
 
-      key = options[:key]
+      key   = options[:key]
+      value = options[:value]
       options[:terminal] ||= :dumb
       options[:title]    ||= "Histogram"
       options[:xlabel]   ||= options[:key]
@@ -118,7 +122,15 @@ module BioPieces
             status[:records_in] += 1
 
             if record[key]
-              count_hash[record[key].to_i] += 1
+              if value
+                if record[value]
+                  count_hash[record[key]] += record[value]
+                else
+                  raise "value: #{value} not found in record: #{record}"
+                end
+              else
+                count_hash[record[key]] += 1
+              end
             end
 
             if output
@@ -128,35 +140,44 @@ module BioPieces
             end
           end
 
-          x_max = count_hash.keys.max || 0
+          gp = BioPieces::GnuPlot.new
+          gp.set terminal:  options[:terminal].to_s
+          gp.set title:     options[:title]
+          gp.set xlabel:    options[:xlabel]
+          gp.set ylabel:    options[:ylabel]
+          gp.set output:    options[:output] if options[:output]
 
-          x = []
-          y = []
-
-          (0 .. x_max).each do |i|
-            x << i
-            y << count_hash[i]
+          if options[:ylogscale]
+            gp.set logscale:  "y"
+            gp.set yrange:    "[1:*]"
+          else
+            gp.set yrange:    "[0:*]"
           end
 
-          Gnuplot.open do |gp|
-            Gnuplot::Plot.new(gp) do |plot|
-              plot.terminal options[:terminal].to_s
-              plot.title    options[:title]
-              plot.xlabel   options[:xlabel]
-              plot.ylabel   options[:ylabel]
-              plot.output   options[:output] || "/dev/stderr"
-              plot.logscale "y" if options[:ylogscale]
-              plot.xrange   "[#{x.min - 1}:#{x.max + 1}]"
-              plot.style    "fill solid 0.5 border"
-              plot.xtics    "out"
-              plot.ytics    "out"
+          gp.set autoscale: "xfix"
+          gp.set style:     "fill solid 0.5 border"
+          gp.set xtics:     "out"
+          gp.set ytics:     "out"
+          gp.set "datafile separator" => "\t"
 
-              plot.data << Gnuplot::DataSet.new([x, y]) do |ds|
-                ds.with = "boxes"
-                ds.notitle
-              end
+          if count_hash.keys.first.is_a? Numeric
+            x_max = count_hash.keys.max || 0
+
+            gp.add_dataset(using: "1:2", with: "boxes notitle") do |plotter|
+              (0 .. x_max).each { |x| plotter << [x, count_hash[x]] }
+            end
+          else
+            if count_hash.first.first.size > 2
+              gp.set xtics: "rotate right"
+              gp.set xlabel: ""
+            end
+
+            gp.add_dataset(using: "2:xticlabels(1)", with: "boxes notitle") do |plotter|
+              count_hash.each { |k, v| plotter << [k, v] }
             end
           end
+
+          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
         end
       end
 

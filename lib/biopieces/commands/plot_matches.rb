@@ -173,7 +173,7 @@ module BioPieces
             end
           end
 
-          puts gp.plot
+          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
         end
       end
 
