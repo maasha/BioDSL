@@ -97,6 +97,7 @@ module BioPieces
     #    ---
     def trim_seq(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :quality_min, :length_min, :mode)
       options_allowed_values(options, mode: [:left, :right, :both])
       options_assert(options, ":quality_min >= 0")

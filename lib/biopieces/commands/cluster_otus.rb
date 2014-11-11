@@ -42,9 +42,11 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    cluster_otus()
+    #    cluster_otus([identity: <float>])
     # 
     # === Options
+    #
+    #  * identity: <float> - OTU cluster identity between 0.0 and 1.0 (Default 0.97).
     #
     # == Examples
     #
@@ -58,7 +60,12 @@ module BioPieces
     #     run
     def cluster_otus(options = {})
       options_orig = options.dup
-      options_allowed(options, nil)
+      options_load_rc(options, __method__)
+      options_allowed(options, :identity)
+      options_assert(options, ":identity >= 0.0")
+      options_assert(options, ":identity <= 1.0")
+
+      options[:identity] ||= 0.97
 
       lmb = lambda do |input, output, status|
         status[:sequences_in]  = 0

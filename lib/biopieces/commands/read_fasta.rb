@@ -79,6 +79,7 @@ module BioPieces
     #    read_fasta(input: "*.fna")
     def read_fasta(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :input, :first, :last)
       options_required(options, :input)
       options_glob(options, :input)

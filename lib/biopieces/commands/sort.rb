@@ -46,6 +46,7 @@ module BioPieces
       require 'pqueue'
 
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :key, :reverse, :block_size)
       options_required(options, :key)
       options_allowed_values(options, reverse: [nil, true, false])
@@ -68,10 +69,10 @@ module BioPieces
             if size > options[:block_size]
               file = Tempfile.new('sort')
 
-              File.open(file, 'w') do |ios|
-                list.sort_by! { |r| r[options[:key].to_sym] }
-                list.reverse! if options[:reverse]
+              list.sort_by! { |r| r[options[:key].to_sym] }
+              list.reverse! if options[:reverse]
 
+              File.open(file, 'w') do |ios|
                 list.each do |r|
                   msg = Marshal.dump(r)
                   ios.write([msg.size].pack("I"))

@@ -62,6 +62,7 @@ module BioPieces
       require 'google_hash'
 
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :ignore_case)
       options_allowed_values(options, ignore_case: [nil, true, false])
 

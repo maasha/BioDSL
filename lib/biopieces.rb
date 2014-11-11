@@ -33,7 +33,25 @@ class Numeric
   end
 end
 
+# Convert string to float or integer if applicable.
+class String
+  def to_num
+    begin
+      Integer(self)
+      self.to_i
+    rescue ArgumentError
+      begin
+        Float(self)
+        self.to_f
+      rescue ArgumentError
+        self
+      end
+    end
+  end
+end
+
 module BioPieces
+  require 'biopieces/cary'
   require 'biopieces/commands'
   require 'biopieces/helpers'
   require 'biopieces/seq'
@@ -41,7 +59,10 @@ module BioPieces
   require 'biopieces/hamming'
   require 'biopieces/version'
   require 'biopieces/filesys'
+  require 'biopieces/csv'
   require 'biopieces/fork'
+  require 'biopieces/gnuplot'
+  require 'biopieces/render'
   require 'biopieces/pipeline'
   require 'biopieces/fasta'
   require 'biopieces/fastq'

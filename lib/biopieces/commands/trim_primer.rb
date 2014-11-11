@@ -103,6 +103,7 @@ module BioPieces
     #      :TRIM_PRIMER_PAT=>"ACTACGT"}
     def trim_primer(options = {})
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :primer, :direction, :overlap_min, :reverse_complement,
                       :mismatch_percent, :insertion_percent, :deletion_percent)
       options_required(options, :primer, :direction)
