@@ -59,7 +59,6 @@ module BioPieces
   require 'biopieces/hamming'
   require 'biopieces/version'
   require 'biopieces/filesys'
-  require 'biopieces/findsim'
   require 'biopieces/csv'
   require 'biopieces/fork'
   require 'biopieces/gnuplot'
