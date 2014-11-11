@@ -56,25 +56,33 @@ Or run on the command line with the alias bp:
 
 Available Biopieces
 -------------------
-*  `add_key`
-*  `assemble_pairs`
-*  `clip_primer`
-*  `cluster_otus`
-*  `dereplicate_seq`
-*  `dump`
-*  `grab`
-*  `mean_scores`
-*  `plot_histogram`
-*  `plot_scores`
-*  `read_fasta`
-*  `read_fastq`
-*  `sort`
-*  `trim_primer`
-*  `trim_seq`
-*  `uchime_ref`
-*  `usearch_global`
-*  `write_fasta`
-*  `write_fastq`
+  * `add_key`
+  * `assemble_pairs`
+  * `classify_seq`
+  * `clip_primer`
+  * `cluster_otus`
+  * `collect_otus`
+  * `dereplicate_seq`
+  * `dump`
+  * `grab`
+  * `mean_scores`
+  * `merge_table`
+  * `merge_values`
+  * `plot_histogram`
+  * `plot_matches`
+  * `plot_scores`
+  * `read_fasta`
+  * `read_fastq`
+  * `read_table`
+  * `sort`
+  * `split_values`
+  * `trim_primer`
+  * `trim_seq`
+  * `uchime_ref`
+  * `usearch_global`
+  * `write_fasta`
+  * `write_fastq`
+  * `write_table`
 
 Log and History
 ---------------
@@ -95,6 +103,26 @@ E-mail notification:
 
 `BP.new.read_fasta(input: "input.fna").dump.run(email: mail@maasha.dk, subject: "Script done!")`
 
+
+Configuration File
+------------------
+
+It is possible to pre-set options in a configuration file located in your $HOME
+directory called `.biopiecesrc`. Thus if an option is not already set, its value
+will fall back to the one set in the configuration file. The configuration file
+contains three columns:
+
+  * Command name
+  * Option
+  * Option value
+
+Lines starting with '#' are ignored.
+
+An example:
+
+    maasha@mel:~$ cat ~/.biopiecesrc
+    classify_seq	database	/Users/maasha/data/RDP/Mothur/trainset9_032012.pds.fasta
+    classify_seq	taxonomy	/Users/maasha/data/RDP/Mothur/trainset9_032012.pds.tax
 
 Contributing
 ------------

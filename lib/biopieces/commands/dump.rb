@@ -54,6 +54,7 @@ module BioPieces
     #    dump(last: 10)
     def dump(options = {})
       options_orig = options
+      options_load_rc(options, __method__)
       options_allowed(options, :first, :last)
       options_unique(options, :first, :last)
       options_assert(options, ":first > 0")

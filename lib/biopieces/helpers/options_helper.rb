@@ -98,6 +98,16 @@ module BioPieces
       end
     end
 
+    # Method that raises if options include lists with duplicate elements.
+    # Usage options_unique_list(options, :keys, :skip)
+    def options_list_unique(options, *lists)
+      lists.each do |list|
+        if options[list] and options[list].uniq.size != options[list].size
+          raise BioPieces::OptionError, "Duplicate elements found in list #{list}: #{options[list]}"
+        end
+      end
+    end
+
     # Method to expand all options in the glob list into lists of paths.
     def options_glob(options, *globs)
       globs.each do |option|
@@ -167,6 +177,7 @@ module BioPieces
     end
 
     # Method that raises if files exists unless options[:force] == true.
+    # Usage: options_files_exists_force(options, :output)
     def options_files_exists_force(options, *args)
       args.each do |arg|
         if options[arg]
@@ -182,6 +193,7 @@ module BioPieces
     end
 
     # Method to assert a given expression.
+    # Usage: options_assert(options, ":overlap_min > 0")
     def options_assert(options, expression)
       options.each do |key, value|
         expression.gsub!(/:#{key}/, value.to_s)
@@ -190,6 +202,27 @@ module BioPieces
       unless expression =~ /:\w/
         unless eval expression
           raise BioPieces::OptionError, "Assertion failed: #{expression}"
+        end
+      end
+    end
+
+    def options_load_rc(options, command)
+      rc_file = File.join(ENV['HOME'], ".biopiecesrc")
+
+      if File.exist? rc_file
+        File.open(rc_file) do |ios|
+          ios.each do |line|
+            line.chomp!
+
+            next if line.empty?
+            next if line[0] == '#'
+
+            fields = line.split(/\s+/)
+
+            if fields.first.to_sym == command
+              options[fields[1].to_sym] = fields[2] unless options[fields[1].to_sym]
+            end
+          end
         end
       end
     end

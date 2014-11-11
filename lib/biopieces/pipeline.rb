@@ -78,13 +78,14 @@ module BioPieces
     def run(options = {})
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir)
+      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir, :report, :force)
       options_allowed_values(options, fork: [true, false, nil], thread: [true, false, nil])
       options_conflict(options, fork: :thread)
       options_tie(options, subject: :email)
+      options_files_exists_force(options, :report)
 
       if options[:output_dir]
-        FileUtils.mkdir_p(options[:output_dir]) unless File.exists?(options[:output_dir])
+        FileUtils.mkdir_p(options[:output_dir]) unless File.exist?(options[:output_dir])
 
         @commands.each do |command|
           if value = command.options[:output]
@@ -107,21 +108,22 @@ module BioPieces
 
       @status[:status] = status_load
 
-      pp @status if @options[:verbose]
-      email_send if @options[:email]
+      pp @status  if @options[:verbose]
+      email_send  if @options[:email]
+      report_save if @options[:report]
 
       log_ok
 
-      self
-    rescue Exception => exception
-      unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
-        STDERR.puts "Error in run: " + exception.to_s
-        STDERR.puts exception.backtrace if @options[:verbose]
-        log_error(exception)
-        exit 2
-      else
-        raise exception
-      end
+     self
+ #   rescue Exception => exception
+ #     unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
+ #       STDERR.puts "Error in run: " + exception.to_s
+ #       STDERR.puts exception.backtrace if @options[:verbose]
+ #       log_error(exception)
+ #       exit 2
+ #     else
+ #       raise exception
+ #     end
     ensure
       history_save
     end
@@ -220,6 +222,19 @@ module BioPieces
       mail[:body]    = "#{self.to_s}\n\n\n#{PP.pp(@status, '')}"
 
       mail.deliver!
+    end
+
+    # Save a HTML status report to file.
+    def report_save
+      if @options[:output_dir]
+        file = File.join(@options[:output_dir], @options[:report])
+      else
+        file = @options[:report]
+      end
+
+      File.open(file, 'w') do |ios|
+        ios.puts BioPieces::Render.html(self)
+      end
     end
 
     private

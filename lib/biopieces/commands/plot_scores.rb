@@ -102,6 +102,7 @@ module BioPieces
       require 'narray'
 
       options_orig = options.dup
+      options_load_rc(options, __method__)
       options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
       options_allowed_values(options, count: [true, false])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])

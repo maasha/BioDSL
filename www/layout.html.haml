@@ -1,0 +1,12 @@
+!!!
+%head
+  %title Biopieces report
+  = render_css
+%body
+  %h1.center Biopieces report
+  %p.center.bold Version #{BioPieces::VERSION}
+  %p.center.bold Generated #{Time.now}
+  = render_pipeline pipeline
+  = render_overview commands
+  - commands.each_with_index do |command, i|
+    = render_command command, i

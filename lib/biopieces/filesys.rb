@@ -128,6 +128,10 @@ module BioPieces
         yield entry
       end
     end
+
+    def get_entry
+      @io.gets
+    end
   end
 end
 

@@ -43,20 +43,27 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    uchime_ref(<database: <file>)
+    #    uchime_ref(<database: <file>[cpus: <uint>])
     # 
     # === Options
     #
     # * database: <file> - Database to search (in FASTA format).
+    # * cpus:     <uint> - Number of CPU cores to use (default=1).
     #
     # == Examples
     # 
     def uchime_ref(options = {})
+      require 'parallel'
+
       options_orig = options.dup
-      options_allowed(options, :database)
+      options_load_rc(options, __method__)
+      options_allowed(options, :database, :cpus)
       options_required(options, :database)
       options_files_exist(options, :database)
+      options_assert(options, ":cpus >= 1")
+      options_assert(options, ":cpus <= #{Parallel.processor_count}")
 
+      options[:cpus]   ||= 1
       options[:strand] ||= "plus"  # This option cannot be changed in usearch7.0
 
       lmb = lambda do |input, output, status|
@@ -90,6 +97,7 @@ module BioPieces
                                           output: tmp_out,
                                           database: options[:database],
                                           strand: options[:strand],
+                                          cpus: options[:cpus],
                                           verbose: options[:verbose])
 
             Fasta.open(tmp_out) do |ios|

@@ -42,24 +42,32 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    usearch_global(<database: <file>, <identity: float>, <strand: "plus|both">)
+    #    usearch_global(<database: <file>, <identity: float>, <strand: "plus|both">[, cpus: <uint>])
     # 
     # === Options
     #
     # * database: <file>   - Database to search (in FASTA format).
     # * identity: <float>  - Similarity for matching in percent between 0.0 and 1.0.
     # * strand:   <string> - For nucleotide search report hits from plus or both strands.
+    # * cpus:     <uint>   - Number of CPU cores to use (default=1).
     #
     # == Examples
     # 
     def usearch_global(options = {})
+      require 'parallel'
+
       options_orig = options.dup
-      options_allowed(options, :database, :identity, :strand)
+      options_load_rc(options, __method__)
+      options_allowed(options, :database, :identity, :strand, :cpus)
       options_required(options, :database, :identity)
       options_allowed_values(options, strand: ["plus", "both"])
       options_files_exist(options, :database)
       options_assert(options, ":identity >  0.0")
       options_assert(options, ":identity <= 1.0")
+      options_assert(options, ":cpus >= 1")
+      options_assert(options, ":cpus <= #{Parallel.processor_count}")
+
+      options[:cpus] ||= 1
 
       lmb = lambda do |input, output, status|
         status[:sequences_in] = 0
@@ -89,20 +97,24 @@ module BioPieces
               end
             end
 
-            BioPieces::Usearch.usearch_global(input: tmp_in, 
-                                              output: tmp_out,
-                                              database: options[:database],
-                                              strand: options[:strand],
-                                              identity: options[:identity],
-                                              verbose: options[:verbose])
+            begin
+              BioPieces::Usearch.usearch_global(input: tmp_in, 
+                                                output: tmp_out,
+                                                database: options[:database],
+                                                strand: options[:strand],
+                                                identity: options[:identity],
+                                                cpus: options[:cpus],
+                                                verbose: options[:verbose])
 
-            BioPieces::Usearch.open(tmp_out) do |ios|
-              ios.each(:uc) do |record|
-                record[:RECORD_TYPE] = "usearch"
-                output << record
-                status[:hits_out]    += 1
-                status[:records_out] += 1
+              BioPieces::Usearch.open(tmp_out) do |ios|
+                ios.each(:uc) do |record|
+                  record[:RECORD_TYPE] = "usearch"
+                  output << record
+                  status[:hits_out]    += 1
+                  status[:records_out] += 1
+                end
               end
+            rescue UsearchError
             end
           ensure
             tmp_in.unlink
