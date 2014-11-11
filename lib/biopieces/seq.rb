@@ -36,16 +36,16 @@ module BioPieces
   require 'biopieces/seq/homopolymer'
   require 'biopieces/seq/levenshtein'
 
-  # Residue alphabets
-  DNA     = %w[a t c g]
-  RNA     = %w[a u c g]
-  PROTEIN = %w[f l s y c w p h q r i m t n k v a d e g]
-  INDELS  = %w[. - _ ~]
-
   # Error class for all exceptions to do with Seq.
   class SeqError < StandardError; end
 
   class Seq
+    # Residue alphabets
+    DNA     = %w[a t c g]
+    RNA     = %w[a u c g]
+    PROTEIN = %w[f l s y c w p h q r i m t n k v a d e g]
+    INDELS  = %w[. - _ ~]
+
     # Quality scores bases
     SCORE_BASE = 33
     SCORE_MIN  = 0
