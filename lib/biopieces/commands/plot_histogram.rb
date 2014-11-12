@@ -140,6 +140,8 @@ module BioPieces
             end
           end
 
+          raise "No data to plot" if count_hash.empty?
+
           gp = BioPieces::GnuPlot.new
           gp.set terminal:  options[:terminal].to_s
           gp.set title:     options[:title]
