@@ -28,7 +28,7 @@ class Array
   # Method that converts variable types given an array of types.
   # Example: ["fish", 0.0, 1].convert_types([:to_s, :to_f, :to_i])
   def convert_types(types)
-    raise ArgumentError "Array and types size mismatch: #{self.size} != #{types.size}" if self.size != types.size
+    raise ArgumentError, "Array and types size mismatch: #{self.size} != #{types.size}" if self.size != types.size
 
     types.each_with_index do |type, i|
       self[i] = self[i].send(type)
