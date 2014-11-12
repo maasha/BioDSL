@@ -153,7 +153,12 @@ module BioPieces
                   end
                 end
 
-                new_record[:TAXONOMY]    = new_levels.join(';')
+                if new_levels.empty?
+                  new_record[:TAXONOMY] = 'Unclassified'
+                else
+                  new_record[:TAXONOMY] = new_levels.join(';')
+                end
+
                 new_record[:RECORD_TYPE] = "taxonomy"
                 output << new_record
                 status[:records_out]
