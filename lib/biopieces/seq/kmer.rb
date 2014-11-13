@@ -46,7 +46,7 @@ module BioPieces
         raise KmerError, "score minimum: #{options[:score_min]} out of range #{Seq::SCORE_MIN} .. #{Seq::SCORE_MAX}"
       end
 
-      naive(options)
+      naive_bin(options)
     end
 
     private
@@ -57,10 +57,37 @@ module BioPieces
       (0 .. self.length - options[:kmer_size]).each do |i|
         oligo = self[i ... i + options[:kmer_size]]
 
-        next unless oligo.seq.upcase =~ /^[ATCG]+$/
+        next unless oligo.seq.upcase =~ /^[ATUCG]+$/
         next if oligo.qual and options[:scores_min] and oligo.scores_min < options[:scores_min]
 
         oligos << oligo.seq.upcase
+      end
+
+      oligos
+    end
+
+    def naive_bin(options)
+      oligos = []
+
+      (0 .. self.length - options[:kmer_size]).each do |i|
+        oligo = self[i ... i + options[:kmer_size]]
+
+        next unless oligo.seq.upcase =~ /^[ATCG]+$/
+        next if oligo.qual and options[:scores_min] and oligo.scores_min < options[:scores_min]
+
+        bin = 0
+
+        oligo.seq.upcase.each_char do |c|
+          bin <<= 2
+          case c
+          when 'T' then bin |= 1
+          when 'U' then bin |= 1
+          when 'C' then bin |= 2
+          when 'G' then bin |= 3
+          end
+        end
+
+        oligos << bin
       end
 
       oligos

@@ -76,27 +76,27 @@ class TestKmer < Test::Unit::TestCase
 
   test "#to_kmers with kmer_size: 1 returns correctly" do
     result = @entry.to_kmers(kmer_size: 1)
-    expected = %w{A A C C G A C T G A T A C A C G T A C}
+    expected = [0, 0, 2, 2, 3, 0, 2, 1, 3, 0, 1, 0, 2, 0, 2, 3, 1, 0, 2]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 5 returns correctly" do
     result = @entry.to_kmers(kmer_size: 5)
-    expected = %w{ACCGA CCGAC CGACT GACTG ACTGA CTGAT TGATA GATAC ATACA TACAC ACACG CACGT ACGTA CGTAC}
+    expected = [172, 690, 713, 807, 156, 625, 452, 786, 72, 290, 139, 557, 180, 722]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 1 and score_min: 20 returns correctly" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
     result = @entry.to_kmers(kmer_size: 1, scores_min: 20)
-    expected = %w{A A C C G A C T A T A C A C G T A C}
+    expected = [0, 0, 2, 2, 3, 0, 2, 1, 0, 1, 0, 2, 0, 2, 3, 1, 0, 2]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 5 and score_min: 20 returns correctly" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
     result = @entry.to_kmers(kmer_size: 5, scores_min: 20)
-    expected = %w{ACCGA CCGAC CGACT ATACA TACAC ACACG CACGT ACGTA CGTAC}
+    expected = [172, 690, 713, 72, 290, 139, 557, 180, 722]
     assert_equal(expected, result)
   end
 
