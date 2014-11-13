@@ -31,7 +31,7 @@ require 'test/helper'
 
 class TestKmer < Test::Unit::TestCase 
   def setup
-    @entry = BioPieces::Seq.new(seq: "AtacCGactGAtacACGTAC")
+    @entry = BioPieces::Seq.new(seq: "aNacCGactGAtacACGTAC")
   end
 
   test "#to_kmers without argument raises" do
@@ -73,4 +73,31 @@ class TestKmer < Test::Unit::TestCase
     assert_nothing_raised { @entry.to_kmers(kmer_size: 8, score_min: 0) }
     assert_nothing_raised { @entry.to_kmers(kmer_size: 8, score_min: 40) }
   end
+
+  test "#to_kmers with kmer_size: 1 returns correctly" do
+    result = @entry.to_kmers(kmer_size: 1)
+    expected = %w{A A C C G A C T G A T A C A C G T A C}
+    assert_equal(expected, result)
+  end
+
+  test "#to_kmers with kmer_size: 5 returns correctly" do
+    result = @entry.to_kmers(kmer_size: 5)
+    expected = %w{ACCGA CCGAC CGACT GACTG ACTGA CTGAT TGATA GATAC ATACA TACAC ACACG CACGT ACGTA CGTAC}
+    assert_equal(expected, result)
+  end
+
+  test "#to_kmers with kmer_size: 1 and score_min: 20 returns correctly" do
+    @entry.qual = "IIIIIIIII!IIIIIIIIII"
+    result = @entry.to_kmers(kmer_size: 1, scores_min: 20)
+    expected = %w{A A C C G A C T A T A C A C G T A C}
+    assert_equal(expected, result)
+  end
+
+  test "#to_kmers with kmer_size: 5 and score_min: 20 returns correctly" do
+    @entry.qual = "IIIIIIIII!IIIIIIIIII"
+    result = @entry.to_kmers(kmer_size: 5, scores_min: 20)
+    expected = %w{ACCGA CCGAC CGACT ATACA TACAC ACACG CACGT ACGTA CGTAC}
+    assert_equal(expected, result)
+  end
+
 end

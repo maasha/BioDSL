@@ -42,11 +42,28 @@ module BioPieces
       raise KmerError, "No kmer_size" unless options[:kmer_size]
       raise KmerError, "Bad kmer_size: #{options[:kmer_size]}" unless (1 .. 12).include? options[:kmer_size]
       raise KmerError, "Bad step_size: #{options[:step_size]}" unless (1 .. 12).include? options[:step_size]
-      if self.qual and options[:score_min]
-        unless (Seq::SCORE_MIN .. Seq::SCORE_MAX).include? options[:score_min]
-          raise KmerError, "score minimum: #{options[:score_min]} out of range #{Seq::SCORE_MIN} .. #{Seq::SCORE_MAX}"
-        end
+      if self.qual and options[:score_min] and not (Seq::SCORE_MIN .. Seq::SCORE_MAX).include? options[:score_min]
+        raise KmerError, "score minimum: #{options[:score_min]} out of range #{Seq::SCORE_MIN} .. #{Seq::SCORE_MAX}"
       end
+
+      naive(options)
+    end
+
+    private
+
+    def naive(options)
+      oligos = []
+
+      (0 .. self.length - options[:kmer_size]).each do |i|
+        oligo = self[i ... i + options[:kmer_size]]
+
+        next unless oligo.seq.upcase =~ /^[ATCG]+$/
+        next if oligo.qual and options[:scores_min] and oligo.scores_min < options[:scores_min]
+
+        oligos << oligo.seq.upcase
+      end
+
+      oligos
     end
   end
 end
