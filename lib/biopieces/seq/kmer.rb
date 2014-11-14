@@ -39,17 +39,106 @@ module BioPieces
     #   * score_min: drop kmers with quality score below this.
     def to_kmers(options)
       options[:step_size] ||= 1
+      options[:score_min] ||= Seq::SCORE_MAX
       raise KmerError, "No kmer_size" unless options[:kmer_size]
       raise KmerError, "Bad kmer_size: #{options[:kmer_size]}" unless (1 .. 12).include? options[:kmer_size]
       raise KmerError, "Bad step_size: #{options[:step_size]}" unless (1 .. 12).include? options[:step_size]
-      if self.qual and options[:score_min] and not (Seq::SCORE_MIN .. Seq::SCORE_MAX).include? options[:score_min]
+      if self.qual and not (Seq::SCORE_MIN .. Seq::SCORE_MAX).include? options[:score_min]
         raise KmerError, "score minimum: #{options[:score_min]} out of range #{Seq::SCORE_MIN} .. #{Seq::SCORE_MAX}"
       end
 
-      naive_bin(options)
+      #naive_bin(options)
+      to_kmers_C(self.seq, self.length, options[:kmer_size], options[:step_size])
     end
 
     private
+
+    inline do |builder|
+      builder.prefix %{
+        int hash_oligo(char *oligo, unsigned int length, unsigned int mask, unsigned int *bin)
+        {
+          unsigned int i = 0;
+
+          for (i = 0; i < length; i++)
+          {
+            *bin <<= 2;
+
+            switch(oligo[i])
+            {
+              case 'a':
+                *bin |= 0;
+                break;
+              case 'A':
+                *bin |= 0;
+                break;
+              case 't':
+                *bin |= 1;
+                break;
+              case 'T':
+                *bin |= 1;
+                break;
+              case 'u':
+                *bin |= 1;
+                break;
+              case 'U':
+                *bin |= 1;
+                break;
+              case 'c':
+                *bin |= 2;
+                break;
+              case 'C':
+                *bin |= 2;
+                break;
+              case 'g':
+                *bin |= 3;
+                break;
+              case 'G':
+                *bin |= 3;
+                break;
+              default:
+                return 0;
+            }
+          }
+
+          *bin &= mask;
+
+          return 1;
+        }
+      }
+
+
+      builder.c %{
+        VALUE to_kmers_C(
+          VALUE _seq,         // DNA or RNA sequence string.
+          VALUE _len,         // sequence length.
+          VALUE _kmer_size,   // Size of kmer or oligo.
+          VALUE _step_size    // Step size for overlapping kmers.
+        )
+        {
+          char         *seq       = StringValuePtr(_seq);
+          unsigned int  len       = FIX2UINT(_len);
+          unsigned int  kmer_size = FIX2UINT(_kmer_size);
+          unsigned int  step_size = FIX2UINT(_step_size);
+          
+          char         *pos   = seq;
+          VALUE         array = rb_ary_new();
+          unsigned int  bin   = 0;
+          unsigned int  i     = 0;
+          unsigned int  mask  = (1 << (2 * kmer_size)) - 1;
+
+          for (i = 0; i < len - kmer_size + 1; i++)
+          {
+            if (((i % step_size) == 0) && (hash_oligo(pos, kmer_size, mask, &bin))) {
+              rb_ary_push(array, UINT2NUM(bin));
+            }
+
+            pos++;
+          }
+
+          return array;
+        }
+      }
+    end
 
     def naive(options)
       oligos = []
