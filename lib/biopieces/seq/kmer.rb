@@ -32,8 +32,8 @@ module BioPieces
   module Kmer
     # Method that returns a sorted array of unique kmers, which are integer
     # representations of DNA/RNA sequence oligos where A is encoded in two bits
-    # as 00, T as 01, U as 01, C as 10 and G as 11. Oligos with other nucleotids
-    # are ignored. The following options applies:
+    # as 00, T as 01, U as 01, C as 10 and G as 11. Oligos with other nucleotides
+    # are ignored. The following options apply:
     #   * kmer_size: kmer size in the range 1-12.
     #   * step_size: step size in the range 1-12 (defualt=1).
     #   * score_min: drop kmers with quality score below this.
@@ -48,14 +48,18 @@ module BioPieces
       end
 
       #naive_bin(options)
-      to_kmers_C(self.seq, self.length, options[:kmer_size], options[:step_size])
+      if self.qual
+        to_kmers_qual_C(self.seq, self.qual, self.length, options[:kmer_size], options[:step_size], options[:score_min], Seq::SCORE_BASE)
+      else
+        to_kmers_C(self.seq, self.length, options[:kmer_size], options[:step_size])
+      end
     end
 
     private
 
     inline do |builder|
       builder.prefix %{
-        int hash_oligo(char *oligo, unsigned int length, unsigned int mask, unsigned int *bin)
+        int hash_oligo(char *seq, unsigned int length, unsigned int mask, unsigned int *bin)
         {
           unsigned int i = 0;
 
@@ -63,7 +67,7 @@ module BioPieces
           {
             *bin <<= 2;
 
-            switch(oligo[i])
+            switch(seq[i])
             {
               case 'a':
                 *bin |= 0;
@@ -106,6 +110,69 @@ module BioPieces
         }
       }
 
+      builder.prefix %{
+        int hash_oligo_qual(
+          char *seq,
+          char *qual,
+          unsigned int length,
+          unsigned int mask,
+          unsigned int *bin,
+          unsigned int score_min,
+          unsigned int score_base
+        )
+        {
+          unsigned int i = 0;
+
+          for (i = 0; i < length; i++)
+          {
+            if ((unsigned int) qual[i] < score_min + score_base) {
+              return 0;
+            }
+
+            *bin <<= 2;
+
+            switch(seq[i])
+            {
+              case 'a':
+                *bin |= 0;
+                break;
+              case 'A':
+                *bin |= 0;
+                break;
+              case 't':
+                *bin |= 1;
+                break;
+              case 'T':
+                *bin |= 1;
+                break;
+              case 'u':
+                *bin |= 1;
+                break;
+              case 'U':
+                *bin |= 1;
+                break;
+              case 'c':
+                *bin |= 2;
+                break;
+              case 'C':
+                *bin |= 2;
+                break;
+              case 'g':
+                *bin |= 3;
+                break;
+              case 'G':
+                *bin |= 3;
+                break;
+              default:
+                return 0;
+            }
+          }
+
+          *bin &= mask;
+
+          return 1;
+        }
+      }
 
       builder.c %{
         VALUE to_kmers_C(
@@ -133,6 +200,46 @@ module BioPieces
             }
 
             pos++;
+          }
+
+          return array;
+        }
+      }
+
+      builder.c %{
+        VALUE to_kmers_qual_C(
+          VALUE _seq,         // DNA or RNA sequence string.
+          VALUE _qual,        // Quality score string.
+          VALUE _len,         // sequence length.
+          VALUE _kmer_size,   // Size of kmer or oligo.
+          VALUE _step_size,   // Step size for overlapping kmers.
+          VALUE _score_min,   // Minimum score.
+          VALUE _score_base   // Score base.
+        )
+        {
+          char         *seq        = StringValuePtr(_seq);
+          char         *qual       = StringValuePtr(_qual);
+          unsigned int  len        = FIX2UINT(_len);
+          unsigned int  kmer_size  = FIX2UINT(_kmer_size);
+          unsigned int  step_size  = FIX2UINT(_step_size);
+          unsigned int  score_min  = FIX2UINT(_score_min);
+          unsigned int  score_base = FIX2UINT(_score_base);
+          
+          char         *spos  = seq;
+          char         *qpos  = qual;
+          VALUE         array = rb_ary_new();
+          unsigned int  bin   = 0;
+          unsigned int  i     = 0;
+          unsigned int  mask  = (1 << (2 * kmer_size)) - 1;
+
+          for (i = 0; i < len - kmer_size + 1; i++)
+          {
+            if (((i % step_size) == 0) && (hash_oligo_qual(spos, qpos, kmer_size, mask, &bin, score_min, score_base))) {
+              rb_ary_push(array, UINT2NUM(bin));
+            }
+
+            spos++;
+            qpos++;
           }
 
           return array;
