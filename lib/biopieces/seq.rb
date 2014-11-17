@@ -29,6 +29,7 @@ module BioPieces
   require 'biopieces/seq/ambiguity'
   require 'biopieces/seq/assemble'
   require 'biopieces/seq/digest'
+  require 'biopieces/seq/kmer'
   require 'biopieces/seq/translate'
   require 'biopieces/seq/trim'
   require 'biopieces/seq/backtrack'
@@ -55,6 +56,7 @@ module BioPieces
     include BioPieces::Homopolymer
     include BioPieces::Translate
     include BioPieces::Trim
+    include BioPieces::Kmer
     include BioPieces::BackTrack
 
     attr_accessor :seq_name, :seq, :type, :qual
