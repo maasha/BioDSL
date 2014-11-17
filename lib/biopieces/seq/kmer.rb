@@ -73,11 +73,18 @@ module BioPieces
         raise KmerError, "score minimum: #{options[:score_min]} out of range #{Seq::SCORE_MIN} .. #{Seq::SCORE_MAX}"
       end
 
-      #naive_bin(options)
-      if self.qual
-        to_kmers_qual_C(self.seq, self.qual, self.length, options[:kmer_size], options[:step_size], options[:score_min], Seq::SCORE_BASE)
+      size = Seq::DNA.size ** options[:kmer_size]
+
+      if @kmer_ary and @kmer_ary.count == size
+        @kmer_ary.zero!
       else
-        to_kmers_C(self.seq, self.length, options[:kmer_size], options[:step_size])
+        @kmer_ary = BioPieces::CAry.new(size, 1)
+      end
+
+      if self.qual
+        to_kmers_qual_C(self.seq, self.qual, @kmer_ary.ary, self.length, @kmer_ary.count, options[:kmer_size], options[:step_size], options[:score_min], Seq::SCORE_BASE)
+      else
+        to_kmers_C(self.seq, @kmer_ary.ary, self.length, @kmer_ary.count, options[:kmer_size], options[:step_size])
       end
     end
 
@@ -132,13 +139,17 @@ module BioPieces
       builder.c %{
         VALUE to_kmers_C(
           VALUE _seq,         // DNA or RNA sequence string.
-          VALUE _len,         // sequence length.
+          VALUE _ary,         // byte array for sort and uniq.
+          VALUE _seq_len,     // sequence length.
+          VALUE _ary_len,     // byte array length.
           VALUE _kmer_size,   // Size of kmer or oligo.
           VALUE _step_size    // Step size for overlapping kmers.
         )
         {
           char         *seq       = StringValuePtr(_seq);
-          unsigned int  len       = FIX2UINT(_len);
+          char         *ary       = StringValuePtr(_ary);
+          unsigned int  seq_len   = FIX2UINT(_seq_len);
+          unsigned int  ary_len   = FIX2UINT(_ary_len);
           unsigned int  kmer_size = FIX2UINT(_kmer_size);
           unsigned int  step_size = FIX2UINT(_step_size);
           
@@ -148,19 +159,26 @@ module BioPieces
           unsigned int  i     = 0;
           unsigned int  mask  = (1 << (2 * kmer_size)) - 1;
 
-          for (i = 0; i < len; i++)
+          for (i = 0; i < seq_len; i++)
           {
             if (encode_nuc(seq[i], &bin))
             {
               enc++;
 
               if (((i % step_size) == 0) && (enc >= kmer_size)) {
-                rb_ary_push(array, UINT2NUM((bin & mask)));
+                ary[(bin & mask)] = 1;
               }
             }
             else
             {
               enc = 0;
+            }
+          }
+
+          for (i = 0; i < ary_len; i++)
+          {
+            if (ary[i]) {
+              rb_ary_push(array, INT2FIX(i));
             }
           }
 
@@ -172,7 +190,9 @@ module BioPieces
         VALUE to_kmers_qual_C(
           VALUE _seq,         // DNA or RNA sequence string.
           VALUE _qual,        // Quality score string.
-          VALUE _len,         // sequence length.
+          VALUE _ary,         // Byte array for sort and uniq.
+          VALUE _seq_len,     // Sequence length.
+          VALUE _ary_len,     // Byte array length.
           VALUE _kmer_size,   // Size of kmer or oligo.
           VALUE _step_size,   // Step size for overlapping kmers.
           VALUE _score_min,   // Miminum quality score to accept in a kmer.
@@ -181,7 +201,9 @@ module BioPieces
         {
           char         *seq        = StringValuePtr(_seq);
           char         *qual       = StringValuePtr(_qual);
-          unsigned int  len        = FIX2UINT(_len);
+          char         *ary        = StringValuePtr(_ary);
+          unsigned int  seq_len    = FIX2UINT(_seq_len);
+          unsigned int  ary_len    = FIX2UINT(_ary_len);
           unsigned int  kmer_size  = FIX2UINT(_kmer_size);
           unsigned int  step_size  = FIX2UINT(_step_size);
           unsigned int  score_min  = FIX2UINT(_score_min);
@@ -193,7 +215,7 @@ module BioPieces
           unsigned int  i     = 0;
           unsigned int  mask  = (1 << (2 * kmer_size)) - 1;
 
-          for (i = 0; i < len; i++)
+          for (i = 0; i < seq_len; i++)
           {
             if (encode_nuc(seq[i], &bin))
             {
@@ -205,12 +227,19 @@ module BioPieces
               }
               else if ((enc >= kmer_size) && ((i % step_size) == 0))
               {
-                rb_ary_push(array, UINT2NUM((bin & mask)));
+                ary[(bin & mask)] = 1;
               }
             }
             else
             {
               enc = 0;
+            }
+          }
+
+          for (i = 0; i < ary_len; i++)
+          {
+            if (ary[i]) {
+              rb_ary_push(array, INT2FIX(i));
             }
           }
 

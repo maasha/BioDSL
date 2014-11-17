@@ -76,13 +76,13 @@ class TestKmer < Test::Unit::TestCase
 
   test "#to_kmers with kmer_size: 1 returns correctly" do
     result = @entry.to_kmers(kmer_size: 1)
-    expected = [0, 0, 2, 2, 3, 0, 2, 1, 3, 0, 1, 0, 2, 0, 2, 3, 1, 0, 2]
+    expected = [0, 1, 2, 3]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 1 and step_size: 2 returns correctly" do
     result = @entry.to_kmers(kmer_size: 1, step_size: 2)
-    expected = [0, 0, 2, 0, 1, 0, 0, 0, 3, 0]
+    expected = [0, 1, 2, 3]
     assert_equal(expected, result)
   end
 
@@ -93,41 +93,41 @@ class TestKmer < Test::Unit::TestCase
 
   test "#to_kmers with kmer_size: 5 and step_size: 2 returns correctly" do
     result = @entry.to_kmers(kmer_size: 5, step_size: 2)
-    expected = [172, 713, 156, 452, 72, 139, 180]
+    expected = [72, 139, 156, 172, 180, 452, 713]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 1 and score_min: 20 returns correctly" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
     result = @entry.to_kmers(kmer_size: 1, scores_min: 20)
-    expected = [0, 0, 2, 2, 3, 0, 2, 1, 0, 1, 0, 2, 0, 2, 3, 1, 0, 2]
+    expected = [0, 1, 2, 3]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 1 and score_min: 20 and step_size: 2 returns correctly" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
     result = @entry.to_kmers(kmer_size: 1, scores_min: 20, step_size: 2)
-    expected = [0, 0, 2, 0, 1, 0, 0, 0, 3, 0]
+    expected = [0, 1, 2, 3]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 5 and score_min: 20 returns correctly" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
     result = @entry.to_kmers(kmer_size: 5, scores_min: 20)
-    expected = [172, 690, 713, 72, 290, 139, 557, 180, 722]
+    expected = [72, 139, 172, 180, 290, 557, 690, 713, 722]
     assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 5 and score_min: 20 and step_size: 2 returns correctly" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
     result = @entry.to_kmers(kmer_size: 5, scores_min: 20, step_size: 2)
-    expected = [172, 713, 72, 139, 180]
+    expected = [72, 139, 172, 180, 713]
     assert_equal(expected, result)
   end
 
   test "Kmer#to_oligos return correctly" do
     kmers = @entry.to_kmers(kmer_size: 5)
-    result = %w{accga ccgac cgact gactg actga ctgat tgata gatac ataca tacac acacg cacgt acgta cgtac}
+    result = %w{ataca acacg actga accga acgta tacac tgata cacgt ctgat ccgac cgact cgtac gatac gactg}
     assert_equal(result, BioPieces::Kmer.to_oligos(kmers, 5))
   end
 end
