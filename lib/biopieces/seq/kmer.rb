@@ -59,116 +59,45 @@ module BioPieces
 
     inline do |builder|
       builder.prefix %{
-        int hash_oligo(char *seq, unsigned int length, unsigned int mask, unsigned int *bin)
+        int encode_nuc(char nuc, unsigned int *bin)
         {
-          unsigned int i = 0;
+          *bin <<= 2;
 
-          for (i = 0; i < length; i++)
+          switch(nuc)
           {
-            *bin <<= 2;
-
-            switch(seq[i])
-            {
-              case 'a':
-                *bin |= 0;
-                break;
-              case 'A':
-                *bin |= 0;
-                break;
-              case 't':
-                *bin |= 1;
-                break;
-              case 'T':
-                *bin |= 1;
-                break;
-              case 'u':
-                *bin |= 1;
-                break;
-              case 'U':
-                *bin |= 1;
-                break;
-              case 'c':
-                *bin |= 2;
-                break;
-              case 'C':
-                *bin |= 2;
-                break;
-              case 'g':
-                *bin |= 3;
-                break;
-              case 'G':
-                *bin |= 3;
-                break;
-              default:
-                return 0;
-            }
-          }
-
-          *bin &= mask;
-
-          return 1;
-        }
-      }
-
-      builder.prefix %{
-        int hash_oligo_qual(
-          char *seq,
-          char *qual,
-          unsigned int length,
-          unsigned int mask,
-          unsigned int *bin,
-          unsigned int score_min,
-          unsigned int score_base
-        )
-        {
-          unsigned int i = 0;
-
-          for (i = 0; i < length; i++)
-          {
-            if ((unsigned int) qual[i] < score_min + score_base) {
+            case 'a':
+              *bin |= 0;
+              break;
+            case 'A':
+              *bin |= 0;
+              break;
+            case 't':
+              *bin |= 1;
+              break;
+            case 'T':
+              *bin |= 1;
+              break;
+            case 'u':
+              *bin |= 1;
+              break;
+            case 'U':
+              *bin |= 1;
+              break;
+            case 'c':
+              *bin |= 2;
+              break;
+            case 'C':
+              *bin |= 2;
+              break;
+            case 'g':
+              *bin |= 3;
+              break;
+            case 'G':
+              *bin |= 3;
+              break;
+            default:
               return 0;
-            }
-
-            *bin <<= 2;
-
-            switch(seq[i])
-            {
-              case 'a':
-                *bin |= 0;
-                break;
-              case 'A':
-                *bin |= 0;
-                break;
-              case 't':
-                *bin |= 1;
-                break;
-              case 'T':
-                *bin |= 1;
-                break;
-              case 'u':
-                *bin |= 1;
-                break;
-              case 'U':
-                *bin |= 1;
-                break;
-              case 'c':
-                *bin |= 2;
-                break;
-              case 'C':
-                *bin |= 2;
-                break;
-              case 'g':
-                *bin |= 3;
-                break;
-              case 'G':
-                *bin |= 3;
-                break;
-              default:
-                return 0;
-            }
           }
-
-          *bin &= mask;
 
           return 1;
         }
@@ -187,19 +116,26 @@ module BioPieces
           unsigned int  kmer_size = FIX2UINT(_kmer_size);
           unsigned int  step_size = FIX2UINT(_step_size);
           
-          char         *pos   = seq;
           VALUE         array = rb_ary_new();
           unsigned int  bin   = 0;
+          unsigned int  enc   = 0;
           unsigned int  i     = 0;
           unsigned int  mask  = (1 << (2 * kmer_size)) - 1;
 
-          for (i = 0; i < len - kmer_size + 1; i++)
+          for (i = 0; i < len; i++)
           {
-            if (((i % step_size) == 0) && (hash_oligo(pos, kmer_size, mask, &bin))) {
-              rb_ary_push(array, UINT2NUM(bin));
-            }
+            if (encode_nuc(seq[i], &bin))
+            {
+              enc++;
 
-            pos++;
+              if (((i % step_size) == 0) && (enc >= kmer_size)) {
+                rb_ary_push(array, UINT2NUM((bin & mask)));
+              }
+            }
+            else
+            {
+              enc = 0;
+            }
           }
 
           return array;
@@ -213,8 +149,8 @@ module BioPieces
           VALUE _len,         // sequence length.
           VALUE _kmer_size,   // Size of kmer or oligo.
           VALUE _step_size,   // Step size for overlapping kmers.
-          VALUE _score_min,   // Minimum score.
-          VALUE _score_base   // Score base.
+          VALUE _score_min,   // Miminum quality score to accept in a kmer.
+          VALUE _score_base   // Quality score base.
         )
         {
           char         *seq        = StringValuePtr(_seq);
@@ -225,21 +161,31 @@ module BioPieces
           unsigned int  score_min  = FIX2UINT(_score_min);
           unsigned int  score_base = FIX2UINT(_score_base);
           
-          char         *spos  = seq;
-          char         *qpos  = qual;
           VALUE         array = rb_ary_new();
           unsigned int  bin   = 0;
+          unsigned int  enc   = 0;
           unsigned int  i     = 0;
           unsigned int  mask  = (1 << (2 * kmer_size)) - 1;
 
-          for (i = 0; i < len - kmer_size + 1; i++)
+          for (i = 0; i < len; i++)
           {
-            if (((i % step_size) == 0) && (hash_oligo_qual(spos, qpos, kmer_size, mask, &bin, score_min, score_base))) {
-              rb_ary_push(array, UINT2NUM(bin));
-            }
+            if (encode_nuc(seq[i], &bin))
+            {
+              enc++;
 
-            spos++;
-            qpos++;
+              if ((unsigned int) qual[i] - score_base < score_min)
+              {
+                enc = 0;
+              }
+              else if ((enc >= kmer_size) && ((i % step_size) == 0))
+              {
+                rb_ary_push(array, UINT2NUM((bin & mask)));
+              }
+            }
+            else
+            {
+              enc = 0;
+            }
           }
 
           return array;
