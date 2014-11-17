@@ -80,9 +80,20 @@ class TestKmer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "#to_kmers with kmer_size: 1 and step_size: 2 returns correctly" do
+    result = @entry.to_kmers(kmer_size: 1, step_size: 2)
+    expected = [0, 0, 2, 0, 1, 0, 0, 0, 3, 0]
+    assert_equal(expected, result)
+  end
+
   test "#to_kmers with kmer_size: 5 returns correctly" do
     result = @entry.to_kmers(kmer_size: 5)
     expected = [172, 690, 713, 807, 156, 625, 452, 786, 72, 290, 139, 557, 180, 722]
+  end
+
+  test "#to_kmers with kmer_size: 5 and step_size: 2 returns correctly" do
+    result = @entry.to_kmers(kmer_size: 5, step_size: 2)
+    expected = [172, 713, 156, 452, 72, 139, 180]
     assert_equal(expected, result)
   end
 
@@ -93,6 +104,13 @@ class TestKmer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "#to_kmers with kmer_size: 1 and score_min: 20 and step_size: 2 returns correctly" do
+    @entry.qual = "IIIIIIIII!IIIIIIIIII"
+    result = @entry.to_kmers(kmer_size: 1, scores_min: 20, step_size: 2)
+    expected = [0, 0, 2, 0, 1, 0, 0, 0, 3, 0]
+    assert_equal(expected, result)
+  end
+
   test "#to_kmers with kmer_size: 5 and score_min: 20 returns correctly" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
     result = @entry.to_kmers(kmer_size: 5, scores_min: 20)
@@ -100,4 +118,16 @@ class TestKmer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "#to_kmers with kmer_size: 5 and score_min: 20 and step_size: 2 returns correctly" do
+    @entry.qual = "IIIIIIIII!IIIIIIIIII"
+    result = @entry.to_kmers(kmer_size: 5, scores_min: 20, step_size: 2)
+    expected = [172, 713, 72, 139, 180]
+    assert_equal(expected, result)
+  end
+
+  test "Kmer#to_oligos return correctly" do
+    kmers = @entry.to_kmers(kmer_size: 5)
+    result = %w{accga ccgac cgact gactg actga ctgat tgata gatac ataca tacac acacg cacgt acgta cgtac}
+    assert_equal(result, BioPieces::Kmer.to_oligos(kmers, 5))
+  end
 end

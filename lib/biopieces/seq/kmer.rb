@@ -30,6 +30,32 @@ module BioPieces
 
   # Module containing methods for manipulating sequence kmers.
   module Kmer
+    # Debug method to convert an array of binary encoded kmers to
+    # nucleotide oligos.
+    def self.to_oligos(kmers, kmer_size)
+      oligos = []
+
+      kmers.each do |kmer|
+        oligo = ""
+        bin   = "%0#{kmer_size * 2}b" % kmer
+
+        bin.scan(/.{2}/) { |m|
+          case m
+          when '00' then oligo << 'a'
+          when '01' then oligo << 't'
+          when '10' then oligo << 'c'
+          when '11' then oligo << 'g'
+          else
+            raise "unknown m #{m}"
+          end
+        }
+
+        oligos << oligo
+      end
+
+      oligos
+    end
+
     # Method that returns a sorted array of unique kmers, which are integer
     # representations of DNA/RNA sequence oligos where A is encoded in two bits
     # as 00, T as 01, U as 01, C as 10 and G as 11. Oligos with other nucleotides
