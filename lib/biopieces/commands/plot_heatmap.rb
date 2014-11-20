@@ -86,8 +86,7 @@ module BioPieces
           gp.set autoscale: "yfix"
           gp.set nokey:     :true
           gp.set tic:       "scale 0"
-          gp.set palette:   "defined (0 0 0 0, 1 0 0 1, 3 0 1 0, 4 1 0 0, 6 1 1 1)"
-          gp.set palette:   "negative"
+          gp.set palette: "rgbformulae 22,13,10"
 
           gp.add_dataset(matrix: :true, with: "image" ) do |plotter|
             input.each do |record|
