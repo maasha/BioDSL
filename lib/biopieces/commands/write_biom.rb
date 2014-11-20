@@ -67,12 +67,14 @@ module BioPieces
                 status[:records_in] += 1
 
                 if record[:OTU] and record[:TAXONOMY]
+                  otu_record = record.reject { |key, value| key == :RECORD_TYPE }
+
                   unless header
-                    ios.puts "#" + record.keys.join("\t")
+                    ios.puts "#" + otu_record.keys.join("\t")
                     header = true
                   end
 
-                  ios.puts record.values.join("\t")
+                  ios.puts otu_record.values.join("\t")
                 end
 
                 if output
