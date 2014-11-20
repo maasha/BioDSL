@@ -148,8 +148,6 @@ module BioPieces
                     if confidence >= options[:confidence]
                       new_levels << "#{name}(#{confidence})"
                     end
-                  else
-                    raise "level unmatched: #{level}"
                   end
                 end
 
