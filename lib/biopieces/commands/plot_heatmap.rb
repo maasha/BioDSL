@@ -26,7 +26,11 @@
 
 module BioPieces
   module Commands
-    # == Plot tabular data in a heatmap.
+    # == Plot tabular numerical data in a heatmap.
+    #
+    # A heatmap can be plotted with +plot_heatmap+ using numerical data (Non-
+    # numerical data is ignored). Data should be tabular with records as rows
+    # and keys as columns - the data cells plotted will be the values.
     # 
     # Default graphics are crufty ASCII and you probably want high resolution
     # postscript or SVG output instead with is easy using the +terminal+ option.
@@ -38,7 +42,8 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    plot_matches([, output: <file>[, force: <bool> [, terminal: <string>
+    #    plot_matches([keys: <list> | skip: <list>[, output: <file>
+    #                 [, force: <bool> [, terminal: <string>
     #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>]]]]]])
     # 
     # === Options
@@ -54,10 +59,9 @@ module BioPieces
     #
     # == Examples
     # 
-    # Here we plot two matches from a table. The vector records are shown in the
-    # +dump+ output:
+    # Here we plot a heatmap of data a table:
     # 
-    #    BP.new.read_table(input: "test.tab").dump.plot_matches.run
+    #    BP.new.read_table(input: "test.tab").plot_heatmap.run
     def plot_heatmap(options = {})
       require 'gnuplot'
 
