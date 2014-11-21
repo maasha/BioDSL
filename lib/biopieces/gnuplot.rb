@@ -57,7 +57,23 @@ module BioPieces
     require 'open3'
     require 'tempfile'
 
-    NOQUOTE = [:autoscale, :style, :logscale, :xrange, :yrange, :xtics, :ytics]
+    NOQUOTE = [
+      :autoscale,
+      :cbrange,
+      :datafile,
+      :logscale,
+      :nocbtics,
+      :palette,
+      :rtics,
+      :tic,
+      :style,
+      :view,
+      :yrange,
+      :ytics,
+      :xrange,
+      :xtics,
+      :ztics
+    ]
 
     # Constructor method for a GnuPlot object.
     def initialize
@@ -134,6 +150,50 @@ module BioPieces
       result
     end
 
+    # Command to execute the splotting of added datasets.
+    def splot
+      raise "no datasets added" if @datasets.empty?
+
+      @datasets.each { |dataset| dataset.close }
+
+      result = nil
+
+      Open3.popen3("gnuplot -persist") do |stdin, stdout, stderr, wait_thr|
+        lines = []
+
+        @options.each do |key, list|
+          list.each do |value|
+            if value == :true
+              lines << %Q{set #{key}}
+            elsif NOQUOTE.include? key.to_sym
+              lines << %Q{set #{key} #{value}}
+            else
+              lines << %Q{set #{key} "#{value}"}
+            end
+          end
+        end
+
+        lines << "splot " + @datasets.map { |dataset| dataset.to_gp }.join(", ")
+
+        lines.map { |l| $stderr.puts l } if $VERBOSE
+        lines.map { |l| stdin.puts l }
+
+        stdin.close
+        result = stdout.read
+        stdout.close
+
+        exit_status = wait_thr.value
+
+        unless exit_status.success?
+          raise RuntimeError, stderr.read
+        end
+      end
+
+      @datasets.each { |dataset| dataset.unlink }
+
+      result
+    end
+
     # Nested class for GnuPlot datasets.
     class DataSet
       def initialize(options = {})
@@ -149,9 +209,20 @@ module BioPieces
 
       alias :write :<<
 
-      # Method that builds a plot command string from dataset options.
+      # Method that builds a plot/splot command string from dataset options.
       def to_gp
-        %Q{"#{@file.path}" } + @options.inject([]) { |memo, (key, value)| memo << "#{key} #{value}" }.join(" ")
+        options = []
+        options << %Q{"#{@file.path}"}
+        
+        @options.each do |key, value|
+          if value == :true
+            options << "#{key}"
+          else
+            options << "#{key} #{value}"
+          end
+        end
+
+        options.join(" ")
       end
 
       # Method that closes temporary file.
