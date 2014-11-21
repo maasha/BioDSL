@@ -74,6 +74,9 @@ module BioPieces
       options[:ylabel]   ||= "y"
 
       lmb = lambda do |input, output, status|
+        headings  = nil
+        skip_keys = options[:skip].each_with_object({}) { |i, h| h[i.to_sym] = true } if options[:skip]
+
         status_track(status) do
           gp = BioPieces::GnuPlot.new
           gp.set terminal:  options[:terminal].to_s
@@ -90,11 +93,26 @@ module BioPieces
           gp.set noxtics:   :true
           gp.set noytics:   :true
 
+          keys = nil
+
           gp.add_dataset(matrix: :true, with: "image" ) do |plotter|
             input.each do |record|
               status[:records_in] += 1
 
-              plotter << record.values
+              unless headings
+                if options[:keys]
+                  headings = options[:keys].map { |k| k.to_sym }
+                elsif record.keys.first =~ /^V\d+$/
+                  headings = record.keys.sort { |a, b| a.to_s[1 .. a.to_s.size].to_i <=> b.to_s[1 .. a.to_s.size].to_i }
+                else
+                  headings = record.keys
+                end
+
+                headings.reject! {|r| skip_keys[r] } if options[:skip]
+              end
+
+              plotter << record.values_at(*headings)
+              keys    =  record.keys unless keys
 
               if output
                 output << record
@@ -114,4 +132,3 @@ module BioPieces
     end
   end
 end
-

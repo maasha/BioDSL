@@ -60,6 +60,7 @@ module BioPieces
     NOQUOTE = [
       :autoscale,
       :cbrange,
+      :datafile,
       :logscale,
       :nocbtics,
       :palette,
