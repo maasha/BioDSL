@@ -37,6 +37,7 @@ module BioPieces
     require 'biopieces/commands/dereplicate_seq'
     require 'biopieces/commands/dump'
     require 'biopieces/commands/grab'
+    require 'biopieces/commands/index_taxonomy'
     require 'biopieces/commands/mean_scores'
     require 'biopieces/commands/merge_table'
     require 'biopieces/commands/merge_values'
