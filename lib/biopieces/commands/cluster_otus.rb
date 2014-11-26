@@ -100,7 +100,7 @@ module BioPieces
               end
             end
 
-            BioPieces::Usearch.cluster_otus(input: tmp_in, output: tmp_out, verbose: options[:verbose])
+            BioPieces::Usearch.cluster_otus(input: tmp_in, output: tmp_out, identity: options[:identity], verbose: options[:verbose])
 
             Fasta.open(tmp_out) do |ios|
               ios.each do |entry|
