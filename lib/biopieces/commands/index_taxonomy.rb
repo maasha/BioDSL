@@ -32,11 +32,14 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    index_taxonomy(<output_dir: <dir>>[, prefix: <string>[, force: <bool>]])
+    #    index_taxonomy(<output_dir: <dir>>[, kmer_size: <uint>[, step_size: <uint>
+    #                   [, prefix: <string>[, force: <bool>]]]])
     # 
     # === Options
     #
     #  * output_dir: <dir> - Output directory to contain index files.
+    #  * kmer_size: <uint> - Size of kmer to use (default=8).
+    #  * step_size: <uint> - Size of steps (default=1).
     #  * prefix: <string>  - Prefix to use with index file names (default="taxonomy").
     #  * force: <bool>     - Force overwrite existing index files.
     #
@@ -47,19 +50,26 @@ module BioPieces
     def index_taxonomy(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :output_dir, :prefix, :force)
+      options_allowed(options, :output_dir, :kmer_size, :step_size, :prefix, :force)
       options_required(options, :output_dir)
       options_allowed_values(options, force: [nil, true, false])
       options_files_exists_force(options, :report)
+      options_assert(options, ":kmer_size > 0")
+      options_assert(options, ":kmer_size <= 12")
+      options_assert(options, ":step_size > 0")
+      options_assert(options, ":step_size <= 12")
 
       FileUtils.mkdir_p(options[:output_dir]) unless File.exist?(options[:output_dir])
 
-      options[:prefix] ||= "taxonomy"
+      options[:prefix]    ||= "taxonomy"
+      options[:kmer_size] ||= 8
+      options[:step_size] ||= 1
 
       unless options[:force]
         files = [
           File.join(options[:output_dir], "#{options[:prefix]}_node2oligos.tch"),
           File.join(options[:output_dir], "#{options[:prefix]}_taxtree.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_r_oligo2nodes.tch"),
           File.join(options[:output_dir], "#{options[:prefix]}_k_oligo2nodes.tch"),
           File.join(options[:output_dir], "#{options[:prefix]}_p_oligo2nodes.tch"),
           File.join(options[:output_dir], "#{options[:prefix]}_c_oligo2nodes.tch"),
@@ -86,7 +96,7 @@ module BioPieces
             if record[:SEQ_NAME] and record[:SEQ]
               status[:sequences_in] += 1
 
-              index.add(BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
+              index.add(BioPieces::Seq.new(seq_name: record[:SEQ_NAME], seq: record[:SEQ]))
             end
 
             output << record
