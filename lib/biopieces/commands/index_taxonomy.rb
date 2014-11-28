@@ -28,8 +28,6 @@ module BioPieces
   module Commands
     # == Create taxonomy index from sequences in the stream.
     # 
-    # Use the +usearch+ program index_taxonomy to cluster sequences in the stream
-    # 
     # == Usage
     # 
     #    index_taxonomy(<output_dir: <dir>>[, kmer_size: <uint>[, step_size: <uint>
@@ -44,8 +42,6 @@ module BioPieces
     #  * force: <bool>     - Force overwrite existing index files.
     #
     # == Examples
-    #
-    # To create OTU clusters do:
     #
     def index_taxonomy(options = {})
       options_orig = options.dup
@@ -67,16 +63,16 @@ module BioPieces
 
       unless options[:force]
         files = [
-          File.join(options[:output_dir], "#{options[:prefix]}_node2oligos.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_node2kmers.tch"),
           File.join(options[:output_dir], "#{options[:prefix]}_taxtree.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_r_oligo2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_k_oligo2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_p_oligo2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_c_oligo2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_o_oligo2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_f_oligo2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_g_oligo2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_s_oligo2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_r_kmer2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_k_kmer2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_p_kmer2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_c_kmer2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_o_kmer2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_f_kmer2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_g_kmer2nodes.tch"),
+          File.join(options[:output_dir], "#{options[:prefix]}_s_kmer2nodes.tch"),
         ]
 
         files.each do |file|
