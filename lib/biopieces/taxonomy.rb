@@ -150,6 +150,7 @@ module BioPieces
       # all nodes per kmer.
       def tree_remap(node, kmer_hash, databases)
         kmers = node.kmers.to_a
+
         databases[:node2kmers][node.id] = kmers.pack("I*")
         databases[:taxtree][node.id]    = Node.new(node.id, node.level, node.name, node.parent_id, node.children_ids, kmers.size).to_marshal
 

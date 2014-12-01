@@ -61,22 +61,26 @@ module BioPieces
       options[:kmer_size] ||= 8
       options[:step_size] ||= 1
 
-      unless options[:force]
-        files = [
-          File.join(options[:output_dir], "#{options[:prefix]}_node2kmers.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_taxtree.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_r_kmer2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_k_kmer2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_p_kmer2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_c_kmer2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_o_kmer2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_f_kmer2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_g_kmer2nodes.tch"),
-          File.join(options[:output_dir], "#{options[:prefix]}_s_kmer2nodes.tch"),
-        ]
+      files = [
+        File.join(options[:output_dir], "#{options[:prefix]}_node2kmers.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_taxtree.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_r_kmer2nodes.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_k_kmer2nodes.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_p_kmer2nodes.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_c_kmer2nodes.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_o_kmer2nodes.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_f_kmer2nodes.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_g_kmer2nodes.tch"),
+        File.join(options[:output_dir], "#{options[:prefix]}_s_kmer2nodes.tch"),
+      ]
 
-        files.each do |file|
-          raise BioPieces::OptionError, "File exists: #{file} - use 'force: true' to override" if File.exist? file
+      files.each do |file|
+        if File.exists? file
+          if options[:force]
+            File.unlink file
+          else
+            raise BioPieces::OptionError, "File exists: #{file} - use 'force: true' to override"
+          end
         end
       end
 
