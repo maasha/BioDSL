@@ -45,11 +45,12 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    plot_matches([, output: <file>[, force: <bool> [, terminal: <string>
-    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>]]]]]])
+    #    plot_matches([direction: <string>[, output: <file>[, force: <bool> [, terminal: <string>
+    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>]]]]]]])
     # 
     # === Options
     #
+    # * direction: <string> - Plot matches from forward|reverse|both direction(s) (default=both).
     # * output: <file>      - Output file.
     # * force: <bool>       - Force overwrite existing output file.
     # * terminal: <string>  - Terminal for output: dumb|post|svg|x11|aqua|png|pdf (default=dumb).

@@ -148,12 +148,15 @@ module BioPieces
                     if confidence >= options[:confidence]
                       new_levels << "#{name}(#{confidence})"
                     end
-                  else
-                    raise "level unmatched: #{level}"
                   end
                 end
 
-                new_record[:TAXONOMY]    = new_levels.join(';')
+                if new_levels.empty?
+                  new_record[:TAXONOMY] = 'Unclassified'
+                else
+                  new_record[:TAXONOMY] = new_levels.join(';')
+                end
+
                 new_record[:RECORD_TYPE] = "taxonomy"
                 output << new_record
                 status[:records_out]

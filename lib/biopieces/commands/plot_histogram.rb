@@ -140,12 +140,14 @@ module BioPieces
             end
           end
 
+          raise "No data to plot" if count_hash.empty?
+
           gp = BioPieces::GnuPlot.new
-          gp.set terminal:  options[:terminal].to_s
-          gp.set title:     options[:title]
-          gp.set xlabel:    options[:xlabel]
-          gp.set ylabel:    options[:ylabel]
-          gp.set output:    options[:output] if options[:output]
+          gp.set terminal: options[:terminal].to_s
+          gp.set title:    options[:title]
+          gp.set xlabel:   options[:xlabel]
+          gp.set ylabel:   options[:ylabel]
+          gp.set output:   options[:output] if options[:output]
 
           if options[:ylogscale]
             gp.set logscale:  "y"
