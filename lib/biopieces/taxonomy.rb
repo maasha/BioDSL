@@ -73,6 +73,7 @@ module BioPieces
       #   CUACGGGA
       #    UACGGGAG
       #     ACGGGAGG
+      #      ...
       #
       # Each oligo is encoded as an kmer (integer) by encoding two bits per nucletoide:
       #
@@ -113,10 +114,9 @@ module BioPieces
 
           if name
             if node[name]
-              @kmers |= node[name].kmers
-              node[name].kmers = @kmers
+              node[name].kmers |= @kmers
             else
-              node[name] = TaxNode.new(node, level, name, @kmers, @id)
+              node[name] = TaxNode.new(node, level, name, @kmers.dup, @id)
               @id += 1
             end
 
@@ -238,6 +238,12 @@ module BioPieces
         def to_a
           na = NArray.to_na(LZ4::uncompress(@kmers), "byte")
           na.to_a.each_with_index.reject { |e, _| e.zero? }.map(&:last)
+        end
+
+        # Method to return the count of true values in a vector.
+        def count_true
+          na = NArray.to_na(LZ4::uncompress(@kmers), "byte")
+          na.count_true
         end
       end
 
