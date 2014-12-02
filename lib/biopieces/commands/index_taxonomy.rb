@@ -62,7 +62,6 @@ module BioPieces
       options[:step_size] ||= 1
 
       files = [
-        File.join(options[:output_dir], "#{options[:prefix]}_node2kmers.tch"),
         File.join(options[:output_dir], "#{options[:prefix]}_taxtree.tch"),
         File.join(options[:output_dir], "#{options[:prefix]}_r_kmer2nodes.tch"),
         File.join(options[:output_dir], "#{options[:prefix]}_k_kmer2nodes.tch"),

@@ -37,7 +37,6 @@ module BioPieces
     # is constructed from the temporary tree allowing this to be saved to files
     # using Tokyo Cabinet. The resulting index consists of the following files:
     #  * taxonomy_taxtree.tch      - return node for a given node id.
-    #  * taxonomy_node2kmers.tch   - return list of kmers for a given node id.
     #  * taxonomy_r_kmer2nodes.tch - return list of root    level node ids for a given kmer.
     #  * taxonomy_k_kmer2nodes.tch - return list of kingdom level node ids for a given kmer.
     #  * taxonomy_p_kmer2nodes.tch - return list of phylum  level node ids for a given kmer.
@@ -151,7 +150,6 @@ module BioPieces
       def tree_remap(node, kmer_hash, databases)
         kmers = node.kmers.to_a
 
-        databases[:node2kmers][node.id] = kmers.pack("I*")
         databases[:taxtree][node.id]    = Node.new(node.id, node.level, node.name, node.parent_id, node.children_ids, kmers.size).to_marshal
 
         kmers.map { |kmer| kmer_hash[node.level][kmer].add(node.id) }
@@ -163,8 +161,7 @@ module BioPieces
       def databases_connect
         databases = {}
 
-        [:node2kmers,
-         :taxtree,
+        [:taxtree,
          :r_kmer2nodes,
          :k_kmer2nodes,
          :p_kmer2nodes,
