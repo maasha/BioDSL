@@ -91,11 +91,11 @@ module BioPieces
     class Index
       # Constructor Index object.
       def initialize(options)
-        @options = options                                    # Option hash.
-        @id      = 0                                          # Node id.
-        @tree    = TaxNode.new(nil, :r, nil, nil, nil, @id)   # Root level tree node.
+        @options = options                                       # Option hash.
+        @id      = 0                                             # Node id.
+        @tree    = TaxNode.new(nil, :r, nil, nil, nil, @id)      # Root level tree node.
         @id     += 1
-        @kmers   = Vector.new(4 ** @options[:kmer_size]) # Kmer vector for storing observed kmers.
+        @kmers   = Vector.new(4 ** @options[:kmer_size], "byte") # Kmer vector for storing observed kmers.
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -194,14 +194,15 @@ module BioPieces
         attr_reader :kmers
 
         # Constructor for creating a new Vector object of a given size.
-        def initialize(size)
+        def initialize(size, type)
           @size  = size
-          @kmers = LZ4::compress(NArray.byte(@size).to_s)
+          @type  = type
+          @kmers = LZ4::compress(NArray.new(@type, @size).to_s)
         end
 
         # Set all values in the vector to zero.
         def zero!
-          na = NArray.to_na(LZ4::uncompress(@kmers), "byte")
+          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
           na.fill! 0
           @kmers = LZ4::compress(na.to_s)
 
@@ -211,15 +212,15 @@ module BioPieces
         # Use the given kmers array as index to set all positions in the
         # vector to the given value.
         def []=(kmers, value)
-          na = NArray.to_na(LZ4::uncompress(@kmers), "byte")
+          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
           na[NArray.to_na(kmers)] = value
           @kmers = LZ4::compress(na.to_s)
         end
 
         # Perform bitwise OR between two vectors.
         def |(vector)
-          na1 = NArray.to_na(LZ4::uncompress(@kmers), "byte")
-          na2 = NArray.to_na(LZ4::uncompress(vector.kmers), "byte")
+          na1 = NArray.to_na(LZ4::uncompress(@kmers), @type)
+          na2 = NArray.to_na(LZ4::uncompress(vector.kmers), @type)
           @kmers = LZ4::compress((na1 | na2).to_s)
           
           self
@@ -227,13 +228,13 @@ module BioPieces
 
         # Method to return all kmers saved in a vector as a list of integers.
         def to_a
-          na = NArray.to_na(LZ4::uncompress(@kmers), "byte")
+          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
           na.to_a.each_with_index.reject { |e, _| e.zero? }.map(&:last)
         end
 
         # Method to return the count of true values in a vector.
         def count_true
-          na = NArray.to_na(LZ4::uncompress(@kmers), "byte")
+          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
           na.count_true
         end
       end
