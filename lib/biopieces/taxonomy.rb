@@ -27,9 +27,52 @@
 module BioPieces
   # Module containing classes for creating a taxonomic database and searching this.
   module Taxonomy
-    require 'tokyocabinet'
     require 'lz4-ruby'
     require 'narray'
+
+    TAXLEVELS = [:root, :kingdom, :phylum, :class, :order, :family, :genus, :species]
+    MAX_NODES = 200_000
+
+    class Databases
+      require 'tokyocabinet'
+      include TokyoCabinet
+
+      # Connect all databases.
+      def self.connect(dir, prefix)
+        databases = {}
+
+        [:taxtree,
+         :r_kmer2nodes,
+         :k_kmer2nodes,
+         :p_kmer2nodes,
+         :c_kmer2nodes,
+         :o_kmer2nodes,
+         :f_kmer2nodes,
+         :g_kmer2nodes,
+         :s_kmer2nodes].each do |name|
+          databases[name] = HDB::new
+        end
+
+        databases.each do |name, database|
+          if !database.open(File.join(dir, "#{prefix}_#{name}.tch"), HDB::OWRITER | HDB::OCREAT)
+            ecode = database.ecode
+            STDERR.printf("open error: %s\n", database.errmsg(ecode))
+          end
+        end
+
+        databases
+      end
+
+      # Disconnect all databases.
+      def self.disconnect(databases)
+        databases.values do |database|
+          if !database.close
+            ecode = database.ecode
+            STDERR.printf("close error: %s\n", database.errmsg(ecode))
+          end
+        end
+      end
+    end
 
     # Class for creating and databasing an index of a taxonomic tree. This is
     # done in two steps. 1) A temporary tree is creating using the taxonomic
@@ -46,8 +89,6 @@ module BioPieces
     #  * taxonomy_g_kmer2nodes.tch - return list of genus   level node ids for a given kmer.
     #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
     class Index
-      include TokyoCabinet
-
       # Constructor Index object.
       def initialize(options)
         @options = options                               # Option hash.
@@ -139,7 +180,7 @@ module BioPieces
             databases["#{level[0]}_kmer2nodes".to_sym][kmer] = nodes.to_a.sort.pack("I*")
           end
         end
-
+      ensure
         databases_close(databases)
       end
 
@@ -155,42 +196,6 @@ module BioPieces
         kmers.map { |kmer| kmer_hash[node.level][kmer].add(node.id) }
 
         node.children.each_value { |child| tree_remap(child, kmer_hash, databases) }
-      end
-
-      # Connect all databases.
-      def databases_connect
-        databases = {}
-
-        [:taxtree,
-         :r_kmer2nodes,
-         :k_kmer2nodes,
-         :p_kmer2nodes,
-         :c_kmer2nodes,
-         :o_kmer2nodes,
-         :f_kmer2nodes,
-         :g_kmer2nodes,
-         :s_kmer2nodes].each do |name|
-          databases[name] = HDB::new
-        end
-
-        databases.each do |name, database|
-          if !database.open(File.join(@options[:output_dir], "#{@options[:prefix]}_#{name}.tch"), HDB::OWRITER | HDB::OCREAT)
-            ecode = database.ecode
-            STDERR.printf("open error: %s\n", database.errmsg(ecode))
-          end
-        end
-
-        databases
-      end
-
-      # Close all databases.
-      def databases_close(databases)
-        databases.values do |database|
-          if !database.close
-            ecode = database.ecode
-            STDERR.printf("close error: %s\n", database.errmsg(ecode))
-          end
-        end
       end
 
       # Class with methods to manipulate a vector used to hold uniq kmers (integers).
@@ -295,6 +300,149 @@ module BioPieces
       Node = Struct.new(:id, :level, :name, :parent, :children, :count) do
         def to_marshal
           Marshal.dump(self)
+        end
+      end
+    end
+
+    class Search < Databases
+      def initialize(options)
+        @options   = options
+        @databases = Databases.connect(@options[:dir], @options[:prefix])
+        @result    = NArray.int(MAX_NODES)
+      end
+
+      def execute(entry)
+        kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
+
+        puts "DEBUG Q: #{entry.seq_name}" if $VERBOSE
+
+        TAXLEVELS.reverse.each do |level|
+          @result.fill! 0
+
+          database = @databases["#{level.to_s[0]}_kmer2nodes".to_sym]
+
+          kmers.each do |kmer|
+            if nodes = database[kmer]
+              na = NArray.to_na(nodes, "int")
+              @result[na] += 1
+            end
+          end
+
+          hits = []
+
+          (@result > 0).where.to_a.each do |node_id|
+            count = @result[node_id]
+
+            if (count - kmers.size).abs <= 5
+              hits << Hit.new(node_id, count)
+            end
+          end
+
+          hits = hits.sort_by { |_, count| count }.reverse.first(50) # fixme
+
+          if hits.size == 0
+            puts "DEBUG no hits @ #{level}" if $VERBOSE
+          else
+            puts "DEBUG hit(s) @ #{level}" if $VERBOSE
+
+            taxpaths = []
+
+            hits.each_with_index do |hit, i|
+              taxpath = TaxPath.new(@databases, hit.node_id, hit.count, kmers.size)
+                
+              puts "DEBUG S: #{taxpath} [#{hit.count}/#{kmers.size}]" if $VERBOSE
+
+              taxpaths << taxpath
+            end
+
+            return Result.new(compile_consensus(taxpaths, hits.size).tr('_', ' '), hits.size)
+          end
+        end
+      end
+
+      def disconnect
+        Databases.disconnect(@databases)
+      end
+
+      private
+
+      def compile_consensus(taxpaths, hit_size)
+        hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] =  Hash.new(0) } }
+        consensus = []
+
+        taxpaths.each do |taxpath|
+          taxpath.nodes[1 .. -1].each do |node|
+            node.name.split('_').each_with_index do |subname, i|
+              hash[node.level][i][subname] += 1
+            end
+          end
+        end
+
+        hash.each do |level, subhash|
+          cons   = []
+          scores = []
+
+          subhash.each_value do |subsubhash|
+            subsubhash.sort_by { |_, count| count }.reverse.each do |subname, count|
+              if count >= hit_size * 0.8
+                cons   << subname
+                scores << ((count / hit_size.to_f) * 100).to_i
+              end
+            end
+          end
+
+          break if cons.empty?
+
+          consensus << "#{level[0].upcase}##{cons.join('_')}(#{scores.join('/')})"
+        end
+
+        if consensus.empty?
+          "Unclassified"
+        else
+          consensus.join(';')
+        end
+      end
+
+      Hit    = Struct.new(:node_id, :count)
+      Result = Struct.new(:taxonomy, :hits)
+
+      class TaxPath
+        attr_reader :nodes
+
+        def initialize(databases, node_id, kmers_observed, kmers_total)
+          @databases      = databases
+          @node_id        = node_id
+          @kmers_observed = kmers_observed
+          @kmers_total    = kmers_total
+          @nodes          = taxonomy_backtrack
+        end
+
+        # Method that returns a list of nodes for a given node_id and all
+        # parent ids up the taxonomy tree.
+        def taxonomy_backtrack
+          nodes = []
+
+          node_id = @node_id
+
+          while node = Marshal.load(@databases[:taxtree][node_id])
+            nodes << node
+
+            node_id = node.parent
+
+            break if node_id.nil?
+          end
+
+          nodes.reverse
+        end
+
+        def to_s
+          levels = []
+
+          @nodes[1 .. -1].each do |node|
+            levels << "#{node.level[0].upcase}##{node.name}"
+          end
+
+          levels.join(';')
         end
       end
     end
