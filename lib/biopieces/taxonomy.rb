@@ -30,7 +30,7 @@ module BioPieces
     require 'lz4-ruby'
     require 'narray'
 
-    TAXLEVELS = [:root, :kingdom, :phylum, :class, :order, :family, :genus, :species]
+    TAXLEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
     MAX_NODES = 200_000
 
     class Databases
@@ -91,11 +91,11 @@ module BioPieces
     class Index
       # Constructor Index object.
       def initialize(options)
-        @options = options                               # Option hash.
-        @id      = 0                                     # Node id.
-        @tree    = TaxNode.new(nil, 'R', nil, nil, @id)  # Root level tree node.
+        @options = options                                    # Option hash.
+        @id      = 0                                          # Node id.
+        @tree    = TaxNode.new(nil, :r, nil, nil, nil, @id)   # Root level tree node.
         @id     += 1
-        @kmers  = Vector.new(4 ** @options[:kmer_size])  # Kmer vector for storing observed kmers.
+        @kmers   = Vector.new(4 ** @options[:kmer_size]) # Kmer vector for storing observed kmers.
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -134,29 +134,18 @@ module BioPieces
         @kmers.zero!
         @kmers[kmers] = 1
         
-        seq_id, tax_string = entry.seq_name.split(' ')
+        seq_id, tax_string = entry.seq_name.split(' ', 2)
 
         tax_levels = tax_string.split(';')
 
         tax_levels.each do |tax_level|
           level, name = tax_level.split('#')
 
-          case level
-          when 'R' then level = :root
-          when 'K' then level = :kingdom
-          when 'P' then level = :phylum
-          when 'C' then level = :class
-          when 'O' then level = :order
-          when 'F' then level = :family
-          when 'G' then level = :genus
-          when 'S' then level = :species
-          end
-
           if name
             if node[name]
               node[name].kmers |= @kmers
             else
-              node[name] = TaxNode.new(node, level, name, @kmers.dup, @id)
+              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, seq_id, @id)
               @id += 1
             end
 
@@ -169,7 +158,7 @@ module BioPieces
 
       # Remap and save taxonomic tree to index files.
       def save
-        databases = databases_connect
+        databases = Databases.connect(@options[:output_dir], @options[:prefix])
 
         kmer_hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = Set.new } }
 
@@ -177,11 +166,11 @@ module BioPieces
 
         kmer_hash.each do |level, hash|
           hash.each do |kmer, nodes|
-            databases["#{level[0]}_kmer2nodes".to_sym][kmer] = nodes.to_a.sort.pack("I*")
+            databases["#{level}_kmer2nodes".to_sym][kmer] = nodes.to_a.sort.pack("I*")
           end
         end
       ensure
-        databases_close(databases)
+        Databases.disconnect(databases)
       end
 
       private
@@ -191,9 +180,9 @@ module BioPieces
       def tree_remap(node, kmer_hash, databases)
         kmers = node.kmers.to_a
 
-        databases[:taxtree][node.id]    = Node.new(node.id, node.level, node.name, node.parent_id, node.children_ids, kmers.size).to_marshal
+        databases[:taxtree][node.node_id] = Node.new(node.seq_id, node.node_id, node.level, node.name, node.parent_id).to_marshal
 
-        kmers.map { |kmer| kmer_hash[node.level][kmer].add(node.id) }
+        kmers.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }
 
         node.children.each_value { |child| tree_remap(child, kmer_hash, databases) }
       end
@@ -252,22 +241,22 @@ module BioPieces
       # Class for the nodes used for constructing the taxonomic tree.
       class TaxNode
         attr_accessor :kmers
-        attr_reader :parent, :level, :name, :children, :id
+        attr_reader :parent, :level, :name, :children, :seq_id, :node_id
 
         # Constructor for TaxNode objects.
-        def initialize(parent, level, name, kmers, id)
-          @parent = parent   # Parent node.
-          @level  = level    # Taxonomic level.
-          @name   = name     # Taxonomic name.
-          @kmers  = kmers    # Kmer vector.
-          @id     = id       # Node id.
-
-          @children = {}     # Child node hash.
+        def initialize(parent, level, name, kmers, seq_id, node_id)
+          @parent   = parent   # Parent node.
+          @level    = level    # Taxonomic level.
+          @name     = name     # Taxonomic name.
+          @kmers    = kmers    # Kmer vector.
+          @seq_id   = seq_id   # Sequence id.
+          @node_id  = node_id  # Node id.
+          @children = {}       # Child node hash.
         end
 
         # Returns parent node id if a parent exist, else nil.
         def parent_id
-          @parent.id if @parent
+          @parent.node_id if @parent
         end
 
         # Returns an array of children node ids.
@@ -291,13 +280,12 @@ module BioPieces
       end
 
       # Class for simple taxonomic tree where each node have the attributes:
-      # id: node id.
-      # level: taxonomic level.
-      # name: taxnonomic name.
-      # parent: parent node id.
-      # children: array with child node ids.
-      # count: count of observed kmers for this node.
-      Node = Struct.new(:id, :level, :name, :parent, :children, :count) do
+      # seq_id:  sequence id.
+      # node_id: node id.
+      # level:   taxonomic level.
+      # name:    taxnonomic name.
+      # parent:  parent node id.
+      Node = Struct.new(:seq_id, :node_id, :level, :name, :parent) do
         def to_marshal
           Marshal.dump(self)
         end
@@ -319,7 +307,7 @@ module BioPieces
         TAXLEVELS.reverse.each do |level|
           @result.fill! 0
 
-          database = @databases["#{level.to_s[0]}_kmer2nodes".to_sym]
+          database = @databases["#{level}_kmer2nodes".to_sym]
 
           kmers.each do |kmer|
             if nodes = database[kmer]
@@ -393,7 +381,7 @@ module BioPieces
 
           break if cons.empty?
 
-          consensus << "#{level[0].upcase}##{cons.join('_')}(#{scores.join('/')})"
+          consensus << "#{level.upcase}##{cons.join('_')}(#{scores.join('/')})"
         end
 
         if consensus.empty?
@@ -439,7 +427,7 @@ module BioPieces
           levels = []
 
           @nodes[1 .. -1].each do |node|
-            levels << "#{node.level[0].upcase}##{node.name}"
+            levels << "#{node.level.upcase}##{node.name}"
           end
 
           levels.join(';')
