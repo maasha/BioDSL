@@ -26,7 +26,7 @@
 
 module BioPieces
   module Commands
-    # == Run classify_seq on sequences in the stream.
+    # == Run classify_seq_mothur on sequences in the stream.
     # 
     # This is a wrapper for the +mothur+ command +classify.seqs()+. Basically,
     # it classifies sequences in the stream given a database file and a taxonomy
@@ -38,13 +38,13 @@ module BioPieces
     #
     # http://www.mothur.org/wiki/Classify.seqs
     #
-    # Mothur must be installed for +classify_seqs+ to work. Read more here:
+    # Mothur must be installed for +classify_seq_mothurs+ to work. Read more here:
     #
     # http://www.mothur.org/
     # 
     # == Usage
     # 
-    #    classify_seq(<database: <file>>, <taxonomy: <file>>[, confidence: <uint>[, cpus: <uint>]])
+    #    classify_seq_mothur(<database: <file>>, <taxonomy: <file>>[, confidence: <uint>[, cpus: <uint>]])
     # 
     # === Options
     #
@@ -62,11 +62,11 @@ module BioPieces
     #
     #    BP.new.
     #    read_fasta(input: "otus.fna").
-    #    classify_seq(database: database, taxonomy: taxonomy).
+    #    classify_seq_mothur(database: database, taxonomy: taxonomy).
     #    grab(exact: true, keys: :RECORD_TYPE, select: "taxonomy").
     #    write_table(output: "classified.tab", header: true, force: true, skip: [:RECORD_TYPE]).
     #    run
-    def classify_seq(options = {})
+    def classify_seq_mothur(options = {})
       require 'parallel'
 
       options_orig = options.dup
