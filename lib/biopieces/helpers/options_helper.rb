@@ -162,13 +162,14 @@ module BioPieces
     end
 
     # Method that raises if given directories don't exists.
+    # Usage: options_dirs_exist(options, :dir)
     def options_dirs_exist(options, *args)
       args.each do |arg|
         if options[arg]
           dirs = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
 
           dirs.each do |dir|
-            unless File.file? File.expand_path(dir)
+            unless File.directory? File.expand_path(dir)
               raise BioPieces::OptionError, "For option #{arg} - no such directory: #{dir}"
             end
           end
