@@ -69,17 +69,25 @@ module BioPieces
     def classify_seq(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :dir, :prefix, :kmer_size, :step_size)
+      options_allowed(options, :dir, :prefix, :kmer_size, :step_size, :hits_max, :consensus, :coverage)
       options_required(options, :dir)
       options_dirs_exist(options, :dir)
       options_assert(options, ":kmer_size > 0")
       options_assert(options, ":kmer_size <= 12")
       options_assert(options, ":step_size > 0")
       options_assert(options, ":step_size <= 12")
+      options_assert(options, ":hits_max > 0")
+      options_assert(options, ":consensus > 0")
+      options_assert(options, ":consensus <= 1")
+      options_assert(options, ":coverage > 0")
+      options_assert(options, ":coverage <= 1")
 
       options[:prefix]    ||= "taxonomy"
       options[:kmer_size] ||= 8
       options[:step_size] ||= 1
+      options[:hits_max]  ||= 50
+      options[:consensus] ||= 0.51
+      options[:coverage]  ||= 0.9
 
       lmb = lambda do |input, output, status|
         status[:sequences_in]  = 0

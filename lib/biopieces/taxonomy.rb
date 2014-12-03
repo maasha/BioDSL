@@ -333,12 +333,12 @@ module BioPieces
           (@result > 0).where.to_a.each do |node_id|
             count = @result[node_id]
 
-            if (count - kmers.size).abs <= 5
+            if count >= kmers.size * @options[:coverage]
               hits << Hit.new(node_id, count)
             end
           end
 
-          hits = hits.sort_by { |_, count| count }.reverse.first(50) # fixme
+          hits = hits.sort_by { |_, count| count }.reverse.first(@options[:hits_max])
 
           if hits.size == 0
             puts "DEBUG no hits @ #{level}" if $VERBOSE
@@ -384,7 +384,7 @@ module BioPieces
 
           subhash.each_value do |subsubhash|
             subsubhash.sort_by { |_, count| count }.reverse.each do |subname, count|
-              if count >= hit_size * 0.8
+              if count >= hit_size * @options[:consensus]
                 cons   << subname
                 scores << ((count / hit_size.to_f) * 100).to_i
               end
