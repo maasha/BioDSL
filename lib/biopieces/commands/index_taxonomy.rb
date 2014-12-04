@@ -74,7 +74,7 @@ module BioPieces
       ]
 
       files.each do |file|
-        if File.exists? file
+        if File.exist? file
           if options[:force]
             File.unlink file
           else

@@ -30,8 +30,8 @@ module BioPieces
     require 'lz4-ruby'
     require 'narray'
 
-    TAXLEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
-    MAX_NODES = 200_000
+    TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
+    MAX_NODES  = 200_000
 
     class Databases
       require 'tokyocabinet'
@@ -41,15 +41,7 @@ module BioPieces
       def self.connect(dir, prefix)
         databases = {}
 
-        [:taxtree,
-         :r_kmer2nodes,
-         :k_kmer2nodes,
-         :p_kmer2nodes,
-         :c_kmer2nodes,
-         :o_kmer2nodes,
-         :f_kmer2nodes,
-         :g_kmer2nodes,
-         :s_kmer2nodes].each do |name|
+        TAX_LEVELS.inject([:taxtree]) { |memo, obj| memo << "#{obj}_kmer2nodes".to_sym }.each do |name|
           databases[name] = HDB::new
         end
 
@@ -91,11 +83,12 @@ module BioPieces
     class Index
       # Constructor Index object.
       def initialize(options)
-        @options = options                                       # Option hash.
-        @id      = 0                                             # Node id.
-        @tree    = TaxNode.new(nil, :r, nil, nil, nil, @id)      # Root level tree node.
-        @id     += 1
-        @kmers   = Vector.new(4 ** @options[:kmer_size], "byte") # Kmer vector for storing observed kmers.
+        @options      = options                                       # Option hash.
+        @id           = 0                                             # Node id.
+        @tree         = TaxNode.new(nil, :r, nil, nil, nil, @id)      # Root level tree node.
+        @id          += 1
+        @kmers        = Vector.new(4 ** @options[:kmer_size], "byte") # Kmer vector for storing observed kmers.
+        @max_children = 0                                             # Stats info.
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -145,7 +138,7 @@ module BioPieces
             if node[name]
               node[name].kmers |= @kmers
             else
-              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, seq_id, @id)
+              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, seq_id.to_i, @id)
               @id += 1
             end
 
@@ -171,6 +164,8 @@ module BioPieces
         end
       ensure
         Databases.disconnect(databases)
+
+        puts "Nodes: #{@id}   Max children: #{@max_children}" if $VERBOSE
       end
 
       private
@@ -183,6 +178,8 @@ module BioPieces
         databases[:taxtree][node.node_id] = Node.new(node.seq_id, node.node_id, node.level, node.name, node.parent_id).to_marshal
 
         kmers.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }
+
+        @max_children = node.children.size if node.children.size > @max_children
 
         node.children.each_value { |child| tree_remap(child, kmer_hash, databases) }
       end
@@ -305,7 +302,7 @@ module BioPieces
 
         puts "DEBUG Q: #{entry.seq_name}" if $VERBOSE
 
-        TAXLEVELS.reverse.each do |level|
+        TAX_LEVELS.reverse.each do |level|
           @result.fill! 0
 
           database = @databases["#{level}_kmer2nodes".to_sym]
@@ -344,7 +341,10 @@ module BioPieces
               taxpaths << taxpath
             end
 
-            return Result.new(compile_consensus(taxpaths, hits.size).tr('_', ' '), hits.size)
+            seq_id = Marshal.load(@databases[:taxtree][hits.first.node_id]).seq_id
+            pp seq_id
+
+            return Result.new(seq_id, hits.size, compile_consensus(taxpaths, hits.size).tr('_', ' '))
           end
         end
       end
@@ -393,7 +393,7 @@ module BioPieces
       end
 
       Hit    = Struct.new(:node_id, :count)
-      Result = Struct.new(:taxonomy, :hits)
+      Result = Struct.new(:seq_id, :hits, :taxonomy)
 
       class TaxPath
         attr_reader :nodes
