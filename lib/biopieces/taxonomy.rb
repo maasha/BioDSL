@@ -173,11 +173,9 @@ module BioPieces
       # Remap the taxonomic tree using simple nodes and build a hash with
       # all nodes per kmer.
       def tree_remap(node, kmer_hash, databases)
-        kmers = node.kmers.to_a
-
         databases[:taxtree][node.node_id] = Node.new(node.seq_id, node.node_id, node.level, node.name, node.parent_id).to_marshal
 
-        kmers.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }
+        node.kmers.to_a.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }   # FIXME BOTTLE NECK
 
         @max_children = node.children.size if node.children.size > @max_children
 
@@ -226,7 +224,7 @@ module BioPieces
         # Method to return all kmers saved in a vector as a list of integers.
         def to_a
           na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na.to_a.each_with_index.reject { |e, _| e.zero? }.map(&:last)
+          (na > 0).where.to_s.unpack("I*")
         end
 
         # Method to return the count of true values in a vector.
