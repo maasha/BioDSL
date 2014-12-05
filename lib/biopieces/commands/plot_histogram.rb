@@ -179,6 +179,8 @@ module BioPieces
             end
           end
 
+          gp.set noxtics: :true if count_hash.size > 50 # Don't plot xtics if more than 50.
+
           options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
         end
       end
