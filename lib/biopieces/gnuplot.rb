@@ -61,6 +61,7 @@ module BioPieces
       :autoscale,
       :cbrange,
       :datafile,
+      :key,
       :logscale,
       :nocbtics,
       :palette,
@@ -108,8 +109,6 @@ module BioPieces
 
     # Command to execute the plotting of added datasets.
     def plot
-      raise "no datasets added" if @datasets.empty?
-
       @datasets.each { |dataset| dataset.close }
 
       result = nil
@@ -129,7 +128,11 @@ module BioPieces
           end
         end
 
-        lines << "plot " + @datasets.map { |dataset| dataset.to_gp }.join(", ")
+        if @datasets.empty?
+          lines << "plot 1/0"
+        else
+          lines << "plot " + @datasets.map { |dataset| dataset.to_gp }.join(", ")
+        end
 
         lines.map { |l| $stderr.puts l } if $VERBOSE
         lines.map { |l| stdin.puts l }
