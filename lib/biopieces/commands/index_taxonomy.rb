@@ -24,6 +24,8 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
+require 'ruby-prof'
+
 module BioPieces
   module Commands
     # == Create taxonomy index from sequences in the stream.
@@ -87,6 +89,8 @@ module BioPieces
         status[:sequences_in] = 0
 
         status_track(status) do
+#          RubyProf.start
+
           index = BioPieces::Taxonomy::Index.new(options)
 
           input.each do |record|
@@ -103,6 +107,10 @@ module BioPieces
           end
 
           index.save
+
+#          result = RubyProf.stop
+#          printer = RubyProf::GraphPrinter.new(result)
+#          printer.print(STDOUT)
         end
       end
 

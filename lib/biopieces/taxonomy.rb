@@ -322,27 +322,24 @@ module BioPieces
             end
           end
 
-          hits = hits.sort_by { |_, count| count }.reverse.first(@options[:hits_max])
-
           if hits.size == 0
             puts "DEBUG no hits @ #{level}" if $VERBOSE
           else
             puts "DEBUG hit(s) @ #{level}" if $VERBOSE
-
             taxpaths = []
+
+            hits = hits.sort_by { |hit| hit.count }.reverse.first(@options[:hits_max])
 
             hits.each_with_index do |hit, i|
               taxpath = TaxPath.new(@databases, hit.node_id, hit.count, kmers.size)
+              seq_id  = Marshal.load(@databases[:taxtree][hit.node_id]).seq_id
                 
-              puts "DEBUG S: #{taxpath} [#{hit.count}/#{kmers.size}]" if $VERBOSE
+              puts "DEBUG S_ID: #{seq_id} KMERS: [#{hit.count}/#{kmers.size}] #{taxpath}" if $VERBOSE
 
               taxpaths << taxpath
             end
 
-            seq_id = Marshal.load(@databases[:taxtree][hits.first.node_id]).seq_id
-            pp seq_id
-
-            return Result.new(seq_id, hits.size, compile_consensus(taxpaths, hits.size).tr('_', ' '))
+            return Result.new(hits.size, compile_consensus(taxpaths, hits.size).tr('_', ' '))
           end
         end
       end
@@ -391,7 +388,7 @@ module BioPieces
       end
 
       Hit    = Struct.new(:node_id, :count)
-      Result = Struct.new(:seq_id, :hits, :taxonomy)
+      Result = Struct.new(:hits, :taxonomy)
 
       class TaxPath
         attr_reader :nodes

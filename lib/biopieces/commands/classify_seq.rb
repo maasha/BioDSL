@@ -107,7 +107,6 @@ module BioPieces
 
                 record[:TAXONOMY]      = result.taxonomy
                 record[:TAXONOMY_HITS] = result.hits
-                record[:TAXONOMY_ID]   = result.seq_id
               end
 
               output << record
