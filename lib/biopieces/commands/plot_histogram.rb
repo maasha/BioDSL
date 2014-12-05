@@ -140,8 +140,6 @@ module BioPieces
             end
           end
 
-          raise "No data to plot" if count_hash.empty?
-
           gp = BioPieces::GnuPlot.new
           gp.set terminal: options[:terminal].to_s
           gp.set title:    options[:title]
@@ -162,7 +160,12 @@ module BioPieces
           gp.set ytics:     "out"
           gp.set "datafile separator" => "\t"
 
-          if count_hash.keys.first.is_a? Numeric
+          if count_hash.empty?
+            gp.set yrange:  "[-1:1]"
+            gp.set key:     "off"
+            gp.set noxtics: :true
+            gp.set noytics: :true
+          elsif count_hash.keys.first.is_a? Numeric
             x_max = count_hash.keys.max || 0
 
             gp.add_dataset(using: "1:2", with: "boxes notitle") do |plotter|
