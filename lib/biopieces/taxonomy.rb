@@ -125,7 +125,7 @@ module BioPieces
         kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
 
         @kmers.zero!
-        @kmers[kmers] = 1
+        @kmers[kmers] = 1 unless kmers.empty?
         
         seq_id, tax_string = entry.seq_name.split(' ', 2)
 
@@ -301,26 +301,9 @@ module BioPieces
         puts "DEBUG Q: #{entry.seq_name}" if $VERBOSE
 
         TAX_LEVELS.reverse.each do |level|
-          @result.fill! 0
+          kmers_lookup(kmers, level)
 
-          database = @databases["#{level}_kmer2nodes".to_sym]
-
-          kmers.each do |kmer|
-            if nodes = database[kmer]
-              na = NArray.to_na(nodes, "int")
-              @result[na] += 1
-            end
-          end
-
-          hits = []
-
-          (@result > 0).where.to_a.each do |node_id|
-            count = @result[node_id]
-
-            if count >= kmers.size * @options[:coverage]
-              hits << Hit.new(node_id, count)
-            end
-          end
+          hits = hits_select(kmers)
 
           if hits.size == 0
             puts "DEBUG no hits @ #{level}" if $VERBOSE
@@ -342,6 +325,8 @@ module BioPieces
             return Result.new(hits.size, compile_consensus(taxpaths, hits.size).tr('_', ' '))
           end
         end
+
+        Result.new(0, "Unclassified")
       end
 
       def disconnect
@@ -349,6 +334,33 @@ module BioPieces
       end
 
       private
+
+      def kmers_lookup(kmers, level)
+        @result.fill! 0
+
+        database = @databases["#{level}_kmer2nodes".to_sym]
+
+        kmers.each do |kmer|
+          if nodes = database[kmer]
+            na = NArray.to_na(nodes, "int")
+            @result[na] += 1
+          end
+        end
+      end
+
+      def hits_select(kmers)
+        hits = []
+
+        (@result > 0).where.to_a.each do |node_id|
+          count = @result[node_id]
+
+          if count >= kmers.size * @options[:coverage]
+            hits << Hit.new(node_id, count)
+          end
+        end
+
+        hits
+      end
 
       def compile_consensus(taxpaths, hit_size)
         hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] =  Hash.new(0) } }
