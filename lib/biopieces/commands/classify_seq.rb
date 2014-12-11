@@ -69,9 +69,10 @@ module BioPieces
     def classify_seq(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :dir, :prefix, :kmer_size, :step_size, :hits_max, :consensus, :coverage)
+      options_allowed(options, :dir, :prefix, :kmer_size, :step_size, :hits_max, :consensus, :coverage, :best_only)
       options_required(options, :dir)
       options_dirs_exist(options, :dir)
+      options_allowed_values(options, best_only: [nil, true, false])
       options_assert(options, ":kmer_size > 0")
       options_assert(options, ":kmer_size <= 12")
       options_assert(options, ":step_size > 0")

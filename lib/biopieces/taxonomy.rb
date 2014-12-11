@@ -313,11 +313,27 @@ module BioPieces
 
             hits = hits.sort_by { |hit| hit.count }.reverse.first(@options[:hits_max])
 
+            if @options[:best_only] and hits.size > 1
+              top = []
+              max = hits.first.count
+
+              hits.each do |hit|
+                if hit.count == max
+                  top << hit
+                else
+                  hits = top
+                  break
+                end
+              end
+            end
+
             hits.each_with_index do |hit, i|
               taxpath = TaxPath.new(@databases, hit.node_id, hit.count, kmers.size)
-              seq_id  = Marshal.load(@databases[:taxtree][hit.node_id]).seq_id
-                
-              puts "DEBUG S_ID: #{seq_id} KMERS: [#{hit.count}/#{kmers.size}] #{taxpath}" if $VERBOSE
+
+              if $VERBOSE
+                seq_id  = Marshal.load(@databases[:taxtree][hit.node_id]).seq_id
+                puts "DEBUG S_ID: #{seq_id} KMERS: [#{hit.count}/#{kmers.size}] #{taxpath}"
+              end
 
               taxpaths << taxpath
             end
@@ -350,9 +366,18 @@ module BioPieces
 
       def hits_select(kmers)
         hits = []
+        max  = 0
 
         (@result > 0).where.to_a.each do |node_id|
           count = @result[node_id]
+
+          if @options[:best_only]  # limit hits
+            if count < max
+              next
+            else
+              max = count
+            end
+          end
 
           if count >= kmers.size * @options[:coverage]
             hits << Hit.new(node_id, count)
