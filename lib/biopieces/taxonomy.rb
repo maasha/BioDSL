@@ -308,7 +308,7 @@ module BioPieces
         TAX_LEVELS.reverse.each do |level|
           kmers_lookup(kmers, level)
 
-          hit_count = hits_select_C(@count_ary.ary, @count_ary.count, @hit_ary.ary, @hit_ary.count, kmers.size, (@options[:best_only] ? 1 : 0), @options[:coverage])
+          hit_count = hits_select_C(@count_ary.ary, @count_ary.count, @hit_ary.ary, kmers.size, (@options[:best_only] ? 1 : 0), @options[:coverage])
           hit_count = @options[:hits_max] if @options[:hits_max] < hit_count
 
           if hit_count == 0
@@ -402,14 +402,14 @@ module BioPieces
         }
 
         # Qsort hit struct comparision function.
-        # Returns negative if b > a and positive if a > b.
+        # Returns negative if a > b and positive if b > a.
         builder.prefix %{
           int hit_cmp_by_count(const void *a, const void *b)
           {
             hit *ia = (hit *) a;
             hit *ib = (hit *) b;
 
-            return (int) (ia->count - ib->count);
+            return (int) (ib->count - ia->count);
           }
         }
 
@@ -420,13 +420,12 @@ module BioPieces
             VALUE _length       // Nodes ary length.
           )
           {
-            int *count_ary  = (int *) StringValuePtr(_count_ary);
-            int *nodes_ary  = (int *) StringValuePtr(_nodes_ary);
-            int  length     = FIX2INT(_length);
-            int  i          = 0;
+            int *count_ary = (int *) StringValuePtr(_count_ary);
+            int *nodes_ary = (int *) StringValuePtr(_nodes_ary);
+            int  length    = FIX2INT(_length);
+            int  i         = 0;
 
-            for (i = length - 1; i >= 0; i--)
-            {
+            for (i = length - 1; i >= 0; i--) {
               count_ary[nodes_ary[i]]++;
             }
           }
@@ -437,7 +436,6 @@ module BioPieces
             VALUE _count_ary,       // Count ary.
             VALUE _count_ary_len,   // Count ary length.
             VALUE _hit_ary,         // Hit ary.
-            VALUE _hit_ary_len,     // Hit ary length.
             VALUE _kmers_size,      // Number of kmers.
             VALUE _best_only,       // Option best_only
             VALUE _coverage         // Option coverage
@@ -446,7 +444,6 @@ module BioPieces
             int    *count_ary     = (int *) StringValuePtr(_count_ary);
             int     count_ary_len = FIX2INT(_count_ary_len);
             hit    *hit_ary       = (hit *) StringValuePtr(_hit_ary);
-            int     hit_ary_len   = FIX2INT(_hit_ary_len);
             int     kmers_size    = FIX2INT(_kmers_size);
             int     best_only     = FIX2INT(_best_only);
             double  coverage      = NUM2DBL(_coverage);
@@ -461,17 +458,14 @@ module BioPieces
             {
               if ((count = count_ary[i]))
               {
-//                if (best_only)
-//                {
-//                  if (count < max)
-//                  {
-//                    next;
-//                  }
-//                  else
-//                  {
-//                    max = count;
-//                  }
-//                }
+                if (best_only)
+                {
+                  if (count < max) {
+                    continue;
+                  } else {
+                    max = count;
+                  }
+                }
 
                 if (count >= kmers_size * coverage)
                 {
@@ -485,8 +479,7 @@ module BioPieces
               }
             }
 
-            if (j > 1)
-            {
+            if (j > 1) {
               qsort(hit_ary, j, sizeof(hit), hit_cmp_by_count);
             }
 
