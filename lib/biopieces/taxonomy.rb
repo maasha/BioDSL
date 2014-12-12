@@ -287,12 +287,25 @@ module BioPieces
       end
     end
 
+    # Class for searching sequences in a taxonomic database. The database
+    # consists a taxonomic tree index and indices for each taxonomic level
+    # saved in the following Tokyo Cabinet files:
+    #  * taxonomy_taxtree.tch      - return node for a given node id.
+    #  * taxonomy_r_kmer2nodes.tch - return list of root    level node ids for a given kmer.
+    #  * taxonomy_k_kmer2nodes.tch - return list of kingdom level node ids for a given kmer.
+    #  * taxonomy_p_kmer2nodes.tch - return list of phylum  level node ids for a given kmer.
+    #  * taxonomy_c_kmer2nodes.tch - return list of class   level node ids for a given kmer.
+    #  * taxonomy_o_kmer2nodes.tch - return list of order   level node ids for a given kmer.
+    #  * taxonomy_f_kmer2nodes.tch - return list of family  level node ids for a given kmer.
+    #  * taxonomy_g_kmer2nodes.tch - return list of genus   level node ids for a given kmer.
+    #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
     class Search < Databases
       MAX_COUNT    = 200_000
       MAX_HITS     = 1_000
       BYTES_IN_INT = 4
       BYTES_IN_HIT = 2 * BYTES_IN_INT
 
+      # Constructor for initializing a Search object.
       def initialize(options)
         @options   = options
         @databases = Databases.connect(@options[:dir], @options[:prefix])
@@ -301,6 +314,27 @@ module BioPieces
         @cache     = Hash.new { |h, k| h[k] = {} }
       end
 
+      # Method to execute a search for a given sequence entry. First the
+      # sequence is broken down into unique kmers of a given kmer_size
+      # overlapping with a given step_size. See Taxonomy::Index.add.
+      # Now, for each taxonomic level, starting from species all nodes
+      # for each kmer is looked up in the database. The nodes containing
+      # most kmers are considered hits. If there are no hits a the taxonomic
+      # level, we move to the next level. Hits are sorted according to how
+      # many kmers matched this particular node and a consensus taxonomy
+      # string is determined. Hits are also filtered with the following
+      # options:
+      #   * hits_max  - Include maximally this number of hits in the consensus
+      #                 determination.
+      #   * best_only - Include only the best scoreing hits in the consensus
+      #                 determination. That is if a hit consists of 344 kmers
+      #                 out of 345 possible, only hits with 344 kmers are
+      #                 included.
+      #   * coverage  - Filter hits based on kmer coverage. If a hit contains
+      #                 fewer kmers than the total amount of kmers x coverage
+      #                 it will be filtered.
+      #   * consensus - For a number of hits accept consensus at a given level
+      #                 if this percentage is identical.
       def execute(entry)
         kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
 
@@ -338,21 +372,25 @@ module BioPieces
         Result.new(0, "Unclassified")
       end
 
+      private
+
+      # Method that disconnects and closes all databases.
       def disconnect
         Databases.disconnect(@databases)
       end
 
-      private
-
+      # Method that given a list of kmers and a taxonomic level
+      # lookups all the nodes for each kmer and increment the
+      # count array posisions for all nodes. The lookup for each
+      # kmer is initially done from a database, but subsequent
+      # lookups for that particular kmer is cached.
       def kmers_lookup(kmers, level)
         @count_ary.zero!
-
-        database = @databases["#{level}_kmer2nodes".to_sym]
 
         kmers.each do |kmer|
           if @cache[level] and nodes = @cache[level][kmer]
             increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
-          elsif nodes = database[kmer]
+          elsif nodes = @databases["#{level}_kmer2nodes".to_sym][kmer]
             increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
             @cache[level][kmer] = nodes
           end
