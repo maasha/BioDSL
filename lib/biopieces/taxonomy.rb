@@ -298,6 +298,7 @@ module BioPieces
         @databases = Databases.connect(@options[:dir], @options[:prefix])
         @count_ary = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
         @hit_ary   = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
+        @cache     = Hash.new { |h, k| h[k] = {} }
       end
 
       def execute(entry)
@@ -349,8 +350,11 @@ module BioPieces
         database = @databases["#{level}_kmer2nodes".to_sym]
 
         kmers.each do |kmer|
-          if nodes = database[kmer]
+          if @cache[level] and nodes = @cache[level][kmer]
             increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
+          elsif nodes = database[kmer]
+            increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
+            @cache[level][kmer] = nodes
           end
         end
       end
