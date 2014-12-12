@@ -31,7 +31,6 @@ module BioPieces
     require 'narray'
 
     TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
-    MAX_NODES  = 200_000
 
     class Databases
       require 'tokyocabinet'
@@ -289,10 +288,16 @@ module BioPieces
     end
 
     class Search < Databases
+      MAX_COUNT    = 200_000
+      MAX_HITS     = 1_000
+      BYTES_IN_INT = 4
+      BYTES_IN_HIT = 2 * BYTES_IN_INT
+
       def initialize(options)
         @options   = options
         @databases = Databases.connect(@options[:dir], @options[:prefix])
-        @result    = NArray.int(MAX_NODES)
+        @count_ary = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
+        @hit_ary   = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
       end
 
       def execute(entry)
@@ -303,42 +308,29 @@ module BioPieces
         TAX_LEVELS.reverse.each do |level|
           kmers_lookup(kmers, level)
 
-          hits = hits_select(kmers)
+          hit_count = hits_select_C(@count_ary.ary, @count_ary.count, @hit_ary.ary, @hit_ary.count, kmers.size, (@options[:best_only] ? 1 : 0), @options[:coverage])
+          hit_count = @options[:hits_max] if @options[:hits_max] < hit_count
 
-          if hits.size == 0
+          if hit_count == 0
             puts "DEBUG no hits @ #{level}" if $VERBOSE
           else
             puts "DEBUG hit(s) @ #{level}" if $VERBOSE
             taxpaths = []
 
-            hits = hits.sort_by { |hit| hit.count }.reverse.first(@options[:hits_max])
+            (0 ... hit_count).each do |i|
+              node_id, count = @hit_ary.ary[BYTES_IN_HIT * i ... BYTES_IN_HIT * i + BYTES_IN_HIT].unpack("II")
 
-            if @options[:best_only] and hits.size > 1
-              top = []
-              max = hits.first.count
-
-              hits.each do |hit|
-                if hit.count == max
-                  top << hit
-                else
-                  hits = top
-                  break
-                end
-              end
-            end
-
-            hits.each_with_index do |hit, i|
-              taxpath = TaxPath.new(@databases, hit.node_id, hit.count, kmers.size)
+              taxpath = TaxPath.new(@databases, node_id, count, kmers.size)
 
               if $VERBOSE
-                seq_id  = Marshal.load(@databases[:taxtree][hit.node_id]).seq_id
-                puts "DEBUG S_ID: #{seq_id} KMERS: [#{hit.count}/#{kmers.size}] #{taxpath}"
+                seq_id  = Marshal.load(@databases[:taxtree][node_id]).seq_id
+                puts "DEBUG S_ID: #{seq_id} KMERS: [#{count}/#{kmers.size}] #{taxpath}"
               end
 
               taxpaths << taxpath
             end
 
-            return Result.new(hits.size, compile_consensus(taxpaths, hits.size).tr('_', ' '))
+            return Result.new(hit_count, compile_consensus(taxpaths, hit_count).tr('_', ' '))
           end
         end
 
@@ -352,39 +344,15 @@ module BioPieces
       private
 
       def kmers_lookup(kmers, level)
-        @result.fill! 0
+        @count_ary.zero!
 
         database = @databases["#{level}_kmer2nodes".to_sym]
 
         kmers.each do |kmer|
           if nodes = database[kmer]
-            na = NArray.to_na(nodes, "int")
-            @result[na] += 1
+            increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
           end
         end
-      end
-
-      def hits_select(kmers)
-        hits = []
-        max  = 0
-
-        (@result > 0).where.to_a.each do |node_id|
-          count = @result[node_id]
-
-          if @options[:best_only]  # limit hits
-            if count < max
-              next
-            else
-              max = count
-            end
-          end
-
-          if count >= kmers.size * @options[:coverage]
-            hits << Hit.new(node_id, count)
-          end
-        end
-
-        hits
       end
 
       def compile_consensus(taxpaths, hit_size)
@@ -424,7 +392,109 @@ module BioPieces
         end
       end
 
-      Hit    = Struct.new(:node_id, :count)
+      inline do |builder|
+        builder.prefix %{
+          typedef struct
+          {
+             unsigned int node_id;
+             unsigned int count;
+          } hit;
+        }
+
+        # Qsort hit struct comparision function.
+        # Returns negative if b > a and positive if a > b.
+        builder.prefix %{
+          int hit_cmp_by_count(const void *a, const void *b)
+          {
+            hit *ia = (hit *) a;
+            hit *ib = (hit *) b;
+
+            return (int) (ia->count - ib->count);
+          }
+        }
+
+        builder.c %{
+          void increment_C(
+            VALUE _count_ary,   // Count ary.
+            VALUE _nodes_ary,   // Nodes ary.
+            VALUE _length       // Nodes ary length.
+          )
+          {
+            int *count_ary  = (int *) StringValuePtr(_count_ary);
+            int *nodes_ary  = (int *) StringValuePtr(_nodes_ary);
+            int  length     = FIX2INT(_length);
+            int  i          = 0;
+
+            for (i = length - 1; i >= 0; i--)
+            {
+              count_ary[nodes_ary[i]]++;
+            }
+          }
+        }
+
+        builder.c %{
+          VALUE hits_select_C(
+            VALUE _count_ary,       // Count ary.
+            VALUE _count_ary_len,   // Count ary length.
+            VALUE _hit_ary,         // Hit ary.
+            VALUE _hit_ary_len,     // Hit ary length.
+            VALUE _kmers_size,      // Number of kmers.
+            VALUE _best_only,       // Option best_only
+            VALUE _coverage         // Option coverage
+          )
+          {
+            int    *count_ary     = (int *) StringValuePtr(_count_ary);
+            int     count_ary_len = FIX2INT(_count_ary_len);
+            hit    *hit_ary       = (hit *) StringValuePtr(_hit_ary);
+            int     hit_ary_len   = FIX2INT(_hit_ary_len);
+            int     kmers_size    = FIX2INT(_kmers_size);
+            int     best_only     = FIX2INT(_best_only);
+            double  coverage      = NUM2DBL(_coverage);
+
+            hit new_hit = {0, 0};
+            int count   = 0;
+            int max     = 0;
+            int i       = 0;
+            int j       = 0;
+
+            for (i = count_ary_len - 1; i >= 0; i--)
+            {
+              if ((count = count_ary[i]))
+              {
+//                if (best_only)
+//                {
+//                  if (count < max)
+//                  {
+//                    next;
+//                  }
+//                  else
+//                  {
+//                    max = count;
+//                  }
+//                }
+
+                if (count >= kmers_size * coverage)
+                {
+                  new_hit.node_id = i;
+                  new_hit.count   = count;
+
+                  hit_ary[j] = new_hit;
+
+                  j++;
+                }
+              }
+            }
+
+            if (j > 1)
+            {
+              qsort(hit_ary, j, sizeof(hit), hit_cmp_by_count);
+            }
+
+            return UINT2NUM(j);
+          }
+        }
+      end
+
       Result = Struct.new(:hits, :taxonomy)
 
       class TaxPath
@@ -456,6 +526,7 @@ module BioPieces
           nodes.reverse
         end
 
+        # Returns formatted taxonomy string.
         def to_s
           levels = []
 
