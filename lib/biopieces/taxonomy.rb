@@ -27,11 +27,12 @@
 module BioPieces
   # Module containing classes for creating a taxonomic database and searching this.
   module Taxonomy
-    require 'lz4-ruby'
     require 'narray'
 
     TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
 
+    # Class for creating, connecting and disconnecting databases.
+    # The databases are Tokyo Cabinet files.
     class Databases
       require 'tokyocabinet'
       include TokyoCabinet
@@ -185,6 +186,8 @@ module BioPieces
       # The vector is encoded in a byte array using NArray compressed using LZ4 to
       # save memory.
       class Vector
+        require 'lz4-ruby'
+
         attr_reader :kmers
 
         # Constructor for creating a new Vector object of a given size.
@@ -301,7 +304,7 @@ module BioPieces
     #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
     class Search < Databases
       MAX_COUNT    = 200_000
-      MAX_HITS     = 1_000
+      MAX_HITS     = 2_000    # Maximum number of shared oligos between two sequences.
       BYTES_IN_INT = 4
       BYTES_IN_HIT = 2 * BYTES_IN_INT
 
@@ -319,17 +322,15 @@ module BioPieces
       # overlapping with a given step_size. See Taxonomy::Index.add.
       # Now, for each taxonomic level, starting from species all nodes
       # for each kmer is looked up in the database. The nodes containing
-      # most kmers are considered hits. If there are no hits a the taxonomic
+      # most kmers are considered hits. If there are no hits at the taxonomic
       # level, we move to the next level. Hits are sorted according to how
       # many kmers matched this particular node and a consensus taxonomy
       # string is determined. Hits are also filtered with the following
       # options:
-      #   * hits_max  - Include maximally this number of hits in the consensus
-      #                 determination.
-      #   * best_only - Include only the best scoreing hits in the consensus
-      #                 determination. That is if a hit consists of 344 kmers
-      #                 out of 345 possible, only hits with 344 kmers are
-      #                 included.
+      #   * hits_max  - Include maximally this number of hits in the consensus.
+      #   * best_only - Include only the best scoring hits in the consensus.
+      #                 That is if a hit consists of 344 kmers out of 345
+      #                 possible, only hits with 344 kmers are included.
       #   * coverage  - Filter hits based on kmer coverage. If a hit contains
       #                 fewer kmers than the total amount of kmers x coverage
       #                 it will be filtered.
@@ -349,7 +350,7 @@ module BioPieces
           if hit_count == 0
             puts "DEBUG no hits @ #{level}" if $VERBOSE
           else
-            puts "DEBUG hit(s) @ #{level}" if $VERBOSE
+            puts "DEBUG hit(s) @ #{level}"  if $VERBOSE
             taxpaths = []
 
             (0 ... hit_count).each do |i|
@@ -372,18 +373,18 @@ module BioPieces
         Result.new(0, "Unclassified")
       end
 
-      private
-
       # Method that disconnects and closes all databases.
       def disconnect
         Databases.disconnect(@databases)
       end
 
+      private
+
       # Method that given a list of kmers and a taxonomic level
       # lookups all the nodes for each kmer and increment the
       # count array posisions for all nodes. The lookup for each
       # kmer is initially done from a database, but subsequent
-      # lookups for that particular kmer is cached.
+      # lookups for that particular kmer are cached.
       def kmers_lookup(kmers, level)
         @count_ary.zero!
 
@@ -397,19 +398,26 @@ module BioPieces
         end
       end
 
+      # Method that given a list of taxonomic paths determines a consensus for
+      # each taxonomic level. E.g. for the kingdom level if 60% of the taxpaths
+      # indicate 'Bacteria' and the consensus is 50% then the consensus for the
+      # kingdom level will be reported as 'Bacteria(60)'. If the name at any
+      # level consists of multiple words they are treated independently. E.g if
+      # we have three taxpath at the species level with the names:
+      #
+      #   *  Escherichia coli K-12
+      #   *  Escherichia coli sp. AC3432
+      #   *  Escherichia coli sp. AC1232
+      #
+      # The corresponding consensus for that level will be reported as
+      # 'Escherichia coli sp.(100/100/66)'. The forth word in the last two
+      # taxonomy strings (AC3432 and AC1232) have a consensus below 50% and are
+      # ignored.
       def compile_consensus(taxpaths, hit_size)
-        hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] =  Hash.new(0) } }
         consensus = []
+        tax_hash  = decompose_consensus(taxpaths)
 
-        taxpaths.each do |taxpath|
-          taxpath.nodes[1 .. -1].each do |node|
-            node.name.split('_').each_with_index do |subname, i|
-              hash[node.level][i][subname] += 1
-            end
-          end
-        end
-
-        hash.each do |level, subhash|
+        tax_hash.each do |level, subhash|
           cons   = []
           scores = []
 
@@ -434,7 +442,27 @@ module BioPieces
         end
       end
 
+      # Method that given a list of taxonomic paths splits these into a data
+      # structure appropriate for subsequence determination of the taxonomic
+      # consensus.
+      def decompose_consensus(taxpaths)
+        tax_hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] =  Hash.new(0) } }
+
+        taxpaths.each do |taxpath|
+          taxpath.nodes[1 .. -1].each do |node|  # Ignoring root level, hence starting from 1
+            node.name.split('_').each_with_index do |subname, i|
+              tax_hash[node.level][i][subname] += 1
+            end
+          end
+        end
+
+        tax_hash
+      end
+
       inline do |builder|
+        # Struct for a 'hit' containing two pieces of information:
+        #   * node_id - Node id for this particular node.
+        #   * count   - Number of kmers matching this particular node.
         builder.prefix %{
           typedef struct
           {
@@ -443,10 +471,11 @@ module BioPieces
           } hit;
         }
 
-        # Qsort hit struct comparision function.
+        # Qsort hit struct comparision function for sorting
+        # hits according to count (highest count first).
         # Returns negative if a > b and positive if b > a.
         builder.prefix %{
-          int hit_cmp_by_count(const void *a, const void *b)
+          int hit_cmp_by_count_C(const void *a, const void *b)
           {
             hit *ia = (hit *) a;
             hit *ib = (hit *) b;
@@ -455,6 +484,35 @@ module BioPieces
           }
         }
 
+        # Method to select only the best hits from the hit ary, which is sorted
+        # according to count (highest count first).
+        builder.prefix %{
+          void hits_select_best_only_C(
+            hit *hit_ary,               // hit array.
+            unsigned int *hit_ary_len   // hit array length.
+          )
+          {
+            unsigned int i   = 0;
+            unsigned int max = 0;
+
+            max = hit_ary[i].count;
+
+            i++;
+
+            while ((i < *hit_ary_len) && (hit_ary[i].count == max)){
+              i++;
+            }
+
+            // FIXME TODO check value of i
+          
+            *hit_ary_len = i;
+          }
+        }
+
+        # Method for incrementing the count_ary. Each position in the count_ary
+        # corresponds to a node_id. The value at the position that is
+        # incremented corresponds to the number of shared kmers between this
+        # node id and the query sequence.
         builder.c %{
           void increment_C(
             VALUE _count_ary,   // Count ary.
@@ -473,6 +531,14 @@ module BioPieces
           }
         }
 
+        # Method for selecting hits based from the count_ary. Hits are selected
+        # on a number of specified parameters:
+        #   * best_only - if this is true only top scoring hits are reported.
+        #   * coverage  - Filter hits based on kmer coverage. If a hit contains
+        #                 fewer kmers than the total amount of kmers x coverage
+        #                 it will be filtered.
+        # The resulting hit_ary is sorted according to count (highest count
+        # first) and the size of the hit_ary is returned.
         builder.c %{
           VALUE hits_select_C(
             VALUE _count_ary,       // Count ary.
@@ -490,25 +556,15 @@ module BioPieces
             int     best_only     = FIX2INT(_best_only);
             double  coverage      = NUM2DBL(_coverage);
 
-            hit new_hit = {0, 0};
-            int count   = 0;
-            int max     = 0;
-            int i       = 0;
-            int j       = 0;
+            hit          new_hit = {0, 0};
+            int          count   = 0;
+            int          i       = 0;
+            unsigned int j       = 0;
 
             for (i = count_ary_len - 1; i >= 0; i--)
             {
               if ((count = count_ary[i]))
               {
-                if (best_only)
-                {
-                  if (count < max) {
-                    continue;
-                  } else {
-                    max = count;
-                  }
-                }
-
                 if (count >= kmers_size * coverage)
                 {
                   new_hit.node_id = i;
@@ -521,8 +577,15 @@ module BioPieces
               }
             }
 
-            if (j > 1) {
-              qsort(hit_ary, j, sizeof(hit), hit_cmp_by_count);
+            // FIXME check correctness of j here
+
+            if (j > 1)
+            {
+              qsort(hit_ary, j, sizeof(hit), hit_cmp_by_count_C);
+
+              if (best_only) {
+                hits_select_best_only_C(hit_ary, &j);
+              }
             }
 
             return UINT2NUM(j);
@@ -530,11 +593,14 @@ module BioPieces
         }
       end
 
+      # Structure for holding the search result.
       Result = Struct.new(:hits, :taxonomy)
 
+      # Class holding methods for manipulating tanomic paths.
       class TaxPath
         attr_reader :nodes
 
+        # Constructor method for TaxPath objects.
         def initialize(databases, node_id, kmers_observed, kmers_total)
           @databases      = databases
           @node_id        = node_id
