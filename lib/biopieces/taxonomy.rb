@@ -322,7 +322,7 @@ module BioPieces
       # overlapping with a given step_size. See Taxonomy::Index.add.
       # Now, for each taxonomic level, starting from species all nodes
       # for each kmer is looked up in the database. The nodes containing
-      # most kmers are considered hits. If there are no hits at the taxonomic
+      # most kmers are considered hits. If there are no hits at a taxonomic
       # level, we move to the next level. Hits are sorted according to how
       # many kmers matched this particular node and a consensus taxonomy
       # string is determined. Hits are also filtered with the following
@@ -335,7 +335,7 @@ module BioPieces
       #                 fewer kmers than the total amount of kmers x coverage
       #                 it will be filtered.
       #   * consensus - For a number of hits accept consensus at a given level
-      #                 if this percentage is identical.
+      #                 if within this percentage.
       def execute(entry)
         kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
 
@@ -503,8 +503,6 @@ module BioPieces
               i++;
             }
 
-            // FIXME TODO check value of i
-          
             *hit_ary_len = i;
           }
         }
@@ -576,8 +574,6 @@ module BioPieces
                 }
               }
             }
-
-            // FIXME check correctness of j here
 
             if (j > 1)
             {
