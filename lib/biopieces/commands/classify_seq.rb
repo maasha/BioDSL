@@ -26,144 +26,141 @@
 
 module BioPieces
   module Commands
-    # == Run classify_seq on sequences in the stream.
+    # == Classify sequences in the stream.
     # 
-    # This is a wrapper for the +mothur+ command +classify.seqs()+. Basically,
-    # it classifies sequences in the stream given a database file and a taxonomy
-    # file which can be downloaded here:
+    # +classify_seq+ searches sequences in the stream against a pre-indexed
+    # (using +index_taxonomy+) database. The database consists a taxonomic tree
+    # index and indices for each taxonomic level saved in the following Tokyo
+    # Cabinet files (here using the prefix "taxonomy"):
     #
-    # http://www.mothur.org/w/images/5/59/Trainset9_032012.pds.zip
+    #  * taxonomy_taxtree.tch      - return node for a given node id.
+    #  * taxonomy_r_kmer2nodes.tch - return list of root    level node ids for a given kmer.
+    #  * taxonomy_k_kmer2nodes.tch - return list of kingdom level node ids for a given kmer.
+    #  * taxonomy_p_kmer2nodes.tch - return list of phylum  level node ids for a given kmer.
+    #  * taxonomy_c_kmer2nodes.tch - return list of class   level node ids for a given kmer.
+    #  * taxonomy_o_kmer2nodes.tch - return list of order   level node ids for a given kmer.
+    #  * taxonomy_f_kmer2nodes.tch - return list of family  level node ids for a given kmer.
+    #  * taxonomy_g_kmer2nodes.tch - return list of genus   level node ids for a given kmer.
+    #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
     #
-    # Please refer to the manual:
+    # Each sequence is broken down into unique kmers of a given kmer_size
+    # overlapping with a given step_size - see +index_taxonomy+. Now, for each
+    # taxonomic level, starting from species all nodes for each kmer is looked
+    # up in the database. The nodes containing most kmers are considered hits.
+    # If there are no hits at a taxonomic level, we move to the next level.
+    # Hits are sorted according to how many kmers matched this particular node
+    # and a consensus taxonomy string is determined. Hits are also filtered
+    # with the following options:
     #
-    # http://www.mothur.org/wiki/Classify.seqs
+    #  * hits_max  - Include maximally this number of hits in the consensus.
+    #  * best_only - Include only the best scoring hits in the consensus.
+    #                That is if a hit consists of 344 kmers out of 345
+    #                possible, only hits with 344 kmers are included.
+    #  * coverage  - Filter hits based on kmer coverage. If a hit contains
+    #                fewer kmers than the total amount of kmers x coverage
+    #                it will be filtered.
+    #  * consensus - For a number of hits accept consensus at a given level
+    #                if within this percentage.
     #
-    # Mothur must be installed for +classify_seqs+ to work. Read more here:
+    # The output of +classify_seq+ are sequence type records with the
+    # additional keys:
+    #  
+    #  * TAXONOMY_HITS - The number of hits used in the consensus.
+    #  * TAXONOMY      - The taxonomy string.
     #
-    # http://www.mothur.org/
-    # 
+    # The consensus is determined from a list of taxonomic strings, i.e. the
+    # TAXONOMIC_HITS, and is composed of a consensus for each taxonomic level.
+    # E.g. for the kingdom level if 60% of the taxonomic strings indicate
+    # 'Bacteria' and the consensus is 50% then the consensus for the kingdom
+    # level will be reported as 'Bacteria(60)'. If the name at any level
+    # consists of multiple words they are treated independently. E.g if we have
+    # three taxonomic strings at the species level with the names:
+    #
+    #   *  Escherichia coli K-12
+    #   *  Escherichia coli sp. AC3432
+    #   *  Escherichia coli sp. AC1232
+    #
+    # The corresponding consensus for that level will be reported as
+    # 'Escherichia coli sp.(100/100/66)'. The forth word in the last two
+    # taxonomy strings (AC3432 and AC1232) have a consensus below 50% and are
+    # ignored.
     # == Usage
     # 
-    #    classify_seq(<database: <file>>, <taxonomy: <file>>[, confidence: <uint>[, cpus: <uint>]])
+    #    classify_seq(<dir: <dir>>[, prefix: <string>[, kmer_size: <uint>
+    #                 [, step_size: <uint>[, hits_max: <uint>[, consensus: <float>
+    #                 [, coverage: <float>[, best_only: <bool>]]]]]]])
     # 
     # === Options
     #
-    # * database:   <file> - Database to search.
-    # * taxonomy:   <file> - Taxonomy file for mapping names.
-    # * confidence: <uint> - Confidence threshold (defualt=80).
-    # * cpus:       <uint> - Number of CPU cores to use (default=1).
+    # * dir:       <dir>    - Directory containing taxonomy files.
+    # * prefix:    <string> - Taxonomy files prefix (default="taxonomy").
+    # * kmer_size: <uint>   - Kmer size - same used creating the index (default=8).
+    # * step_size: <uint>   - Step size (default=1).
+    # * hits_max:  <uint>   - Maximum hits to include in consensus (default=50).
+    # * consensus: <float>  - Consensus cutoff (default=0.51).
+    # * coverage:  <float>  - Coverate cutoff (default=0.9).
+    # * best_only: <bool>   - Only use best hits for consensus (default=true).
     #
     # == Examples
     # 
     # To classify a bunch of OTU sequences in the file +otus.fna+ we do:
     #
-    #    database = "trainset9_032012.pds.fasta"
-    #    taxonomy = "trainset9_032012.pds.tax"
-    #
-    #    BP.new.
-    #    read_fasta(input: "otus.fna").
-    #    classify_seq(database: database, taxonomy: taxonomy).
-    #    grab(exact: true, keys: :RECORD_TYPE, select: "taxonomy").
-    #    write_table(output: "classified.tab", header: true, force: true, skip: [:RECORD_TYPE]).
-    #    run
+    #    BP.new.read_fasta(input: "otus.fna").classify_seq(dir: "RDP11_3").write_table(keys: [:SEQ_NAME, :TAXONOMY_HITS, :TAXONOMY]).run
+    #    OTU_0  1 K#Bacteria(100);P#Proteobacteria(100);C#Gammaproteobacteria(100);O#Aeromonadales(100);F#Succinivibrionaceae(100);G#Succinivibrio(100);S#uncultured rumen bacterium(100)
+    #    OTU_1  1 K#Bacteria(100);P#Proteobacteria(100);C#Gammaproteobacteria(100);O#Aeromonadales(100);F#Succinivibrionaceae(100);G#Succinivibrio(100)
+    #    OTU_2  1 K#Bacteria(100);P#Proteobacteria(100);C#Gammaproteobacteria(100);O#Pasteurellales(100);F#Pasteurellaceae(100);G#Haemophilus(100);S#uncultured Haemophilus sp.(100)
+    #    OTU_3  1 K#Bacteria(100);P#Proteobacteria(100);C#Gammaproteobacteria(100);O#Aeromonadales(100);F#Succinivibrionaceae(100);G#Succinivibrio(100)
+    #    OTU_4  2 K#Bacteria(100);P#Fusobacteria(100);C#Fusobacteriia(100);O#Fusobacteriales(100);F#Fusobacteriaceae(100);G#Fusobacterium(100)
     def classify_seq(options = {})
-      require 'parallel'
-
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :database, :taxonomy, :confidence, :cpus)
-      options_required(options, :database, :taxonomy)
-      options_files_exist(options, :database, :taxonomy)
-      options_assert(options, ":confidence > 0")
-      options_assert(options, ":confidence <= 100")
-      options_assert(options, ":cpus >= 1")
-      options_assert(options, ":cpus <= #{Parallel.processor_count}")
-
-      options[:confidence] ||= 80
-      options[:cpus]       ||= 1
+      options_allowed(options, :dir, :prefix, :kmer_size, :step_size, :hits_max, :consensus, :coverage, :best_only)
+      options_required(options, :dir)
+      options_dirs_exist(options, :dir)
+      options_allowed_values(options, best_only: [nil, true, false])
+      options_assert(options, ":kmer_size > 0")
+      options_assert(options, ":kmer_size <= 12")
+      options_assert(options, ":step_size > 0")
+      options_assert(options, ":step_size <= 12")
+      options_assert(options, ":hits_max > 0")
+      options_assert(options, ":consensus > 0")
+      options_assert(options, ":consensus <= 1")
+      options_assert(options, ":coverage > 0")
+      options_assert(options, ":coverage <= 1")
+     
+      options[:prefix]    ||= "taxonomy"
+      options[:kmer_size] ||= 8
+      options[:step_size] ||= 1
+      options[:hits_max]  ||= 50
+      options[:consensus] ||= 0.51
+      options[:coverage]  ||= 0.9
+      options[:best_only] ||= true
 
       lmb = lambda do |input, output, status|
         status[:sequences_in]  = 0
 
         status_track(status) do
-          tmp_dir = File.join(Dir.tmpdir, "#{Time.now.to_i}#{$$}")
-
           begin
-            Dir.mkdir(tmp_dir)
+            search = BioPieces::Taxonomy::Search.new(options)
 
-            tmp_in  = File.join(tmp_dir, "input.fasta")
+            input.each_with_index do |record, i|
+              status[:records_in] += 1
 
-            BioPieces::Fasta.open(tmp_in, 'w') do |ios|
-              input.each_with_index do |record, i|
-                status[:records_in] += 1
+              if record[:SEQ]
+                status[:sequences_in] += 1
+                seq_name = record[:SEQ_NAME] || i.to_s
 
-                if record[:SEQ]
-                  status[:sequences_in] += 1
-                  seq_name = record[:SEQ_NAME] || i.to_s
+                result = search.execute(BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
 
-                  entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
-
-                  ios.puts entry.to_fasta
-                end
-
-                output << record
-                status[:records_out] += 1
+                record[:TAXONOMY]      = result.taxonomy
+                record[:TAXONOMY_HITS] = result.hits
               end
-            end
 
-            if $VERBOSE
-              system(%Q{mothur "#set.dir(input=#{tmp_dir}); \
-                                 set.dir(output=#{tmp_dir}); \
-                                 classify.seqs(fasta=#{tmp_in}, \
-                                          reference=#{options[:database]}, \
-                                          taxonomy=#{options[:taxonomy]}, \
-                                          processors=#{options[:cpus]}, \
-                                          method=wang)"})
-            else
-              system(%Q{mothur "#set.dir(input=#{tmp_dir}); \
-                                 set.dir(output=#{tmp_dir}); \
-                                 classify.seqs(fasta=#{tmp_in}, \
-                                          reference=#{options[:database]}, \
-                                          taxonomy=#{options[:taxonomy]}, \
-                                          processors=#{options[:cpus]}, \
-                                          method=wang)" > /dev/null})
-            end
-
-            raise "Mothur failed" unless $?.success?
-
-            tmp_out = Dir.glob("#{tmp_dir}/input.*.taxonomy").first
-
-            BioPieces::CSV.open(tmp_out) do |ios|
-              ios.each_hash(header: [:SEQ_NAME, :TAXONOMY]) do |new_record|
-                new_record[:TAXONOMY].tr!('"', '')
-
-                new_levels = []
-                levels = new_record[:TAXONOMY].split(';')
-
-                levels.each do |level|
-                  if level =~ /^([^(]+)\((\d+)\)$/
-                    name       = $1
-                    confidence = $2.to_i
-
-                    if confidence >= options[:confidence]
-                      new_levels << "#{name}(#{confidence})"
-                    end
-                  end
-                end
-
-                if new_levels.empty?
-                  new_record[:TAXONOMY] = 'Unclassified'
-                else
-                  new_record[:TAXONOMY] = new_levels.join(';')
-                end
-
-                new_record[:RECORD_TYPE] = "taxonomy"
-                output << new_record
-                status[:records_out]
-              end
+              output << record
+              status[:records_out] += 1
             end
           ensure
-            FileUtils.rm_rf(tmp_dir)
+            search.disconnect
           end
         end
       end

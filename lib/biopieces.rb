@@ -67,6 +67,7 @@ module BioPieces
   require 'biopieces/fasta'
   require 'biopieces/fastq'
   require 'biopieces/math'
+  require 'biopieces/taxonomy'
   require 'biopieces/stream'
   require 'biopieces/usearch'
 end

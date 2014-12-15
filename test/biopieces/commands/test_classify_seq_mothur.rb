@@ -29,22 +29,22 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-class TestClassifySeq < Test::Unit::TestCase 
+class TestClassifySeqMothur < Test::Unit::TestCase 
   def setup
     @p = BP.new
     @database = __FILE__
     @taxonomy = __FILE__
   end
 
-  test "BioPieces::Pipeline#classify_seq with disallowed option raises" do
-    assert_raise(BioPieces::OptionError) { @p.classify_seq(database: @database, taxonomy: @taxonomy, foo: "bar") }
+  test "BioPieces::Pipeline#classify_seq_mothur with disallowed option raises" do
+    assert_raise(BioPieces::OptionError) { @p.classify_seq_mothur(database: @database, taxonomy: @taxonomy, foo: "bar") }
   end
 
-  test "BioPieces::Pipeline#classify_seq with allowed option don't raise" do
-    assert_nothing_raised { @p.classify_seq(database: @database, taxonomy: @taxonomy, cpus: 2) }
+  test "BioPieces::Pipeline#classify_seq_mothur with allowed option don't raise" do
+    assert_nothing_raised { @p.classify_seq_mothur(database: @database, taxonomy: @taxonomy, cpus: 2) }
   end
 
-  #test "BioPieces::Pipeline#classify_seq outputs correctly" do
+  #test "BioPieces::Pipeline#classify_seq_mothur outputs correctly" do
   #  # TODO mock this sucker.
   #end
 end
