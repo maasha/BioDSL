@@ -127,7 +127,7 @@ module BioPieces
           end
 
           status[:otus_delta]         = status[:otus_out] - status[:otus_in]
-          status[:otus_delta_percent] = 100 * status[:otus_delta].to_f / status[:otus_in]
+          status[:otus_delta_percent] = (100 * status[:otus_delta].to_f / status[:otus_in]).round(2)
         end
       end
 

@@ -113,6 +113,11 @@ module BioPieces
             tmp_in.unlink
             tmp_out.unlink
           end
+
+          status[:sequences_delta]         = status[:sequences_out] - status[:sequences_in]
+          status[:sequences_delta_percent] = (100 * status[:sequences_delta].to_f / status[:sequences_in]).round(2)
+          status[:records_delta]           = status[:records_out] - status[:records_in]
+          status[:records_delta_percent]   = (100 * status[:records_delta].to_f / status[:records_in]).round(2)
         end
       end
 

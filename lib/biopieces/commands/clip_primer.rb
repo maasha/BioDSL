@@ -192,8 +192,8 @@ module BioPieces
           end
 
           status[:residues_delta]         = status[:residues_out] - status[:residues_in]
-          status[:residues_delta_mean]    = status[:residues_delta].to_f / status[:records_out]
-          status[:residues_delta_percent] = 100 * status[:residues_delta].to_f / status[:residues_out]
+          status[:residues_delta_mean]    = (status[:residues_delta].to_f / status[:records_out]).round(2)
+          status[:residues_delta_percent] = (100 * status[:residues_delta].to_f / status[:residues_out]).round(2)
         end
       end
 

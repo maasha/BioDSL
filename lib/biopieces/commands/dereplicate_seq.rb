@@ -121,7 +121,7 @@ module BioPieces
           end
 
           status[:sequences_delta]         = status[:sequences_out] - status[:sequences_in]
-          status[:sequences_delta_percent] = 100 * status[:sequences_delta] / status[:sequences_in].to_f
+          status[:sequences_delta_percent] = (100 * status[:sequences_delta] / status[:sequences_in].to_f).round(2)
         end
       end
 

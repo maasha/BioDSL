@@ -215,11 +215,28 @@ module BioPieces
     # otherwise default to self.to_s. The body of the email will be the
     # Pipeline status.
     def email_send
+      require 'socket'
+
+      Mail.defaults do
+        delivery_method :smtp, {
+          address: "localhost",
+          port: 25,
+          enable_starttls_auto: false
+        }
+      end
+
+      html = BioPieces::Render.html(self)
+
+      html_part = Mail::Part.new do
+        content_type 'text/html; charset=UTF-8'
+        body html
+      end
+
       mail = Mail.new
-      mail[:from]    = "#{ENV['USER']}@#{`hostname`.strip}"
-      mail[:to]      = @options[:email]
-      mail[:subject] = @options[:subject] || self.to_s
-      mail[:body]    = "#{self.to_s}\n\n\n#{PP.pp(@status, '')}"
+      mail[:from]      = "#{ENV['USER']}@#{Socket.gethostname}"
+      mail[:to]        = @options[:email]
+      mail[:subject]   = @options[:subject] || self.to_s
+      mail.html_part = html_part
 
       mail.deliver!
     end
