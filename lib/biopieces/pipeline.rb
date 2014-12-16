@@ -218,20 +218,12 @@ module BioPieces
       require 'socket'
 
       Mail.defaults do
-        delivery_method :smtp, address: "localhost", port: 25
+        delivery_method :smtp, {
+          address: "localhost",
+          port: 25,
+          enable_starttls_auto: false
+        }
       end
-
-#      # Set up delivery defaults to use Gmail
-#      Mail.defaults do
-#        delivery_method :smtp, {
-#          :address => 'smtp.gmail.com',
-#          :port => '587',
-#          :user_name => '<user>@gmail.com',
-#          :password => '<password>',
-#          :authentication => :plain,
-#          :enable_starttls_auto => true
-#        }
-#      end
 
       html = BioPieces::Render.html(self)
 
