@@ -178,7 +178,7 @@ module BioPieces
           end
 
           status[:records_delta]         = status[:records_out] - status[:records_in]
-          status[:records_delta_percent] = 100 * status[:records_delta].to_f / status[:records_in]
+          status[:records_delta_percent] = (100 * status[:records_delta].to_f / status[:records_in]).round(2)
         end
       end
 
