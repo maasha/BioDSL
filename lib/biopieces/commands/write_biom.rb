@@ -70,7 +70,7 @@ module BioPieces
                   otu_record = record.reject { |key, value| key == :RECORD_TYPE }
 
                   unless header
-                    ios.puts "#" + otu_record.keys.join("\t")
+                    ios.puts "#" + otu_record.keys.join("\t").sub(/TAXONOMY/, "taxonomy")
                     header = true
                   end
 

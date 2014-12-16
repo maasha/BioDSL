@@ -62,7 +62,7 @@ class TestWriteBiom < Test::Unit::TestCase
   test "BioPieces::Pipeline::WriteBiom to file outputs correctly" do
     @p.write_biom(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
-    expected = '{"id": "None","format": "Biological Observation Matrix 2.1.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.1","date": "2014-11-10T11:03:34.980081","type": "OTU table","matrix_element_type": "float","shape": [3, 1],"data": [[0,0,3352.0],[1,0,881.0],[2,0,5.0]],"rows": [{"id": "OTU_0", "metadata": {"TAXONOMY": "Streptococcaceae(100);Lactococcus(100)"}},{"id": "OTU_1", "metadata": {"TAXONOMY": "Leuconostocaceae(100);Leuconostoc(100)"}},{"id": "OTU_2", "metadata": {"TAXONOMY": "Pseudomonadaceae(100);Pseudomonas(100)"}}],"columns": [{"id": "SAMPLE1_COUNT", "metadata": null}]}'
+    expected = '{"id": "None","format": "Biological Observation Matrix 2.1.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.1","date": "2014-11-10T11:03:34.980081","type": "OTU table","matrix_element_type": "float","shape": [3, 1],"data": [[0,0,3352.0],[1,0,881.0],[2,0,5.0]],"rows": [{"id": "OTU_0", "metadata": {"taxonomy": "Streptococcaceae(100);Lactococcus(100)"}},{"id": "OTU_1", "metadata": {"taxonomy": "Leuconostocaceae(100);Leuconostoc(100)"}},{"id": "OTU_2", "metadata": {"taxonomy": "Pseudomonadaceae(100);Pseudomonas(100)"}}],"columns": [{"id": "SAMPLE1_COUNT", "metadata": null}]}'
     assert_equal(expected.sub(/"date":[^,]+,/, ''), result.sub(/"date":[^,]+,/, ''))
   end
 
@@ -75,14 +75,14 @@ class TestWriteBiom < Test::Unit::TestCase
     `touch #{@file}`
     @p.write_biom(output: @file, force: true).run(input: @input)
     result = File.open(@file).read
-    expected = '{"id": "None","format": "Biological Observation Matrix 2.1.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.1","date": "2014-11-10T11:03:34.980081","type": "OTU table","matrix_element_type": "float","shape": [3, 1],"data": [[0,0,3352.0],[1,0,881.0],[2,0,5.0]],"rows": [{"id": "OTU_0", "metadata": {"TAXONOMY": "Streptococcaceae(100);Lactococcus(100)"}},{"id": "OTU_1", "metadata": {"TAXONOMY": "Leuconostocaceae(100);Leuconostoc(100)"}},{"id": "OTU_2", "metadata": {"TAXONOMY": "Pseudomonadaceae(100);Pseudomonas(100)"}}],"columns": [{"id": "SAMPLE1_COUNT", "metadata": null}]}'
+    expected = '{"id": "None","format": "Biological Observation Matrix 2.1.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.1","date": "2014-11-10T11:03:34.980081","type": "OTU table","matrix_element_type": "float","shape": [3, 1],"data": [[0,0,3352.0],[1,0,881.0],[2,0,5.0]],"rows": [{"id": "OTU_0", "metadata": {"taxonomy": "Streptococcaceae(100);Lactococcus(100)"}},{"id": "OTU_1", "metadata": {"taxonomy": "Leuconostocaceae(100);Leuconostoc(100)"}},{"id": "OTU_2", "metadata": {"taxonomy": "Pseudomonadaceae(100);Pseudomonas(100)"}}],"columns": [{"id": "SAMPLE1_COUNT", "metadata": null}]}'
     assert_equal(expected.sub(/"date":[^,]+,/, ''), result.sub(/"date":[^,]+,/, ''))
   end
 
   test "BioPieces::Pipeline::WriteBiom with flux outputs correctly" do
     @p.write_biom(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
-    expected = '{"id": "None","format": "Biological Observation Matrix 2.1.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.1","date": "2014-11-10T11:03:34.980081","type": "OTU table","matrix_element_type": "float","shape": [3, 1],"data": [[0,0,3352.0],[1,0,881.0],[2,0,5.0]],"rows": [{"id": "OTU_0", "metadata": {"TAXONOMY": "Streptococcaceae(100);Lactococcus(100)"}},{"id": "OTU_1", "metadata": {"TAXONOMY": "Leuconostocaceae(100);Leuconostoc(100)"}},{"id": "OTU_2", "metadata": {"TAXONOMY": "Pseudomonadaceae(100);Pseudomonas(100)"}}],"columns": [{"id": "SAMPLE1_COUNT", "metadata": null}]}'
+    expected = '{"id": "None","format": "Biological Observation Matrix 2.1.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.1","date": "2014-11-10T11:03:34.980081","type": "OTU table","matrix_element_type": "float","shape": [3, 1],"data": [[0,0,3352.0],[1,0,881.0],[2,0,5.0]],"rows": [{"id": "OTU_0", "metadata": {"taxonomy": "Streptococcaceae(100);Lactococcus(100)"}},{"id": "OTU_1", "metadata": {"taxonomy": "Leuconostocaceae(100);Leuconostoc(100)"}},{"id": "OTU_2", "metadata": {"taxonomy": "Pseudomonadaceae(100);Pseudomonas(100)"}}],"columns": [{"id": "SAMPLE1_COUNT", "metadata": null}]}'
     assert_equal(expected.sub(/"date":[^,]+,/, ''), result.sub(/"date":[^,]+,/, ''))
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
