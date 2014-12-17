@@ -58,9 +58,13 @@ module BioPieces
     require 'tempfile'
 
     NOQUOTE = [
+      :auto,
       :autoscale,
       :cbrange,
+      :border,
+      :boxwidth,
       :datafile,
+      :grid,
       :key,
       :logscale,
       :nocbtics,
@@ -78,7 +82,7 @@ module BioPieces
 
     # Constructor method for a GnuPlot object.
     def initialize
-      @options  = Hash.new { |h, k| h[k] = [] }
+      @options  = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = [] } }
       @datasets = []
     end
 
@@ -88,7 +92,19 @@ module BioPieces
       raise unless options.is_a? Hash
 
       options.each do |key, value|
-        @options[key.to_sym] << value
+        @options[:set][key.to_sym] << value
+      end
+
+      self
+    end
+
+    # Method to unset an option in the GnuPlot environment e.g:
+    # unset(ytics: true)
+    def unset(options)
+      raise unless options.is_a? Hash
+
+      options.each do |key, value|
+        @options[:unset][key.to_sym] << value
       end
 
       self
@@ -116,14 +132,16 @@ module BioPieces
       Open3.popen3("gnuplot -persist") do |stdin, stdout, stderr, wait_thr|
         lines = []
 
-        @options.each do |key, list|
-          list.each do |value|
-            if value == :true
-              lines << %Q{set #{key}}
-            elsif NOQUOTE.include? key.to_sym
-              lines << %Q{set #{key} #{value}}
-            else
-              lines << %Q{set #{key} "#{value}"}
+        @options.each do |method, options|
+          options.each do |key, list|
+            list.each do |value|
+              if value == :true or value === true
+                lines << %Q{#{method} #{key}}
+              elsif NOQUOTE.include? key.to_sym
+                lines << %Q{#{method} #{key} #{value}}
+              else
+                lines << %Q{#{method} #{key} "#{value}"}
+              end
             end
           end
         end
@@ -164,14 +182,16 @@ module BioPieces
       Open3.popen3("gnuplot -persist") do |stdin, stdout, stderr, wait_thr|
         lines = []
 
-        @options.each do |key, list|
-          list.each do |value|
-            if value == :true
-              lines << %Q{set #{key}}
-            elsif NOQUOTE.include? key.to_sym
-              lines << %Q{set #{key} #{value}}
-            else
-              lines << %Q{set #{key} "#{value}"}
+        @options.each do |method, options|
+          options.each do |key, list|
+            list.each do |value|
+              if value == :true or value === true
+                lines << %Q{#{method} #{key}}
+              elsif NOQUOTE.include? key.to_sym
+                lines << %Q{#{method} #{key} #{value}}
+              else
+                lines << %Q{#{method} #{key} "#{value}"}
+              end
             end
           end
         end

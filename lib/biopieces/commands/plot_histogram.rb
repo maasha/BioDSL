@@ -161,10 +161,10 @@ module BioPieces
           gp.set "datafile separator" => "\t"
 
           if count_hash.empty?
-            gp.set yrange:  "[-1:1]"
-            gp.set key:     "off"
-            gp.set noxtics: :true
-            gp.set noytics: :true
+            gp.set   yrange: "[-1:1]"
+            gp.set   key:    "off"
+            gp.unset xtics:  true
+            gp.unset ytics:  true
           elsif count_hash.keys.first.is_a? Numeric
             x_max = count_hash.keys.max || 0
 
@@ -173,7 +173,7 @@ module BioPieces
             end
           else
             if count_hash.first.first.size > 2
-              gp.set xtics: "rotate right"
+              gp.set xtics: "rotate"
               gp.set xlabel: ""
             end
 
@@ -182,7 +182,7 @@ module BioPieces
             end
           end
 
-          gp.set noxtics: :true if count_hash.size > 50 # Don't plot xtics if more than 50.
+          gp.unset xtics: true if count_hash.size > 50 # Don't plot xtics if more than 50.
 
           options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
         end
