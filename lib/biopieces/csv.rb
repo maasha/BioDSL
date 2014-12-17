@@ -57,10 +57,14 @@ module BioPieces
 
     # Method that reads all CSV data from a file into
     # an array of arrays (array of rows) which is returned.
-    def self.read(file)
+    def self.read(file, options = {})
       data = []
 
       self.open(file) do |ios|
+        if options[:header]
+          data << ios.header.map { |h| h.to_s }
+        end
+
         ios.each_array { |row| data << row } 
       end
 

@@ -104,6 +104,26 @@ END
     end
   end
 
+  test "CSV.read with header: true returns correctly" do
+    file = Tempfile.new('foo')
+
+    begin
+      file.write(@table)
+      file.rewind
+      result   = BioPieces::CSV.read(file.path, header: true)
+      expected = [["Organism", "Sequence", "Count"],
+                  ["Human", "ATACGTCAG", 23524],
+                  ["Dog", "AGCATGAC", 2442],
+                  ["Mouse", "GACTG", 234],
+                  ["Cat", "AAATGCA", 2342]]
+
+      assert_equal(expected, result)
+    ensure
+      file.close
+      file.unlink
+    end
+  end
+
   test "CSV#each returns correctly" do
     result = []
     @csv.each { |line| result << line }
