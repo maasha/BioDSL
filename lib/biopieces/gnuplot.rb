@@ -70,6 +70,7 @@ module BioPieces
       :nocbtics,
       :palette,
       :rtics,
+      :terminal,
       :tic,
       :style,
       :view,
