@@ -154,6 +154,7 @@ module BioPieces
 
                 record[:TAXONOMY]      = result.taxonomy
                 record[:TAXONOMY_HITS] = result.hits
+                record[:RECORD_TYPE]   = "taxonomy"
               end
 
               output << record

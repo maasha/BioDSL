@@ -45,7 +45,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_nothing_raised { @p.clip_primer(primer: "atcg", direction: :forward) }
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with forward full lenght match returns correctly" do
+  test "BioPieces::Pipeline::ClipPrimer with forward full length match returns correctly" do
     @output.write({SEQ: "TCGTATGCCGTCTTCTGCTT"})
     @output.close
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
@@ -56,7 +56,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test "BioPieces::Pipeline::ClipPrimer with reverse full lenght match returns correctly" do
+  test "BioPieces::Pipeline::ClipPrimer with reverse full length match returns correctly" do
     @output.write({SEQ: "TCGTATGCCGTCTTCTGCTT"})
     @output.close
     @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse).run(input: @input, output: @output2)
@@ -195,6 +195,50 @@ class TestClipPrimer < Test::Unit::TestCase
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with forward match and search_distance longer than sequence returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward, search_distance: 70).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actacgt", :SEQ_LEN=>7, :CLIP_PRIMER_DIR=>"FORWARD", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with reverse match and search_distance longer than sequence returns correctly" do
+    @output.write({SEQ: "actgactgaTCGTATGCCGTCTTCTGCTTactacgt"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :reverse, search_distance: 70).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actgactga", :SEQ_LEN=>9, :CLIP_PRIMER_DIR=>"REVERSE", :CLIP_PRIMER_POS=>9, :CLIP_PRIMER_LEN=>20, :CLIP_PRIMER_PAT=>"TCGTATGCCGTCTTCTGCTT"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with sequence length shorter than pattern returns correctly" do
+    @output.write({SEQ: "actgactgaTC"})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"actgactgaTC"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ClipPrimer with sequence length 0 returns correctly" do
+    @output.write({SEQ: ""})
+    @output.close
+    @p.clip_primer(primer: "TCGTATGCCGTCTTCTGCTT", direction: :forward).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>""}'
 
     assert_equal(expected, result)
   end

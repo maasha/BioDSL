@@ -132,14 +132,23 @@ module BioPieces
           input.each do |record|
             status[:records_in] += 1
 
-            if record[:SEQ]
+            if record[:SEQ] and record[:SEQ].length > 0
               record.delete :CLIP_PRIMER_DIR
               record.delete :CLIP_PRIMER_POS
               record.delete :CLIP_PRIMER_LEN
               record.delete :CLIP_PRIMER_PAT
 
               entry = BioPieces::Seq.new_bp(record)
-              dist  = options[:search_distance] || entry.length  
+
+              if options[:search_distance]
+                if options[:search_distance] < entry.length
+                  dist = options[:search_distance]
+                else
+                  dist = entry.length
+                end
+              else
+                dist = entry.length
+              end
 
               status[:sequences_in] += 1
               status[:residues_in]  += entry.length
