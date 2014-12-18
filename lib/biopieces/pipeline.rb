@@ -215,12 +215,14 @@ module BioPieces
     # otherwise default to self.to_s. The body of the email will be the
     # Pipeline status.
     def email_send
-      Mail.defaults do
-        delivery_method :smtp, {
-          address: "localhost",
-          port: 25,
-          enable_starttls_auto: false
-        }
+      unless @options[:email] == "test@foobar.com"
+        Mail.defaults do
+          delivery_method :smtp, {
+            address: "localhost",
+            port: 25,
+            enable_starttls_auto: false
+          }
+        end
       end
 
       html = BioPieces::Render.html(self)

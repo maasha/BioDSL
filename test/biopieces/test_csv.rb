@@ -37,6 +37,7 @@ end
 
 class TestCSV < Test::Unit::TestCase 
   require 'stringio'
+  require 'tempfile'
 
   def setup
     table = <<END
@@ -80,6 +81,27 @@ END
     @csv  = BioPieces::CSV.new(io)
     @csv2 = BioPieces::CSV.new(io2)
     @csv3 = BioPieces::CSV.new(io3)
+
+    @table = table
+  end
+
+  test "CSV.read returns correctly" do
+    file = Tempfile.new('foo')
+
+    begin
+      file.write(@table)
+      file.rewind
+      result   = BioPieces::CSV.read(file.path)
+      expected = [["Human", "ATACGTCAG", 23524],
+                  ["Dog", "AGCATGAC", 2442],
+                  ["Mouse", "GACTG", 234],
+                  ["Cat", "AAATGCA", 2342]]
+
+      assert_equal(expected, result)
+    ensure
+      file.close
+      file.unlink
+    end
   end
 
   test "CSV#each returns correctly" do

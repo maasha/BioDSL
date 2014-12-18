@@ -83,19 +83,19 @@ module BioPieces
 
         status_track(status) do
           gp = BioPieces::GnuPlot.new
-          gp.set terminal:  options[:terminal].to_s
-          gp.set title:     options[:title]
-          gp.set xlabel:    options[:xlabel]
-          gp.set ylabel:    options[:ylabel]
-          gp.set output:    options[:output] if options[:output]
-          gp.set view:      "map"
-          gp.set autoscale: "xfix"
-          gp.set autoscale: "yfix"
-          gp.set nokey:     :true
-          gp.set tic:       "scale 0"
-          gp.set palette:   "rgbformulae 22,13,10"
-          gp.set noxtics:   :true
-          gp.set noytics:   :true
+          gp.set   terminal:  options[:terminal].to_s
+          gp.set   title:     options[:title]
+          gp.set   xlabel:    options[:xlabel]
+          gp.set   ylabel:    options[:ylabel]
+          gp.set   output:    options[:output] if options[:output]
+          gp.set   view:      "map"
+          gp.set   autoscale: "xfix"
+          gp.set   autoscale: "yfix"
+          gp.set   nokey:     true
+          gp.set   tic:       "scale 0"
+          gp.set   palette:   "rgbformulae 22,13,10"
+          gp.unset xtics:     true
+          gp.unset ytics:     true
 
           keys = nil
 
