@@ -57,11 +57,13 @@ module BioPieces
 
     # Method that reads all CSV data from a file into
     # an array of arrays (array of rows) which is returned.
+    # Using the option[:header] parses any single header line
+    # prefixed with '#'.
     def self.read(file, options = {})
       data = []
 
       self.open(file) do |ios|
-        if options[:header]
+        if options[:include_header]
           data << ios.header.map { |h| h.to_s }
         end
 
@@ -131,8 +133,8 @@ module BioPieces
     end
 
     # Method to iterate over a CSV IO object yielding arrays or an enumerator
-    #   CSV.each_array(options={}) { |item| block }  -> ary
-    #   CSV.each_array(options={})                   -> Enumerator
+    #   CSV.each_array(options={}) { |item| block } -> ary
+    #   CSV.each_array(options={})                  -> Enumerator
     #
     # It is possible to specify a :delimiter and list or range of :columns.
     def each_array(options = {})
@@ -160,8 +162,8 @@ module BioPieces
     end
 
     # Method to iterate over a CSV IO object yielding hashes or an enumerator
-    #   CSV.each_hash(options={}) { |item| block }  -> ary
-    #   CSV.each_hash(options={})                   -> Enumerator
+    #   CSV.each_hash(options={}) { |item| block } -> ary
+    #   CSV.each_hash(options={})                  -> Enumerator
     #
     # It is possible to specify a :delimiter.
     # A list or range of :columns.

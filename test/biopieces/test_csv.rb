@@ -104,13 +104,13 @@ END
     end
   end
 
-  test "CSV.read with header: true returns correctly" do
+  test "CSV.read with include_header: true returns correctly" do
     file = Tempfile.new('foo')
 
     begin
       file.write(@table)
       file.rewind
-      result   = BioPieces::CSV.read(file.path, header: true)
+      result   = BioPieces::CSV.read(file.path, include_header: true)
       expected = [["Organism", "Sequence", "Count"],
                   ["Human", "ATACGTCAG", 23524],
                   ["Dog", "AGCATGAC", 2442],
@@ -260,4 +260,9 @@ END
 
     assert_equal(expected, result)
   end
+
+  # columns that dont exists?
+  # headers not matching parsed columns?
+  # select - requires header
+  # reject - requires header
 end
