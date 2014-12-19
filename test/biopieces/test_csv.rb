@@ -136,6 +136,19 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each with include_header: true returns correctly" do
+    result = []
+    @csv.each(include_header: true) { |line| result << line }
+
+    expected = ["Organism   Sequence    Count\n",
+                "Human       ATACGTCAG   23524\n",
+                "Dog         AGCATGAC    2442\n",
+                "Mouse       GACTG       234\n",
+                "Cat         AAATGCA     2342\n"]
+
+    assert_equal(expected, result)
+  end
+
   test "CSV#each_array returns correctly" do
     result = []
     @csv.each_array { |array| result << array }
@@ -160,6 +173,10 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each_array with bad :columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_array(columns: [0, 2, 5]){ |array| array } }
+  end
+
   test "CSV#each_array with :columns returns correctly" do
     result = []
     @csv.each_array(columns: [0, 2]) { |array| result << array }
@@ -171,7 +188,7 @@ END
 
   test "CSV#header returns correctly" do
     assert_equal([:Organism, :Sequence, :Count], @csv.header)
-    assert_equal([:Organism, :Sequence, :Count], @csv.header)
+    assert_equal([:Organism, :Sequence, :Count], @csv.header) # And again
   end
 
   test "CSV#skip returns correctly" do
@@ -209,6 +226,10 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each_hash with bad :header raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(header: [:Organism, "Sequence", :Count, :BadColumn]) { |hash| hash } }
+  end
+
   test "CSV#each_hash with :header returns correctly" do
     result = []
 
@@ -222,6 +243,10 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each_hash with bad :columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(columns: [5, 2]) { |hash| hash } }
+  end
+
   test "CSV#each_hash with :columns returns correctly" do
     result = []
 
@@ -233,6 +258,10 @@ END
                 {:V0=>"AAATGCA"}]
 
     assert_equal(expected, result)
+  end
+
+  test "CSV#each_hash with bad :header and :columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(header: [:foo, :bar], columns: [1]) { |hash| hash } }
   end
 
   test "CSV#each_hash with :header and :columns returns correctly" do
@@ -261,8 +290,6 @@ END
     assert_equal(expected, result)
   end
 
-  # columns that dont exists?
-  # headers not matching parsed columns?
   # select - requires header
   # reject - requires header
 end

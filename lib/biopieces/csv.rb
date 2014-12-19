@@ -120,13 +120,22 @@ module BioPieces
     # Method to iterate over a CSV IO object yielding lines or an enumerator
     #   CSV.each { |item| block }  -> ary
     #   CSV.each                   -> Enumerator
-    def each
+    def each(options = {})
       return to_enum :each unless block_given?
 
-      @io.each do |line|
-        next if line.chomp.empty? or line[0] == '#'
+      got_header = false
 
-        yield line
+      @io.each do |line|
+        next if line.chomp.empty?
+        
+        if line[0] == '#'
+          if options[:include_header] and not got_header
+            got_header = true
+            yield line[1 .. -1] 
+          end
+        else
+          yield line
+        end
       end
 
       self
@@ -142,19 +151,29 @@ module BioPieces
 
       delimiter = options[:delimiter] || @delimiter
       types     = nil
+      check     = true
 
       @io.each do |line|
         line.chomp!
         next if line.empty? or line[0] == '#'
 
-        if columns = options[:columns]
-          types = determine_types(line, delimiter).values_at(*columns) unless types
+        fields = line.split(delimiter)
 
-          yield line.split(delimiter).values_at(*columns).convert_types(types)
+        if columns = options[:columns]
+          types  = determine_types(line, delimiter).values_at(*columns) unless types
+
+          if check
+            if columns.max > fields.size
+              raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c > fields.size }}"
+            end
+            check = false
+          end
+
+          yield fields.values_at(*columns).convert_types(types)
         else
           types = determine_types(line, delimiter) unless types
 
-          yield line.split(delimiter).convert_types(types)
+          yield fields.convert_types(types)
         end
       end
 
@@ -171,29 +190,54 @@ module BioPieces
     def each_hash(options = {})
       return to_enum :each_hash unless block_given?
 
+      if options[:columns] and options[:header]
+        if options[:columns].size != options[:header].size
+          raise CSVError, "Requested columns and header sizes mismatch: #{options[:columns]} != #{options[:header]}"
+        end
+      end
+
       delimiter = options[:delimiter] || @delimiter
       types     = nil
+      check     = true
 
       @io.each do |line|
         line.chomp!
         next if line.empty? or line[0] == '#'
         hash = {}
 
+        fields = line.split(delimiter)
+
         if columns = options[:columns]
           types = determine_types(line, delimiter).values_at(*columns) unless types
 
+          if check
+            if columns.max > fields.size
+              raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c > fields.size }}"
+            end
+
+            check = false
+          end
+
           if header = options[:header]
-            line.split(delimiter).values_at(*columns).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
+            fields.values_at(*columns).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
           else
-            line.split(delimiter).values_at(*columns).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
+            fields.values_at(*columns).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
           end
         else
           types = determine_types(line, delimiter) unless types
 
           if header = options[:header]
-            line.split(delimiter).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
+            if check
+              if header.size > fields.size
+                raise BioPieces::CSVError, "Header contains more fields than columns: #{header.size} > #{fields.size}"
+              end
+
+              check = false
+            end
+
+            fields.convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
           else
-            line.split(delimiter).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
+            fields.convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
           end
         end
 
