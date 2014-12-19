@@ -149,6 +149,30 @@ module BioPieces
     def each_array(options = {})
       return to_enum :each_array unless block_given?
 
+      columns = options[:columns]
+
+      if options[:select]
+        header = self.header
+
+        raise BioPieces::CSVError, "No header found" unless header
+
+        unless ([*options[:select]] - header).empty?
+          raise BioPieces::CSVError, "No such columns: #{[*options[:select]] - header}"
+        end
+
+        columns = header.map.with_index.to_h.values_at(*options[:select])
+      end
+
+      if options[:reject]
+        header = self.header
+
+        raise BioPieces::CSVError, "No header found" unless header
+
+        unless ([*options[:reject]] - header).empty?
+          raise BioPieces::CSVError, "No such columns: #{[*options[:reject]] - header}"
+        end
+      end
+
       delimiter = options[:delimiter] || @delimiter
       types     = nil
       check     = true
@@ -159,7 +183,7 @@ module BioPieces
 
         fields = line.split(delimiter)
 
-        if columns = options[:columns]
+        if columns
           types  = determine_types(line, delimiter).values_at(*columns) unless types
 
           if check
