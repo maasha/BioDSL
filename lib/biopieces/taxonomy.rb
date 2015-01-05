@@ -108,7 +108,7 @@ module BioPieces
       #     ACGGGAGG
       #      ...
       #
-      # Each oligo is encoded as an kmer (integer) by encoding two bits per nucletoide:
+      # Each oligo is encoded as an kmer (integer) by encoding two bits per nucleotide:
       #
       # A = 00
       # U = 01

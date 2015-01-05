@@ -85,6 +85,34 @@ END
     @table = table
   end
 
+  test "CSV#header returns correctly" do
+    assert_equal([:Organism, :Sequence, :Count], @csv.header)
+    assert_nil(@csv2.header)
+  end
+
+  test "CSV#header with alternative :delimiter returns correctly" do
+    assert_equal([:"Organism   Sequence    Count"], @csv.header(delimiter: "\t"))
+  end
+
+  test "CSV#header with bad columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.header(columns: [3]) }
+  end
+
+  test "CSV#header with OK columns returns correctly" do
+    assert_equal([:Count, :Organism], @csv.header(columns: [2, 0]))
+  end
+
+  test "CSV#skip returns correctly" do
+    @csv.skip(3)
+
+    result = []
+    @csv.each_array { |array| result << array }
+
+    expected = [["Mouse", "GACTG", 234], ["Cat", "AAATGCA", 2342]]
+
+    assert_equal(expected, result)
+  end
+
   test "CSV.read returns correctly" do
     file = Tempfile.new('foo')
 
@@ -136,6 +164,19 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each with include_header: true returns correctly" do
+    result = []
+    @csv.each(include_header: true) { |line| result << line }
+
+    expected = ["Organism   Sequence    Count\n",
+                "Human       ATACGTCAG   23524\n",
+                "Dog         AGCATGAC    2442\n",
+                "Mouse       GACTG       234\n",
+                "Cat         AAATGCA     2342\n"]
+
+    assert_equal(expected, result)
+  end
+
   test "CSV#each_array returns correctly" do
     result = []
     @csv.each_array { |array| result << array }
@@ -160,6 +201,10 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each_array with bad :columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_array(columns: [0, 2, 5]) {} }
+  end
+
   test "CSV#each_array with :columns returns correctly" do
     result = []
     @csv.each_array(columns: [0, 2]) { |array| result << array }
@@ -169,18 +214,42 @@ END
     assert_equal(expected, result)
   end
 
-  test "CSV#header returns correctly" do
-    assert_equal([:Organism, :Sequence, :Count], @csv.header)
-    assert_equal([:Organism, :Sequence, :Count], @csv.header)
+  test "CSV#each_array with :select and no header raises" do
+    assert_raise(BioPieces::CSVError) { @csv2.each_array(select: :Count) {} }
   end
 
-  test "CSV#skip returns correctly" do
-    @csv.skip(3)
+  test "CSV#each_array with :select and no such column raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_array(select: :Foo) {} }
+  end
 
+  test "CSV#each_array with :select returns correctly" do
     result = []
-    @csv.each_array { |array| result << array }
+    @csv.each_array(select: [:Count, :Organism]) { |array| result << array }
 
-    expected = [["Mouse", "GACTG", 234], ["Cat", "AAATGCA", 2342]]
+    expected = [[23524, "Human"],
+                [2442,  "Dog"],
+                [234,   "Mouse"],
+                [2342,  "Cat"]]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV#each_array with :reject and no header raises" do
+    assert_raise(BioPieces::CSVError) { @csv2.each_array(reject: :Count) {} }
+  end
+
+  test "CSV#each_array with :reject and no such column raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_array(reject: :Foo) {} }
+  end
+
+  test "CSV#each_array with :reject returns correctly" do
+    result = []
+    @csv.each_array(reject: [:Count, :Organism]) { |array| result << array }
+
+    expected = [["ATACGTCAG"],
+                ["AGCATGAC"],
+                ["GACTG"],
+                ["AAATGCA"]]
 
     assert_equal(expected, result)
   end
@@ -209,6 +278,10 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each_hash with bad :header raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(header: [:Organism, "Sequence", :Count, :BadColumn]) {} }
+  end
+
   test "CSV#each_hash with :header returns correctly" do
     result = []
 
@@ -222,6 +295,10 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV#each_hash with bad :columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(columns: [5, 2]) {} }
+  end
+
   test "CSV#each_hash with :columns returns correctly" do
     result = []
 
@@ -233,6 +310,10 @@ END
                 {:V0=>"AAATGCA"}]
 
     assert_equal(expected, result)
+  end
+
+  test "CSV#each_hash with bad :header and :columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(header: [:foo, :bar], columns: [1]) {} }
   end
 
   test "CSV#each_hash with :header and :columns returns correctly" do
@@ -261,8 +342,43 @@ END
     assert_equal(expected, result)
   end
 
-  # columns that dont exists?
-  # headers not matching parsed columns?
-  # select - requires header
-  # reject - requires header
+  test "CSV#each_hash with :select and no header raises" do
+    assert_raise(BioPieces::CSVError) { @csv2.each_hash(select: :Count) {} }
+  end
+
+  test "CSV#each_hash with :select and no such column raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(select: :Foo) {} }
+  end
+
+  test "CSV#each_hash with :select returns correctly" do
+    result = []
+    @csv.each_hash(select: [:Count, :Organism]) { |hash| result << hash }
+
+    expected = [{:Count=>23524, :Organism=>"Human"},
+                {:Count=>2442, :Organism=>"Dog"},
+                {:Count=>234, :Organism=>"Mouse"},
+                {:Count=>2342, :Organism=>"Cat"}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV#each_hash with :reject and no header raises" do
+    assert_raise(BioPieces::CSVError) { @csv2.each_hash(reject: :Count) {} }
+  end
+
+  test "CSV#each_hash with :reject and no such column raises" do
+    assert_raise(BioPieces::CSVError) { @csv.each_hash(reject: :Foo) {} }
+  end
+
+  test "CSV#each_hash with :reject returns correctly" do
+    result = []
+    @csv.each_hash(reject: [:Count, :Organism]) { |hash| result << hash }
+
+    expected = [{:Sequence=>"ATACGTCAG"},
+                {:Sequence=>"AGCATGAC"},
+                {:Sequence=>"GACTG"},
+                {:Sequence=>"AAATGCA"}]
+
+    assert_equal(expected, result)
+  end
 end
