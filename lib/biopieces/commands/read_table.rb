@@ -36,9 +36,13 @@ module BioPieces
     # the fields here will be used as keys. Subsequence lines beginning with # 
     # will be ignored.
     #
+    # If a comment line is present beginning with a # the options +select+ and
+    # +reject+ can be used to chose what columns to read.
+    #
     # == Usage
     #    read_table(input: <glob>[, first: <uint>|last: <uint>][, columns: <list>
-    #               [, keys: <list>][, skip: <uint>[, delimiter: <string>]]])
+    #               [, keys: <list>][, skip: <uint>[, delimiter: <string>
+    #               [, select: <list> | reject: <list>]]]])
     #
     # === Options
     # * input <glob>       - Input file or file glob expression.
@@ -48,6 +52,8 @@ module BioPieces
     # * keys <list>        - List of key identifiers to use for each column.
     # * skip <uint>        - Number of initial lines to skip (default=0).
     # * delimiter <string> - Delimter to use for separating columsn (default="\s+").
+    # * select <list>      - List of header keys to read in that order (requires header).
+    # * reject <list>      - Read all header keys exect the rejected (requires header).
     #
     # == Examples
     #
@@ -136,12 +142,13 @@ module BioPieces
     def read_table(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :input, :first, :last, :keys, :columns, :skip, :delimiter)
+      options_allowed(options, :input, :first, :last, :keys, :columns, :skip, :delimiter, :select, :reject)
       options_required(options, :input)
       options_glob(options, :input)
       options_files_exist(options, :input)
       options_unique(options, :first, :last)
-      options_list_unique(options, :keys, :columns)
+      options_unique(options, :select, :reject)
+      options_list_unique(options, :keys, :columns, :select, :reject)
       options_assert(options, ":first >= 0")
       options_assert(options, ":last >= 0")
       options_assert(options, ":skip >= 0")
@@ -169,7 +176,11 @@ module BioPieces
 
                 header = keys || ios.header(delimiter: options[:delimiter], columns: options[:columns]) 
                 
-                ios.each_hash(delimiter: options[:delimiter], header: header, columns: options[:columns]) do |record|
+                ios.each_hash(delimiter: options[:delimiter],
+                              header:    header,
+                              columns:   options[:columns],
+                              select:    options[:select],
+                              reject:    options[:reject]) do |record|
                   if options[:last]
                     buffer << record
                     buffer.shift if buffer.size > options[:last]
