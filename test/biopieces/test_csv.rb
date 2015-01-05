@@ -87,7 +87,19 @@ END
 
   test "CSV#header returns correctly" do
     assert_equal([:Organism, :Sequence, :Count], @csv.header)
-    assert_equal([:Organism, :Sequence, :Count], @csv.header) # And again
+    assert_nil(@csv2.header)
+  end
+
+  test "CSV#header with alternative :delimiter returns correctly" do
+    assert_equal([:"Organism   Sequence    Count"], @csv.header(delimiter: "\t"))
+  end
+
+  test "CSV#header with bad columns raises" do
+    assert_raise(BioPieces::CSVError) { @csv.header(columns: [3]) }
+  end
+
+  test "CSV#header with OK columns returns correctly" do
+    assert_equal([:Count, :Organism], @csv.header(columns: [2, 0]))
   end
 
   test "CSV#skip returns correctly" do

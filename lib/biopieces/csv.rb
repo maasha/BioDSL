@@ -44,6 +44,7 @@ module BioPieces
   # Class for manipulating CSV or table files.
   # Allow reading and writing of gzip and bzip2 data.
   # Auto-convert data types.
+  # Returns lines, arrays or hashes.
   class CSV
     def self.open(*args)
       io = IO.open(*args)
@@ -55,10 +56,9 @@ module BioPieces
       end
     end
 
-    # Method that reads all CSV data from a file into
-    # an array of arrays (array of rows) which is returned.
-    # Using the option[:header] parses any single header line
-    # prefixed with '#'.
+    # Method that reads all CSV data from a file into an array of arrays (array
+    # of rows) which is returned. Using the option[:header] parses any single
+    # header line prefixed with '#'.
     def self.read(file, options = {})
       data = []
 
@@ -79,24 +79,36 @@ module BioPieces
       @header    = nil
     end
 
-    # Method to return a table header prefixed with '#'
-    # Once a table header is found, other lines prefixed
-    # with '#' will be skipped.
-    # The header is returned as an array.
+    # Method to return a table header prefixed with '#'. Only the first 10
+    # lines are examined and if no header is found nil is returned. If a
+    # header is found it is returned as an array.
+    #
+    #   CSV.header(options={}) -> Array
+    #
+    # Options:
+    #   * :delimiter - specify an alternative field delimiter (default="\s").
+    #   * :columns   - specify a list or range of header columns to return.
     def header(options = {})
       return @header if @header
+
+      delimiter = options[:delimiter] || @delimiter
+      columns   = options[:columns]
 
       @io.each_with_index do |line, i|
         line.chomp!
         next if line.empty?
 
         if line[0] == '#'
-          delimiter = options[:delimiter] || @delimiter
+          fields = line[1 .. -1].split(delimiter)
 
-          if columns = options[:columns]
-            @header = line[1 .. -1].split(delimiter).values_at(*columns).map { |h| h.to_sym }
+          if columns and columns.max >= fields.size
+            raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c >= fields.size }}"
+          end
+
+          if columns
+            @header = fields.values_at(*columns).map { |h| h.to_sym }
           else
-            @header = line[1 .. -1].split(delimiter).map { |h| h.to_sym }
+            @header = fields.map { |h| h.to_sym }
           end
 
           return @header
@@ -193,8 +205,8 @@ module BioPieces
           types  = determine_types(line, delimiter).values_at(*columns) unless types
 
           if check
-            if columns.max > fields.size
-              raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c > fields.size }}"
+            if columns.max >= fields.size
+              raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c >= fields.size }}"
             end
             check = false
           end
