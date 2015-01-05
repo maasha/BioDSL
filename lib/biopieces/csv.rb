@@ -79,9 +79,10 @@ module BioPieces
       @header    = nil
     end
 
-    # Method to return a table header prefixed with '#'. Only the first 10
-    # lines are examined and if no header is found nil is returned. If a
-    # header is found it is returned as an array.
+    # Method to return a table header prefixed with '#'. If a header was
+    # already located it is returned, otherwise only the first 10 lines
+    # are examined and if no header is found nil is returned. If header is
+    # found it is returned as an array.
     #
     #   CSV.header(options={}) -> Array
     #
@@ -165,10 +166,11 @@ module BioPieces
     def each_array(options = {})
       return to_enum :each_array unless block_given?
 
-      columns = options[:columns]
+      delimiter = options[:delimiter] || @delimiter
+      columns   = options[:columns]
 
       if options[:select]
-        header = self.header
+        header = self.header(delimiter: delimiter, columns: columns)
 
         raise BioPieces::CSVError, "No header found" unless header
 
@@ -180,7 +182,7 @@ module BioPieces
       end
 
       if options[:reject]
-        header = self.header
+        header = self.header(delimiter: delimiter, columns: columns)
 
         raise BioPieces::CSVError, "No header found" unless header
 
@@ -191,9 +193,8 @@ module BioPieces
         columns = header.map.with_index.to_h.delete_if { |k, v| options[:reject].include? k }.values
       end
 
-      delimiter = options[:delimiter] || @delimiter
-      types     = nil
-      check     = true
+      types = nil
+      check = true
 
       @io.each do |line|
         line.chomp!
@@ -235,8 +236,9 @@ module BioPieces
     def each_hash(options = {})
       return to_enum :each_hash unless block_given?
 
-      columns = options[:columns]
-      header  = options[:header]
+      delimiter = options[:delimiter] || @delimiter
+      columns   = options[:columns]
+      header    = options[:header]
 
       if columns and options[:header]
         if columns.size != options[:header].size
@@ -245,7 +247,7 @@ module BioPieces
       end
 
       if options[:select]
-        header = self.header
+        header = self.header(delimiter: delimiter, columns: columns)
 
         raise BioPieces::CSVError, "No header found" unless header
 
@@ -258,7 +260,7 @@ module BioPieces
       end
 
       if options[:reject]
-        header = self.header
+        header = self.header(delimiter: delimiter, columns: columns)
 
         raise BioPieces::CSVError, "No header found" unless header
 
@@ -270,9 +272,8 @@ module BioPieces
         header.reject! { |k| options[:reject].include? k }
       end
 
-      delimiter = options[:delimiter] || @delimiter
-      types     = nil
-      check     = true
+      types = nil
+      check = true
 
       @io.each do |line|
         line.chomp!
