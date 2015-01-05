@@ -240,9 +240,9 @@ module BioPieces
       columns   = options[:columns]
       header    = options[:header]
 
-      if columns and options[:header]
-        if columns.size != options[:header].size
-          raise CSVError, "Requested columns and header sizes mismatch: #{columns} != #{options[:header]}"
+      if columns and header
+        if columns.size != header.size
+          raise CSVError, "Requested columns and header sizes mismatch: #{columns} != #{header}"
         end
       end
 
