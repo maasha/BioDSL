@@ -145,7 +145,11 @@ module BioPieces
     #   CSV.each_array(options={}) { |item| block } -> ary
     #   CSV.each_array(options={})                  -> Enumerator
     #
-    # It is possible to specify a :delimiter and list or range of :columns.
+    # Options:
+    #   * :delimiter - specify an alternative field delimiter (default="\s").
+    #   * :columns   - specify a list or range of columns to output in that order.
+    #   * :select    - select columns by header to output in that order (requires header).
+    #   * :reject    - reject columns by header (requires header).
     def each_array(options = {})
       return to_enum :each_array unless block_given?
 
@@ -210,16 +214,48 @@ module BioPieces
     #   CSV.each_hash(options={}) { |item| block } -> ary
     #   CSV.each_hash(options={})                  -> Enumerator
     #
-    # It is possible to specify a :delimiter.
-    # A list or range of :columns.
-    # A list of :headers to use as keys.
+    # Options:
+    #   * :delimiter - specify an alternative field delimiter (default="\s").
+    #   * :columns   - specify a list or range of columns to output.
+    #   * :headers   - list of headers to use as keys.
+    #   * :select    - select columns by header to output (requires header).
+    #   * :reject    - reject columns by header (requires header).
     def each_hash(options = {})
       return to_enum :each_hash unless block_given?
 
-      if options[:columns] and options[:header]
-        if options[:columns].size != options[:header].size
-          raise CSVError, "Requested columns and header sizes mismatch: #{options[:columns]} != #{options[:header]}"
+      columns = options[:columns]
+      header  = options[:header]
+
+      if columns and options[:header]
+        if columns.size != options[:header].size
+          raise CSVError, "Requested columns and header sizes mismatch: #{columns} != #{options[:header]}"
         end
+      end
+
+      if options[:select]
+        header = self.header
+
+        raise BioPieces::CSVError, "No header found" unless header
+
+        unless ([*options[:select]] - header).empty?
+          raise BioPieces::CSVError, "No such columns: #{[*options[:select]] - header}"
+        end
+
+        columns = header.map.with_index.to_h.values_at(*options[:select])
+        header  = options[:select]
+      end
+
+      if options[:reject]
+        header = self.header
+
+        raise BioPieces::CSVError, "No header found" unless header
+
+        unless ([*options[:reject]] - header).empty?
+          raise BioPieces::CSVError, "No such columns: #{[*options[:reject]] - header}"
+        end
+
+        columns = header.map.with_index.to_h.delete_if { |k, v| options[:reject].include? k }.values
+        header.reject! { |k| options[:reject].include? k }
       end
 
       delimiter = options[:delimiter] || @delimiter
@@ -233,7 +269,7 @@ module BioPieces
 
         fields = line.split(delimiter)
 
-        if columns = options[:columns]
+        if columns
           types = determine_types(line, delimiter).values_at(*columns) unless types
 
           if check
@@ -244,7 +280,7 @@ module BioPieces
             check = false
           end
 
-          if header = options[:header]
+          if header
             fields.values_at(*columns).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
           else
             fields.values_at(*columns).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
@@ -252,7 +288,7 @@ module BioPieces
         else
           types = determine_types(line, delimiter) unless types
 
-          if header = options[:header]
+          if header
             if check
               if header.size > fields.size
                 raise BioPieces::CSVError, "Header contains more fields than columns: #{header.size} > #{fields.size}"
