@@ -214,6 +214,18 @@ END
     assert_raise(BioPieces::CSVError) { @csv.each_array(reject: :Foo) {} }
   end
 
+  test "CSV#each_array with :reject returns correctly" do
+    result = []
+    @csv.each_array(reject: [:Count, :Organism]) { |array| result << array }
+
+    expected = [["ATACGTCAG"],
+                ["AGCATGAC"],
+                ["GACTG"],
+                ["AAATGCA"]]
+
+    assert_equal(expected, result)
+  end
+
   test "CSV#header returns correctly" do
     assert_equal([:Organism, :Sequence, :Count], @csv.header)
     assert_equal([:Organism, :Sequence, :Count], @csv.header) # And again

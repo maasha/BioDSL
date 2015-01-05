@@ -171,6 +171,8 @@ module BioPieces
         unless ([*options[:reject]] - header).empty?
           raise BioPieces::CSVError, "No such columns: #{[*options[:reject]] - header}"
         end
+
+        columns = header.map.with_index.to_h.delete_if { |k, v| options[:reject].include? k }.values
       end
 
       delimiter = options[:delimiter] || @delimiter
