@@ -255,7 +255,7 @@ module BioPieces
           @level    = level    # Taxonomic level.
           @name     = name     # Taxonomic name.
           @kmers    = kmers    # Kmer vector.
-          @seq_id   = seq_id   # Sequence id.
+          @seq_id   = seq_id   # Sequence id (a representative seq for debugging).
           @node_id  = node_id  # Node id.
           @children = {}       # Child node hash.
         end
