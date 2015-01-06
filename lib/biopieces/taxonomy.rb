@@ -25,11 +25,14 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  class TaxError < StandardError; end
+
   # Module containing classes for creating a taxonomic database and searching this.
   module Taxonomy
     require 'narray'
 
     TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
+    TAX_REGEX  = /^K#[^;]*?;P#[^;]*?;C#[^;]*?;O#[^;]*?;F#[^;]*?;G#[^;]*?;S#.*$/
 
     # Class for creating, connecting and disconnecting databases.
     # The databases are Tokyo Cabinet files.
@@ -83,12 +86,13 @@ module BioPieces
     class Index
       # Constructor Index object.
       def initialize(options)
-        @options      = options                                       # Option hash.
-        @id           = 0                                             # Node id.
-        @tree         = TaxNode.new(nil, :r, nil, nil, nil, @id)      # Root level tree node.
-        @id          += 1
-        @kmers        = Vector.new(4 ** @options[:kmer_size], "byte") # Kmer vector for storing observed kmers.
-        @max_children = 0                                             # Stats info.
+        @options      = options                                         # Option hash.
+        @seq_id       = 0                                               # Sequence id.
+        @node_id      = 0                                               # Node id.
+        @tree         = TaxNode.new(nil, :r, nil, nil, nil, @node_id)   # Root level tree node.
+        @node_id     += 1
+        @kmers        = Vector.new(4 ** @options[:kmer_size], "byte")   # Kmer vector for storing observed kmers.
+        @max_children = 0                                               # Stats info.
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -127,7 +131,9 @@ module BioPieces
         @kmers.zero!
         @kmers[kmers] = 1 unless kmers.empty?
         
-        seq_id, tax_string = entry.seq_name.split(' ', 2)
+        _, tax_string = entry.seq_name.split(' ', 2)
+
+        raise TaxError, "Failed to match tax string: #{tax_string}" unless tax_string.match(TAX_REGEX)
 
         tax_levels = tax_string.split(';')
 
@@ -138,13 +144,15 @@ module BioPieces
             if node[name]
               node[name].kmers |= @kmers
             else
-              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, seq_id.to_i, @id)
-              @id += 1
+              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, @seq_id, @node_id)
+              @node_id += 1
             end
 
             node = node[name]
           end
         end
+
+        @seq_id += 1
 
         self
       end
