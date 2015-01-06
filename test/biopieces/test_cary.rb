@@ -44,6 +44,10 @@ class TestCAry < Test::Unit::TestCase
     assert_equal("0" * 40, BioPieces::CAry.new(5, 1).to_s)
   end
 
+  test "BioPieces::CAry.new with ary returns correctly" do
+    assert_equal([1,2].pack("I*").unpack("B*").first, BioPieces::CAry.new(2, 4, [1,2].pack("I*")).to_s)
+  end
+
   test "BioPieces::CAry.fill! returns correctly" do
     cary = BioPieces::CAry.new(5, 1)
     cary.fill!
@@ -149,6 +153,20 @@ class TestCAry < Test::Unit::TestCase
 
     assert_equal("1" * 40, cary1.to_s)
     assert_equal("1" * 40, cary2.to_s)
+  end
+
+  test "BioPieces::CAry #store and #retrieve returns correctly" do
+    file = Tempfile.new('cary')
+    cary = BioPieces::CAry.new(5, 1).fill
+
+    begin
+      BioPieces::CAry.store(file, cary)
+      cary2 = BioPieces::CAry.retrieve(file)
+      assert_equal(cary.to_s, cary2.to_s)
+    ensure
+      file.close
+      file.unlink
+    end
   end
 end
 
