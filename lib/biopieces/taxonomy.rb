@@ -128,7 +128,7 @@ module BioPieces
         node  = @tree
         kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
 
-        @kmers.zero!
+        @kmers.zero! # A reusable instance variable is used to avoid casting and GC overhead.
         @kmers[kmers] = 1 unless kmers.empty?
         
         _, tax_string = entry.seq_name.split(' ', 2)
