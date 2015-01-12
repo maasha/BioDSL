@@ -531,7 +531,7 @@ module BioPieces
             int  length    = FIX2INT(_length);
             int  i         = 0;
 
-            for (i = length - 1; i >= 0; i--) {
+            for (i = 0; i < length; i++) {
               count_ary[nodes_ary[i]]++;
             }
           }
@@ -567,7 +567,7 @@ module BioPieces
             int          i       = 0;
             unsigned int j       = 0;
 
-            for (i = count_ary_len - 1; i >= 0; i--)
+            for (i = 0; i < count_ary_len; i++)
             {
               if ((count = count_ary[i]))
               {
