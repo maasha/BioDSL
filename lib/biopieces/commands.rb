@@ -55,7 +55,6 @@ module BioPieces
     require 'biopieces/commands/trim_seq'
     require 'biopieces/commands/uchime_ref'
     require 'biopieces/commands/usearch_global'
-    require 'biopieces/commands/write_biom'
     require 'biopieces/commands/write_fasta'
     require 'biopieces/commands/write_fastq'
     require 'biopieces/commands/write_table'
