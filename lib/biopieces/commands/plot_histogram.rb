@@ -98,6 +98,8 @@ module BioPieces
     #    read_fasta(input: "test.fna").
     #    plot_histogram(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
+      require 'gnuplotter'
+
       options_orig = options.dup
       options_load_rc(options, __method__)
       options_allowed(options, :key, :value, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
@@ -140,7 +142,7 @@ module BioPieces
             end
           end
 
-          gp = BioPieces::GnuPlot.new
+          gp = GnuPlotter.new
           gp.set terminal: options[:terminal].to_s
           gp.set title:    options[:title]
           gp.set xlabel:   options[:xlabel]

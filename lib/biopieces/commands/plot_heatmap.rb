@@ -63,7 +63,7 @@ module BioPieces
     # 
     #    BP.new.read_table(input: "test.tab").plot_heatmap.run
     def plot_heatmap(options = {})
-      require 'gnuplot'
+      require 'gnuplotter'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
@@ -82,7 +82,7 @@ module BioPieces
         skip_keys = options[:skip].each_with_object({}) { |i, h| h[i.to_sym] = true } if options[:skip]
 
         status_track(status) do
-          gp = BioPieces::GnuPlot.new
+          gp = GnuPlotter.new
           gp.set   terminal:  options[:terminal].to_s
           gp.set   title:     options[:title]
           gp.set   xlabel:    options[:xlabel]

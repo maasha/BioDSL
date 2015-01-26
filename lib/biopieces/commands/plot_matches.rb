@@ -99,7 +99,7 @@ module BioPieces
     # 
     #    plot_matches(terminal: :png, output: "plot.png").run
     def plot_matches(options = {})
-      require 'gnuplot'
+      require 'gnuplotter'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
@@ -118,7 +118,7 @@ module BioPieces
         status[:matches_in] = 0
 
         status_track(status) do
-          gp = BioPieces::GnuPlot.new
+          gp = GnuPlotter.new
           gp.set terminal:  options[:terminal].to_s
           gp.set title:     options[:title]
           gp.set xlabel:    options[:xlabel]
