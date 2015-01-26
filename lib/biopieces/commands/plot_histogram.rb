@@ -45,7 +45,7 @@ module BioPieces
     #    plot_histogram(<key: <string>>[, value: <string>[, output: <file>
     #                   [, force: <bool>[, terminal: <string>[, title: <string>
     #                   [, xlabel: <string>[, ylabel: <string>
-    #                   [, ylogscale: <bool>]]]]]]]])
+    #                   [, ylogscale: <bool>[, test: <bool>]]]]]]]]])
     # 
     # === Options
     #
@@ -58,6 +58,7 @@ module BioPieces
     # * xlabel: <string>   - X-axis label (default=<key>).
     # * ylabel: <string>   - Y-axis label (default="n").
     # * ylogscale: <bool>  - Set y-axis to log scale.
+    # * test: <bool>       - Output Gnuplot script instead of plot.
     #
     # == Examples
     # 
@@ -102,9 +103,10 @@ module BioPieces
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :key, :value, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed(options, :key, :value, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale, :test)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_allowed_values(options, force: [nil, true, false])
+      options_allowed_values(options, test: [nil, true, false])
       options_required(options, :key)
       options_files_exists_force(options, :output)
 
@@ -160,7 +162,6 @@ module BioPieces
           gp.set style:     "fill solid 0.5 border"
           gp.set xtics:     "out"
           gp.set ytics:     "out"
-          gp.set "datafile separator" => "\t"
 
           if count_hash.empty?
             gp.set   yrange: "[-1:1]"
@@ -186,7 +187,13 @@ module BioPieces
 
           gp.unset xtics: true if count_hash.size > 50 # Don't plot xtics if more than 50.
 
-          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
+          if options[:test]
+            $stderr.puts gp.to_gp
+          elsif options[:terminal] == :dumb
+            puts gp.plot
+          else
+            gp.plot
+          end
         end
       end
 
