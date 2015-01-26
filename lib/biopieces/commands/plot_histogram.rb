@@ -45,7 +45,7 @@ module BioPieces
     #    plot_histogram(<key: <string>>[, value: <string>[, output: <file>
     #                   [, force: <bool>[, terminal: <string>[, title: <string>
     #                   [, xlabel: <string>[, ylabel: <string>
-    #                   [, ylogscale: <bool>]]]]]]]])
+    #                   [, ylogscale: <bool>[, test: <bool>]]]]]]]]])
     # 
     # === Options
     #
@@ -58,6 +58,7 @@ module BioPieces
     # * xlabel: <string>   - X-axis label (default=<key>).
     # * ylabel: <string>   - Y-axis label (default="n").
     # * ylogscale: <bool>  - Set y-axis to log scale.
+    # * test: <bool>       - Output Gnuplot script instead of plot.
     #
     # == Examples
     # 
@@ -98,11 +99,14 @@ module BioPieces
     #    read_fasta(input: "test.fna").
     #    plot_histogram(key: :SEQ_LEN, terminal: :png, output: "plot.png").run
     def plot_histogram(options = {})
+      require 'gnuplotter'
+
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :key, :value, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed(options, :key, :value, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale, :test)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_allowed_values(options, force: [nil, true, false])
+      options_allowed_values(options, test: [nil, true, false])
       options_required(options, :key)
       options_files_exists_force(options, :output)
 
@@ -140,7 +144,7 @@ module BioPieces
             end
           end
 
-          gp = BioPieces::GnuPlot.new
+          gp = GnuPlotter.new
           gp.set terminal: options[:terminal].to_s
           gp.set title:    options[:title]
           gp.set xlabel:   options[:xlabel]
@@ -158,7 +162,6 @@ module BioPieces
           gp.set style:     "fill solid 0.5 border"
           gp.set xtics:     "out"
           gp.set ytics:     "out"
-          gp.set "datafile separator" => "\t"
 
           if count_hash.empty?
             gp.set   yrange: "[-1:1]"
@@ -177,14 +180,20 @@ module BioPieces
               gp.set xlabel: ""
             end
 
-            gp.add_dataset(using: "2:xticlabels(1)", with: "boxes notitle") do |plotter|
+            gp.add_dataset(using: "2:xticlabels(1)", with: "boxes notitle lc rgb \"red\"") do |plotter|
               count_hash.each { |k, v| plotter << [k, v] }
             end
           end
 
           gp.unset xtics: true if count_hash.size > 50 # Don't plot xtics if more than 50.
 
-          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
+          if options[:test]
+            $stderr.puts gp.to_gp
+          elsif options[:terminal] == :dumb
+            puts gp.plot
+          else
+            gp.plot
+          end
         end
       end
 

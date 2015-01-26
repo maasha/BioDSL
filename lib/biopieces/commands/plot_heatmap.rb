@@ -44,7 +44,7 @@ module BioPieces
     # 
     #    plot_matches([keys: <list> | skip: <list>[, output: <file>
     #                 [, force: <bool> [, terminal: <string>
-    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>]]]]]])
+    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>[, test: <bool>]]]]]]])
     # 
     # === Options
     #
@@ -56,6 +56,7 @@ module BioPieces
     # * title: <string>     - Plot title (default="Heatmap").
     # * xlabel: <string>    - X-axis label (default="x").
     # * ylabel: <string>    - Y-axis label (default="y").
+    # * test: <bool>        - Output Gnuplot script instead of plot.
     #
     # == Examples
     # 
@@ -63,13 +64,14 @@ module BioPieces
     # 
     #    BP.new.read_table(input: "test.tab").plot_heatmap.run
     def plot_heatmap(options = {})
-      require 'gnuplot'
+      require 'gnuplotter'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :keys, :skip, :output, :force, :terminal, :title, :xlabel, :ylabel)
+      options_allowed(options, :keys, :skip, :output, :force, :terminal, :title, :xlabel, :ylabel, :test)
       options_unique(options, :keys, :skip)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_allowed_values(options, test: [nil, true, false])
       options_files_exists_force(options, :output)
 
       options[:terminal] ||= :dumb
@@ -82,7 +84,7 @@ module BioPieces
         skip_keys = options[:skip].each_with_object({}) { |i, h| h[i.to_sym] = true } if options[:skip]
 
         status_track(status) do
-          gp = BioPieces::GnuPlot.new
+          gp = GnuPlotter.new
           gp.set   terminal:  options[:terminal].to_s
           gp.set   title:     options[:title]
           gp.set   xlabel:    options[:xlabel]
@@ -126,7 +128,14 @@ module BioPieces
             end
           end
 
-          options[:terminal] == :dumb ? puts(gp.splot) : gp.splot
+
+          if options[:test]
+            $stderr.puts gp.to_gp
+          elsif options[:terminal] == :dumb 
+            puts gp.splot
+          else
+            gp.splot
+          end
         end
       end
 

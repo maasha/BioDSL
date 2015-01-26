@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,40 +27,20 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    require 'biopieces/commands/add_key'
-    require 'biopieces/commands/assemble_pairs'
-    require 'biopieces/commands/assemble_seq_spades'
-    require 'biopieces/commands/classify_seq'
-    require 'biopieces/commands/classify_seq_mothur'
-    require 'biopieces/commands/clip_primer'
-    require 'biopieces/commands/cluster_otus'
-    require 'biopieces/commands/collapse_otus'
-    require 'biopieces/commands/collect_otus'
-    require 'biopieces/commands/count'
-    require 'biopieces/commands/dereplicate_seq'
-    require 'biopieces/commands/dump'
-    require 'biopieces/commands/grab'
-    require 'biopieces/commands/index_taxonomy'
-    require 'biopieces/commands/mean_scores'
-    require 'biopieces/commands/merge_table'
-    require 'biopieces/commands/merge_values'
-    require 'biopieces/commands/plot_heatmap'
-    require 'biopieces/commands/plot_histogram'
-    require 'biopieces/commands/plot_matches'
-    require 'biopieces/commands/plot_scores'
-    require 'biopieces/commands/read_fasta'
-    require 'biopieces/commands/read_fastq'
-    require 'biopieces/commands/read_table'
-    require 'biopieces/commands/sort'
-    require 'biopieces/commands/split_values'
-    require 'biopieces/commands/trim_primer'
-    require 'biopieces/commands/trim_seq'
-    require 'biopieces/commands/uchime_ref'
-    require 'biopieces/commands/usearch_global'
-    require 'biopieces/commands/write_fasta'
-    require 'biopieces/commands/write_fastq'
-    require 'biopieces/commands/write_table'
+require 'test/helper'
+
+class TestAssembleSeqSpades < Test::Unit::TestCase 
+  def setup
+    @p = BioPieces::Pipeline.new
   end
+
+  test "BioPieces::Pipeline::AssembleSeqSpades with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.assemble_seq_spades(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::AssembleSeqSpades with valid options don't raise" do
+    assert_nothing_raised { @p.assemble_seq_spades(cpus: 1) }
+  end
+
+  #TODO Fix missing testing here!
 end

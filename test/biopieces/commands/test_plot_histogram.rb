@@ -46,57 +46,39 @@ class TestPlotHistogram < Test::Unit::TestCase
     @output.close
 
     @expected1 = <<EOF
-\f
-                                     Histogram
-       +        +       +        +       +        +       +        +       +
-    3 ++--------+-------+--------+-------+--------+-------******************+
-       |                                                  *                *
-       |                                                  *                *
-  2.5 ++                                                  *                *+
-       |                                                  *                *
-    2 ++                                 ******************                *+
-       |                                 *                *                *
-       |                                 *                *                *
-  1.5 ++                                 *                *                *+
-       |                                 *                *                *
-       |                                 *                *                *
-    1 ++                ******************                *                *+
-       |                *                *                *                *
-  0.5 ++                *                *                *                *+
-       |                *                *                *                *
-       |                *                *                *                *
-    0 ++--------+-------****************************************************+
-       +        +       +        +       +        +       +        +       +
-     -0.5       0      0.5       1      1.5       2      2.5       3      3.5
-                                        LEN
-
+set terminal dumb
+set title \"Histogram\"
+set xlabel \"LEN\"
+set ylabel \"n\"
+set output \"\"
+set yrange [0:*]
+set autoscale xfix
+set style fill solid 0.5 border
+set xtics out
+set ytics out
+plot \"-\" using 1:2 with boxes notitle
+0 0
+1 1
+2 2
+3 3
+e
 EOF
 
     @expected2 = <<EOF
-\f
-                                     Histogram
-                        +                                 +
-    4 +***********************************----------------+----------------++
-       *                                 *                                 |
-  3.5 +*                                 *                                 ++
-       *                                 *                                 |
-    3 +*                                 *                                 ++
-       *                                 *                                 |
-  2.5 +*                                 *                                 ++
-       *                                 *                                 |
-    2 +*                                 ***********************************+
-       *                                 *                                 *
-  1.5 +*                                 *                                 *+
-       *                                 *                                 *
-    1 +*                                 *                                 *+
-       *                                 *                                 *
-  0.5 +*                                 *                                 *+
-       *                                 *                                 *
-    0 +*********************************************************************+
-                        +                                 +
-                        x                                 y
-                                        ID
-
+set terminal dumb
+set title \"Histogram\"
+set xlabel \"ID\"
+set ylabel \"n\"
+set output \"\"
+set yrange [0:*]
+set autoscale xfix
+set style fill solid 0.5 border
+set xtics out
+set ytics out
+plot \"-\" using 2:xticlabels(1) with boxes notitle lc rgb \"red\"
+x 4
+y 2
+e
 EOF
 
     @p = BioPieces::Pipeline.new
@@ -120,24 +102,15 @@ EOF
     end
   end
 
-#  test "BioPieces::Pipeline::PlotHistogram to stdout outputs correctly" do
-#    flunk "capture of stdout issue"
-#    $VERBOSE = false
-#    result = capture_stderr { @p.plot_histogram(key: :LEN).run(input: @input) }
-#    assert_equal(@expected1, result)
-#  end
-
   test "BioPieces::Pipeline::PlotHistogram to file with numeric outputs correctly" do
-    $VERBOSE = false
-    @p.plot_histogram(key: :LEN, output: @file).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_histogram(key: :LEN, output: @file, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected1, result)
   end
 
   test "BioPieces::Pipeline::PlotHistogram to file with non-numeric outputs correctly" do
-    $VERBOSE = false
-    @p.plot_histogram(key: :ID, output: @file).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_histogram(key: :ID, output: @file, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected2, result)
   end
 
@@ -147,16 +120,15 @@ EOF
   end
 
   test "BioPieces::Pipeline::PlotHistogram to existing file with options[:force] outputs correctly" do
-    $VERBOSE = false
     `touch #{@file}`
-    @p.plot_histogram(key: :LEN, output: @file, force: true).run(input: @input)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_histogram(key: :LEN, output: @file, force: true, test: true).run(input: @input) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected1, result)
   end
 
   test "BioPieces::Pipeline::PlotHistogram with flux outputs correctly" do
-    @p.plot_histogram(key: :LEN, output: @file, force: true).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_histogram(key: :LEN, output: @file, force: true, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected1, result)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)

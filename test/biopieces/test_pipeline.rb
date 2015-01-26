@@ -114,7 +114,6 @@ class PipelineTest < Test::Unit::TestCase
 
   test "BioPieces::Pipeline#to_s with .run() and options returns correctly" do
     expected = %{BP.new.read_fasta(input: "#{@fasta_file}").run(verbose: false)}
-    @p.expects(:status).returns(expected)
     assert_equal(expected, @p.read_fasta(input: @fasta_file).run(verbose: false).to_s)
   end
 

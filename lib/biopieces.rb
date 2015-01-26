@@ -61,7 +61,6 @@ module BioPieces
   require 'biopieces/filesys'
   require 'biopieces/csv'
   require 'biopieces/fork'
-  require 'biopieces/gnuplot'
   require 'biopieces/render'
   require 'biopieces/pipeline'
   require 'biopieces/fasta'

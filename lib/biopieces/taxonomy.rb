@@ -25,11 +25,14 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  class TaxError < StandardError; end
+
   # Module containing classes for creating a taxonomic database and searching this.
   module Taxonomy
     require 'narray'
 
     TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
+    TAX_REGEX  = /^K#[^;]*?;P#[^;]*?;C#[^;]*?;O#[^;]*?;F#[^;]*?;G#[^;]*?;S#.*$/
 
     # Class for creating, connecting and disconnecting databases.
     # The databases are Tokyo Cabinet files.
@@ -83,12 +86,13 @@ module BioPieces
     class Index
       # Constructor Index object.
       def initialize(options)
-        @options      = options                                       # Option hash.
-        @id           = 0                                             # Node id.
-        @tree         = TaxNode.new(nil, :r, nil, nil, nil, @id)      # Root level tree node.
-        @id          += 1
-        @kmers        = Vector.new(4 ** @options[:kmer_size], "byte") # Kmer vector for storing observed kmers.
-        @max_children = 0                                             # Stats info.
+        @options      = options                                         # Option hash.
+        @seq_id       = 0                                               # Sequence id.
+        @node_id      = 0                                               # Node id.
+        @tree         = TaxNode.new(nil, :r, nil, nil, nil, @node_id)   # Root level tree node.
+        @node_id     += 1
+        @kmers        = Vector.new(4 ** @options[:kmer_size], "byte")   # Kmer vector for storing observed kmers.
+        @max_children = 0                                               # Stats info.
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -108,7 +112,7 @@ module BioPieces
       #     ACGGGAGG
       #      ...
       #
-      # Each oligo is encoded as an kmer (integer) by encoding two bits per nucletoide:
+      # Each oligo is encoded as an kmer (integer) by encoding two bits per nucleotide:
       #
       # A = 00
       # U = 01
@@ -124,10 +128,12 @@ module BioPieces
         node  = @tree
         kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
 
-        @kmers.zero!
+        @kmers.zero! # A reusable instance variable is used to avoid casting and GC overhead.
         @kmers[kmers] = 1 unless kmers.empty?
         
-        seq_id, tax_string = entry.seq_name.split(' ', 2)
+        _, tax_string = entry.seq_name.split(' ', 2)
+
+        raise TaxError, "Failed to match tax string: #{tax_string}" unless tax_string.match(TAX_REGEX)
 
         tax_levels = tax_string.split(';')
 
@@ -138,13 +144,15 @@ module BioPieces
             if node[name]
               node[name].kmers |= @kmers
             else
-              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, seq_id.to_i, @id)
-              @id += 1
+              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, @seq_id, @node_id)
+              @node_id += 1
             end
 
             node = node[name]
           end
         end
+
+        @seq_id += 1
 
         self
       end
@@ -247,7 +255,7 @@ module BioPieces
           @level    = level    # Taxonomic level.
           @name     = name     # Taxonomic name.
           @kmers    = kmers    # Kmer vector.
-          @seq_id   = seq_id   # Sequence id.
+          @seq_id   = seq_id   # Sequence id (a representative seq for debugging).
           @node_id  = node_id  # Node id.
           @children = {}       # Child node hash.
         end
@@ -523,7 +531,7 @@ module BioPieces
             int  length    = FIX2INT(_length);
             int  i         = 0;
 
-            for (i = length - 1; i >= 0; i--) {
+            for (i = 0; i < length; i++) {
               count_ary[nodes_ary[i]]++;
             }
           }
@@ -559,7 +567,7 @@ module BioPieces
             int          i       = 0;
             unsigned int j       = 0;
 
-            for (i = count_ary_len - 1; i >= 0; i--)
+            for (i = 0; i < count_ary_len; i++)
             {
               if ((count = count_ary[i]))
               {
