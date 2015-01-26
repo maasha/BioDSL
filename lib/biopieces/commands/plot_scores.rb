@@ -47,7 +47,7 @@ module BioPieces
     # 
     #    plot_scores([count: <bool>[, output: <file>[, force: <bool>
     #                   [, terminal: <string>[, title: <string>
-    #                   [, xlabel: <string>[, ylabel: <string>]]]]]]])
+    #                   [, xlabel: <string>[, ylabel: <string>[, test: <bool>]]]]]]]])
     # 
     # === Options
     #
@@ -58,6 +58,7 @@ module BioPieces
     # * title: <string>    - Plot title (default="Histogram").
     # * xlabel: <string>   - X-axis label (default=<key>).
     # * ylabel: <string>   - Y-axis label (default="n").
+    # * test: <bool>       - Output Gnuplot script instread of plot.
     #
     # == Examples
     # 
@@ -103,8 +104,9 @@ module BioPieces
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale, :test)
       options_allowed_values(options, count: [true, false])
+      options_allowed_values(options, test: [true, false])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_files_exists_force(options, :output)
 
@@ -173,7 +175,13 @@ module BioPieces
             end
           end
 
-          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
+          if options[:test]
+            $stderr.puts gp.to_gp
+          elsif options[:terminal] == :dumb 
+            puts gp.plot
+          else
+            gp.plot
+          end
         end
       end
 
