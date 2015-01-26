@@ -46,7 +46,7 @@ module BioPieces
     # == Usage
     # 
     #    plot_matches([direction: <string>[, output: <file>[, force: <bool> [, terminal: <string>
-    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>]]]]]]])
+    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>[, test: <bool>]]]]]]]])
     # 
     # === Options
     #
@@ -57,6 +57,7 @@ module BioPieces
     # * title: <string>     - Plot title (default="Matches").
     # * xlabel: <string>    - X-axis label (default="x").
     # * ylabel: <string>    - Y-axis label (default="y").
+    # * test: <bool>        - Output Gnuplot script instead of plot.
     #
     # == Examples
     # 
@@ -103,9 +104,10 @@ module BioPieces
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :direction, :output, :force, :terminal, :title, :xlabel, :ylabel)
+      options_allowed(options, :direction, :output, :force, :terminal, :title, :xlabel, :ylabel, :test)
       options_allowed_values(options, direction: [:forward, :reverse, :both])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_allowed_values(options, test: [nil, true, false])
       options_files_exists_force(options, :output)
 
       options[:direction] ||= :both
@@ -174,7 +176,13 @@ module BioPieces
             end
           end
 
-          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
+          if options[:test]
+            $stderr.puts gp.to_gp
+          elsif options[:terminal] == :dumb
+            puts gp.plot
+          else
+            gp.plot
+          end
         end
       end
 
