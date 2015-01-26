@@ -179,7 +179,7 @@ module BioPieces
               gp.set xlabel: ""
             end
 
-            gp.add_dataset(using: "2:xticlabels(1)", with: "boxes notitle") do |plotter|
+            gp.add_dataset(using: "2:xticlabels(1)", with: "boxes notitle lc rgb \"red\"") do |plotter|
               count_hash.each { |k, v| plotter << [k, v] }
             end
           end
