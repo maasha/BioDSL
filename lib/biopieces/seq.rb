@@ -101,6 +101,28 @@ module BioPieces
       oligos
     end
 
+    def self.check_name_pair(entry1, entry2)
+      if entry1.seq_name =~ /^([^ ]+) \d:/
+        name1 = $1
+      elsif entry1.seq_name =~ /^(.+)\/\d$/
+        name1 = $1
+      else
+        raise SeqError, "Could not match sequence name: #{entry1.seq_name}"
+      end
+
+      if entry2.seq_name =~ /^([^ ]+) \d:/
+        name2 = $1
+      elsif entry2.seq_name =~ /^(.+)\/\d$/
+        name2 = $1
+      else
+        raise SeqError, "Could not match sequence name: #{entry2.seq_name}"
+      end
+
+      if name1 != name2
+        raise SeqError, "Name mismatch: #{name1} != #{name2}"
+      end
+    end
+
     # Initialize a sequence object with the following options:
     # - :seq_name   Name of the sequence.
     # - :seq        The sequence.
