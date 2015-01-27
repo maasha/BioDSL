@@ -158,7 +158,7 @@ module BioPieces
           gp.set title:    options[:title]
           gp.set xlabel:   options[:xlabel]
           gp.set ylabel:   options[:ylabel]
-          gp.set output:   options[:output] || "/dev/stderr"
+          gp.set output:   options[:output] if options[:output]
           gp.set xrange:   "[#{x.min - 1}:#{x.max + 1}]"
           gp.set yrange:   "[#{Seq::SCORE_MIN}:#{Seq::SCORE_MAX}]"
           gp.set style:    "fill solid 0.5 border"
