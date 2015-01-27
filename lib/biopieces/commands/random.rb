@@ -71,7 +71,9 @@ module BioPieces
               input.each do |record|
                 status[:records_in] += 1
 
-                ios.puts Marshal.dump(record)
+                marshalled = Marshal.dump(record)
+                ios.write([marshalled.size].pack("I"))
+                ios.write(marshalled)
               end
             end
             
@@ -86,11 +88,20 @@ module BioPieces
             end
 
             File.open(file) do |ios|
-              ios.each_with_index do |bin, i|
+              i = 0
+
+              while not ios.eof?
+                size = ios.read(4)
+                raise EOFError unless size
+                size = size.unpack("I").first
+                marshalled = ios.read(size)
+
                 if wanted.include? i
-                  output << Marshal.load(bin)
+                  output << Marshal.load(marshalled)
                   status[:records_out] += 1
                 end
+
+                i += 1
               end
             end
           ensure
