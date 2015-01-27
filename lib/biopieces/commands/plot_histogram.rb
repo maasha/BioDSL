@@ -185,7 +185,10 @@ module BioPieces
             end
           end
 
-          gp.unset xtics: true if count_hash.size > 50 # Don't plot xtics if more than 50.
+          # Don't plot xtics if more than 50 strings.
+          if count_hash.keys.first.class == String and count_hash.size > 50
+            gp.unset xtics: true
+          end
 
           if options[:test]
             $stderr.puts gp.to_gp
