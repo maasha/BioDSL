@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,11 +27,40 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Commands
-    # Require all files in the biopieces/commands/ directory
-    Dir[File.join(File.dirname(__FILE__), "commands", "*")].each do |file|
-      require file.split(File::SEPARATOR)[-3 .. -1].join(File::SEPARATOR).chomp(".rb")
+require 'test/helper'
+
+class TestRandom < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    [ {TEST: 1},
+      {TEST: 2},
+      {TEST: 3},
+      {TEST: 4},
+      {TEST: 5},
+    ].each do |record|
+      @output.write record
     end
+
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline#random with disallowed option raises" do
+    assert_raise(BioPieces::OptionError) { @p.random(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#random with allowed options don't raise" do
+    assert_nothing_raised { @p.random(number: 2) }
+  end
+
+  test "BioPieces::Pipeline#random with value returns correctly" do
+    @p.random(number: 3).run(input: @input, output: @output2)
+    size = 0
+    @input2.map { size += 1 }
+
+    assert_equal(3, size)
   end
 end
