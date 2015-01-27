@@ -31,13 +31,17 @@ module BioPieces
     # +random+ can be used to pick a random number of records from the stream.
     # Note that the order of records is preserved.
     #
+    # Using the `pair: true` option allows random picking of interleaved
+    # paired-end sequence records.
+    #
     # == Usage
     # 
-    #    random(<number: <uint>)
+    #    random(<number: <uint>[, pairs: <bool>])
     # 
     # === Options
     #
     # * number: <uint>  - Number of records to pick.
+    # * pairs: <bool>   - Preserve interleaved pair order.
     # 
     # == Examples
     # 
@@ -53,8 +57,9 @@ module BioPieces
 
       options_orig = options
       options_load_rc(options, __method__)
-      options_allowed(options, :number)
+      options_allowed(options, :number, :pairs)
       options_required(options, :number)
+      options_allowed_values(options, pairs: [nil, true, false])
       options_assert(options, ":number > 0")
 
       lmb = lambda do |input, output, status|
@@ -70,7 +75,15 @@ module BioPieces
               end
             end
             
-            wanted = (0 ... status[:records_in]).to_a.shuffle[0 ... options[:number]].to_set
+            if options[:pairs]
+              wanted = Set.new
+
+              (0 ... status[:records_in]).to_a.shuffle.select { |i| i.even? }[0 ... options[:number] / 2].each do |i|
+                wanted.merge([i, i + 1])
+              end
+            else
+              wanted = (0 ... status[:records_in]).to_a.shuffle[0 ... options[:number]].to_set
+            end
 
             File.open(file) do |ios|
               ios.each_with_index do |bin, i|

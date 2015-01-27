@@ -39,6 +39,7 @@ class TestRandom < Test::Unit::TestCase
       {TEST: 3},
       {TEST: 4},
       {TEST: 5},
+      {TEST: 6},
     ].each do |record|
       @output.write record
     end
@@ -56,11 +57,24 @@ class TestRandom < Test::Unit::TestCase
     assert_nothing_raised { @p.random(number: 2) }
   end
 
-  test "BioPieces::Pipeline#random with value returns correctly" do
+  test "BioPieces::Pipeline#random returns correctly" do
     @p.random(number: 3).run(input: @input, output: @output2)
     size = 0
     @input2.map { size += 1 }
 
     assert_equal(3, size)
+  end
+
+  test "BioPieces::Pipeline#random with pairs: true returns correctly" do
+    @p.random(number: 4, pairs: true).run(input: @input, output: @output2)
+
+    size = 0
+
+    @input2.each_slice(2) do |record1, record2|
+      assert_equal(record1[:TEST].to_i, record2[:TEST].to_i - 1)
+      size += 2
+    end
+
+    assert_equal(4, size)
   end
 end
