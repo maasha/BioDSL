@@ -45,15 +45,22 @@ module BioPieces
     # Futhermore, sequences must be in interleaved order in the stream - use
     # +read_fastq+ with +input+ and +input2+ options for that.
     #
-    # The additional keys are added to records with merged sequences:
+    # The additional keys are added to records with assembled sequences:
     #
     # * OVERLAP_LEN   - the length of the located overlap.
     # * HAMMING_DIST  - the number of mismatches in the assembly.
     #
+    # Using the +merge_unassembled+ option will merge any unassembled sequences
+    # taking into account reverse complementation of read2 if the
+    # +reverse_complement+ option is true. Note that you probably want to set
+    # +overlap_min+ to 1 before using +merge_unassembled+ to improve chances
+    # of making an assembly before falling back to a simple merge.
+    #
     # == Usage
     # 
     #    assemble_pairs([mismatch_percent: <uint>[, overlap_min: <uint>
-    #                   [, overlap_max: <uint>[, reverse_complement: <bool>]]]])
+    #                   [, overlap_max: <uint>[, reverse_complement: <bool>
+    #                   [, merge_unassembled: <bool>]]]]])
     #
     # === Options
     #
@@ -61,6 +68,7 @@ module BioPieces
     # * overlap_min: <uint>        - Minimum overlap required (default=1).
     # * overlap_max: <uint>        - Maximum overlap considered (default=<length of shortest sequences>).
     # * reverse_complement: <bool> - Reverse-complement read2 before assembly (default=false).
+    # * merge_unassembled: <bool>  - Merge unassembled pairs (default=false).
     # 
     # == Examples
     # 
@@ -74,8 +82,9 @@ module BioPieces
     def assemble_pairs(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :mismatch_percent, :overlap_min, :overlap_max, :reverse_complement)
+      options_allowed(options, :mismatch_percent, :overlap_min, :overlap_max, :reverse_complement, :merge_unassembled)
       options_allowed_values(options, reverse_complement: [true, false, nil])
+      options_allowed_values(options, merge_unassembled: [true, false, nil])
       options_assert(options, ":mismatch_percent >= 0")
       options_assert(options, ":mismatch_percent <= 100")
       options_assert(options, ":overlap_min > 0")
@@ -106,9 +115,10 @@ module BioPieces
               status[:residues_in]  += entry1.length + entry2.length
 
               if entry1.length >= options[:overlap_min] and
-                entry2.length >= options[:overlap_min]
+                 entry2.length >= options[:overlap_min]
 
                 if options[:reverse_complement]
+                  entry1.type = :dna
                   entry2.type = :dna
                   entry2.reverse!.complement!
                 end
@@ -140,15 +150,56 @@ module BioPieces
                   status[:records_out]   += 1
                   status[:sequences_out] += 1
                   status[:residues_out]  += merged.length
+                elsif options[:merge_unassembled]
+                  entry1 << entry2
+
+                  new_record = entry1.to_bp
+                  new_record[:OVERLAP_LEN] = 0
+                  new_record[:HAMMING_DIST] = entry1.length
+
+                  output << new_record
+
+                  status[:unassembled]   += 1
+                  status[:sequences_out] += 1
+                  status[:residues_out]  += entry1.length
+                  status[:records_out]   += 1
                 else
                   status[:unassembled] += 1
                 end
+              elsif options[:merge_unassembled]
+                if options[:reverse_complement]
+                  entry1.type = :dna
+                  entry2.type = :dna
+                  entry2.reverse!.complement!
+                end
+
+                entry1 << entry2
+
+                new_record = entry1.to_bp
+                new_record[:OVERLAP_LEN] = 0
+                new_record[:HAMMING_DIST] = entry1.length
+
+                output << new_record
+
+                status[:unassembled]   += 1
+                status[:sequences_out] += 1
+                status[:residues_out]  += entry1.length
+                status[:records_out]   += 1
+              else
+                status[:unassembled]   += 1
               end
             else
-              output << record1 if record1
-              output << record2 if record2
+              if record1
+                output << record1
 
-              status[:records_out] += 2
+                status[:records_out] += 1
+              end
+
+              if record2
+                output << record2
+
+                status[:records_out] += 1
+              end
             end
           end
 
