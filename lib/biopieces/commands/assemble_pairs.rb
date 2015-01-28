@@ -152,7 +152,7 @@ module BioPieces
             end
           end
 
-          status[:assembled_percent] = (100 * (status[:assembled] - status[:unassembled]).abs.to_f / [status[:assembled], status[:unassembled]].max).round(2)
+          status[:assembled_percent] = (100 * status[:assembled].to_f / status[:sequences_in]).round(2)
           status[:overlap_mean]      = (overlap_sum.to_f / status[:records_out]).round(2)
           status[:hamming_dist_mean] = (hamming_sum.to_f / status[:records_out]).round(2)
         end
