@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -47,7 +47,7 @@ module BioPieces
     # 
     #    plot_scores([count: <bool>[, output: <file>[, force: <bool>
     #                   [, terminal: <string>[, title: <string>
-    #                   [, xlabel: <string>[, ylabel: <string>]]]]]]])
+    #                   [, xlabel: <string>[, ylabel: <string>[, test: <bool>]]]]]]]])
     # 
     # === Options
     #
@@ -58,6 +58,7 @@ module BioPieces
     # * title: <string>    - Plot title (default="Histogram").
     # * xlabel: <string>   - X-axis label (default=<key>).
     # * ylabel: <string>   - Y-axis label (default="n").
+    # * test: <bool>       - Output Gnuplot script instread of plot.
     #
     # == Examples
     # 
@@ -98,13 +99,14 @@ module BioPieces
     #    read_fastq(input: "test.fq").
     #    plot_scores(terminal: :png, output: "plot.png").run
     def plot_scores(options = {})
-      require 'gnuplot'
+      require 'gnuplotter'
       require 'narray'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale)
+      options_allowed(options, :count, :output, :force, :terminal, :title, :xlabel, :ylabel, :ylogscale, :test)
       options_allowed_values(options, count: [true, false])
+      options_allowed_values(options, test: [true, false])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_files_exists_force(options, :output)
 
@@ -151,31 +153,34 @@ module BioPieces
           y1 = mean_vec.to_a
           y2 = count_vec.to_a
 
-          Gnuplot.open do |gp|
-            Gnuplot::Plot.new(gp) do |plot|
-              plot.terminal options[:terminal]
-              plot.title    options[:title]
-              plot.xlabel   options[:xlabel]
-              plot.ylabel   options[:ylabel]
-              plot.output   options[:output] || "/dev/stderr"
-              plot.xrange   "[#{x.min - 1}:#{x.max + 1}]"
-              plot.yrange   "[#{Seq::SCORE_MIN}:#{Seq::SCORE_MAX}]"
-              plot.style    "fill solid 0.5 border"
-              plot.xtics    "out"
-              plot.ytics    "out"
+          gp = GnuPlotter.new
+          gp.set terminal: options[:terminal]
+          gp.set title:    options[:title]
+          gp.set xlabel:   options[:xlabel]
+          gp.set ylabel:   options[:ylabel]
+          gp.set output:   options[:output] if options[:output]
+          gp.set xrange:   "[#{x.min - 1}:#{x.max + 1}]"
+          gp.set yrange:   "[#{Seq::SCORE_MIN}:#{Seq::SCORE_MAX}]"
+          gp.set style:    "fill solid 0.5 border"
+          gp.set xtics:    "out"
+          gp.set ytics:    "out"
               
-              plot.data << Gnuplot::DataSet.new([x, y1]) do |ds|
-                ds.with  = "boxes"
-                ds.title = "mean score"
-              end
+          gp.add_dataset(with: "boxes lc rgb \"red\"", title: "\"mean score\"") do |plotter|
+            x.zip(y1).each { |e| plotter << e }
+          end
 
-              if options[:count]
-                plot.data << Gnuplot::DataSet.new([x, y2]) do |ds|
-                  ds.with  = "lines lt rgb \"black\""
-                  ds.title = "relative count"
-                end
-              end
+          if options[:count]
+            gp.add_dataset(with: "lines lt rgb \"black\"", title: "\"relative count\"") do |plotter|
+              x.zip(y2).each { |e| plotter << e }
             end
+          end
+
+          if options[:test]
+            $stderr.puts gp.to_gp
+          elsif options[:terminal] == :dumb 
+            puts gp.plot
+          else
+            gp.plot
           end
         end
       end

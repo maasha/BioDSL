@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -46,7 +46,7 @@ module BioPieces
     # == Usage
     # 
     #    plot_matches([direction: <string>[, output: <file>[, force: <bool> [, terminal: <string>
-    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>]]]]]]])
+    #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>[, test: <bool>]]]]]]]])
     # 
     # === Options
     #
@@ -57,6 +57,7 @@ module BioPieces
     # * title: <string>     - Plot title (default="Matches").
     # * xlabel: <string>    - X-axis label (default="x").
     # * ylabel: <string>    - Y-axis label (default="y").
+    # * test: <bool>        - Output Gnuplot script instead of plot.
     #
     # == Examples
     # 
@@ -99,13 +100,14 @@ module BioPieces
     # 
     #    plot_matches(terminal: :png, output: "plot.png").run
     def plot_matches(options = {})
-      require 'gnuplot'
+      require 'gnuplotter'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :direction, :output, :force, :terminal, :title, :xlabel, :ylabel)
+      options_allowed(options, :direction, :output, :force, :terminal, :title, :xlabel, :ylabel, :test)
       options_allowed_values(options, direction: [:forward, :reverse, :both])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
+      options_allowed_values(options, test: [nil, true, false])
       options_files_exists_force(options, :output)
 
       options[:direction] ||= :both
@@ -118,7 +120,7 @@ module BioPieces
         status[:matches_in] = 0
 
         status_track(status) do
-          gp = BioPieces::GnuPlot.new
+          gp = GnuPlotter.new
           gp.set terminal:  options[:terminal].to_s
           gp.set title:     options[:title]
           gp.set xlabel:    options[:xlabel]
@@ -174,7 +176,13 @@ module BioPieces
             end
           end
 
-          options[:terminal] == :dumb ? puts(gp.plot) : gp.plot
+          if options[:test]
+            $stderr.puts gp.to_gp
+          elsif options[:terminal] == :dumb
+            puts gp.plot
+          else
+            gp.plot
+          end
         end
       end
 

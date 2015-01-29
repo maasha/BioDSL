@@ -1,5 +1,5 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -215,11 +215,28 @@ module BioPieces
     # otherwise default to self.to_s. The body of the email will be the
     # Pipeline status.
     def email_send
+      unless @options[:email] == "test@foobar.com"
+        Mail.defaults do
+          delivery_method :smtp, {
+            address: "localhost",
+            port: 25,
+            enable_starttls_auto: false
+          }
+        end
+      end
+
+      html = BioPieces::Render.html(self)
+
+      html_part = Mail::Part.new do
+        content_type 'text/html; charset=UTF-8'
+        body html
+      end
+
       mail = Mail.new
-      mail[:from]    = "#{ENV['USER']}@#{`hostname`.strip}"
-      mail[:to]      = @options[:email]
-      mail[:subject] = @options[:subject] || self.to_s
-      mail[:body]    = "#{self.to_s}\n\n\n#{PP.pp(@status, '')}"
+      mail[:from]      = "do-not-reply@#{`hostname -f`.strip}"
+      mail[:to]        = @options[:email]
+      mail[:subject]   = @options[:subject] || self.to_s
+      mail.html_part = html_part
 
       mail.deliver!
     end

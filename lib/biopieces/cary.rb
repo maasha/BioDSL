@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -34,16 +34,42 @@ module BioPieces
 
     attr_reader :count, :size, :ary
 
+    # Class method to store to a given file a given ary.
+    def self.store(file, ary)
+      File.open(file, 'w') do |ios|
+        ios.write([ary.count].pack("I"))
+        ios.write([ary.size].pack("I"))
+        ios.write(ary.ary)
+      end
+
+      nil
+    end
+
+    # Class method to retrieve and return an ary from a given file.
+    def self.retrieve(file)
+      count = nil
+      size  = nil
+      ary   = nil
+
+      File.open(file) do |ios|
+        count = ios.read(4).unpack("I").first
+        size  = ios.read(4).unpack("I").first
+        ary   = ios.read
+      end
+
+      CAry.new(count, size, ary)
+    end
+
     # Method to initialize a new CAry object which is either empty
     # or created from a given byte string. Count is the number of
     # elements in the ary, and size is the byte size of a element.
-    def initialize(count, size)
+    def initialize(count, size, ary = nil)
       raise CAryError, "count must be positive - not #{count}" if count <= 0
       raise CAryError, "size must be positive - not #{size}"   if size  <= 0
 
       @count = count
       @size  = size
-      @ary   = "\0" * count * size
+      @ary   = ary || "\0" * count * size
     end
 
     # Method to set all members in an ary to 1.

@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -121,7 +121,7 @@ module BioPieces
           end
 
           status[:sequences_delta]         = status[:sequences_out] - status[:sequences_in]
-          status[:sequences_delta_percent] = 100 * status[:sequences_delta] / status[:sequences_in].to_f
+          status[:sequences_delta_percent] = (100 * status[:sequences_delta] / status[:sequences_in].to_f).round(2)
         end
       end
 

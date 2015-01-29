@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -127,7 +127,7 @@ module BioPieces
           end
 
           status[:otus_delta]         = status[:otus_out] - status[:otus_in]
-          status[:otus_delta_percent] = 100 * status[:otus_delta].to_f / status[:otus_in]
+          status[:otus_delta_percent] = (100 * status[:otus_delta].to_f / status[:otus_in]).round(2)
         end
       end
 

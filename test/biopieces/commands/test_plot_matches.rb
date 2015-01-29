@@ -3,7 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -44,30 +44,27 @@ class TestPlotMatches < Test::Unit::TestCase
     @output.close
 
     @expected = <<EOF
-\f
-                                     Matches
-      +             +             +            +             +             +
-  10 +>>>-----------+-------------+------------+-------------+----------->>>+
-      |  >>>>       :             :            :             :       >>>>  |
-      |      >>>>   :             :            :             :   >>>>      |
-   8 ++..........>>>>>......................................>>>>>..........++
-      |             : >>>>        :            :        >>>> :             |
-      |             :     >>>>    :            :    >>>>     :             |
-   6 ++....................>>>>>>>>..........>>>>>>>.......................++
-      |             :         >>>>:>>>>  >>>>>>:             :             |
-      |             :             >>>>>>>>>    :             :             |
-      |             :            >>>>>>>>> >>>>:             :             |
-   4 ++......................>>>>>>.......>>>>.>>>>>.......................++
-      |             :     >>>>    :           >>    >>>>     :             |
-      |             : >>>>        :            :        >>>> :             |
-   2 ++..........>>>>>......................................>>>>>..........++
-      |      >>>>   :             :            :             :   >>>>      |
-      |  >>>>       :             :            :             :       >>>>  |
-   0 +>>>-----------+-------------+------------+-------------+----------->>>+
-      +             +             +            +             +             +
-      0             2             4            6             8             10
-                                        x
-
+set terminal dumb
+set title "Matches"
+set xlabel "x"
+set ylabel "y"
+set output ""
+set autoscale xfix
+set autoscale yfix
+set style fill solid 0.5 border
+set style line 1 linetype 1 linecolor rgb 'green' linewidth 2 pointtype 6 pointsize default
+set style line 2 linetype 1 linecolor rgb 'red'   linewidth 2 pointtype 6 pointsize default
+set xtics border out
+set ytics border out
+set grid
+set nokey
+plot "-" using 1:2:3:4 with vectors nohead ls 1, "-" using 1:2:3:4 with vectors nohead ls 2
+0 0 10 10
+3 3 3 3
+e
+10 0 -10 10
+6 3 -3 3
+e
 EOF
 
     @p = BioPieces::Pipeline.new
@@ -91,17 +88,9 @@ EOF
     end
   end
 
-#  test "BioPieces::Pipeline::PlotMatches to stdout outputs correctly" do
-#    flunk "capture of stdout issue"
-#    $VERBOSE = false
-#    result = capture_stdout { @p.plot_matches.run(input: @input) }
-#    assert_equal(@expected, result)
-#  end
-
   test "BioPieces::Pipeline::PlotMatches to file outputs correctly" do
-    $VERBOSE = false
-    @p.plot_matches(output: @file).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_matches(output: @file, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected, result)
   end
 
@@ -111,16 +100,16 @@ EOF
   end
 
   test "BioPieces::Pipeline::PlotMatches to existing file with options[:force] outputs correctly" do
-    $VERBOSE = false
     `touch #{@file}`
-    @p.plot_matches(output: @file, force: true).run(input: @input)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_matches(output: @file, force: true, test: true).run(input: @input) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected, result)
   end
 
   test "BioPieces::Pipeline::PlotMatches with flux outputs correctly" do
-    @p.plot_matches(output: @file, force: true).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_matches(output: @file, force: true, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
+
     assert_equal(@expected, result)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)

@@ -3,7 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -43,30 +43,24 @@ class TestPlotHeatmap < Test::Unit::TestCase
     @output.close
 
     @expected = <<EOF
-\f
-
-
-
-
-
-                                    Heatmap
-             +---------------------------------------------------+
-             |                                                   |
-             |                                                   |
-             |                                                   |
-             |                                                   |
-            y|                                                   |
-             |                                                   |
-             |                                                   |
-             |                                                   |
-             |                                                   |
-             +---------------------------------------------------+
-
-
-                                       x
-
-
-
+set terminal dumb
+set title \"Heatmap\"
+set xlabel \"x\"
+set ylabel \"y\"
+set output \"\"
+set view map
+set autoscale xfix
+set autoscale yfix
+set nokey
+set tic scale 0
+set palette rgbformulae 22,13,10
+unset xtics
+unset ytics
+plot \"-\" matrix with image
+1 2 3 4
+5 6 7 8
+9 10 11 12
+e
 EOF
 
     @p = BioPieces::Pipeline.new
@@ -90,17 +84,9 @@ EOF
     end
   end
 
-#  test "BioPieces::Pipeline::PlotHeatmap to stdout outputs correctly" do
-#    flunk "capture of stdout issue"
-#    $VERBOSE = false
-#    result = capture_stdout { @p.plot_heatmap.run(input: @input) }
-#    assert_equal(@expected, result)
-#  end
-
   test "BioPieces::Pipeline::PlotHeatmap to file outputs correctly" do
-    $VERBOSE = false
-    @p.plot_heatmap(output: @file).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_heatmap(output: @file, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected, result)
   end
 
@@ -110,16 +96,15 @@ EOF
   end
 
   test "BioPieces::Pipeline::PlotHeatmap to existing file with options[:force] outputs correctly" do
-    $VERBOSE = false
     `touch #{@file}`
-    @p.plot_heatmap(output: @file, force: true).run(input: @input)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_heatmap(output: @file, force: true, test: true).run(input: @input) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected, result)
   end
 
   test "BioPieces::Pipeline::PlotHeatmap with flux outputs correctly" do
-    @p.plot_heatmap(output: @file, force: true).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = capture_stderr { @p.plot_heatmap(output: @file, force: true, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected, result)
 
     stream_result = @input2.map { |h| h.to_s }.reduce(:<<)

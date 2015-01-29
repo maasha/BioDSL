@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -61,12 +61,12 @@ module BioPieces
   require 'biopieces/filesys'
   require 'biopieces/csv'
   require 'biopieces/fork'
-  require 'biopieces/gnuplot'
   require 'biopieces/render'
   require 'biopieces/pipeline'
   require 'biopieces/fasta'
   require 'biopieces/fastq'
   require 'biopieces/math'
+  require 'biopieces/taxonomy'
   require 'biopieces/stream'
   require 'biopieces/usearch'
 end

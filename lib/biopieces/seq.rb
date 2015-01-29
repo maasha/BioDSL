@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -99,6 +99,28 @@ module BioPieces
       end
 
       oligos
+    end
+
+    def self.check_name_pair(entry1, entry2)
+      if entry1.seq_name =~ /^([^ ]+) \d:/
+        name1 = $1
+      elsif entry1.seq_name =~ /^(.+)\/\d$/
+        name1 = $1
+      else
+        raise SeqError, "Could not match sequence name: #{entry1.seq_name}"
+      end
+
+      if entry2.seq_name =~ /^([^ ]+) \d:/
+        name2 = $1
+      elsif entry2.seq_name =~ /^(.+)\/\d$/
+        name2 = $1
+      else
+        raise SeqError, "Could not match sequence name: #{entry2.seq_name}"
+      end
+
+      if name1 != name2
+        raise SeqError, "Name mismatch: #{name1} != #{name2}"
+      end
     end
 
     # Initialize a sequence object with the following options:
@@ -392,10 +414,10 @@ module BioPieces
     # Index method for Seq objects.
     def [](*args)
       entry = Seq.new
-      entry.seq_name = self.seq_name
+      entry.seq_name = self.seq_name.dup unless self.seq_name.nil?
       entry.seq      = self.seq[*args]
       entry.type     = self.type
-      entry.qual     = self.qual[*args] unless self.qual.nil?
+      entry.qual     = self.qual[*args]  unless self.qual.nil?
 
       entry
     end

@@ -3,7 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -137,6 +137,32 @@ EOF
     expected << %Q{{:V0=>"TCM", :V1=>"104 12"}}
     expected << %Q{{:V0=>"TCM", :V1=>"105 123"}}
     expected << %Q{{:V0=>"TCM", :V1=>"106 1231"}}
+
+    assert_equal(expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::ReadTable with :select returns correctly" do
+    @p.read_table(input: @file, select: [:COUNT]).run(output: @output2)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+
+    expected = ""
+    expected << %Q{{:COUNT=>12}}
+    expected << %Q{{:COUNT=>123}}
+    expected << %Q{{:COUNT=>1231}}
+
+    assert_equal(expected, stream_result)
+  end
+
+  test "BioPieces::Pipeline::ReadTable with :reject returns correctly" do
+    @p.read_table(input: @file, reject: [:COUNT]).run(output: @output2)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+
+    expected = ""
+    expected << %Q{{:ID=>"TCMID104"}}
+    expected << %Q{{:ID=>"TCMID105"}}
+    expected << %Q{{:ID=>"TCMID106"}}
 
     assert_equal(expected, stream_result)
   end

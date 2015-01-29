@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -132,14 +132,23 @@ module BioPieces
           input.each do |record|
             status[:records_in] += 1
 
-            if record[:SEQ]
+            if record[:SEQ] and record[:SEQ].length > 0
               record.delete :CLIP_PRIMER_DIR
               record.delete :CLIP_PRIMER_POS
               record.delete :CLIP_PRIMER_LEN
               record.delete :CLIP_PRIMER_PAT
 
               entry = BioPieces::Seq.new_bp(record)
-              dist  = options[:search_distance] || entry.length  
+
+              if options[:search_distance]
+                if options[:search_distance] < entry.length
+                  dist = options[:search_distance]
+                else
+                  dist = entry.length
+                end
+              else
+                dist = entry.length
+              end
 
               status[:sequences_in] += 1
               status[:residues_in]  += entry.length
@@ -192,8 +201,8 @@ module BioPieces
           end
 
           status[:residues_delta]         = status[:residues_out] - status[:residues_in]
-          status[:residues_delta_mean]    = status[:residues_delta].to_f / status[:records_out]
-          status[:residues_delta_percent] = 100 * status[:residues_delta].to_f / status[:residues_out]
+          status[:residues_delta_mean]    = (status[:residues_delta].to_f / status[:records_out]).round(2)
+          status[:residues_delta_percent] = (100 * status[:residues_delta].to_f / status[:residues_out]).round(2)
         end
       end
 

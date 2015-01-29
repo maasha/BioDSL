@@ -3,7 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -40,6 +40,8 @@ class TestAssemblePairs < Test::Unit::TestCase
     @output.write({SEQ_NAME: "test2/2", SEQ: "gagtcataaaaaaaa", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})
     @output.write({SEQ_NAME: "test3/1", SEQ: "aaaaaaaagagtcat", SCORES: "IIIIIIIIIIIIIII", SEQ_LEN: 15})
     @output.write({SEQ_NAME: "test3/2", SEQ: "ttttttttatgactc", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})
+    @output.write({SEQ_NAME: "test4/1", SEQ: "aaaaaaaaaaaaaaa", SCORES: "IIIIIIIIIIIIIII", SEQ_LEN: 15})
+    @output.write({SEQ_NAME: "test4/2", SEQ: "ggggggggggggggg", SCORES: "!!!!!!!!!!!!!!!", SEQ_LEN: 15})
     @output.write({FOO: "SEQ"})
 
     @output.close
@@ -63,6 +65,20 @@ class TestAssemblePairs < Test::Unit::TestCase
     expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
     expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>3, :HAMMING_DIST=>1}'
     expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with merge_unassembled: true returns correctly" do
+    @p.assemble_pairs(merge_unassembled: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test2/1:overlap=3:hamming=1", :SEQ=>"aaaaaaaagaggCAGtcataaaaaaaa", :SEQ_LEN=>27, :SCORES=>"IIIIIIIIIIII555!!!!!!!!!!!!", :OVERLAP_LEN=>3, :HAMMING_DIST=>1}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test4/1", :SEQ=>"aaaaaaaaaaaaaaaggggggggggggggg", :SEQ_LEN=>30, :SCORES=>"IIIIIIIIIIIIIII!!!!!!!!!!!!!!!", :OVERLAP_LEN=>0, :HAMMING_DIST=>30}'
     expected << '{:FOO=>"SEQ"}'
 
     assert_equal(expected, result)
@@ -92,6 +108,20 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::AssemblePairs with :overlap_min and merge_unassembled: true returns correctly" do
+    @p.assemble_pairs(overlap_min: 5, merge_unassembled: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test2/1", :SEQ=>"aaaaaaaagagGcaGgagtcataaaaaaaa", :SEQ_LEN=>30, :SCORES=>"IIIIIIIIIIIIIII!!!!!!!!!!!!!!!", :OVERLAP_LEN=>0, :HAMMING_DIST=>30}'
+    expected << '{:SEQ_NAME=>"test3/1", :SEQ=>"aaaaaaaagagtcatttttttttatgactc", :SEQ_LEN=>30, :SCORES=>"IIIIIIIIIIIIIII!!!!!!!!!!!!!!!", :OVERLAP_LEN=>0, :HAMMING_DIST=>30}'
+    expected << '{:SEQ_NAME=>"test4/1", :SEQ=>"aaaaaaaaaaaaaaaggggggggggggggg", :SEQ_LEN=>30, :SCORES=>"IIIIIIIIIIIIIII!!!!!!!!!!!!!!!", :OVERLAP_LEN=>0, :HAMMING_DIST=>30}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::AssemblePairs with :overlap_max returns correctly" do
     @p.assemble_pairs(overlap_max: 5).run(input: @input, output: @output2)
 
@@ -111,6 +141,42 @@ class TestAssemblePairs < Test::Unit::TestCase
     expected = ""
     expected << '{:SEQ_NAME=>"test1/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
     expected << '{:SEQ_NAME=>"test3/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with :reverse_complement and :overlap_min returns correctly" do
+    @p.assemble_pairs(reverse_complement: true, overlap_min: 5).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test3/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with :reverse_complement and overlap_max returns correctly" do
+    @p.assemble_pairs(reverse_complement: true, overlap_max: 5).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1:overlap=1:hamming=0", :SEQ=>"aaaaaaaagagtcaTtttttttatgactc", :SEQ_LEN=>29, :SCORES=>"IIIIIIIIIIIIII5!!!!!!!!!!!!!!", :OVERLAP_LEN=>1, :HAMMING_DIST=>0}'
+    expected << '{:FOO=>"SEQ"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::AssemblePairs with :reverse_complement and :overlap_min and :merge_unassembled returns correctly" do
+    @p.assemble_pairs(reverse_complement: true, overlap_min: 5, merge_unassembled: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"test1/1", :SEQ=>"aaaaaaaagagtcatttttttttatgactc", :SEQ_LEN=>30, :SCORES=>"IIIIIIIIIIIIIII!!!!!!!!!!!!!!!", :OVERLAP_LEN=>0, :HAMMING_DIST=>30}'
+    expected << '{:SEQ_NAME=>"test2/1", :SEQ=>"aaaaaaaagagGcaGttttttttatgactc", :SEQ_LEN=>30, :SCORES=>"IIIIIIIIIIIIIII!!!!!!!!!!!!!!!", :OVERLAP_LEN=>0, :HAMMING_DIST=>30}'
+    expected << '{:SEQ_NAME=>"test3/1:overlap=7:hamming=0", :SEQ=>"aaaaaaaaGAGTCATaaaaaaaa", :SEQ_LEN=>23, :SCORES=>"IIIIIIII5555555!!!!!!!!", :OVERLAP_LEN=>7, :HAMMING_DIST=>0}'
+    expected << '{:SEQ_NAME=>"test4/1", :SEQ=>"aaaaaaaaaaaaaaaccccccccccccccc", :SEQ_LEN=>30, :SCORES=>"IIIIIIIIIIIIIII!!!!!!!!!!!!!!!", :OVERLAP_LEN=>0, :HAMMING_DIST=>30}'
     expected << '{:FOO=>"SEQ"}'
 
     assert_equal(expected, result)

@@ -1,6 +1,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -26,78 +26,88 @@
 
 module BioPieces
   module Commands
-    # == Write OTU tabular data to a biom-format file.
+    # == Pick number of random records from the stream.
     # 
-    # +write_biom+ outputs to file OTU data in biom-format (currently JSON).
-    # Records must contain +OTU+ and +TAXONOMY+ keys.
+    # +random+ can be used to pick a random number of records from the stream.
+    # Note that the order of records is preserved.
     #
-    # biom must be installed for +write_biom+ to work. See more here:
+    # Using the `pair: true` option allows random picking of interleaved
+    # paired-end sequence records.
     #
-    # http://biom-format.org/
-    # 
     # == Usage
-    #    write_biom(<output: <file>>[, force: <bool>])
-    #
+    # 
+    #    random(<number: <uint>[, pairs: <bool>])
+    # 
     # === Options
-    # * output <file> - Output file.
-    # * force <bool>  - Force overwrite existing output file.
+    #
+    # * number: <uint>  - Number of records to pick.
+    # * pairs: <bool>   - Preserve interleaved pair order.
     # 
     # == Examples
+    # 
+    # To pick some random records from the stream do:
     #
-    # To convert an OTU table to BIOM json format do:
-    #
-    #    BP.new.read_table(input: "otu.tab").write_biom(output: "otu.json").run
-    def write_biom(options = {})
-      options_orig = options.dup
+    #    BP.new.
+    #    read_fasta(input: "in.fna").
+    #    random(number: 10_000).
+    #    write_fasta(output: "out.fna").
+    #    run
+    def random(options = {})
+      require 'tempfile'
+
+      options_orig = options
       options_load_rc(options, __method__)
-      options_allowed(options, :output, :force)
-      options_required(options, :output)
-      options_allowed_values(options, force: [nil, true, false])
-      options_files_exists_force(options, :output)
+      options_allowed(options, :number, :pairs)
+      options_required(options, :number)
+      options_allowed_values(options, pairs: [nil, true, false])
+      options_assert(options, ":number > 0")
 
       lmb = lambda do |input, output, status|
-        header = false
+        status_track(status) do
+          file = Tempfile.new("random")
 
-        tmp_file = Tempfile.new("biom")
-
-        begin
-          status_track(status) do
-            File.open(tmp_file, 'w') do |ios|
+          begin
+            File.open(file, 'w') do |ios|
               input.each do |record|
                 status[:records_in] += 1
 
-                if record[:OTU] and record[:TAXONOMY]
-                  otu_record = record.reject { |key, value| key == :RECORD_TYPE }
-
-                  unless header
-                    ios.puts "#" + otu_record.keys.join("\t")
-                    header = true
-                  end
-
-                  ios.puts otu_record.values.join("\t")
-                end
-
-                if output
-                  output << record
-                  status[:records_out] += 1
-                end
+                marshalled = Marshal.dump(record)
+                ios.write([marshalled.size].pack("I"))
+                ios.write(marshalled)
               end
             end
+            
+            if options[:pairs]
+              wanted = Set.new
 
-            if options[:force] and File.exist? options[:output]
-              File.unlink options[:output]
-            end
-
-            if $VERBOSE
-              system(%Q{biom convert -i #{tmp_file.path} -o #{options[:output]} --table-type="OTU table" --to-json})
+              (0 ... status[:records_in]).to_a.shuffle.select { |i| i.even? }[0 ... options[:number] / 2].each do |i|
+                wanted.merge([i, i + 1])
+              end
             else
-              system(%Q{biom convert -i #{tmp_file.path} -o #{options[:output]} --table-type="OTU table" --to-json > /dev/null 2>&1})
+              wanted = (0 ... status[:records_in]).to_a.shuffle[0 ... options[:number]].to_set
             end
 
-            raise "biom convert failed" unless $?.success?
+            File.open(file) do |ios|
+              i = 0
+
+              while not ios.eof?
+                size = ios.read(4)
+                raise EOFError unless size
+                size = size.unpack("I").first
+                marshalled = ios.read(size)
+
+                if wanted.include? i
+                  output << Marshal.load(marshalled)
+                  status[:records_out] += 1
+                end
+
+                i += 1
+              end
+            end
+          ensure
+            file.close
+            file.unlink
           end
-        ensure
-          tmp_file.unlink
         end
       end
 

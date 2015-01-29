@@ -3,7 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -114,7 +114,6 @@ class PipelineTest < Test::Unit::TestCase
 
   test "BioPieces::Pipeline#to_s with .run() and options returns correctly" do
     expected = %{BP.new.read_fasta(input: "#{@fasta_file}").run(verbose: false)}
-    @p.expects(:status).returns(expected)
     assert_equal(expected, @p.read_fasta(input: @fasta_file).run(verbose: false).to_s)
   end
 
@@ -155,13 +154,13 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline#run with email sends mail correctly" do
-    @p.read_fasta(input: @fasta_file).run(email: "foo@bar.com")
+    @p.read_fasta(input: @fasta_file).run(email: "test@foobar.com")
     assert_equal(1, Mail::TestMailer.deliveries.length)
     assert_equal(@p.to_s, Mail::TestMailer.deliveries.first.subject)
   end
 
   test "BioPieces::Pipeline#run with email and subject sends correctly" do
-    @p.read_fasta(input: @fasta_file).run(email: "foo@bar.com", subject: "foobar")
+    @p.read_fasta(input: @fasta_file).run(email: "test@foobar.com", subject: "foobar")
     assert_equal(1, Mail::TestMailer.deliveries.length)
     assert_equal("foobar", Mail::TestMailer.deliveries.first.subject)
   end

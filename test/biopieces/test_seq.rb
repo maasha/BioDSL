@@ -3,7 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# Copyright (C) 2007-2014 Martin Asser Hansen (mail@maasha.dk).                  #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
 # This program is free software; you can redistribute it and/or                  #
 # modify it under the terms of the GNU General Public License                    #
@@ -47,15 +47,15 @@ class TestSeq < Test::Unit::TestCase
     assert_equal("hhhh", seq.qual)
   end
 
-  test "BioPieces::generate_oligos with bad type raises" do
+  test "BioPieces::Seq.generate_oligos with bad type raises" do
     assert_raise(BioPieces::SeqError) { BioPieces::Seq.generate_oligos(2, :foo) }
   end
 
-  test "BioPieces::generate_oligos with bad length raises" do
+  test "BioPieces::Seq.generate_oligos with bad length raises" do
     assert_raise(BioPieces::SeqError) { BioPieces::Seq.generate_oligos(0, :dna) }
   end
 
-  test "BioPieces::generate_oligos returns correctly" do
+  test "BioPieces::Seq.generate_oligos returns correctly" do
     expected = %w{aa at ac ag ta tt tc tg ca ct cc cg ga gt gc gg}
     assert_equal(expected, BioPieces::Seq.generate_oligos(2, :dna))
     expected = %w{aa au ac ag ua uu uc ug ca cu cc cg ga gu gc gg}
@@ -83,6 +83,37 @@ class TestSeq < Test::Unit::TestCase
       gf gl gs gy gc gw gp gh gq gr gi gm gt gn gk gv ga gd ge gg
     }
     assert_equal(expected, BioPieces::Seq.generate_oligos(2, :protein))
+  end
+
+  test "BioPieces::Seq.check_name_pair with badly formatted names raises" do
+    entry1 = BioPieces::Seq.new(seq_name: "foo")
+    entry2 = BioPieces::Seq.new(seq_name: "bar")
+    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry1, entry2) }
+    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry2, entry1) }
+  end
+
+  test "BioPieces::Seq.check_name_pair with Illumina1.3/1.5 names and no match raises" do
+    entry1 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/1")
+    entry2 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:491:1793#0/2")
+    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry1, entry2) }
+  end
+
+  test "BioPieces::Seq.check_name_pair with Illumina1.8 names and no match raises" do
+    entry1 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG")
+    entry2 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15433:179393 2:Y:18:ATCACG")
+    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry1, entry2) }
+  end
+
+  test "BioPieces::Seq.check_name_pair with Illumina1.3/1.5 names and match don't raise" do
+    entry1 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/1")
+    entry2 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/2")
+    assert_nothing_raised { BioPieces::Seq.check_name_pair(entry1, entry2) }
+  end
+
+  test "BioPieces::Seq.check_name_pair with Illumina1.8 names and match don't raise" do
+    entry1 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG")
+    entry2 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 2:Y:18:ATCACG")
+    assert_nothing_raised { BioPieces::Seq.check_name_pair(entry1, entry2) }
   end
 
   test "#is_dna? with no sequence type returns false" do
