@@ -31,7 +31,6 @@ Gem::Specification.new do |s|
   s.add_dependency("pqueue",         ">= 2.0.2")
   s.add_dependency("google_hash",    ">= 0.8.4")
   s.add_dependency("terminal-table", ">= 1.4.5")
-  s.add_dependency("tokyocabinet",   ">= 1.29.1")
   s.add_dependency("tilt",           ">= 2.0.1")
   s.add_dependency("lz4-ruby",       ">= 0.3.3")
   s.add_development_dependency("bundler", ">= 1.7.4")

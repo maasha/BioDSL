@@ -30,18 +30,11 @@ module BioPieces
     # 
     # +classify_seq+ searches sequences in the stream against a pre-indexed
     # (using +index_taxonomy+) database. The database consists a taxonomic tree
-    # index and indices for each taxonomic level saved in the following Tokyo
-    # Cabinet files (here using the prefix "taxonomy"):
+    # index and indices for each taxonomic level saved in the following files
+    # (here using the prefix "taxonomy"):
     #
-    #  * taxonomy_taxtree.tch      - return node for a given node id.
-    #  * taxonomy_r_kmer2nodes.tch - return list of root    level node ids for a given kmer.
-    #  * taxonomy_k_kmer2nodes.tch - return list of kingdom level node ids for a given kmer.
-    #  * taxonomy_p_kmer2nodes.tch - return list of phylum  level node ids for a given kmer.
-    #  * taxonomy_c_kmer2nodes.tch - return list of class   level node ids for a given kmer.
-    #  * taxonomy_o_kmer2nodes.tch - return list of order   level node ids for a given kmer.
-    #  * taxonomy_f_kmer2nodes.tch - return list of family  level node ids for a given kmer.
-    #  * taxonomy_g_kmer2nodes.tch - return list of genus   level node ids for a given kmer.
-    #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
+    #  * taxonomy_tax_index.dat  - return node for a given node id.
+    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
     #
     # Each sequence is broken down into unique kmers of a given kmer_size
     # overlapping with a given step_size - see +index_taxonomy+. Now, for each
@@ -140,28 +133,24 @@ module BioPieces
         status[:sequences_in]  = 0
 
         status_track(status) do
-          begin
-            search = BioPieces::Taxonomy::Search.new(options)
+          search = BioPieces::Taxonomy::Search.new(options)
 
-            input.each_with_index do |record, i|
-              status[:records_in] += 1
+          input.each_with_index do |record, i|
+            status[:records_in] += 1
 
-              if record[:SEQ]
-                status[:sequences_in] += 1
-                seq_name = record[:SEQ_NAME] || i.to_s
+            if record[:SEQ]
+              status[:sequences_in] += 1
+              seq_name = record[:SEQ_NAME] || i.to_s
 
-                result = search.execute(BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
+              result = search.execute(BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
 
-                record[:TAXONOMY]      = result.taxonomy
-                record[:TAXONOMY_HITS] = result.hits
-                record[:RECORD_TYPE]   = "taxonomy"
-              end
-
-              output << record
-              status[:records_out] += 1
+              record[:TAXONOMY]      = result.taxonomy
+              record[:TAXONOMY_HITS] = result.hits
+              record[:RECORD_TYPE]   = "taxonomy"
             end
-          ensure
-            search.disconnect
+
+            output << record
+            status[:records_out] += 1
           end
         end
       end
