@@ -67,13 +67,13 @@ module BioPieces
           file = Tempfile.new("random")
 
           begin
-            File.open(file, 'w') do |ios|
-              input.each do |record|
-                status[:records_in] += 1
+            File.open(file, 'wb') do |ios|
+              BioPieces::Serializer.new(ios) do |s|
+                input.each do |record|
+                  status[:records_in] += 1
 
-                marshalled = Marshal.dump(record)
-                ios.write([marshalled.size].pack("I"))
-                ios.write(marshalled)
+                  s << record
+                end
               end
             end
             
@@ -87,21 +87,18 @@ module BioPieces
               wanted = (0 ... status[:records_in]).to_a.shuffle[0 ... options[:number]].to_set
             end
 
-            File.open(file) do |ios|
-              i = 0
+            File.open(file, 'rb') do |ios|
+              BioPieces::Serializer.new(ios) do |s|
+                i = 0
 
-              while not ios.eof?
-                size = ios.read(4)
-                raise EOFError unless size
-                size = size.unpack("I").first
-                marshalled = ios.read(size)
+                s.each do |record|
+                  if wanted.include? i
+                    output << record
+                    status[:records_out] += 1
+                  end
 
-                if wanted.include? i
-                  output << Marshal.load(marshalled)
-                  status[:records_out] += 1
+                  i += 1
                 end
-
-                i += 1
               end
             end
           ensure
