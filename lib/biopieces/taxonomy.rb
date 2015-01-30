@@ -1,3 +1,4 @@
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
 #                                                                                #
@@ -41,6 +42,8 @@ module BioPieces
     #  * taxonomy_tax_index.dat  - return node for a given node id.
     #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
     class Index
+      require 'set'
+
       # Constructor Index object.
       def initialize(options)
         @options      = options                                         # Option hash.
@@ -48,7 +51,6 @@ module BioPieces
         @node_id      = 0                                               # Node id.
         @tree         = TaxNode.new(nil, :r, nil, nil, nil, @node_id)   # Root level tree node.
         @node_id     += 1
-        @kmers        = Vector.new(4 ** @options[:kmer_size], "byte")   # Kmer vector for storing observed kmers.
         @tax_index    = {}                                              # Hash: node_id=>node
         @kmer_index   = {}                                              # Hash: level=>kmer=>node ids
       end
@@ -84,10 +86,6 @@ module BioPieces
       # contain a subset of oligos compared to the parent node.
       def add(entry)
         node  = @tree
-        kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
-
-        @kmers.zero! # A reusable instance variable is used to avoid casting and GC overhead.
-        @kmers[kmers] = 1 unless kmers.empty?
         
         _, tax_string = entry.seq_name.split(' ', 2)
 
@@ -95,15 +93,34 @@ module BioPieces
 
         tax_levels = tax_string.split(';')
 
-        tax_levels.each do |tax_level|
+        tax_levels.each_with_index do |tax_level, i|
           level, name = tax_level.split('#')
 
+          if tax_levels[i + 1] and tax_levels[i + 1].split('#')[1]
+            leaf = false
+          else
+            leaf = true
+          end
+
           if name
-            if node[name]
-              node[name].kmers |= @kmers
+            if leaf
+              kmers = Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
+
+              if node[name]
+                if node[name].kmers
+                  node[name].kmers |= kmers
+                else
+                  node[name].kmers = kmers
+                end
+              else
+                node[name] = TaxNode.new(node, level.downcase.to_sym, name, kmers, @seq_id, @node_id)
+                @node_id += 1
+              end
             else
-              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, @seq_id, @node_id)
-              @node_id += 1
+              unless node[name]
+                node[name] = TaxNode.new(node, level.downcase.to_sym, name, nil, @seq_id, @node_id)
+                @node_id += 1
+              end
             end
 
             node = node[name]
@@ -119,13 +136,15 @@ module BioPieces
       def save
         kmer_hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = Set.new } }
 
+        tree_union(@tree)
+
         tree_remap(@tree, kmer_hash)
 
         save_tax_index
 
         kmer_hash.each do |level, hash|
           hash.each do |kmer, nodes|
-            @kmer_index[level] = {} unless @kmer_index[level]
+            @kmer_index[level]       = {} unless @kmer_index[level]
             @kmer_index[level][kmer] = nodes.to_a.sort.pack("I*")
           end
         end
@@ -135,17 +154,16 @@ module BioPieces
 
       private
 
-      # Method to save the kmer_index to file.
-      def save_tax_index
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
-          ios.write Marshal.dump(@tax_index)
-        end
-      end
+      def tree_union(node)
+        node.children.each_value { |child| tree_union(child) }
 
-      # Method to save kmer_index to file.
-      def save_kmer_index
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
-          ios.write Marshal.dump(@kmer_index)
+        node.children.each_value do |child|
+          if node.kmers.nil? and child.kmers.nil?
+          elsif node.kmers.nil?
+            node.kmers = child.kmers.dup
+          else
+            node.kmers |= child.kmers if child.kmers
+          end
         end
       end
 
@@ -159,57 +177,17 @@ module BioPieces
         node.children.each_value { |child| tree_remap(child, kmer_hash) }
       end
 
-      # Class with methods to manipulate a vector used to hold uniq kmers (integers).
-      # The vector is encoded in a byte array using NArray compressed using LZ4 to
-      # save memory.
-      class Vector
-        require 'lz4-ruby'
-
-        attr_reader :kmers
-
-        # Constructor for creating a new Vector object of a given size.
-        def initialize(size, type)
-          @size  = size
-          @type  = type
-          @kmers = LZ4::compress(NArray.new(@type, @size).to_s)
+      # Method to save the kmer_index to file.
+      def save_tax_index
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
+          ios.write Marshal.dump(@tax_index)
         end
+      end
 
-        # Set all values in the vector to zero.
-        def zero!
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na.fill! 0
-          @kmers = LZ4::compress(na.to_s)
-
-          nil # save GC
-        end
-
-        # Use the given kmers array as index to set all positions in the
-        # vector to the given value.
-        def []=(kmers, value)
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na[NArray.to_na(kmers)] = value
-          @kmers = LZ4::compress(na.to_s)
-        end
-
-        # Perform bitwise OR between two vectors.
-        def |(vector)
-          na1 = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na2 = NArray.to_na(LZ4::uncompress(vector.kmers), @type)
-          @kmers = LZ4::compress((na1 | na2).to_s)
-          
-          self
-        end
-
-        # Method to return all kmers saved in a vector as a list of integers.
-        def to_a
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          (na > 0).where.to_s.unpack("I*")
-        end
-
-        # Method to return the count of true values in a vector.
-        def count_true
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na.count_true
+      # Method to save kmer_index to file.
+      def save_kmer_index
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
+          ios.write Marshal.dump(@kmer_index)
         end
       end
 
@@ -365,8 +343,10 @@ module BioPieces
         @count_ary.zero!
 
         kmers.each do |kmer|
-          if nodes = @kmer_index[level][kmer]
-            increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
+          if @kmer_index[level]
+            if nodes = @kmer_index[level][kmer]
+              increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
+            end
           end
         end
       end
