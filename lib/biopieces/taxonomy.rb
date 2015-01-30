@@ -92,7 +92,8 @@ module BioPieces
         @node_id     += 1
         @kmers        = Vector.new(4 ** @options[:kmer_size], "byte")   # Kmer vector for storing observed kmers.
         @max_children = 0                                               # Stats info.
-        @tax_index    = {}                                              # node_id=>node hash
+        @tax_index    = {}                                              # Hash: node_id=>node
+        @kmer_index   = {}                                              # Hash: level=>kmer=>node ids
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -172,12 +173,16 @@ module BioPieces
         kmer_hash.each do |level, hash|
           hash.each do |kmer, nodes|
             databases["#{level}_kmer2nodes".to_sym][kmer] = nodes.to_a.sort.pack("I*")
+            @kmer_index[level] = {} unless @kmer_index[level]
+            @kmer_index[level][kmer] = nodes.to_a.sort.pack("I*")
           end
+        end
+
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
+          ios.write Marshal.dump(@kmer_index)
         end
       ensure
         Databases.disconnect(databases)
-
-        puts "Nodes: #{@id}   Max children: #{@max_children}" if $VERBOSE
       end
 
       private
@@ -322,16 +327,21 @@ module BioPieces
 
       # Constructor for initializing a Search object.
       def initialize(options)
-        @options   = options
-        @databases = Databases.connect(@options[:dir], @options[:prefix])
-        @count_ary = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
-        @hit_ary   = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
-        @cache     = Hash.new { |h, k| h[k] = {} }
-        @tax_index = load_tax_index
+        @options    = options
+        @databases  = Databases.connect(@options[:dir], @options[:prefix])
+        @count_ary  = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
+        @hit_ary    = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
+        @cache      = Hash.new { |h, k| h[k] = {} }
+        @tax_index  = load_tax_index
+        @kmer_index = load_kmer_index
       end
 
       def load_tax_index
         Marshal.load(File.read(File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")))
+      end
+
+      def load_kmer_index
+        Marshal.load(File.read(File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")))
       end
 
       # Method to execute a search for a given sequence entry. First the
@@ -406,11 +416,8 @@ module BioPieces
         @count_ary.zero!
 
         kmers.each do |kmer|
-          if @cache[level] and nodes = @cache[level][kmer]
+          if nodes = @kmer_index[level][kmer]
             increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
-          elsif nodes = @databases["#{level}_kmer2nodes".to_sym][kmer]
-            increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
-            @cache[level][kmer] = nodes
           end
         end
       end
