@@ -24,52 +24,52 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+module BioPieces
+  class SerializerError < StandardError; end
 
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
-  end
-end
+  # Class for serializing and de-serializing data using Marshal. 
+  class Serializer
+    include Enumerable
 
-# Convert string to float or integer if applicable.
-class String
-  def to_num
-    begin
-      Integer(self)
-      self.to_i
-    rescue ArgumentError
-      begin
-        Float(self)
-        self.to_f
-      rescue ArgumentError
-        self
+    # Constructor for serializer.
+    def initialize(io, &block)
+      @io = io
+      raise SerializerError, "No block given" unless block
+      block.call(self)
+    end
+
+    # Method to write serialized data using Marshal to a given IO.
+    # Usage:
+    # File.open("foo.dat", 'wb') do |io|
+    #   BioPieces::Serializer.new(io) do |s|
+    #     s << {"foo": 0}
+    #     s << {"bar": 1}
+    #   end
+    # end
+    def <<(obj)
+      data = Marshal.dump(obj)
+      @io.write([data.size].pack("N"))
+      @io.write(data)
+    end
+
+    alias :write :<< 
+
+    # Iterator for reading and de-serialized data from a given IO.
+    # Usage:
+    # File.open("foo.dat", 'rb') do |io|
+    #   BioPieces::Serializer.new(io) do |s|
+    #     s.each do |record|
+    #       puts record
+    #     end
+    #   end
+    # end
+    def each
+      while not @io.eof?
+        size = @io.read(4)
+        raise EOFError unless size
+        data = @io.read(size.unpack("N").first)
+        yield Marshal.load(data)
       end
     end
   end
 end
-
-module BioPieces
-  require 'biopieces/cary'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  require 'biopieces/config'
-  require 'biopieces/hamming'
-  require 'biopieces/version'
-  require 'biopieces/filesys'
-  require 'biopieces/csv'
-  require 'biopieces/fork'
-  require 'biopieces/render'
-  require 'biopieces/pipeline'
-  require 'biopieces/fasta'
-  require 'biopieces/fastq'
-  require 'biopieces/math'
-  require 'biopieces/taxonomy'
-  require 'biopieces/serializer'
-  require 'biopieces/stream'
-  require 'biopieces/usearch'
-end
-
-BP = BioPieces::Pipeline # Module alias for irb short hand
