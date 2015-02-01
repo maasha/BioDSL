@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,52 +27,46 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-raise "Ruby 2.0 or later required" if RUBY_VERSION < "2.0"
+require 'test/helper'
 
-# Commify numbers.
-class Numeric
-  def commify
-    self.to_s.gsub(/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/, '\1,')
+class TestSerializer < Test::Unit::TestCase 
+  def setup
+    @records = [
+      {"foo": 1},
+      {"bar": 2}
+    ]
   end
-end
 
-# Convert string to float or integer if applicable.
-class String
-  def to_num
+  test "BioPieces::Serializer with no block raises" do
+    assert_raise(BioPieces::SerializerError) { BioPieces::Serializer.new("foo") }
+  end
+
+  test "BioPieces::Serializer returns correctly" do
+    require 'tempfile'
+
+    file = Tempfile.new("serializer")
+
     begin
-      Integer(self)
-      self.to_i
-    rescue ArgumentError
-      begin
-        Float(self)
-        self.to_f
-      rescue ArgumentError
-        self
+      File.open(file, 'wb') do |io|
+        BioPieces::Serializer.new(io) do |s|
+          @records.each { |r| s << r }
+        end
       end
+
+      result = []
+
+      File.open(file, 'rb') do |io|
+        BioPieces::Serializer.new(io) do |s|
+          s.each do |record|
+            result << record
+          end
+        end
+      end
+
+      assert_equal(@records, result)
+    ensure
+      file.close
+      file.unlink
     end
   end
 end
-
-module BioPieces
-  require 'biopieces/cary'
-  require 'biopieces/commands'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  require 'biopieces/config'
-  require 'biopieces/hamming'
-  require 'biopieces/version'
-  require 'biopieces/filesys'
-  require 'biopieces/csv'
-  require 'biopieces/fork'
-  require 'biopieces/render'
-  require 'biopieces/pipeline'
-  require 'biopieces/fasta'
-  require 'biopieces/fastq'
-  require 'biopieces/math'
-  require 'biopieces/taxonomy'
-  require 'biopieces/serializer'
-  require 'biopieces/stream'
-  require 'biopieces/usearch'
-end
-
-BP = BioPieces::Pipeline # Module alias for irb short hand

@@ -48,19 +48,11 @@ module BioPieces
     #
     #     32 K#Bacteria;P#Actinobacteria;C#Actinobacteria;O#Acidimicrobiales;F#Acidimicrobiaceae;G#Ferrimicrobium;S#Ferrimicrobium acidiphilum
     #
-    # The resulting index consists of the following Tokyo Cabinet files
-    # (here using the default "taxonomy" as prefix) which are saved to a
-    # specified +output_dir+:
+    # The resulting index consists of the following files (here using the
+    # default "taxonomy" as prefix) which are saved to a specified +output_dir+:
     #
-    #  * taxonomy_taxtree.tch      - return node for a given node id.
-    #  * taxonomy_r_kmer2nodes.tch - return list of root    level node ids for a given kmer.
-    #  * taxonomy_k_kmer2nodes.tch - return list of kingdom level node ids for a given kmer.
-    #  * taxonomy_p_kmer2nodes.tch - return list of phylum  level node ids for a given kmer.
-    #  * taxonomy_c_kmer2nodes.tch - return list of class   level node ids for a given kmer.
-    #  * taxonomy_o_kmer2nodes.tch - return list of order   level node ids for a given kmer.
-    #  * taxonomy_f_kmer2nodes.tch - return list of family  level node ids for a given kmer.
-    #  * taxonomy_g_kmer2nodes.tch - return list of genus   level node ids for a given kmer.
-    #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
+    #  * taxonomy_tax_index.dat  - return node for a given node id.
+    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
     #
     # The index is constructed by breaking the sequences into kmers of a given
     # kmer_size and using a given step_size:
