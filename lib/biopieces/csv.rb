@@ -78,6 +78,26 @@ module BioPieces
       data
     end
 
+    # Method that reads all CSV data from a file into an array of hashes (array
+    # of rows) which is returned. In the default mode all columns are read.
+    # Using the select option subselects the columns based on a given Array or
+    # if a heder line is present a given Hash. Visa versa for the reject option.
+    # Header lines are prefixed with '#'.
+    #
+    # Options:
+    #   * delimiter.
+    #   * select.
+    #   * reject.
+    def self.read_hash(file, options = {})
+      data = []
+
+      self.open(file) do |ios|
+        ios.each_hash(options) { |row| data << row } 
+      end
+
+      data
+    end
+
     def initialize(io)
       @io        = io
       @delimiter = "\s"
@@ -103,9 +123,9 @@ module BioPieces
 
       if options[:include_header]
         if @fields
-          yield @header.values_at(*@fields)
+          yield @header.values_at(*@fields).map { |h| h.to_s }
         else
-          yield @header
+          yield @header.map { |h| h.to_s }
         end
       end
 
@@ -118,6 +138,45 @@ module BioPieces
           types  = determine_types(fields) unless types
 
           yield fields.convert_types(types)
+        end
+      end
+
+      self
+    end
+
+    # Method to iterate over a CSV IO object yielding hashes or an enumerator
+    #   CSV.each_hash(options={}) { |item| block } -> hash
+    #   CSV.each_hash(options={})                  -> Enumerator
+    #
+    # Options:
+    #   * :delimiter      - 
+    #   * :select         - 
+    #   * :reject         - 
+    def each_hash(options = {})
+      get_header(options)
+      get_fields(options)
+
+      @header = @header.values_at(*@fields) if @fields
+
+      return to_enum :each_hash unless block_given?
+
+      delimiter = options[:delimiter] || @delimiter
+
+      @io.each do |line|
+        line.chomp!
+
+        unless line.empty? or line[0] == '#'
+          fields = line.split(delimiter)
+          fields = fields.values_at(*@fields) if @fields
+          types  = determine_types(fields) unless types
+
+          hash = {}
+
+          fields.convert_types(types).each_with_index do |field, i|
+            hash[@header[i]] = field
+          end
+
+          yield hash
         end
       end
 
@@ -140,7 +199,7 @@ module BioPieces
 
         unless line.empty?
           if line[0] == '#'
-            @header = line[1 .. -1].split(delimiter)
+            @header = line[1 .. -1].split(delimiter).map { |h| h.to_sym }
 
             if options[:select]
               if options[:select].first.is_a? Fixnum
@@ -149,7 +208,7 @@ module BioPieces
                 end
               else
                 options[:select].each do |value|
-                  raise CSVError, "Selected value: #{value} not in header: #{@header}" unless @header.include? value.to_s
+                  raise CSVError, "Selected value: #{value} not in header: #{@header}" unless @header.include? value.to_sym
                 end
               end
             elsif options[:reject]
@@ -159,7 +218,7 @@ module BioPieces
                 end
               else
                 options[:reject].map do |value|
-                  raise CSVError, "Rejected value: #{value} not found in header: #{@header}" unless @header.include? value.to_s
+                  raise CSVError, "Rejected value: #{value} not found in header: #{@header}" unless @header.include? value.to_sym
                 end
               end
             end
@@ -186,7 +245,7 @@ module BioPieces
           fields = []
 
           options[:select].each do |value|
-            fields << @header.index(value.to_s)
+            fields << @header.index(value.to_sym)
           end
 
           @fields = fields
@@ -210,7 +269,9 @@ module BioPieces
         else
           raise CSVError, "No header found" unless @header
 
-          @fields = @header.map.with_index.to_h.delete_if { |k, v| options[:reject].include? k or options[:reject].include? k.to_sym }.values
+          reject = options[:reject].map { |r| r.to_sym }
+
+          @fields = @header.map.with_index.to_h.delete_if { |k, v| reject.include? k }.values
         end
 
         @io.rewind

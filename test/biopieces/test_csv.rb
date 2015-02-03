@@ -344,6 +344,154 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV.read_hash returns correctly" do
+    @file.write(@table)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path)
+    expected = [{Count: 23524, Organism: "Human", Sequence: "ATACGTCAG"},
+                {Count: 2442,  Organism: "Dog",   Sequence: "AGCATGAC"},
+                {Count: 234,   Organism: "Mouse", Sequence: "GACTG"},
+                {Count: 2342,  Organism: "Cat",   Sequence: "AAATGCA"}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV.read_hash with :delimiter returns correctly" do
+    @file.write(@table2)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path, delimiter: ";")
+    expected = [{:Count=>23524, :Organism=>"Human", :Sequence=>"ATACGTCAG"},
+                {:Count=>2442,  :Organism=>"Dog",   :Sequence=>"AGCATGAC"},
+                {:Count=>234,   :Organism=>"Mouse", :Sequence=>"GACTG"},
+                {:Count=>2342,  :Organism=>"Cat",   :Sequence=>"AAATGCA"}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV.read_hash with :select and out-of-bounds numerical value raises" do
+    @file.write(@table)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: [3]) }
+  end
+
+  test "CSV.read_hash with :select of numerical values return correctly" do
+    @file.write(@table)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path, select: [2, 0])
+    expected = [{:Count=>23524, :Organism=>"Human"},
+                {:Count=>2442,  :Organism=>"Dog"},
+                {:Count=>234,   :Organism=>"Mouse"},
+                {:Count=>2342,  :Organism=>"Cat"}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV.read_hash with :select and out-of-bounds range raises" do
+    @file.write(@table)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: 1 .. 3) }
+  end
+
+  test "CSV.read_hash with :select of range return correctly" do
+    @file.write(@table)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path, select: 0 .. 1)
+    expected = [{:Organism=>"Human", :Sequence=>"ATACGTCAG"},
+                {:Organism=>"Dog",   :Sequence=>"AGCATGAC"},
+                {:Organism=>"Mouse", :Sequence=>"GACTG"},
+                {:Organism=>"Cat",   :Sequence=>"AAATGCA"}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV.read_hash with :select of non-numerical values and no header raises" do
+    @file.write(@table3)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: ["Organism"]) }
+  end
+
+  test "CSV.read_hash with :select of non-numerical values not matching header raises" do
+    @file.write(@table)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: ["ount"]) }
+  end
+
+  test "CSV.read_hash with :select of non-numerical values returns correctly" do
+    @file.write(@table)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path, select: ["Count", :Organism])
+    expected = [{:Count=>23524, :Organism=>"Human"},
+                {:Count=>2442,  :Organism=>"Dog"},
+                {:Count=>234,   :Organism=>"Mouse"},
+                {:Count=>2342,  :Organism=>"Cat"}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV.read_hash with :reject and out-of-bounds numerical value raises" do
+    @file.write(@table)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: [3]) }
+  end
+
+  test "CSV.read_hash with :reject of numerical values return correctly" do
+    @file.write(@table)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path, reject: [2, 0])
+    expected = [{:Sequence=>"ATACGTCAG"},
+                {:Sequence=>"AGCATGAC"},
+                {:Sequence=>"GACTG"},
+                {:Sequence=>"AAATGCA"}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV.read_hash with :reject and out-of-bounds range raises" do
+    @file.write(@table)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: 1 .. 3) }
+  end
+
+  test "CSV.read_hash with :reject of range return correctly" do
+    @file.write(@table)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path, reject: 0 .. 1)
+    expected = [{:Count=>23524},
+                {:Count=>2442},
+                {:Count=>234},
+                {:Count=>2342}]
+
+    assert_equal(expected, result)
+  end
+
+  test "CSV.read_hash with :reject of non-numerical values and no header raises" do
+    @file.write(@table3)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: ["Organism"]) }
+  end
+
+  test "CSV.read_hash with :reject of non-numerical values not matching header raises" do
+    @file.write(@table)
+    @file.rewind
+    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: ["ount"]) }
+  end
+
+  test "CSV.read_hash with :reject of non-numerical values returns correctly" do
+    @file.write(@table)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path, reject: ["Count", :Organism])
+    expected = [{:Sequence=>"ATACGTCAG"},
+                {:Sequence=>"AGCATGAC"},
+                {:Sequence=>"GACTG"},
+                {:Sequence=>"AAATGCA"}]
+
+    assert_equal(expected, result)
+  end
+
+
+
+
+
 #  test "CSV#each_array with :columns returns correctly" do
 #    result = []
 #    @csv.each_array(columns: [0, 2]) { |array| result << array }
