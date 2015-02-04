@@ -243,8 +243,6 @@ module BioPieces
 
         @header = @header.values_at(*@fields)
       elsif options[:reject]
-        delimiter = options[:delimiter] || @delimiter
-
         if options[:reject].first.is_a? Fixnum
           reject = options[:reject].is_a?(Range) ? options[:reject].to_a : options[:reject]
           @fields = (0 ... fields.size).to_a - reject
