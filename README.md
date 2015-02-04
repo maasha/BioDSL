@@ -81,6 +81,7 @@ Available Biopieces
   * `plot_heatmap.rb`
   * `plot_histogram.rb`
   * `plot_matches.rb`
+  * `plot_nucleotide_distribution.rb`
   * `plot_scores.rb`
   * `random.rb`
   * `read_fasta.rb`
