@@ -103,6 +103,7 @@ module BioPieces
       @io        = io
       @delimiter = "\s"
       @header    = nil
+      @fields    = nil
       @types     = nil
     end
 
