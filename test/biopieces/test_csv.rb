@@ -370,6 +370,18 @@ END
     assert_equal(expected, result)
   end
 
+  test "CSV.read_hash with no header returns correctly" do
+    @file.write(@table3)
+    @file.rewind
+    result   = BioPieces::CSV.read_hash(@file.path)
+    expected = [{V0: "Human", V1: "ATACGTCAG", V2: 5.24},
+                {V0: "Dog",   V1: "AGCATGAC",  V2: 4.2},
+                {V0: "Mouse", V1: "GACTG",     V2: 3.4},
+                {V0: "Cat",   V1: "AAATGCA",   V2: 3.42}]
+
+    assert_equal(expected, result)
+  end
+
   test "CSV.read_hash with :delimiter returns correctly" do
     @file.write(@table2)
     @file.rewind

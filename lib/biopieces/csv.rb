@@ -109,11 +109,10 @@ module BioPieces
 
     # Method to skip a given number or non-empty lines.
     def skip(num)
-      while num != 0
-        line = @io.gets
+      while num != 0 and line = @io.gets
         line.chomp!
 
-        num -=1 unless line.empty?
+        num -= 1 unless line.empty?
       end
     end
 
@@ -145,6 +144,7 @@ module BioPieces
             yield @header.map { |h| h.to_s }
           end
         else
+          get_header(fields, options)    unless @header
           get_fields(fields, options) unless @fields
 
           fields = fields.values_at(*@fields) if @fields
@@ -187,8 +187,13 @@ module BioPieces
     #   * :select - list of column indexes, names or a range to select.
     #   * :reject - list of column indexes, names or a range to reject.
     def get_header(fields, options)
-      fields[0] = fields[0][1 .. -1]
-      @header = fields.map { |h| h.to_sym }
+      if fields[0][0] == '#'
+        fields[0] = fields[0][1 .. -1] 
+        @header = fields.map { |h| h.to_sym }
+      else
+        @header = []
+        fields.each_with_index { |field, i| @header << "V#{i}".to_sym }
+      end
 
       if options[:select]
         if options[:select].first.is_a? Fixnum
@@ -276,6 +281,10 @@ module BioPieces
       @types = types
     end
 
-    class IO < Filesys; end
+    class IO < Filesys
+      def gets
+        @io.gets
+      end
+    end
   end
 end
