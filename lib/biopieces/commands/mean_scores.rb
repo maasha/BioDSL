@@ -98,6 +98,12 @@ module BioPieces
 
       lmb = lambda do |input, output, status|
         status_track(status) do
+          min   = Float::INFINITY
+          max   = 0
+          sum   = 0
+          mean  = 0.0
+          count = 0
+
           input.each do |record|
             status[:records_in] += 1
 
@@ -105,16 +111,27 @@ module BioPieces
               entry = BioPieces::Seq.new_bp(record)
 
               if options[:local]
-                record[:SCORES_MEAN_LOCAL] = entry.scores_mean_local(options[:window_size]).round(2)
+                mean = entry.scores_mean_local(options[:window_size]).round(2)
+                record[:SCORES_MEAN_LOCAL] = mean
               else
-                record[:SCORES_MEAN] = entry.scores_mean.round(2)
+                mean = entry.scores_mean.round(2)
+                record[:SCORES_MEAN] = mean
               end
+
+              sum   += mean
+              min    = mean if mean < min
+              max    = mean if mean > max
+              count += 1
             end
 
             output << record
 
             status[:records_out] += 1
           end
+
+          status[:min_mean]  = min
+          status[:max_mean]  = max
+          status[:mean_mean] = (sum.to_f / count).round(2)
         end
       end
 

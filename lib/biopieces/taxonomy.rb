@@ -34,56 +34,16 @@ module BioPieces
     TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
     TAX_REGEX  = /^K#[^;]*?;P#[^;]*?;C#[^;]*?;O#[^;]*?;F#[^;]*?;G#[^;]*?;S#.*$/
 
-    # Class for creating, connecting and disconnecting databases.
-    # The databases are Tokyo Cabinet files.
-    class Databases
-      require 'tokyocabinet'
-      include TokyoCabinet
-
-      # Connect all databases.
-      def self.connect(dir, prefix)
-        databases = {}
-
-        TAX_LEVELS.inject([:taxtree]) { |memo, obj| memo << "#{obj}_kmer2nodes".to_sym }.each do |name|
-          databases[name] = HDB::new
-        end
-
-        databases.each do |name, database|
-          if !database.open(File.join(dir, "#{prefix}_#{name}.tch"), HDB::OWRITER | HDB::OCREAT)
-            ecode = database.ecode
-            STDERR.printf("open error: %s\n", database.errmsg(ecode))
-          end
-        end
-
-        databases
-      end
-
-      # Disconnect all databases.
-      def self.disconnect(databases)
-        databases.values do |database|
-          if !database.close
-            ecode = database.ecode
-            STDERR.printf("close error: %s\n", database.errmsg(ecode))
-          end
-        end
-      end
-    end
-
     # Class for creating and databasing an index of a taxonomic tree. This is
     # done in two steps. 1) A temporary tree is creating using the taxonomic
     # strings from the sequence names in a FASTA file. 2) A simplistic tree
     # is constructed from the temporary tree allowing this to be saved to files
-    # using Tokyo Cabinet. The resulting index consists of the following files:
-    #  * taxonomy_taxtree.tch      - return node for a given node id.
-    #  * taxonomy_r_kmer2nodes.tch - return list of root    level node ids for a given kmer.
-    #  * taxonomy_k_kmer2nodes.tch - return list of kingdom level node ids for a given kmer.
-    #  * taxonomy_p_kmer2nodes.tch - return list of phylum  level node ids for a given kmer.
-    #  * taxonomy_c_kmer2nodes.tch - return list of class   level node ids for a given kmer.
-    #  * taxonomy_o_kmer2nodes.tch - return list of order   level node ids for a given kmer.
-    #  * taxonomy_f_kmer2nodes.tch - return list of family  level node ids for a given kmer.
-    #  * taxonomy_g_kmer2nodes.tch - return list of genus   level node ids for a given kmer.
-    #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
+    # using Marshal. The resulting index consists of the following files:
+    #  * taxonomy_tax_index.dat  - return node for a given node id.
+    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
     class Index
+      require 'set'
+
       # Constructor Index object.
       def initialize(options)
         @options      = options                                         # Option hash.
@@ -91,8 +51,8 @@ module BioPieces
         @node_id      = 0                                               # Node id.
         @tree         = TaxNode.new(nil, :r, nil, nil, nil, @node_id)   # Root level tree node.
         @node_id     += 1
-        @kmers        = Vector.new(4 ** @options[:kmer_size], "byte")   # Kmer vector for storing observed kmers.
-        @max_children = 0                                               # Stats info.
+        @tax_index    = {}                                              # Hash: node_id=>node
+        @kmer_index   = {}                                              # Hash: level=>kmer=>node ids
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -126,10 +86,6 @@ module BioPieces
       # contain a subset of oligos compared to the parent node.
       def add(entry)
         node  = @tree
-        kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
-
-        @kmers.zero! # A reusable instance variable is used to avoid casting and GC overhead.
-        @kmers[kmers] = 1 unless kmers.empty?
         
         _, tax_string = entry.seq_name.split(' ', 2)
 
@@ -137,15 +93,34 @@ module BioPieces
 
         tax_levels = tax_string.split(';')
 
-        tax_levels.each do |tax_level|
+        tax_levels.each_with_index do |tax_level, i|
           level, name = tax_level.split('#')
 
+          if tax_levels[i + 1] and tax_levels[i + 1].split('#')[1]
+            leaf = false
+          else
+            leaf = true
+          end
+
           if name
-            if node[name]
-              node[name].kmers |= @kmers
+            if leaf
+              kmers = Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
+
+              if node[name]
+                if node[name].kmers
+                  node[name].kmers |= kmers
+                else
+                  node[name].kmers = kmers
+                end
+              else
+                node[name] = TaxNode.new(node, level.downcase.to_sym, name, kmers, @seq_id, @node_id)
+                @node_id += 1
+              end
             else
-              node[name] = TaxNode.new(node, level.downcase.to_sym, name, @kmers.dup, @seq_id, @node_id)
-              @node_id += 1
+              unless node[name]
+                node[name] = TaxNode.new(node, level.downcase.to_sym, name, nil, @seq_id, @node_id)
+                @node_id += 1
+              end
             end
 
             node = node[name]
@@ -159,88 +134,60 @@ module BioPieces
 
       # Remap and save taxonomic tree to index files.
       def save
-        databases = Databases.connect(@options[:output_dir], @options[:prefix])
-
         kmer_hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = Set.new } }
 
-        tree_remap(@tree, kmer_hash, databases)
+        tree_union(@tree)
+
+        tree_remap(@tree, kmer_hash)
+
+        save_tax_index
 
         kmer_hash.each do |level, hash|
           hash.each do |kmer, nodes|
-            databases["#{level}_kmer2nodes".to_sym][kmer] = nodes.to_a.sort.pack("I*")
+            @kmer_index[level]       = {} unless @kmer_index[level]
+            @kmer_index[level][kmer] = nodes.to_a.sort.pack("I*")
           end
         end
-      ensure
-        Databases.disconnect(databases)
 
-        puts "Nodes: #{@id}   Max children: #{@max_children}" if $VERBOSE
+        save_kmer_index
       end
 
       private
 
+      def tree_union(node)
+        node.children.each_value { |child| tree_union(child) }
+
+        node.children.each_value do |child|
+          if node.kmers.nil? and child.kmers.nil?
+          elsif node.kmers.nil?
+            node.kmers = child.kmers.dup
+          else
+            node.kmers |= child.kmers if child.kmers
+          end
+        end
+      end
+
       # Remap the taxonomic tree using simple nodes and build a hash with
       # all nodes per kmer.
-      def tree_remap(node, kmer_hash, databases)
-        databases[:taxtree][node.node_id] = Node.new(node.seq_id, node.node_id, node.level, node.name, node.parent_id).to_marshal
+      def tree_remap(node, kmer_hash)
+        @tax_index[node.node_id] = Node.new(node.seq_id, node.node_id, node.level, node.name, node.parent_id)
 
         node.kmers.to_a.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }   # FIXME BOTTLE NECK
 
-        @max_children = node.children.size if node.children.size > @max_children
-
-        node.children.each_value { |child| tree_remap(child, kmer_hash, databases) }
+        node.children.each_value { |child| tree_remap(child, kmer_hash) }
       end
 
-      # Class with methods to manipulate a vector used to hold uniq kmers (integers).
-      # The vector is encoded in a byte array using NArray compressed using LZ4 to
-      # save memory.
-      class Vector
-        require 'lz4-ruby'
-
-        attr_reader :kmers
-
-        # Constructor for creating a new Vector object of a given size.
-        def initialize(size, type)
-          @size  = size
-          @type  = type
-          @kmers = LZ4::compress(NArray.new(@type, @size).to_s)
+      # Method to save the kmer_index to file.
+      def save_tax_index
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
+          ios.write Marshal.dump(@tax_index)
         end
+      end
 
-        # Set all values in the vector to zero.
-        def zero!
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na.fill! 0
-          @kmers = LZ4::compress(na.to_s)
-
-          nil # save GC
-        end
-
-        # Use the given kmers array as index to set all positions in the
-        # vector to the given value.
-        def []=(kmers, value)
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na[NArray.to_na(kmers)] = value
-          @kmers = LZ4::compress(na.to_s)
-        end
-
-        # Perform bitwise OR between two vectors.
-        def |(vector)
-          na1 = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na2 = NArray.to_na(LZ4::uncompress(vector.kmers), @type)
-          @kmers = LZ4::compress((na1 | na2).to_s)
-          
-          self
-        end
-
-        # Method to return all kmers saved in a vector as a list of integers.
-        def to_a
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          (na > 0).where.to_s.unpack("I*")
-        end
-
-        # Method to return the count of true values in a vector.
-        def count_true
-          na = NArray.to_na(LZ4::uncompress(@kmers), @type)
-          na.count_true
+      # Method to save kmer_index to file.
+      def save_kmer_index
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
+          ios.write Marshal.dump(@kmer_index)
         end
       end
 
@@ -300,17 +247,10 @@ module BioPieces
 
     # Class for searching sequences in a taxonomic database. The database
     # consists a taxonomic tree index and indices for each taxonomic level
-    # saved in the following Tokyo Cabinet files:
-    #  * taxonomy_taxtree.tch      - return node for a given node id.
-    #  * taxonomy_r_kmer2nodes.tch - return list of root    level node ids for a given kmer.
-    #  * taxonomy_k_kmer2nodes.tch - return list of kingdom level node ids for a given kmer.
-    #  * taxonomy_p_kmer2nodes.tch - return list of phylum  level node ids for a given kmer.
-    #  * taxonomy_c_kmer2nodes.tch - return list of class   level node ids for a given kmer.
-    #  * taxonomy_o_kmer2nodes.tch - return list of order   level node ids for a given kmer.
-    #  * taxonomy_f_kmer2nodes.tch - return list of family  level node ids for a given kmer.
-    #  * taxonomy_g_kmer2nodes.tch - return list of genus   level node ids for a given kmer.
-    #  * taxonomy_s_kmer2nodes.tch - return list of species level node ids for a given kmer.
-    class Search < Databases
+    # saved in the following Marshal files:
+    #  * taxonomy_tax_index.dat  - return node for a given node id.
+    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
+    class Search
       MAX_COUNT    = 200_000
       MAX_HITS     = 2_000    # Maximum number of shared oligos between two sequences.
       BYTES_IN_INT = 4
@@ -318,11 +258,22 @@ module BioPieces
 
       # Constructor for initializing a Search object.
       def initialize(options)
-        @options   = options
-        @databases = Databases.connect(@options[:dir], @options[:prefix])
-        @count_ary = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
-        @hit_ary   = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
-        @cache     = Hash.new { |h, k| h[k] = {} }
+        @options    = options
+        @count_ary  = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
+        @hit_ary    = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
+        @cache      = Hash.new { |h, k| h[k] = {} }
+        @tax_index  = load_tax_index
+        @kmer_index = load_kmer_index
+      end
+
+      # Method to load and return the tax_index from file.
+      def load_tax_index
+        Marshal.load(File.read(File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")))
+      end
+
+      # Method to load and return the kmer_index from file.
+      def load_kmer_index
+        Marshal.load(File.read(File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")))
       end
 
       # Method to execute a search for a given sequence entry. First the
@@ -364,10 +315,10 @@ module BioPieces
             (0 ... hit_count).each do |i|
               node_id, count = @hit_ary.ary[BYTES_IN_HIT * i ... BYTES_IN_HIT * i + BYTES_IN_HIT].unpack("II")
 
-              taxpath = TaxPath.new(@databases, node_id, count, kmers.size)
+              taxpath = TaxPath.new(node_id, count, kmers.size, @tax_index)
 
               if $VERBOSE
-                seq_id  = Marshal.load(@databases[:taxtree][node_id]).seq_id
+                seq_id = @tax_index[node_id].seq_id
                 puts "DEBUG S_ID: #{seq_id} KMERS: [#{count}/#{kmers.size}] #{taxpath}"
               end
 
@@ -381,11 +332,6 @@ module BioPieces
         Result.new(0, "Unclassified")
       end
 
-      # Method that disconnects and closes all databases.
-      def disconnect
-        Databases.disconnect(@databases)
-      end
-
       private
 
       # Method that given a list of kmers and a taxonomic level
@@ -397,11 +343,10 @@ module BioPieces
         @count_ary.zero!
 
         kmers.each do |kmer|
-          if @cache[level] and nodes = @cache[level][kmer]
-            increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
-          elsif nodes = @databases["#{level}_kmer2nodes".to_sym][kmer]
-            increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
-            @cache[level][kmer] = nodes
+          if @kmer_index[level]
+            if nodes = @kmer_index[level][kmer]
+              increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
+            end
           end
         end
       end
@@ -605,11 +550,11 @@ module BioPieces
         attr_reader :nodes
 
         # Constructor method for TaxPath objects.
-        def initialize(databases, node_id, kmers_observed, kmers_total)
-          @databases      = databases
+        def initialize(node_id, kmers_observed, kmers_total, tax_index)
           @node_id        = node_id
           @kmers_observed = kmers_observed
           @kmers_total    = kmers_total
+          @tax_index      = tax_index
           @nodes          = taxonomy_backtrack
         end
 
@@ -620,7 +565,7 @@ module BioPieces
 
           node_id = @node_id
 
-          while node = Marshal.load(@databases[:taxtree][node_id])
+          while node = @tax_index[node_id]
             nodes << node
 
             node_id = node.parent

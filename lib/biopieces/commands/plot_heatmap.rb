@@ -36,13 +36,13 @@ module BioPieces
     # postscript or SVG output instead with is easy using the +terminal+ option.
     # Plotting is done using GNUplot which allows for different types of output.
     #
-    # GNUplot must be installed for plot_matches to work. Read more here:
+    # GNUplot must be installed for +plot_heatmap+ to work. Read more here:
     #
     # http://www.gnuplot.info/
     # 
     # == Usage
     # 
-    #    plot_matches([keys: <list> | skip: <list>[, output: <file>
+    #    plot_heatmap([keys: <list> | skip: <list>[, output: <file>
     #                 [, force: <bool> [, terminal: <string>
     #                 [, title: <string>[, xlabel: <string>[, ylabel: <string>[, test: <bool>]]]]]]])
     # 
