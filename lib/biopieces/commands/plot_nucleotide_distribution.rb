@@ -83,7 +83,7 @@ module BioPieces
       options[:terminal] ||= :dumb
       options[:title]    ||= "Nucleotide Distribution"
       options[:xlabel]   ||= "Sequence position"
-      options[:ylabel]   ||= "Nucleotide distribution"
+      options[:ylabel]   ||= "%"
 
       lmb = lambda do |input, output, status|
         status_track(status) do

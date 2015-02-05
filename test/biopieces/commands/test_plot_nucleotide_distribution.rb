@@ -51,7 +51,7 @@ class TestPlotNucleotideDistribution < Test::Unit::TestCase
 set terminal dumb
 set title "Nucleotide Distribution"
 set xlabel "Sequence position"
-set ylabel "Nucleotide distribution"
+set ylabel "%"
 set output ""
 set xtics out
 set ytics out
@@ -92,7 +92,7 @@ EOF
 set terminal dumb
 set title "Nucleotide Distribution"
 set xlabel "Sequence position"
-set ylabel "Nucleotide distribution"
+set ylabel "%"
 set output ""
 set xtics out
 set ytics out
