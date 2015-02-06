@@ -46,6 +46,11 @@ module BioPieces
       usearch.usearch_global
     end
 
+    def self.usearch_local(options)
+      usearch = self.new(options)
+      usearch.usearch_local
+    end
+
     def self.open(*args)
       ios = IO.open(*args)
 
@@ -95,7 +100,24 @@ module BioPieces
     def usearch_global
       command = []
       command << "usearch"
+      command << "-notrunclabels"
       command << "-usearch_global #{@options[:input].path}"
+      command << "-db #{@options[:database]}"
+      command << "-strand #{@options[:strand]}" if @options[:strand]
+      command << "-threads #{@options[:cpus]}"  if @options[:cpus]
+      command << "-id #{@options[:identity]}"
+      command << "-uc #{@options[:output].path}"
+
+      execute(command)
+
+      self
+    end
+
+    def usearch_local
+      command = []
+      command << "usearch"
+      command << "-notrunclabels"
+      command << "-usearch_local #{@options[:input].path}"
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}" if @options[:strand]
       command << "-threads #{@options[:cpus]}"  if @options[:cpus]
