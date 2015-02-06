@@ -208,11 +208,11 @@ module BioPieces
               rows << row
             else
               if header
-                tab_out.puts "#" + headings.join(options[:delimiter]) unless headings.empty?
+                tab_out.puts "#" + headings.join(options[:delimiter]) unless headings.compact.empty?
                 header = false
               end
 
-              tab_out.puts row.join(options[:delimiter]) unless row.empty?
+              tab_out.puts row.join(options[:delimiter]) unless row.compact.empty?
             end
 
             if output
