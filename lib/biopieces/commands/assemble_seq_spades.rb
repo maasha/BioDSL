@@ -99,7 +99,7 @@ module BioPieces
                       fastq = true
                       io_fq.puts entry.to_fastq
                     else
-                      io_pa.puts entry.to_fasta
+                      io_fa.puts entry.to_fasta
                     end
                   else
                     status[:records_out]   += 1
