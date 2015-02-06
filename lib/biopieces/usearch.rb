@@ -95,6 +95,7 @@ module BioPieces
     def usearch_global
       command = []
       command << "usearch"
+      command << "-notrunclabels"
       command << "-usearch_global #{@options[:input].path}"
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}" if @options[:strand]
@@ -152,7 +153,7 @@ module BioPieces
           record[:STRAND] = fields[4]
           record[:CIGAR]  = fields[7]
           record[:Q_ID]   = fields[8]
-          record[:S_ID]   = fields[9] if fields[0] == 'H'
+          record[:S_ID]   = fields[9]# if fields[0] == 'H'
 
           yield record
         end
