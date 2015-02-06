@@ -153,7 +153,7 @@ module BioPieces
           record[:STRAND] = fields[4]
           record[:CIGAR]  = fields[7]
           record[:Q_ID]   = fields[8]
-          record[:S_ID]   = fields[9]# if fields[0] == 'H'
+          record[:S_ID]   = fields[9] if fields[0] == 'H'
 
           yield record
         end
