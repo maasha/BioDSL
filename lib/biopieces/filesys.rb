@@ -33,6 +33,22 @@ module BioPieces
 
     include Enumerable
 
+    # Cross-platform way of finding an executable in the $PATH.
+    #
+    #   which('ruby') #=> /usr/bin/ruby
+    def self.which(cmd)
+      exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+
+      ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+        exts.each { |ext|
+          exe = File.join(path, "#{cmd}#{ext}")
+          return exe if File.executable?(exe) && !File.directory?(exe)
+        }
+      end
+
+      nil
+    end
+
     # Class method that returns a path to a unique temporary file.
     # If no directory is specified reverts to the systems tmp directory.
     def self.tmpfile(tmp_dir = ENV["TMPDIR"])
@@ -80,24 +96,14 @@ module BioPieces
       end
     end
 
-    # Cross-platform way of finding an executable in the $PATH.
-    #
-    #   which('ruby') #=> /usr/bin/ruby
-    def self.which(cmd)
-      exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
-
-      ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
-        exts.each { |ext|
-          exe = File.join(path, "#{cmd}#{ext}")
-          return exe if File.executable?(exe) && !File.directory?(exe)
-        }
-      end
-
-      nil
-    end
+    attr_reader :io
 
     def initialize(ios)
       @io = ios
+    end
+
+    def gets
+      @io.gets
     end
 
     def puts(*args)
@@ -124,13 +130,7 @@ module BioPieces
     def each
       return to_enum :each unless block_given?
 
-      while entry = get_entry do
-        yield entry
-      end
-    end
-
-    def get_entry
-      @io.gets
+      @io.each { |line| yield line }
     end
   end
 end

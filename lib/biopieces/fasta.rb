@@ -56,7 +56,6 @@ module BioPieces
     end
 
     attr_accessor :seq_name, :seq
-    attr_accessor :io   # DEBUG FIXME REMOVE
 
     def initialize(io)
       @io        = io

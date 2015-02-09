@@ -30,16 +30,48 @@ module BioPieces
 
   # Class for parsing FASTQ entries from an ios and return as Seq objects.
   class Fastq < BioPieces::Filesys
+    def self.open(*args)
+      ios = IO.open(*args)
+
+      if block_given?
+        begin
+          yield self.new(ios)
+        ensure
+          ios.close
+        end
+      else
+        return self.new(ios)
+      end
+    end
+
+    def initialize(io)
+      @io        = io
+    end
+
+    def each
+      while entry = next_entry
+        yield entry
+      end
+    end
+
     # Method to get the next FASTQ entry from an ios and return this
     # as a Seq object. If no entry is found or eof then nil is returned.
-    def get_entry
+    def next_entry
       return nil if @io.eof?
-      seq_name       = @io.gets[1 .. -2]
-      seq            = @io.gets.chomp
+      seq_name = @io.gets[1 .. -2]
+      seq      = @io.gets.chomp
       @io.gets
-      qual           = @io.gets.chomp
+      qual     = @io.gets.chomp
 
       Seq.new(seq_name: seq_name, seq: seq, qual: qual)
+    end
+
+    class IO < Filesys
+      def each
+        while not @io.eof?
+          yield @io.gets
+        end
+      end
     end
   end
 end
