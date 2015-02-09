@@ -30,10 +30,6 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 require 'test/helper'
 
 class TestUclust < Test::Unit::TestCase 
-  def setup
-    @db = File.join(File.dirname(__FILE__), '..', '..', '..', 'data', 'chimera_db.fna')
-  end
-
   test "BioPieces::Pipeline#uclust with disallowed option raises" do
     p = BioPieces::Pipeline.new
     assert_raise(BioPieces::OptionError) { p.uclust(foo: "bar") }
@@ -41,7 +37,7 @@ class TestUclust < Test::Unit::TestCase
 
   test "BioPieces::Pipeline#uclust with allowed option don't raise" do
     p = BioPieces::Pipeline.new
-    assert_nothing_raised { p.uclust(database: @db, identity: 1) }
+    assert_nothing_raised { p.uclust(identity: 1, strand: :both) }
   end
 
   test "BioPieces::Pipeline#uclust outputs correctly" do
@@ -54,13 +50,11 @@ class TestUclust < Test::Unit::TestCase
     output.close
 
     p = BioPieces::Pipeline.new
-    p.uclust(database: @db, identity: 0.97, strand: "plus").run(input: input, output: output2)
+    p.uclust(identity: 0.97, strand: "plus", align: true).run(input: input, output: output2)
     result   = input2.map { |h| h.to_s }.sort_by { |a| a.to_s }.reduce(:<<)
     expected = ""
-    expected << %Q{{:SEQ=>"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"}}
-    expected << %Q{{:SEQ=>"gtgtgtagctacgatcagctagcgatcgagctatatgttt"}}
-    expected << %Q{{:TYPE=>"H", :CLUSTER=>0, :SEQ_LEN=>40, :IDENT=>100.0, :STRAND=>"+", :CIGAR=>"40M", :Q_ID=>"1", :S_ID=>"test1", :RECORD_TYPE=>"usearch"}}
-    expected << %Q{{:TYPE=>"N", :CLUSTER=>0, :SEQ_LEN=>0, :STRAND=>".", :CIGAR=>"*", :Q_ID=>"2", :RECORD_TYPE=>"usearch"}}
+    expected << %Q{{:RECORD_TYPE=>"uclust", :CLUSTER=>0, :SEQ_NAME=>"*1", :SEQ=>"GTgtgtAGCTACGATCAGCTAGCGATCGAGCTATATGTTT", :SEQ_LEN=>40}}
+    expected << %Q{{:RECORD_TYPE=>"uclust", :CLUSTER=>1, :SEQ_NAME=>"*2", :SEQ=>"ATCGATCGATCGATCGATCGATCGATCGTACGACGTAGCT", :SEQ_LEN=>40}}
     expected << %Q{{:one=>1, :two=>2, :three=>3}}
 
     assert_equal(expected, result)
