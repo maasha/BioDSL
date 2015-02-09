@@ -78,7 +78,7 @@ class TestWriteFasta < Test::Unit::TestCase
 
   test "BioPieces::Pipeline::WriteFasta to file outputs correctly" do
     @p.write_fasta(output: @file).run(input: @input, output: @output2)
-    result = File.open(@file).read
+    result = File.read(@file)
     expected = ">test1\natcg\n>test2\ngtac\n"
     assert_equal(expected, result)
   end
