@@ -114,7 +114,10 @@ module BioPieces
                   status[:records_out] += 1
                 end
               end
-            rescue UsearchError
+            rescue BioPieces::UsearchError => e
+              unless e.message =~ /Empty input file/
+                raise
+              end
             end
           ensure
             tmp_in.unlink
