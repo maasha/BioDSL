@@ -31,6 +31,11 @@ module BioPieces
   class Usearch
     include Enumerable
 
+    def self.cluster_smallmem(options)
+      usearch = self.new(options)
+      usearch.cluster_smallmem
+    end
+
     def self.cluster_otus(options)
       usearch = self.new(options)
       usearch.cluster_otus
@@ -68,6 +73,25 @@ module BioPieces
       if File.size(@options[:input]) == 0
         raise UsearchError, %{Empty input file -> "#{@options[:input].path}"}
       end
+    end
+
+    def cluster_smallmem
+      command = []
+      command << "usearch"
+      command << "-cluster_smallmem #{@options[:input].path}"
+      command << "-id #{@options[:identity]}"
+      command << "-threads #{@options[:cpus]}" if @options[:cpus]
+      command << "-strand #{@options[:strand]}"
+
+      if @options[:align]
+        command << "-msaout #{@options[:output].path}"
+      else
+        command << "-uc #{@options[:output].path}"
+      end
+
+      execute(command)
+
+      self
     end
 
     def cluster_otus
@@ -151,9 +175,9 @@ module BioPieces
     class IO < Filesys
       def each(format = :uc)
         case format
-        when :uc then self.each_uc { |e| yield e }
-        when :cluster
-        when :alignment
+        when :uc then self.each_uc  { |e| yield e }
+        else
+          raise UsearchError, "Unknown iterator format: #{format}"
         end
       end
 
@@ -179,84 +203,6 @@ module BioPieces
           yield record
         end
       end
-
-      # Method to parse a Uclust .uc file and for each line of data
-      # yield a Biopiece record.
-      def each_cluster
-        record = {}
-
-        File.open(@outfile, "r") do |ios|
-          ios.each_line do |line|
-            if line !~ /^#/
-              fields = line.chomp.split("\t")
-
-              next if fields[0] == 'C'
-
-              record[:TYPE]     = fields[0]
-              record[:CLUSTER]  = fields[1].to_i
-              record[:IDENT]    = fields[3].to_f
-              record[:Q_ID]     = fields[8]
-
-              yield record
-            end
-          end
-        end
-
-        self
-      end
-
-      # Method to parse a Useach user defined tabular file and for each line of data
-      # yield a Biopiece record.
-      def each_hit
-        record = {}
-
-        File.open(@outfile, "r") do |ios|
-          ios.each_line do |line|
-            fields = line.chomp.split("\t")
-            record[:REC_TYPE]   = "USEARCH"
-            record[:Q_ID]       = fields[0]
-            record[:S_ID]       = fields[1]
-            record[:IDENT]      = fields[2].to_f
-            record[:ALIGN_LEN]  = fields[3].to_i
-            record[:MISMATCHES] = fields[4].to_i
-            record[:GAPS]       = fields[5].to_i
-            record[:Q_BEG]      = fields[6].to_i - 1
-            record[:Q_END]      = fields[7].to_i - 1
-            record[:S_BEG]      = fields[8].to_i - 1
-            record[:S_END]      = fields[9].to_i - 1
-            record[:E_VAL]      = fields[10] == '*' ? '*' : fields[10].to_f
-            record[:SCORE]      = fields[11] == '*' ? '*' : fields[11].to_f
-            record[:STRAND]     = record[:S_BEG].to_i < record[:S_END].to_i ? '+' : '-'
-
-            record[:S_BEG], record[:S_END] = record[:S_END], record[:S_BEG] if record[:STRAND] == '-'
-
-            yield record
-          end
-        end
-
-        self
-      end
-
-      # Method to parse a FASTA file with Ustar alignments and for each alignment
-      # yield an Align object.
-      def each_alignment
-        entries = []
-
-        Fasta.open(@outfile, "r") do |ios|
-          ios.each do |entry|
-            entry.seq.tr! '+', '-'
-            entries << entry
-
-            if entry.seq_name == 'consensus'
-              yield Align.new(entries[0 .. -2])
-              entries = []
-            end
-          end
-        end
-
-        self
-      end
     end
-
   end
 end

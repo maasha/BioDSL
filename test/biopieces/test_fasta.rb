@@ -30,65 +30,123 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 require 'test/helper'
 
 class FastaTest < Test::Unit::TestCase
-  test "#get_entry obtains the correct seq_name" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\nATCG\n"))
-    assert_equal("test", fasta.get_entry.seq_name)
+  def setup
+    @file = Tempfile.new("fasta")
   end
 
-  test "#get_entry obtains the correct seq without trailing newlines" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\nATCG"))
-    assert_equal("ATCG", fasta.get_entry.seq)
+  def teardown
+    @file.close
+    @file.unlink
   end
 
-  test "#get_entry obtains the correct seq with trailing newlines" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\nATCG\n\n\n"))
-    assert_equal("ATCG", fasta.get_entry.seq)
+  test "BioPieces::Fasta#read with non-existing file raises" do
+    assert_raise(Errno::ENOENT) { BioPieces::Fasta.read("dasf") }
   end
 
-  test "#get_entry rstrips whitespace from seq_name" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\n\r\t ATCG\n"))
-    assert_equal("test", fasta.get_entry.seq_name)
+  test "BioPieces::Fasta#read with empty files return empty" do
+    assert_equal([], BioPieces::Fasta.read(@file))
   end
 
-  test "#get_entry strips whitespace from seq" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\n\r\t AT\n\r\t CG\n\r\t "))
-    assert_equal("ATCG", fasta.get_entry.seq)
+  test "BioPieces::Fasta#read with two entries return correctly" do
+    File.open(@file, 'w') do |ios|
+ios.puts <<EOD
+>test1
+atcg
+>test2
+gtT
+EOD
+    end
+
+    @file.close
+
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read(@file).map { |e| e.to_fasta } )
   end
 
-  test "#get_entry with two entries returns correctly" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test1\n\r\t AT\n\r\t CG\n\r\t \n>test2\n\r\t atcg\n"))
-    assert_equal("ATCG", fasta.get_entry.seq)
-    assert_equal("atcg", fasta.get_entry.seq)
+  test "BioPieces::Fasta#read from gzip with two entries return correctly" do
+    File.open(@file, 'w') do |ios|
+ios.puts <<EOD
+>test1
+atcg
+>test2
+gtT
+EOD
+    end
+
+    @file.close
+
+    `gzip #{@file.path}`
+
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read("#{@file.path}.gz").map { |e| e.to_fasta } )
   end
 
-  test "#get_entry without seq_name raises" do
-    fasta = BioPieces::Fasta.new(StringIO.new("ATCG\n"))
-    assert_raise(BioPieces::FastaError) { fasta.get_entry }
+  test "BioPieces::Fasta#read from bzip2 with two entries return correctly" do
+    File.open(@file, 'w') do |ios|
+ios.puts <<EOD
+>test1
+atcg
+>test2
+gtT
+EOD
+    end
+
+    @file.close
+
+    `bzip2 #{@file.path}`
+
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read("#{@file.path}.bz2").map { |e| e.to_fasta } )
   end
 
-  test "#get_entry without seq raises" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\n\n"))
-    assert_raise(BioPieces::FastaError) { fasta.get_entry }
+  test "BioPieces::Fasta#read with two entries and white space return correctly" do
+    File.open(@file, 'w') do |ios|
+ios.puts <<EOD
+
+>test1
+
+at
+
+cg
+
+>test2
+
+gt
+
+T
+
+EOD
+    end
+
+    @file.close
+
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read(@file).map { |e| e.to_fasta } )
   end
 
-# FIXME
-#  test "#get_entry raises on missing > in seq_name" do
-#    fasta = BioPieces::Fasta.new(StringIO.new("test\nATCG\n"))
-#    assert_raise( BioPieces::FastaError ) { fasta.get_entry }
-#  end
+  test "BioPieces::Fasta#read with content and missing seq_name raises" do
+    File.open(@file, 'w') do |ios|
+      ios.puts "tyt"
+    end
 
-  test "#get_decimal_qual without seq_name raises" do
-    fasta = BioPieces::Fasta.new(StringIO.new("10 20 30 40\n"))
-    assert_raise(BioPieces::FastaError) { fasta.get_decimal_qual }
+    @file.close
+
+    assert_raise(BioPieces::FastaError) { BioPieces::Fasta.read(@file) }
   end
 
-  test "#get_decimal_qual without qual raises" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\n"))
-    assert_raise(BioPieces::FastaError) { fasta.get_decimal_qual }
+  test "BioPieces::Fasta#read with content before first entry raises" do
+    File.open(@file, 'w') do |ios|
+      ios.puts "foo\n>bar\natcg"
+    end
+
+    @file.close
+
+    assert_raise(BioPieces::FastaError) { BioPieces::Fasta.read(@file) }
   end
 
-  test "#get_decimal_qual returns correctly" do
-    fasta = BioPieces::Fasta.new(StringIO.new(">test\n0 10 20 30 40\n"))
-    assert_equal("!+5?I", fasta.get_decimal_qual.qual)
+  test "BioPieces::Fasta#read with content and truncated seq_name raises" do
+    File.open(@file, 'w') do |ios|
+      ios.puts ">\ntyt"
+    end
+
+    @file.close
+
+    assert_raise(BioPieces::FastaError) { BioPieces::Fasta.read(@file) }
   end
 end

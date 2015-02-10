@@ -26,15 +26,16 @@
 
 module BioPieces
   module Commands
-    # == Create OTUs from sequences in the stream.
+    # == Run uclust on sequences in the stream.
     # 
-    # Use the +usearch+ program cluster_otus to cluster sequences in the stream
-    # and output a representative sequence from each cluster. Sequences must
-    # be dereplicated and sorted according to +SEQ_COUNT+ in decreasing order.
+    # This is a wrapper for the +usearch+ tool to run the program uclust.
+    # Basically sequence type records are clustered de-novo and records
+    # containing sequence and cluster information is output. If the +align+
+    # option is given the sequnces will be aligned.
     #
     # Please refer to the manual:
     #
-    # http://drive5.com/usearch/manual/cluster_otus.html
+    # http://www.drive5.com/usearch/manual/cmd_cluster_smallmem.html
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
     #
@@ -42,34 +43,35 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    cluster_otus([identity: <float>])
+    #    uclust(<identity: float>, <strand: "plus|both">[, align: <bool>[, cpus: <uint>]])
     # 
     # === Options
     #
-    #  * identity: <float> - OTU cluster identity between 0.0 and 1.0 (Default 0.97).
+    # * identity: <float>  - Similarity for matching in percent between 0.0 and 1.0.
+    # * strand:   <string> - For nucleotide search report hits from plus or both strands.
+    # * align:    <bool>   - Align sequences.
+    # * cpus:     <uint>   - Number of CPU cores to use (default=1).
     #
     # == Examples
-    #
-    # To create OTU clusters do:
-    #
-    #     BP.new.
-    #     read_fasta(input: "in.fna").
-    #     dereplicate_seq.
-    #     sort(key: :SEQ_COUNT, reverse: true).
-    #     cluster_otus.
-    #     run
-    def cluster_otus(options = {})
+    # 
+    def uclust(options = {})
+      require 'parallel'
+
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :identity)
-      options_assert(options, ":identity >= 0.0")
+      options_allowed(options, :identity, :strand, :align, :cpus)
+      options_required(options, :identity, :strand)
+      options_allowed_values(options, strand: ["plus", "both", :plus, :both])
+      options_allowed_values(options, align:  [nil, false, true])
+      options_assert(options, ":identity >  0.0")
       options_assert(options, ":identity <= 1.0")
+      options_assert(options, ":cpus >= 1")
+      options_assert(options, ":cpus <= #{Parallel.processor_count}")
 
-      options[:identity] ||= 0.97
+      options[:cpus] ||= 1
 
       lmb = lambda do |input, output, status|
-        status[:sequences_in]  = 0
-        status[:sequences_out] = 0
+        status[:sequences_in] = 0
 
         status_track(status) do
           begin
@@ -80,42 +82,61 @@ module BioPieces
               input.each_with_index do |record, i|
                 status[:records_in] += 1
 
+
                 if record[:SEQ]
                   status[:sequences_in] += 1
                   seq_name = record[:SEQ_NAME] || i.to_s
-
-                  if record[:SEQ_COUNT]
-                    seq_name << ";size=#{record[:SEQ_COUNT]}"
-                  else
-                    raise BioPieces::SeqError, "Missing SEQ_COUNT"
-                  end
 
                   entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
                   ios.puts entry.to_fasta
                 else
                   output << record
+
                   status[:records_out] += 1
                 end
               end
             end
 
-            BioPieces::Usearch.cluster_otus(input: tmp_in, output: tmp_out, identity: options[:identity], verbose: options[:verbose])
+            begin
+              BioPieces::Usearch.cluster_smallmem(input: tmp_in, 
+                                                  output: tmp_out,
+                                                  strand: options[:strand],
+                                                  identity: options[:identity],
+                                                  align: options[:align],
+                                                  cpus: options[:cpus],
+                                                  verbose: options[:verbose])
 
-            BioPieces::Fasta.open(tmp_out) do |ios|
-              ios.each do |entry|
-                record = entry.to_bp
+              if options[:align]
+                cluster = 0
 
-                if record[:SEQ_NAME] =~ /;size=(\d+)$/
-                  record[:SEQ_COUNT] = $1.to_i
-                  record[:SEQ_NAME].sub!(/;size=\d+$/, '')
-                else
-                  raise BioPieces::UsearchError, "Missing size in SEQ_NAME: #{record[:SEQ_NAME]}"
+                BioPieces::Fasta.open(tmp_out) do |ios|
+                  ios.each do |entry|
+                    if entry.seq_name == 'consensus'
+                      cluster += 1
+                    else
+                      record = {}
+                      record[:RECORD_TYPE] = "uclust"
+                      record[:CLUSTER]     = cluster
+                      record.merge!(entry.to_bp)
+
+                      output << record
+                      status[:records_out] += 1
+                    end
+                  end
                 end
-
-                output << record
-                status[:sequences_out] += 1
-                status[:records_out]   += 1
+              else
+                BioPieces::Usearch.open(tmp_out) do |ios|
+                  ios.each(:uc) do |record|
+                    record[:RECORD_TYPE] = "uclust"
+                    output << record
+                    status[:records_out] += 1
+                  end
+                end
+              end
+            rescue BioPieces::UsearchError => e
+              unless e.message =~ /Empty input file/
+                raise
               end
             end
           ensure

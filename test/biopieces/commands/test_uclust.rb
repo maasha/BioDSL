@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,54 +27,36 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Error class for all exceptions to do with FASTQ.
-  class FastqError < StandardError; end
+require 'test/helper'
 
-  # Class for parsing FASTQ entries from an ios and return as Seq objects.
-  class Fastq < BioPieces::Filesys
-    def self.open(*args)
-      ios = IO.open(*args)
+class TestUclust < Test::Unit::TestCase 
+  test "BioPieces::Pipeline#uclust with disallowed option raises" do
+    p = BioPieces::Pipeline.new
+    assert_raise(BioPieces::OptionError) { p.uclust(foo: "bar") }
+  end
 
-      if block_given?
-        begin
-          yield self.new(ios)
-        ensure
-          ios.close
-        end
-      else
-        return self.new(ios)
-      end
-    end
+  test "BioPieces::Pipeline#uclust with allowed option don't raise" do
+    p = BioPieces::Pipeline.new
+    assert_nothing_raised { p.uclust(identity: 1, strand: :both) }
+  end
 
-    def initialize(io)
-      @io        = io
-    end
+  test "BioPieces::Pipeline#uclust outputs msa correctly" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
 
-    def each
-      while entry = next_entry
-        yield entry
-      end
-    end
+    output.write({one: 1, two: 2, three: 3})
+    output.write({SEQ: "gtgtgtagctacgatcagctagcgatcgagctatatgttt"})
+    output.write({SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.close
 
-    # Method to get the next FASTQ entry from an ios and return this
-    # as a Seq object. If no entry is found or eof then nil is returned.
-    def next_entry
-      return nil if @io.eof?
-      seq_name = @io.gets[1 .. -2]
-      seq      = @io.gets.chomp
-      @io.gets
-      qual     = @io.gets.chomp
+    p = BioPieces::Pipeline.new
+    p.uclust(identity: 0.97, strand: "plus", align: true).run(input: input, output: output2)
+    result   = input2.map { |h| h.to_s }.sort_by { |a| a.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:RECORD_TYPE=>"uclust", :CLUSTER=>0, :SEQ_NAME=>"*1", :SEQ=>"GTgtgtAGCTACGATCAGCTAGCGATCGAGCTATATGTTT", :SEQ_LEN=>40}}
+    expected << %Q{{:RECORD_TYPE=>"uclust", :CLUSTER=>1, :SEQ_NAME=>"*2", :SEQ=>"ATCGATCGATCGATCGATCGATCGATCGTACGACGTAGCT", :SEQ_LEN=>40}}
+    expected << %Q{{:one=>1, :two=>2, :three=>3}}
 
-      Seq.new(seq_name: seq_name, seq: seq, qual: qual)
-    end
-
-    class IO < Filesys
-      def each
-        while not @io.eof?
-          yield @io.gets
-        end
-      end
-    end
+    assert_equal(expected, result)
   end
 end

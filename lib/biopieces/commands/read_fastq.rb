@@ -123,7 +123,7 @@ module BioPieces
                 io1 = Fastq.open(file1, 'r')
                 io2 = Fastq.open(file2, 'r')
 
-                while entry1 = io1.get_entry and entry2 = io2.get_entry
+                while entry1 = io1.next_entry and entry2 = io2.next_entry
                   if encoding == :auto
                     if entry1.qual_base33? or entry2.qual_base33?
                       encoding = :base_33

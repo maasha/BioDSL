@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,54 +27,49 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Error class for all exceptions to do with FASTQ.
-  class FastqError < StandardError; end
+require 'test/helper'
 
-  # Class for parsing FASTQ entries from an ios and return as Seq objects.
-  class Fastq < BioPieces::Filesys
-    def self.open(*args)
-      ios = IO.open(*args)
+class TestMaskSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
-      if block_given?
-        begin
-          yield self.new(ios)
-        ensure
-          ios.close
-        end
-      else
-        return self.new(ios)
-      end
-    end
+    hash = {
+      SEQ_NAME: "test",
+      SEQ: "gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag",
+      SEQ_LEN: 82,
+      SCORES: %q[!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III]
+    }
 
-    def initialize(io)
-      @io        = io
-    end
+    @output.write hash
+    @output.close
 
-    def each
-      while entry = next_entry
-        yield entry
-      end
-    end
+    @p = BioPieces::Pipeline.new
+  end
 
-    # Method to get the next FASTQ entry from an ios and return this
-    # as a Seq object. If no entry is found or eof then nil is returned.
-    def next_entry
-      return nil if @io.eof?
-      seq_name = @io.gets[1 .. -2]
-      seq      = @io.gets.chomp
-      @io.gets
-      qual     = @io.gets.chomp
+  test "BioPieces::Pipeline::MaskSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.mask_seq(foo: "bar") }
+  end
 
-      Seq.new(seq_name: seq_name, seq: seq, qual: qual)
-    end
+  test "BioPieces::Pipeline::MaskSeq with valid options don't raise" do
+    assert_nothing_raised { @p.mask_seq(mask: :hard) }
+  end
 
-    class IO < Filesys
-      def each
-        while not @io.eof?
-          yield @io.gets
-        end
-      end
-    end
+  test "BioPieces::Pipeline::MaskSeq with mask: :soft returns correctly" do
+    @p.mask_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:SEQ_NAME=>"test", :SEQ=>"gatcgatcgtacgagcagcaTCTGACGTATCGATCGTTGATTAGTTGCTAGCTATGCAGTCTacgacgagcatgctagcTAG", :SEQ_LEN=>82, :SCORES=>"!\\"\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::MaskSeq with mask: :hard returns correctly" do
+    @p.mask_seq(mask: "hard").run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:SEQ_NAME=>"test", :SEQ=>"NNNNNNNNNNNNNNNNNNNNTCTGACGTATCGATCGTTGATTAGTTGCTAGCTATGCAGTCTNNNNNNNNNNNNNNNNNTAG", :SEQ_LEN=>82, :SCORES=>"!\\"\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+
+    assert_equal(expected, result)
   end
 end

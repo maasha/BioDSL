@@ -462,7 +462,7 @@ module BioPieces
       raise SeqError, "qual is nil" if self.qual.nil?
       raise SeqError, "cufoff value: #{cutoff} out of range #{SCORE_MIN} .. #{SCORE_MAX}" unless (SCORE_MIN .. SCORE_MAX).include? cutoff
 
-      na_seq  = NArray.to_na(self.seq, "byte")
+      na_seq  = NArray.to_na(self.seq.upcase, "byte")
       na_qual = NArray.to_na(self.qual, "byte")
       mask    = (na_qual - SCORE_BASE) < cutoff
       mask   *= na_seq.ne("-".ord)
@@ -475,13 +475,14 @@ module BioPieces
     end
 
     # Soft masks sequence residues where the corresponding quality score
-    # is below a given cutoff.
+    # is below a given cutoff. Masked sequence will be lowercased and
+    # remaining will be uppercased.
     def mask_seq_soft!(cutoff)
       raise SeqError, "seq is nil"  if self.seq.nil?
       raise SeqError, "qual is nil" if self.qual.nil?
       raise SeqError, "cufoff value: #{cutoff} out of range #{SCORE_MIN} .. #{SCORE_MAX}" unless (SCORE_MIN .. SCORE_MAX).include? cutoff
 
-      na_seq  = NArray.to_na(self.seq, "byte")
+      na_seq  = NArray.to_na(self.seq.upcase, "byte")
       na_qual = NArray.to_na(self.qual, "byte")
       mask    = (na_qual - SCORE_BASE) < cutoff
       mask   *= na_seq.ne("-".ord)
