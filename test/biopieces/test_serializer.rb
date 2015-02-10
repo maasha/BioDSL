@@ -32,8 +32,8 @@ require 'test/helper'
 class TestSerializer < Test::Unit::TestCase 
   def setup
     @records = [
-      {"foo": 1},
-      {"bar": 2}
+      {"foo" => 1},
+      {"bar" => 2}
     ]
   end
 
