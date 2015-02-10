@@ -40,7 +40,7 @@ class TestUclust < Test::Unit::TestCase
     assert_nothing_raised { p.uclust(identity: 1, strand: :both) }
   end
 
-  test "BioPieces::Pipeline#uclust outputs correctly" do
+  test "BioPieces::Pipeline#uclust outputs msa correctly" do
     input, output   = BioPieces::Stream.pipe
     input2, output2 = BioPieces::Stream.pipe
 
