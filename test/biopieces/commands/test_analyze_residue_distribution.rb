@@ -67,18 +67,18 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
 {:SEQ=>"FLS*"}
 {:SEQ=>"-.~"}
 {:FOO=>"BAR"}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"A", :V1=>2, :V2=>0, :V3=>0, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"G", :V1=>0, :V2=>2, :V3=>0, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"C", :V1=>0, :V2=>0, :V3=>2, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"T", :V1=>0, :V2=>0, :V3=>0, :V4=>1}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"U", :V1=>0, :V2=>0, :V3=>0, :V4=>1}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"F", :V1=>1, :V2=>0, :V3=>0, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"L", :V1=>0, :V2=>1, :V3=>0, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"S", :V1=>0, :V2=>0, :V3=>1, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"*", :V1=>0, :V2=>0, :V3=>0, :V4=>1}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"-", :V1=>1, :V2=>0, :V3=>0, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>".", :V1=>0, :V2=>1, :V3=>0, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"~", :V1=>0, :V2=>0, :V3=>1, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"A", :V1=>2, :V2=>0, :V3=>0, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"G", :V1=>0, :V2=>2, :V3=>0, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"C", :V1=>0, :V2=>0, :V3=>2, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"T", :V1=>0, :V2=>0, :V3=>0, :V4=>1}
+{:RECORD_TYPE=>"residue distribution", :V0=>"U", :V1=>0, :V2=>0, :V3=>0, :V4=>1}
+{:RECORD_TYPE=>"residue distribution", :V0=>"F", :V1=>1, :V2=>0, :V3=>0, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"L", :V1=>0, :V2=>1, :V3=>0, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"S", :V1=>0, :V2=>0, :V3=>1, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"*", :V1=>0, :V2=>0, :V3=>0, :V4=>1}
+{:RECORD_TYPE=>"residue distribution", :V0=>"-", :V1=>1, :V2=>0, :V3=>0, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>".", :V1=>0, :V2=>1, :V3=>0, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"~", :V1=>0, :V2=>0, :V3=>1, :V4=>0}
 EOD
     assert_equal(expected.delete($/), result)
   end
@@ -92,18 +92,18 @@ EOD
 {:SEQ=>"FLS*"}
 {:SEQ=>"-.~"}
 {:FOO=>"BAR"}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"A", :V1=>50, :V2=>0,  :V3=>0,  :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"G", :V1=>0,  :V2=>50, :V3=>0,  :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"C", :V1=>0,  :V2=>0,  :V3=>50, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"T", :V1=>0,  :V2=>0,  :V3=>0,  :V4=>33}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"U", :V1=>0,  :V2=>0,  :V3=>0,  :V4=>33}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"F", :V1=>25, :V2=>0,  :V3=>0,  :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"L", :V1=>0,  :V2=>25, :V3=>0,  :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"S", :V1=>0,  :V2=>0,  :V3=>25, :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"*", :V1=>0,  :V2=>0,  :V3=>0,  :V4=>33}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"-", :V1=>25, :V2=>0,  :V3=>0,  :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>".", :V1=>0,  :V2=>25, :V3=>0,  :V4=>0}
-{:RECORD_TYPE=>"nucleotide distribution", :V0=>"~", :V1=>0,  :V2=>0,  :V3=>25, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"A", :V1=>50, :V2=>0,  :V3=>0,  :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"G", :V1=>0,  :V2=>50, :V3=>0,  :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"C", :V1=>0,  :V2=>0,  :V3=>50, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"T", :V1=>0,  :V2=>0,  :V3=>0,  :V4=>33}
+{:RECORD_TYPE=>"residue distribution", :V0=>"U", :V1=>0,  :V2=>0,  :V3=>0,  :V4=>33}
+{:RECORD_TYPE=>"residue distribution", :V0=>"F", :V1=>25, :V2=>0,  :V3=>0,  :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"L", :V1=>0,  :V2=>25, :V3=>0,  :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"S", :V1=>0,  :V2=>0,  :V3=>25, :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"*", :V1=>0,  :V2=>0,  :V3=>0,  :V4=>33}
+{:RECORD_TYPE=>"residue distribution", :V0=>"-", :V1=>25, :V2=>0,  :V3=>0,  :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>".", :V1=>0,  :V2=>25, :V3=>0,  :V4=>0}
+{:RECORD_TYPE=>"residue distribution", :V0=>"~", :V1=>0,  :V2=>0,  :V3=>25, :V4=>0}
 EOD
     assert_equal(expected.delete($/).gsub(/  /, " "), result)
   end

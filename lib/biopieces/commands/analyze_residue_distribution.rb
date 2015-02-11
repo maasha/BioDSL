@@ -29,7 +29,20 @@ module BioPieces
     # == Analyze the residue distribution from sequences in the stream.
     #
     # +analyze_residue_distribution+ determines the distribution per position
-    # of residues from sequences.
+    # of residues from sequences and output records per observed residue with
+    # counts at the different positions. Using the +percent+ option outputs the
+    # count as percentages of observed residues per position.
+    #
+    # The records output looks like this:
+    #
+    #     {:RECORD_TYPE=>"residue distribution",
+    #      :V0=>"A",
+    #      :V1=>5,
+    #      :V2=>0,
+    #      :V3=>0,
+    #      :V4=>0}
+    #
+    #  Which are ready for +write_table+. See examples.
     # 
     # == Usage
     # 
@@ -41,15 +54,62 @@ module BioPieces
     #
     # == Examples
     # 
-    # Here we output a table with residue distribution from a FASTA file:
+    # Consider the following entries in the file `test.fna`:
+    #
+    #    >DNA
+    #    AGCT
+    #    >RNA
+    #    AGCU
+    #    >Protein
+    #    FLS*
+    #    >Gaps
+    #    -.~
+    #
+    # Now we run the data through the following pipeline and get the resulting
+    # table:
     # 
     #    BP.new.
     #    read_fasta(input: "test.fna").
     #    analyze_residue_distribution.
-    #    write_table.
+    #    grab(select: "residue").
+    #    write_table(skip: [:RECORD_TYPE]).
+    #    run
+    #    
+    #    A 2 0 0 0
+    #    G 0 2 0 0
+    #    C 0 0 2 0
+    #    T 0 0 0 1
+    #    U 0 0 0 1
+    #    F 1 0 0 0
+    #    L 0 1 0 0
+    #    S 0 0 1 0
+    #    * 0 0 0 1
+    #    - 1 0 0 0
+    #    . 0 1 0 0
+    #    ~ 0 0 1 0
+    #    
+    # Here we do the same as above, but output percentages instead of absolute
+    # counts:
+    #    
+    #    BP.new.
+    #    read_fasta(input: "test.fna").
+    #    analyze_residue_distribution(percent: true).
+    #    grab(select: "residue").
+    #    write_table(skip: [:RECORD_TYPE]).
     #    run
     #
-    #
+    #    A 50  0 0 0
+    #    G 0 50  0 0
+    #    C 0 0 50  0
+    #    T 0 0 0 33
+    #    U 0 0 0 33
+    #    F 25  0 0 0
+    #    L 0 25  0 0
+    #    S 0 0 25  0
+    #    * 0 0 0 33
+    #    - 25  0 0 0
+    #    . 0 25  0 0
+    #    ~ 0 0 25  0
     def analyze_residue_distribution(options = {})
       require 'set'
 
@@ -92,7 +152,7 @@ module BioPieces
 
           residues.each do |res|
             record = {}
-            record[:RECORD_TYPE] = "nucleotide distribution"
+            record[:RECORD_TYPE] = "residue distribution"
             record[:V0] = res.to_s
 
             if options[:percent]
