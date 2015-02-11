@@ -62,6 +62,7 @@ module BioPieces
       lmb = lambda do |input, output, status|
         status_track(status) do
           counts   = Hash.new { |h, k| h[k] = Hash.new(0) } 
+          total    = Hash.new(0)
           residues = Set.new
 
           status[:sequences_in]  = 0
@@ -77,6 +78,7 @@ module BioPieces
               record[:SEQ].upcase.chars.each_with_index do |char, i|
                 c = char.to_sym
                 counts[i][c] += 1
+                total[i]     += 1
                 residues.add(c)
               end
             end
@@ -93,8 +95,18 @@ module BioPieces
             record[:RECORD_TYPE] = "nucleotide distribution"
             record[:V0] = res.to_s
 
-            counts.each do |pos, dist|
-              record["V#{pos + 1}".to_sym] = dist[res]
+            if options[:percent]
+              counts.each do |pos, dist|
+                if total[pos] == 0
+                  record["V#{pos + 1}".to_sym] = 0
+                else
+                  record["V#{pos + 1}".to_sym] = 100 * dist[res] / total[pos]
+                end
+              end
+            else
+              counts.each do |pos, dist|
+                record["V#{pos + 1}".to_sym] = dist[res]
+              end
             end
             
             if output
