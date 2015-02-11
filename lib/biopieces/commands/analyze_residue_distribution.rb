@@ -33,17 +33,11 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    analyze_residue_distribution(<type: <DNA|RNA|Protein>>
-    #                                 [, percent: <bool>
-    #                                 [, ambiguity: <bool>
-    #                                 [, gaps: <bool>]]])
+    #    analyze_residue_distribution([percent: <bool>])
     # 
     # === Options
     #
-    # * type: <DNA|RNA|Protein>  - Sequence type.
-    # * percent: <bool>          - Output distributions in percent (default=false).
-    # * ambiguity: <bool>        - Allow ambiguity codes for DNA|RNA (default=false).
-    # * gaps: <bool>             - Allow gaps (default=false).
+    # * percent: <bool>  - Output distributions in percent (default=false).
     #
     # == Examples
     # 
@@ -57,19 +51,19 @@ module BioPieces
     #
     #
     def analyze_residue_distribution(options = {})
+      require 'set'
+
       options_orig = options.dup
       options_load_rc(options, __method__)
 
-      options_allowed(options, :type, :percent, :ambiguity, :gaps)
-      options_required(options, :type)
-      options[:type] = options[:type].to_s.downcase.to_sym
-      options_allowed_values(options, type: [:dna, :rna, :protein])
-      options_allowed_values(options, ambiguity: [nil, true, false])
-      options_allowed_values(options, gaps: [nil, true, false])
-      options_files_exists_force(options, :output)
+      options_allowed(options, :percent)
+      options_allowed_values(options, percent: [nil, true, false])
 
       lmb = lambda do |input, output, status|
         status_track(status) do
+          counts   = Hash.new { |h, k| h[k] = Hash.new(0) } 
+          residues = Set.new
+
           status[:sequences_in]  = 0
           status[:sequences_out] = 0
 
@@ -78,21 +72,35 @@ module BioPieces
 
             if record[:SEQ]
               status[:sequences_in] += 1
+              status[:sequences_out] += 1
 
-              seq = record[:SEQ].upcase
-
-              if output
-                output << record
-
-                status[:records_out]   += 1
-                status[:sequences_out] += 1
+              record[:SEQ].upcase.chars.each_with_index do |char, i|
+                c = char.to_sym
+                counts[i][c] += 1
+                residues.add(c)
               end
-            else
-              if output
-                output << record
+            end
 
-                status[:records_out] += 1
-              end
+            if output
+              output << record
+
+              status[:records_out] += 1
+            end
+          end
+
+          residues.each do |res|
+            record = {}
+            record[:RECORD_TYPE] = "nucleotide distribution"
+            record[:V0] = res.to_s
+
+            counts.each do |pos, dist|
+              record["V#{pos + 1}".to_sym] = dist[res]
+            end
+            
+            if output
+              output << record
+
+              status[:records_out] += 1
             end
           end
         end

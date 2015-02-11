@@ -37,14 +37,40 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
-    [{SEQ: "AN"},
-     {SEQ: "T"},
-     {SEQ: "C"},
-     {SEQ: "G"},
+    [{SEQ: "AGCUTRYWSMKHDVBNagcutrywsmkhdvbn"},
+     {SEQ: "AGCUTRYWSMKHDVBNagcutrywsmkhdvbn"},
+     {SEQ: "FLSYCWPHQRIMTNKVADEGflsycwphqrimtnkvadeg*"},
+     {SEQ: "-.~"},
      {FOO: "BAR"}].each do |record|
       @output.write(record)
     end
 
     @output.close
+
+    @p = BP.new
+  end
+
+  test "BioPieces::Pipeline#analyze_residue_distribution with disallowed option raises" do
+    assert_raise(BioPieces::OptionError) { @p.analyze_residue_distribution(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#analyze_residue_distribution with allowed options don't raise" do
+    assert_nothing_raised { @p.analyze_residue_distribution(percent: true) }
+  end
+
+  test "BioPieces::Pipeline#analyze_residue_distribution returns correctly" do
+    @p.analyze_residue_distribution.run(input: @input, output: @output2)
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline#analyze_residue_distribution with :precent returns correctly" do
+    @p.analyze_residue_distribution(percent: true).run(input: @input, output: @output2)
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+
+    assert_equal(expected, result)
   end
 end
