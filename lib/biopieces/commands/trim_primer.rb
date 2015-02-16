@@ -153,7 +153,10 @@ module BioPieces
                   ins = (pat.length * options[:insertion_percent] * 0.01).round
                   del = (pat.length * options[:deletion_percent]  * 0.01).round
 
-                  if match = entry.patmatch(pat, start: entry.length - pat.length, max_mismatches: mis, max_insertions: ins, max_deletions: del)
+                  start = entry.length - pat.length
+                  start = 0 if start < 0
+
+                  if match = entry.patmatch(pat, start: start, max_mismatches: mis, max_insertions: ins, max_deletions: del)
                     status[:pattern_hits] += 1
 
                     entry = entry[0 ... match.pos]
