@@ -213,7 +213,7 @@ module BioPieces
       elsif options[:select_file]
         File.open(options[:select_file]) do |ios|
           patterns = []
-          ios.each_line { |line| patterns << line.chomp }
+          ios.each_line { |line| patterns << line.chomp.to_num }
         end
       elsif options[:reject]
         if options[:reject].is_a? Array
@@ -224,7 +224,7 @@ module BioPieces
       elsif options[:reject_file]
         File.open(options[:reject_file]) do |ios|
           patterns = []
-          ios.each_line { |line| patterns << line.chomp }
+          ios.each_line { |line| patterns << line.chomp.to_num }
         end
       end
 
@@ -252,10 +252,10 @@ module BioPieces
         lookup = {}
 
         patterns.each do |pattern|
-          begin
-            lookup[pattern.to_sym] = true
-          rescue
+          if pattern.is_a? Float or pattern.is_a? Integer
             lookup[pattern] = true
+          else
+            lookup[pattern.to_sym] = true
           end
         end
       end
@@ -267,7 +267,7 @@ module BioPieces
       if keys
         keys.each do |key|
           if value = record[key]
-            regexes.each { |regex| return true if value =~ regex }
+            regexes.each { |regex| return true if value.to_s =~ regex }
           end
         end
       else
@@ -275,9 +275,9 @@ module BioPieces
           if options[:keys_only]
             regexes.each { |regex| return true if key =~ regex }
           elsif options[:values_only]
-            regexes.each { |regex| return true if value =~ regex }
+            regexes.each { |regex| return true if value.to_s =~ regex }
           else
-            regexes.each { |regex| return true if key =~ regex or value =~ regex }
+            regexes.each { |regex| return true if key =~ regex or value.to_s =~ regex }
           end
         end
       end
