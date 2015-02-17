@@ -127,7 +127,6 @@ module BioPieces
           gp.set   ytics:     "out"
           gp.set   yrange:   "[0:#{100}]"
           gp.set   xrange:   "[0:#{counts.size}]"
-          gp.set   palette:  "maxcolors 22"
           gp.set   auto:     "fix"
           gp.set   offsets:  "1"
           gp.set   key:      "outside right top vertical Left reverse noenhanced autotitles columnhead nobox"
@@ -142,7 +141,7 @@ module BioPieces
           residues.sort.reverse.each do |residue|
             gp.add_dataset(using: 1, with: "histogram", title: "\"#{residue}\"") do |plotter|
               counts.each do |pos, dist|
-                plotter << 0 unless offset[residue]
+                plotter << 0.0 unless offset[residue]
                 plotter << 100 * dist[residue].to_f / total[pos]
                 offset[residue] = true
               end
@@ -154,7 +153,7 @@ module BioPieces
 
             gp.add_dataset(using: "1:2", with: "lines lw 2 lt rgb \"black\"", title: "\"count\"") do |plotter|
               counts.each_key do |pos|
-                plotter << 0 unless offset[:count]
+                plotter << [0, 0.0] unless offset[:count]
                 plotter << [pos, 100 * total[pos].to_f / max]
                 offset[:count] = true
               end

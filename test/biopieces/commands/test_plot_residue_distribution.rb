@@ -59,20 +59,20 @@ set yrange [0:100]
 set xrange [0:2]
 set auto fix
 set offsets "1"
-set key outside right top vertical Left reverse enhanced autotitles columnhead nobox
+set key outside right top vertical Left reverse noenhanced autotitles columnhead nobox
 set key invert samplen 4 spacing 1 width 0 height 0
 set style fill solid 0.5 border
 set style histogram rowstacked
 set style data histograms
 set boxwidth 0.75 absolute
-plot "-" using 1 with histogram lt rgb "black" title "N", "-" using 1 with histogram lt rgb "yellow" title "G", "-" using 1 with histogram lt rgb "blue" title "C", "-" using 1 with histogram lt rgb "green" title "T", "-" using 1 with histogram lt rgb "red" title "A"
-0.0
-0.0
-100.0
-e
+plot "-" using 1 with histogram title "T", "-" using 1 with histogram title "N", "-" using 1 with histogram title "G", "-" using 1 with histogram title "C", "-" using 1 with histogram title "A"
 0.0
 25.0
 0.0
+e
+0.0
+0.0
+100.0
 e
 0.0
 25.0
@@ -100,13 +100,17 @@ set yrange [0:100]
 set xrange [0:2]
 set auto fix
 set offsets "1"
-set key outside right top vertical Left reverse enhanced autotitles columnhead nobox
+set key outside right top vertical Left reverse noenhanced autotitles columnhead nobox
 set key invert samplen 4 spacing 1 width 0 height 0
 set style fill solid 0.5 border
 set style histogram rowstacked
 set style data histograms
 set boxwidth 0.75 absolute
-plot "-" using 1 with histogram lt rgb "black" title "N", "-" using 1 with histogram lt rgb "yellow" title "G", "-" using 1 with histogram lt rgb "blue" title "C", "-" using 1 with histogram lt rgb "green" title "T", "-" using 1 with histogram lt rgb "red" title "A", "-" using 1:2 with lines lw 2 lt rgb "black" title "count"
+plot "-" using 1 with histogram title "T", "-" using 1 with histogram title "N", "-" using 1 with histogram title "G", "-" using 1 with histogram title "C", "-" using 1 with histogram title "A", "-" using 1:2 with lines lw 2 lt rgb "black" title "count"
+0.0
+25.0
+0.0
+e
 0.0
 0.0
 100.0
@@ -123,12 +127,9 @@ e
 25.0
 0.0
 e
-0.0
-25.0
-0.0
-e
-1 100.0
-2 25.0
+0 0.0
+0 100.0
+1 25.0
 e
 EOF
 
@@ -143,47 +144,47 @@ EOF
     assert_raise(BioPieces::OptionError) { @p.plot_residue_distribution(foo: "bar") }
   end
 
-#  test "BioPieces::Pipeline::PlotResidueDistribution with invalid terminal raises" do
-#    assert_raise(BioPieces::OptionError) { @p.plot_residue_distribution(terminal: "foo") }
-#  end
-#
-#  test "BioPieces::Pipeline::PlotResidueDistribution with valid terminal don't raise" do
-#    %w{dumb post svg x11 aqua png pdf}.each do |terminal|
-#      assert_nothing_raised { @p.plot_residue_distribution(terminal: terminal.to_sym) }
-#    end
-#  end
-#
-#  test "BioPieces::Pipeline::PlotResidueDistribution to file outputs correctly" do
-#    result = capture_stderr { @p.plot_residue_distribution(output: @file, test: true).run(input: @input, output: @output2) }
-#    result.sub!(/set output "[^"]+"/, 'set output ""')
-#    assert_equal(@expected1, result)
-#  end
-#
-#  test "BioPieces::Pipeline::PlotResidueDistribution to file with :count outputs correctly" do
-#    result = capture_stderr { @p.plot_residue_distribution(output: @file, count: true, test: true).run(input: @input, output: @output2) }
-#    result.sub!(/set output "[^"]+"/, 'set output ""')
-#    assert_equal(@expected2, result)
-#  end
-#
-#  test "BioPieces::Pipeline::PlotResidueDistribution to existing file raises" do
-#    `touch #{@file}`
-#    assert_raise(BioPieces::OptionError) { @p.plot_residue_distribution(output: @file) }
-#  end
-#
-#  test "BioPieces::Pipeline::PlotResidueDistribution to existing file with options[:force] outputs correctly" do
-#    `touch #{@file}`
-#    result = capture_stderr { @p.plot_residue_distribution(output: @file, force: true, test: true).run(input: @input) }
-#    result.sub!(/set output "[^"]+"/, 'set output ""')
-#    assert_equal(@expected1, result)
-#  end
-#
-#  test "BioPieces::Pipeline::PlotResidueDistribution with flux outputs correctly" do
-#    result = capture_stderr { @p.plot_residue_distribution(output: @file, force: true, test: true).run(input: @input, output: @output2) }
-#    result.sub!(/set output "[^"]+"/, 'set output ""')
-#    assert_equal(@expected1, result)
-#
-#    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
-#    stream_expected = %Q{{:SEQ=>"AN"}{:SEQ=>"T"}{:SEQ=>"C"}{:SEQ=>"G"}{:FOO=>"BAR"}}
-#    assert_equal(stream_expected, stream_result)
-#  end
+  test "BioPieces::Pipeline::PlotResidueDistribution with invalid terminal raises" do
+    assert_raise(BioPieces::OptionError) { @p.plot_residue_distribution(terminal: "foo") }
+  end
+
+  test "BioPieces::Pipeline::PlotResidueDistribution with valid terminal don't raise" do
+    %w{dumb post svg x11 aqua png pdf}.each do |terminal|
+      assert_nothing_raised { @p.plot_residue_distribution(terminal: terminal.to_sym) }
+    end
+  end
+
+  test "BioPieces::Pipeline::PlotResidueDistribution to file outputs correctly" do
+    result = capture_stderr { @p.plot_residue_distribution(output: @file, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
+    assert_equal(@expected1, result)
+  end
+
+  test "BioPieces::Pipeline::PlotResidueDistribution to file with :count outputs correctly" do
+    result = capture_stderr { @p.plot_residue_distribution(output: @file, count: true, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
+    assert_equal(@expected2, result)
+  end
+
+  test "BioPieces::Pipeline::PlotResidueDistribution to existing file raises" do
+    `touch #{@file}`
+    assert_raise(BioPieces::OptionError) { @p.plot_residue_distribution(output: @file) }
+  end
+
+  test "BioPieces::Pipeline::PlotResidueDistribution to existing file with options[:force] outputs correctly" do
+    `touch #{@file}`
+    result = capture_stderr { @p.plot_residue_distribution(output: @file, force: true, test: true).run(input: @input) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
+    assert_equal(@expected1, result)
+  end
+
+  test "BioPieces::Pipeline::PlotResidueDistribution with flux outputs correctly" do
+    result = capture_stderr { @p.plot_residue_distribution(output: @file, force: true, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
+    assert_equal(@expected1, result)
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+    stream_expected = %Q{{:SEQ=>"AN"}{:SEQ=>"T"}{:SEQ=>"C"}{:SEQ=>"G"}{:FOO=>"BAR"}}
+    assert_equal(stream_expected, stream_result)
+  end
 end
