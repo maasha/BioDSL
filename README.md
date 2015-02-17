@@ -50,7 +50,7 @@ Or chaining commands directly:
     irb(main):002:0>
 
 Or run on the command line with the alias bp which you can create by adding the
-following to your `~/.bashrc` file:
+following to your ~/.bashrc file:
 
     alias bp="ruby -r biopieces"
 
@@ -60,43 +60,45 @@ Then you can run the below from the command line:
 
 Available Biopieces
 -------------------
-  * `add_key.rb`
-  * `assemble_pairs.rb`
-  * `assemble_seq_spades.rb`
-  * `classify_seq.rb`
-  * `classify_seq_mothur.rb`
-  * `clip_primer.rb`
-  * `cluster_otus.rb`
-  * `collapse_otus.rb`
-  * `collect_otus.rb`
-  * `count.rb`
-  * `dereplicate_seq.rb`
-  * `dump.rb`
-  * `grab.rb`
-  * `index_taxonomy.rb`
-  * `mean_scores.rb`
-  * `merge_pair_seq.rb`
-  * `merge_table.rb`
-  * `merge_values.rb`
-  * `plot_heatmap.rb`
-  * `plot_histogram.rb`
-  * `plot_matches.rb`
-  * `plot_nucleotide_distribution.rb`
-  * `plot_scores.rb`
-  * `random.rb`
-  * `read_fasta.rb`
-  * `read_fastq.rb`
-  * `read_table.rb`
-  * `sort.rb`
-  * `split_pair_seq.rb`
-  * `split_values.rb`
-  * `trim_primer.rb`
-  * `trim_seq.rb`
-  * `uchime_ref.rb`
-  * `usearch_global.rb`
-  * `write_fasta.rb`
-  * `write_fastq.rb`
-  * `write_table.rb`
+
+  * [add_key]                          (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:add_key)                          
+  * [analyze_residue_distribution]     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:analyze_residue_distribution)
+  * [assemble_pairs]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:assemble_pairs)
+  * [assemble_seq_spades]              (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:assemble_seq_spades)
+  * [classify_seq]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:classify_seq)
+  * [classify_seq_mothur]              (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:classify_seq_mothur)
+  * [clip_primer]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:clip_primer)
+  * [cluster_otus]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:cluster_otus)
+  * [collapse_otus]                    (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:collapse_otus)
+  * [collect_otus]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:collect_otus)
+  * [count]                            (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:count)
+  * [dereplicate_seq]                  (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:dereplicate_seq)
+  * [dump]                             (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:dump)
+  * [grab]                             (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:grab)
+  * [index_taxonomy]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:index_taxonomy)
+  * [mean_scores]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:mean_scores)
+  * [merge_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:merge_pair_seq)
+  * [merge_table]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:merge_table)
+  * [merge_values]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:merge_values)
+  * [plot_heatmap]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_heatmap)
+  * [plot_histogram]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_histogram)
+  * [plot_matches]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_matches)
+  * [plot_nucleotide_distribution]     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_nucleotide_distribution)
+  * [plot_scores]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_scores)
+  * [random]                           (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:random)
+  * [read_fasta]                       (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:read_fasta)
+  * [read_fastq]                       (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:read_fastq)
+  * [read_table]                       (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:read_table)
+  * [sort]                             (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:sort)
+  * [split_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:split_pair_seq)
+  * [split_values]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:split_values)
+  * [trim_primer]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:trim_primer)
+  * [trim_seq]                         (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:trim_seq)
+  * [uchime_ref]                       (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:uchime_ref)
+  * [usearch_global]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:usearch_global)
+  * [write_fasta]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:write_fasta)
+  * [write_fastq]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:write_fastq)
+  * [write_table]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:write_table)
 
 Log and History
 ---------------
