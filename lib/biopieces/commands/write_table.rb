@@ -30,13 +30,13 @@ module BioPieces
     # 
     # Description
     # 
-    # +write_table+ writes sequence from the data stream in FASTA format.
+    # +write_table+ writes tabular output from the stream.
     # 
     # == Usage
     #    write_table([keys: <string> | skip: <string>][, output: <file>[, force:
     #                <bool>[, header: <bool>[, pretty: <bool>[, commify: <bool>
-    #                [, delimiter: <string>[, gzip: <bool>, [bzip2: <bool>]]]]]]]]
-    #               
+    #                [, delimiter: <string>[, first: <uint> | last: <uint>
+    #                [, gzip: <bool>, [bzip2: <bool>]]]]]]]]]
     #
     # === Options
     # * keys <string>      - Comma separated list of keys to print in that order.
@@ -47,6 +47,8 @@ module BioPieces
     # * pretty <bool>      - Pretty print table.
     # * commify <bool>     - Commify numbers when pretty printing.
     # * delimiter <string> - Specify delimiter (default="\t").
+    # * first <uint>       - Only output +first+ number of rows.
+    # * last <uint>        - Only output +last+ number of rows.
     # * gzip <bool>        - Write gzipped output file.
     # * bzip2 <bool>       - Write bzipped output file.
     # 
@@ -120,7 +122,7 @@ module BioPieces
     #    Cat  2342
     # 
     # And if you want a pretty printed table use the +pretty+ option and throw
-    # in the +commify+ option if you want commified numbers.
+    # in the +commify+ option if you want commified numbers:
     # 
     #    write_tab(pretty: true, header: true, commify: true)
     # 
@@ -133,9 +135,17 @@ module BioPieces
     #    | Cat      |  2,342 | AAATGCA   |
     #    +----------+--------+-----------+
     #
-    # To write table to a file 'test.tab'.
+    # To write a table to a file 'test.tab':
     # 
     #    write_table(output: "test.tab")
+    #
+    # To write a table to a file 'test.tab' with only the first 3 rows:
+    # 
+    #    write_table(output: "test.tab", first: 3)
+    #
+    # To write a table to a file 'test.tab' with only the last 3 rows:
+    # 
+    #    write_table(output: "test.tab", last: 3)
     # 
     # To overwrite output file if this exists use the +force+ option:
     #
@@ -154,8 +164,9 @@ module BioPieces
       options_orig = options.dup
       options_load_rc(options, __method__)
       options_allowed(options, :keys, :skip, :output, :force, :header, :pretty,
-                               :commify, :delimiter, :gzip, :bzip2)
+                               :commify, :delimiter, :first, :last, :gzip, :bzip2)
       options_unique(options, :keys, :skip)
+      options_unique(options, :first, :last)
       options_unique(options, :gzip, :bzip2)
       options_allowed_values(options, force: [nil, true, false])
       options_allowed_values(options, header: [nil, true, false])
@@ -171,6 +182,8 @@ module BioPieces
       options[:delimiter] ||= "\t"
 
       lmb = lambda do |input, output, status|
+        first     = 0  if options[:first]
+        last      = [] if options[:last]
         headings  = nil
         header    = true if options[:header]
         rows      = []
@@ -212,13 +225,29 @@ module BioPieces
                 header = false
               end
 
-              tab_out.puts row.join(options[:delimiter]) unless row.compact.empty?
+              unless row.compact.empty?
+                if options[:first]
+                  if first < options[:first]
+                    tab_out.puts row.join(options[:delimiter])
+                    first += 1
+                  end
+                elsif options[:last]
+                  last << row
+                  last.shift if last.size > options[:last]
+                else
+                  tab_out.puts row.join(options[:delimiter])
+                end
+              end
             end
 
             if output
               output << record
               status[:records_out] += 1
             end
+          end
+
+          if options[:last]
+            last.each { |row| tab_out.puts(row.join(options[:delimiter])) }
           end
 
           if options[:pretty]
@@ -239,7 +268,13 @@ module BioPieces
               end
             end
 
-            table.rows = rows
+            if options[:first]
+              table.rows = rows.first(options[:first])
+            elsif options[:last]
+              table.rows = rows.last(options[:last])
+            else
+              table.rows = rows
+            end
 
             first_row.each_with_index do |cell, i|
               begin Float(cell)

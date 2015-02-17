@@ -159,10 +159,59 @@ class TestWriteTable < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::WriteTable to file with options[:first] outputs correctly" do
+    @p.write_table(output: @file, first: 1).run(input: @input, output: @output2)
+    result = File.open(@file).read
+    expected = "Human\t23524\tATACGTCAG\n"
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable to file with options[:last] outputs correctly" do
+    @p.write_table(output: @file, last: 1).run(input: @input, output: @output2)
+    result = File.open(@file).read
+    expected = "Cat\t2342\tAAATGCA\n"
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::WriteTable to file with options[:pretty] outputs correctly" do
     @p.write_table(output: @file, pretty: true, header: true, commify: true).run(input: @input, output: @output2)
     result = File.open(@file).read
-    expected = "+----------+--------+-----------+\n| ORGANISM | COUNT  | SEQ       |\n+----------+--------+-----------+\n| Human    | 23,524 | ATACGTCAG |\n| Dog      |  2,442 | AGCATGAC  |\n| Mouse    |    234 | GACTG     |\n| Cat      |  2,342 | AAATGCA   |\n+----------+--------+-----------+\n"
+    expected = <<EOD
++----------+--------+-----------+
+| ORGANISM | COUNT  | SEQ       |
++----------+--------+-----------+
+| Human    | 23,524 | ATACGTCAG |
+| Dog      |  2,442 | AGCATGAC  |
+| Mouse    |    234 | GACTG     |
+| Cat      |  2,342 | AAATGCA   |
++----------+--------+-----------+
+EOD
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable to file with options[:pretty] and options[:first] outputs correctly" do
+    @p.write_table(output: @file, pretty: true, header: true, commify: true, first: 1).run(input: @input, output: @output2)
+    result = File.open(@file).read
+    expected = <<EOD
++----------+--------+-----------+
+| ORGANISM | COUNT  | SEQ       |
++----------+--------+-----------+
+| Human    | 23,524 | ATACGTCAG |
++----------+--------+-----------+
+EOD
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::WriteTable to file with options[:pretty] and options[:last] outputs correctly" do
+    @p.write_table(output: @file, pretty: true, header: true, commify: true, last: 1).run(input: @input, output: @output2)
+    result = File.open(@file).read
+    expected = <<EOD
++----------+-------+---------+
+| ORGANISM | COUNT | SEQ     |
++----------+-------+---------+
+| Cat      | 2,342 | AAATGCA |
++----------+-------+---------+
+EOD
     assert_equal(expected, result)
   end
 
