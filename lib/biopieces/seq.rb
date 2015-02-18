@@ -415,9 +415,9 @@ module BioPieces
     def [](*args)
       entry = Seq.new
       entry.seq_name = self.seq_name.dup unless self.seq_name.nil?
-      entry.seq      = self.seq[*args]
+      entry.seq      = self.seq[*args] || ""
       entry.type     = self.type
-      entry.qual     = self.qual[*args]  unless self.qual.nil?
+      entry.qual     = self.qual[*args] || "" unless self.qual.nil?
 
       entry
     end
