@@ -95,6 +95,7 @@ Available Biopieces
   * [trim_primer]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:trim_primer)
   * [trim_seq]                         (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:trim_seq)
   * [uchime_ref]                       (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:uchime_ref)
+  * [unique_values]                    (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:unique_values)
   * [usearch_global]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:usearch_global)
   * [write_fasta]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:write_fasta)
   * [write_fastq]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:write_fastq)
