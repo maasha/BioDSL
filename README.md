@@ -83,7 +83,7 @@ Available Biopieces
   * [plot_heatmap]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_heatmap)
   * [plot_histogram]                   (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_histogram)
   * [plot_matches]                     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_matches)
-  * [plot_nucleotide_distribution]     (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_nucleotide_distribution)
+  * [plot_residue_distribution]        (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_residue_distribution)
   * [plot_scores]                      (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:plot_scores)
   * [random]                           (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:random)
   * [read_fasta]                       (http://www.rubydoc.info/gems/biopieces/0.3.8/BioPieces/Commands:read_fasta)
