@@ -118,28 +118,56 @@ module BioPieces
           end
 
           gp = GnuPlotter.new
-          gp.set   terminal:  options[:terminal].to_s
-          gp.set   title:     options[:title]
-          gp.set   xlabel:    options[:xlabel]
-          gp.set   ylabel:    options[:ylabel]
-          gp.set   output:    options[:output] if options[:output]
-          gp.set   xtics:     "out"
-          gp.set   ytics:     "out"
-          gp.set   yrange:   "[0:#{100}]"
-          gp.set   xrange:   "[0:#{counts.size}]"
-          gp.set   auto:     "fix"
-          gp.set   offsets:  "1"
-          gp.set   key:      "outside right top vertical Left reverse noenhanced autotitles columnhead nobox"
-          gp.set   key:      "invert samplen 4 spacing 1 width 0 height 0"
-          gp.set   style:    "fill solid 0.5 border"
-          gp.set   style:    "histogram rowstacked"
-          gp.set   style:    "data histograms"
-          gp.set   boxwidth: "0.75 absolute"
+          gp.set terminal:  options[:terminal].to_s
+          gp.set title:     options[:title]
+          gp.set xlabel:    options[:xlabel]
+          gp.set ylabel:    options[:ylabel]
+          gp.set output:    options[:output] if options[:output]
+          gp.set xtics:     "out"
+          gp.set ytics:     "out"
+          gp.set yrange:   "[0:#{100}]"
+          gp.set xrange:   "[0:#{counts.size}]"
+          gp.set auto:     "fix"
+          gp.set offsets:  "1"
+          gp.set key:      "outside right top vertical Left reverse noenhanced autotitles columnhead nobox"
+          gp.set key:      "invert samplen 4 spacing 1 width 0 height 0"
+          gp.set style:    "fill solid 0.5 border"
+          gp.set style:    "histogram rowstacked"
+          gp.set style:    "data histograms"
+          # color scheme: http://en.wikipedia.org/wiki/Help:Distinguishable_colors
+          gp.set linetype: "1 lc rgb '#F0A3FF'" # Amethyst
+          gp.set linetype: "2 lc rgb '#0075DC'" # Blue
+          gp.set linetype: "3 lc rgb '#993F00'" # Caramel
+          gp.set linetype: "4 lc rgb '#4C005C'" # Damson
+          gp.set linetype: "5 lc rgb '#191919'" # Ebony
+          gp.set linetype: "6 lc rgb '#005C31'" # Forest
+          gp.set linetype: "7 lc rgb '#2BCE48'" # Green
+          gp.set linetype: "8 lc rgb '#FFCC99'" # Honeydew
+          gp.set linetype: "9 lc rgb '#808080'" # Iron
+          gp.set linetype: "10 lc rgb '#94FFB5'" # Jade
+          gp.set linetype: "11 lc rgb '#8F7C00'" # Khaki
+          gp.set linetype: "12 lc rgb '#9DCC00'" # Lime
+          gp.set linetype: "13 lc rgb '#C20088'" # Mallow
+          gp.set linetype: "14 lc rgb '#003380'" # Navy
+          gp.set linetype: "15 lc rgb '#FFA405'" # Orpiment
+          gp.set linetype: "16 lc rgb '#FFA8BB'" # Pink
+          gp.set linetype: "17 lc rgb '#426600'" # Quagmire
+          gp.set linetype: "18 lc rgb '#FF0010'" # Red
+          gp.set linetype: "19 lc rgb '#5EF1F2'" # Sky
+          gp.set linetype: "20 lc rgb '#00998F'" # Turquoise
+          gp.set linetype: "21 lc rgb '#E0FF66'" # Uranium
+          gp.set linetype: "22 lc rgb '#740AFF'" # Violet
+          gp.set linetype: "23 lc rgb '#990000'" # Wine
+          gp.set linetype: "24 lc rgb '#FFFF80'" # Xanthin
+          gp.set linetype: "25 lc rgb '#FFFF00'" # Yellow
+          gp.set linetype: "26 lc rgb '#FF5005'" # Zinnia
+          gp.set linetype: "cycle 26"
+          gp.set boxwidth: "0.75 absolute"
 
           offset = {} # Hackery thing to offset datasets 1 postion.
 
-          residues.sort.reverse.each do |residue|
-            gp.add_dataset(using: 1, with: "histogram", title: "\"#{residue}\"") do |plotter|
+          residues.sort.reverse.each_with_index do |residue, i|
+            gp.add_dataset(using: 1, with: "histogram lt #{i + 1}", title: "\"#{residue}\"") do |plotter|
               counts.each do |pos, dist|
                 plotter << 0.0 unless offset[residue]
                 plotter << 100 * dist[residue].to_f / total[pos]
