@@ -25,14 +25,13 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  class TaxError < StandardError; end
+  class TaxonomyError < StandardError; end
 
   # Module containing classes for creating a taxonomic database and searching this.
   module Taxonomy
     require 'narray'
 
     TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
-    TAX_REGEX  = /^K#[^;]*?;P#[^;]*?;C#[^;]*?;O#[^;]*?;F#[^;]*?;G#[^;]*?;S#.*$/
 
     # Class for creating and databasing an index of a taxonomic tree. This is
     # done in two steps. 1) A temporary tree is creating using the taxonomic
@@ -85,16 +84,18 @@ module BioPieces
       # all observed oligos for that particular node. Thus all child nodes 
       # contain a subset of oligos compared to the parent node.
       def add(entry)
-        node  = @tree
+        node = @tree
+
+        old_name = false
         
-        _, tax_string = entry.seq_name.split(' ', 2)
+        tax_levels = entry.seq_name.split(';')
 
-        raise TaxError, "Failed to match tax string: #{tax_string}" unless tax_string.match(TAX_REGEX)
-
-        tax_levels = tax_string.split(';')
+        raise TaxonomyError, "Wrong number of tax levels: #{entry.seq_name}" unless tax_levels.size == TAX_LEVELS.size - 1
 
         tax_levels.each_with_index do |tax_level, i|
           level, name = tax_level.split('#')
+
+          raise TaxonomyError, "Unexpected tax id or bad level order: #{entry.seq_name}" if level.downcase.to_sym != TAX_LEVELS[i + 1]
 
           if tax_levels[i + 1] and tax_levels[i + 1].split('#')[1]
             leaf = false
@@ -103,6 +104,8 @@ module BioPieces
           end
 
           if name
+            raise TaxonomyError, "Gapped tax level info: #{entry.seq_name}" if i > 0 and not old_name
+
             if leaf
               kmers = Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
 
@@ -125,6 +128,8 @@ module BioPieces
 
             node = node[name]
           end
+
+          old_name = name
         end
 
         @seq_id += 1
