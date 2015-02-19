@@ -51,14 +51,34 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_nothing_raised { @index.add(BioPieces::Seq.new(seq_name: "K#1;P#2;C#3;O#4;F#5;G#6;S#7", seq: "aaga")) }
   end
 
+  # '00' then oligo << 'a'
+  # '01' then oligo << 't'
+  # '10' then oligo << 'c'
+  # '11' then oligo << 'g'
+
   test "BioPieces::Taxonomy#add with empty tree returns correctly" do
     assert_equal(1, @index.size)
-    @index.add(BioPieces::Seq.new(seq_name: "K#1;P#2;C#3;O#;F#;G#;S#", seq: "aaga"))
-    assert_equal(4, @index.size)
-    assert_equal("root", @index.get_node(0).name)
-    assert_equal("1", @index.get_node(1).name)
-    assert_equal("2", @index.get_node(2).name)
-    assert_equal("3", @index.get_node(3).name)
-    assert_equal("3", @index.get_node(3).kmers)
+    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
+    assert_equal(3,       @index.size)
+    assert_equal("root",  @index.get_node(0).name)
+    assert_equal("b",     @index.get_node(1).name)
+    assert_equal("e",     @index.get_node(2).name)
+    assert_equal([],      @index.get_node(0).kmers.to_a)
+    assert_equal([],      @index.get_node(1).kmers.to_a)
+    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # AAG=000011=3, AGA=001100=12 
+  end
+
+  test "BioPieces::Taxonomy#add twice with edge split returns correctly" do
+    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
+    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#", seq: "aagu"))
+    assert_equal(4,       @index.size)
+    assert_equal("root",  @index.get_node(0).name)
+    assert_equal("b",     @index.get_node(1).name)
+    assert_equal("e",     @index.get_node(2).name)
+    assert_equal("f",     @index.get_node(3).name)
+    assert_equal([],      @index.get_node(0).kmers.to_a)
+    assert_equal([],      @index.get_node(1).kmers.to_a)
+    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # AAG=000011=3, AGA=001100=12 
+    assert_equal([3, 13], @index.get_node(3).kmers.to_a) # AAG=000011=3, AGU=001101=13 
   end
 end

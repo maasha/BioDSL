@@ -163,10 +163,18 @@ module BioPieces
       end
 
       # Method to get a node given an id. Returns nil if node wasn't found.
-      def get_node(id, node = @tree)
-        return node if node.node_id == id
-        
-        node.children.each_value { |child| return get_node(id, child) }
+      def get_node(id)
+        queue = [@tree]
+
+        while !queue.empty?
+          current_node = queue.shift
+
+          return current_node if current_node.node_id == id
+
+          current_node.children.each_value do |child|
+            queue.unshift(child) unless child.nil?
+          end
+        end
 
         nil
       end
