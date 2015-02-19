@@ -45,13 +45,18 @@ module BioPieces
 
       # Constructor Index object.
       def initialize(options)
-        @options      = options                                         # Option hash.
-        @seq_id       = 0                                               # Sequence id.
-        @node_id      = 0                                               # Node id.
-        @tree         = TaxNode.new(nil, :r, nil, nil, nil, @node_id)   # Root level tree node.
+        @options      = options                                            # Option hash.
+        @seq_id       = 0                                                  # Sequence id.
+        @node_id      = 0                                                  # Node id.
+        @tree         = TaxNode.new(nil, :r, "root", nil, nil, @node_id)   # Root level tree node.
         @node_id     += 1
-        @tax_index    = {}                                              # Hash: node_id=>node
-        @kmer_index   = {}                                              # Hash: level=>kmer=>node ids
+        @tax_index    = {}                                                 # Hash: node_id=>node
+        @kmer_index   = {}                                                 # Hash: level=>kmer=>node ids
+      end
+
+      # Method to return the number of nodes in the index tree. 
+      def size
+        @node_id
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
@@ -90,12 +95,12 @@ module BioPieces
         
         tax_levels = entry.seq_name.split(';')
 
-        raise TaxonomyError, "Wrong number of tax levels: #{entry.seq_name}" unless tax_levels.size == TAX_LEVELS.size - 1
+        raise TaxonomyError, "Wrong number of tax levels in #{entry.seq_name}" unless tax_levels.size == TAX_LEVELS.size - 1
 
         tax_levels.each_with_index do |tax_level, i|
           level, name = tax_level.split('#')
 
-          raise TaxonomyError, "Unexpected tax id or bad level order: #{entry.seq_name}" if level.downcase.to_sym != TAX_LEVELS[i + 1]
+          raise TaxonomyError, "Unexpected tax id in #{entry.seq_name}" if level.downcase.to_sym != TAX_LEVELS[i + 1]
 
           if tax_levels[i + 1] and tax_levels[i + 1].split('#')[1]
             leaf = false
@@ -104,7 +109,7 @@ module BioPieces
           end
 
           if name
-            raise TaxonomyError, "Gapped tax level info: #{entry.seq_name}" if i > 0 and not old_name
+            raise TaxonomyError, "Gapped tax level info in #{entry.seq_name}" if i > 0 and not old_name
 
             if leaf
               kmers = Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
@@ -155,6 +160,15 @@ module BioPieces
         end
 
         save_kmer_index
+      end
+
+      # Method to get a node given an id. Returns nil if node wasn't found.
+      def get_node(id, node = @tree)
+        return node if node.node_id == id
+        
+        node.children.each_value { |child| return get_node(id, child) }
+
+        nil
       end
 
       private
