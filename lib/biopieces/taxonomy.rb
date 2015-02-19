@@ -36,8 +36,8 @@ module BioPieces
     # Class for creating and databasing an index of a taxonomic tree. This is
     # done in two steps. 1) A temporary tree is creating using the taxonomic
     # strings from the sequence names in a FASTA file. 2) A simplistic tree
-    # is constructed from the temporary tree allowing this to be saved to files
-    # using Marshal. The resulting index consists of the following files:
+    # is constructed from the temporary tree allowing this to be saved to files.
+    # The resulting index consists of the following files:
     #  * taxonomy_tax_index.dat  - return node for a given node id.
     #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
     class Index
@@ -45,13 +45,11 @@ module BioPieces
 
       # Constructor Index object.
       def initialize(options)
-        @options      = options                                            # Option hash.
-        @seq_id       = 0                                                  # Sequence id.
-        @node_id      = 0                                                  # Node id.
-        @tree         = TaxNode.new(nil, :r, "root", nil, nil, @node_id)   # Root level tree node.
-        @node_id     += 1
-        @tax_index    = {}                                                 # Hash: node_id=>node
-        @kmer_index   = {}                                                 # Hash: level=>kmer=>node ids
+        @options   = options                                            # Option hash.
+        @seq_id    = 0                                                  # Sequence id.
+        @node_id   = 0                                                  # Node id.
+        @tree      = TaxNode.new(nil, :r, "root", nil, nil, @node_id)   # Root level tree node.
+        @node_id  += 1
       end
 
       # Method to return the number of nodes in the index tree. 
@@ -60,11 +58,11 @@ module BioPieces
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
-      # contain a sequnce ID (integer) and the taxonomic string.
+      # contain a taxonomic string.
       #
-      # Example FASTA entry:
-      # >2 K#Bacteria;P#Proteobacteria;C#Gammaproteobacteria;O#Vibrionales;F#Vibrionaceae;G#Vibrio;S#Vibrio
-      # UCCUACGGGAGGCAGCAGUGGGGAAUAUUGCACAAUGGGCGCAAGCCUGAUGCAGCCAUGCCGCGUGUAUGAAGAAGGCCUUCGGGUUGUAACUC ...
+      # Example entry:
+      # seq_name: K#Bacteria;P#Proteobacteria;C#Gammaproteobacteria;O#Vibrionales;F#Vibrionaceae;G#Vibrio;S#Vibrio
+      # seq:      UCCUACGGGAGGCAGCAGUGGGGAAUAUUGCACAAUGGGCGCAAGCCUGAUGCAGCCAUGCCGCGUGUAUGAAGGCCUUCGGGUUGUAACUC ...
       #
       # The sequence is reduced to a list of oligos of a given size and a given
       # step size, e.g. 8 and 1, respectively:
@@ -85,7 +83,7 @@ module BioPieces
       #
       # E.g. UCCUACGG = 0110100100101111 = 26927
       #
-      # For each node in the tree a vector is kept containing information of
+      # For each node in the tree a set is kept containing information of
       # all observed oligos for that particular node. Thus all child nodes 
       # contain a subset of oligos compared to the parent node.
       def add(entry)
@@ -178,7 +176,7 @@ module BioPieces
         end
       end
 
-      # Method to get a node given an id. Returns nil if node wasn't found.
+      # Testing method to get a node given an id. Returns nil if node wasn't found.
       def get_node(id)
         queue = [@tree]
 
@@ -254,7 +252,7 @@ module BioPieces
 
     # Class for searching sequences in a taxonomic database. The database
     # consists a taxonomic tree index and indices for each taxonomic level
-    # saved in the following Marshal files:
+    # saved in the following files:
     #  * taxonomy_tax_index.dat  - return node for a given node id.
     #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
     class Search
