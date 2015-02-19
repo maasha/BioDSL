@@ -179,9 +179,9 @@ module BioPieces
         nil
       end
 
-      private
-
-      def tree_union(node)
+      # Method that traverses the tax tree and populate all parent nodes with
+      # the union of all kmers from the patents children.
+      def tree_union(node = @tree)
         node.children.each_value { |child| tree_union(child) }
 
         node.children.each_value do |child|
@@ -193,6 +193,8 @@ module BioPieces
           end
         end
       end
+
+      private
 
       # Remap the taxonomic tree using simple nodes and build a hash with
       # all nodes per kmer.

@@ -108,10 +108,29 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal("e",         @index.get_node(2).name)
     assert_equal("f",         @index.get_node(3).name)
     assert_equal("g",         @index.get_node(4).name)
-    assert_equal([],          @index.get_node(0).kmers.to_a)
-    assert_equal([3],         @index.get_node(1).kmers.to_a) # AAG=000011=3
-    assert_equal([3, 12],     @index.get_node(2).kmers.to_a) # AAG=000011=3, AGA=001100=12 
-    assert_equal([3, 13],     @index.get_node(3).kmers.to_a) # AAG=000011=3, AGU=001101=13 
-    assert_equal([3, 12, 51], @index.get_node(4).kmers.to_a) # AAG=000011=3, AGA=001101=12, GAG=110011=51 
+    assert_equal([],          @index.get_node(0).kmers.to_a.sort)
+    assert_equal([3],         @index.get_node(1).kmers.to_a.sort) # AAG=000011=3
+    assert_equal([3, 12],     @index.get_node(2).kmers.to_a.sort) # AAG=000011=3, AGA=001100=12 
+    assert_equal([3, 13],     @index.get_node(3).kmers.to_a.sort) # AAG=000011=3, AGU=001101=13 
+    assert_equal([3, 12, 51], @index.get_node(4).kmers.to_a.sort) # AAG=000011=3, AGA=001101=12, GAG=110011=51 
+  end
+
+  test "BioPieces::Taxonomy#tree_union returns correctly" do
+    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#",  seq: "aaga"))
+    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
+    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
+    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
+    @index.tree_union
+    assert_equal(5,               @index.size)
+    assert_equal("root",          @index.get_node(0).name)
+    assert_equal("b",             @index.get_node(1).name)
+    assert_equal("e",             @index.get_node(2).name)
+    assert_equal("f",             @index.get_node(3).name)
+    assert_equal("g",             @index.get_node(4).name)
+    assert_equal([3, 12, 13, 51], @index.get_node(0).kmers.to_a.sort)
+    assert_equal([3, 12, 13, 51], @index.get_node(1).kmers.to_a.sort)
+    assert_equal([3, 12, 51],     @index.get_node(2).kmers.to_a.sort)
+    assert_equal([3, 13],         @index.get_node(3).kmers.to_a.sort)
+    assert_equal([3, 12, 51],     @index.get_node(4).kmers.to_a.sort)
   end
 end
