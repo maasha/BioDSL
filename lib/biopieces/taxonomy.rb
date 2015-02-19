@@ -273,12 +273,44 @@ module BioPieces
 
       # Method to load and return the tax_index from file.
       def load_tax_index
-        Marshal.load(File.read(File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")))
+        tax_index = {}
+
+        File.open(File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")) do |ios|
+          ios.each do |line|
+            line.chomp!
+
+            next if line[0] == '#'
+
+            seq_id, node_id, level, name, parent_id = line.split("\t")
+
+            tax_index[node_id.to_i] = Node.new(seq_id.to_i, node_id.to_i, level.to_sym, name, parent_id.to_i)
+          end
+        end
+
+        puts "tax index loaded"
+
+        tax_index
       end
 
       # Method to load and return the kmer_index from file.
       def load_kmer_index
-        Marshal.load(File.read(File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")))
+        kmer_index = Hash.new { |h, k| h[k] = {} }
+
+        File.open(File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")) do |ios|
+          ios.each do |line|
+            line.chomp!
+
+            next if line[0] == '#'
+
+            level, kmer, nodes = line.split("\t")
+
+            kmer_index[level.to_sym][kmer.to_i] = nodes.split(';').map { |n| n.to_i }.pack("I*")
+          end
+        end
+
+        puts "kmer index loaded"
+
+        kmer_index
       end
 
       # Method to execute a search for a given sequence entry. First the
@@ -547,6 +579,9 @@ module BioPieces
         }
       end
 
+      # Structure for taxonomic tree nodes.
+      Node = Struct.new(:seq_id, :node_id, :level, :name, :parent_id)
+
       # Structure for holding the search result.
       Result = Struct.new(:hits, :taxonomy)
 
@@ -573,9 +608,9 @@ module BioPieces
           while node = @tax_index[node_id]
             nodes << node
 
-            node_id = node.parent
+            node_id = node.parent_id
 
-            break if node_id.nil?
+            break if node_id == 0 # root node
           end
 
           nodes.reverse
