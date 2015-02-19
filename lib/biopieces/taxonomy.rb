@@ -148,18 +148,34 @@ module BioPieces
 
         tree_union(@tree)
 
-        tree_remap(@tree, kmer_hash)
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
+            ios.puts ["#SEQ_ID", "NODE_ID", "LEVEL", "NAME", "PARENT_ID"].join("\t")
+          queue = [@tree]
 
-        save_tax_index
+          while !queue.empty?
+            node = queue.shift
 
-        kmer_hash.each do |level, hash|
-          hash.each do |kmer, nodes|
-            @kmer_index[level]       = {} unless @kmer_index[level]
-            @kmer_index[level][kmer] = nodes.to_a.sort.pack("I*")
+            ios.puts [node.seq_id, node.node_id, node.level, node.name, node.parent_id ].join("\t")
+
+            node.kmers.to_a.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }
+
+            node.children.each_value do |child|
+              queue.unshift(child) unless child.nil?
+            end
           end
         end
 
-        save_kmer_index
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
+          ios.puts ["#LEVEL", "KMER", "NODES"].join("\t")
+
+          kmer_hash.each do |level, kmer_nodes|
+            kmer_nodes.keys.sort.each do |kmer|
+              nodes = kmer_nodes[kmer].to_a.sort.join(';')
+
+              ios.puts [level, kmer, nodes].join("\t")
+            end
+          end
+        end
       end
 
       # Method to get a node given an id. Returns nil if node wasn't found.
@@ -167,11 +183,11 @@ module BioPieces
         queue = [@tree]
 
         while !queue.empty?
-          current_node = queue.shift
+          node = queue.shift
 
-          return current_node if current_node.node_id == id
+          return node if node.node_id == id
 
-          current_node.children.each_value do |child|
+          node.children.each_value do |child|
             queue.unshift(child) unless child.nil?
           end
         end
@@ -191,32 +207,6 @@ module BioPieces
           else
             node.kmers |= child.kmers if child.kmers
           end
-        end
-      end
-
-      private
-
-      # Remap the taxonomic tree using simple nodes and build a hash with
-      # all nodes per kmer.
-      def tree_remap(node, kmer_hash)
-        @tax_index[node.node_id] = Node.new(node.seq_id, node.node_id, node.level, node.name, node.parent_id)
-
-        node.kmers.to_a.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }   # FIXME BOTTLE NECK
-
-        node.children.each_value { |child| tree_remap(child, kmer_hash) }
-      end
-
-      # Method to save the kmer_index to file.
-      def save_tax_index
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
-          ios.write Marshal.dump(@tax_index)
-        end
-      end
-
-      # Method to save kmer_index to file.
-      def save_kmer_index
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
-          ios.write Marshal.dump(@kmer_index)
         end
       end
 
@@ -258,18 +248,6 @@ module BioPieces
         # Setter method for node children.
         def []=(key, value)
           @children[key] = value
-        end
-      end
-
-      # Class for simple taxonomic tree where each node have the attributes:
-      # seq_id:  sequence id.
-      # node_id: node id.
-      # level:   taxonomic level.
-      # name:    taxnonomic name.
-      # parent:  parent node id.
-      Node = Struct.new(:seq_id, :node_id, :level, :name, :parent) do
-        def to_marshal
-          Marshal.dump(self)
         end
       end
     end
