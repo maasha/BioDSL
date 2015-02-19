@@ -28,45 +28,108 @@ module BioPieces
   # Error class for all exceptions to do with FASTA.
   class FastaError < StandardError; end
 
-  class Fasta < BioPieces::Filesys #TODO FIXME AAARGH
-    # Method to get the next FASTA entry form an ios and return this
-    # as a Seq object. If no entry is found or eof then nil is returned.
-    def get_entry
-      return nil if @io.eof?
+  class Fasta
+    def self.open(*args)
+      ios = IO.open(*args)
 
-      seq_name, seq = @io.gets($/ + '>').chomp($/ + '>').split($/, 2)
-
-      raise FastaError, "Bad FASTA format" if seq_name.nil? or seq.nil?
-
-      seq.gsub!(/\s/, '')
-      seq_name = seq_name.sub(/^>/, '').rstrip
-
-      raise FastaError, "Bad FASTA format" if seq_name.empty?
-      raise FastaError, "Bad FASTA format" if seq.empty?
-
-      Seq.new(seq_name: seq_name, seq: seq)
+      if block_given?
+        begin
+          yield self.new(ios)
+        ensure
+          ios.close
+        end
+      else
+        return self.new(ios)
+      end
     end
 
-    # Method to get the next pseudo FASTA entry consisting of a sequence name and
-    # space seperated quality scores in decimals instead of sequence. This is
-    # the quality format used by Sanger and 454.
-    def get_decimal_qual
-      return nil if @io.eof?
+    def self.read(*args)
+      entries = []
 
-      seq_name, qual = @io.gets($/ + '>').chomp($/ + '>').split($/, 2)
+      Fasta.open(*args) do |ios|
+        ios.each do |entry|
+          entries << entry
+        end
+      end
 
-      raise FastaError, "Bad FASTA qual format" if seq_name.nil? or qual.nil?
+      entries
+    end
 
-      entry          = BioPieces::Seq.new
-      entry.seq_name = seq_name.sub(/^>/, '').rstrip
-      entry.seq      = nil
-      entry.type     = nil
-      entry.qual     = qual.tr("\n", " ").strip.split(" ").collect { |q| (q.to_i + BioPieces::Seq::SCORE_BASE).chr }.join("")
+    attr_accessor :seq_name, :seq
 
-      raise FastaError, "Bad FASTA format" if entry.seq_name.empty?
-      raise FastaError, "Bad FASTA format" if entry.qual.empty?
+    def initialize(io)
+      @io        = io
+      @seq_name  = nil
+      @seq       = ""
+      @got_first = nil
+      @got_last  = nil
+    end
 
-      entry
+    def each
+      while entry = next_entry
+        yield entry
+      end
+    end
+
+    def puts(*args)
+      @io.puts(*args)
+    end
+
+    private
+
+    # Method to get the next FASTA entry form an ios and return this
+    # as a Seq object. If no entry is found or eof then nil is returned.
+    def next_entry
+      @io.each do |line|
+        line.chomp!
+
+        next if line.empty?
+
+        if line[0] == '>'
+          if not @got_first and not @seq.empty?
+            raise FastaError, "Bad FASTA format -> content before Fasta header: #{@seq}" unless @seq.empty?
+          end
+
+          @got_first = true
+
+          if @seq_name
+            entry     = Seq.new(seq_name: @seq_name, seq: @seq)
+            @seq_name = line[1 .. -1]
+            @seq      = ""
+
+            raise FastaError, "Bad FASTA format -> truncated Fasta header: no content after '>'" if @seq_name.empty?
+
+            return entry
+          else
+            @seq_name = line[1 .. -1]
+
+            raise FastaError, "Bad FASTA format -> truncated Fasta header: no content after '>'" if @seq_name.empty?
+          end
+        else
+          @seq << line
+        end
+      end
+
+      if @seq_name
+        @got_last = true
+        entry     = Seq.new(seq_name: @seq_name, seq: @seq)
+        @seq_name = nil
+        return entry
+      end
+
+      if not @got_last and not @seq.empty?
+        raise FastaError, "Bad FASTA format -> content witout Fasta header: #{@seq}"
+      end
+
+      nil
+    end
+
+    class IO < Filesys
+      def each
+        while not @io.eof?
+          yield @io.gets
+        end
+      end
     end
   end
 end

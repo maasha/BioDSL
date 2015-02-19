@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,10 +23,64 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  VERSION = "0.3.9"
+require 'test/helper'
+
+class TestUniqueValues < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    [ {V0: "HUMAN", V1: "H1"},
+      {V0: "HUMAN", V1: "H2"},
+      {V0: "HUMAN", V1: "H3"},
+      {V0: "DOG",   V1: "D1"},
+      {V0: "DOG",   V1: "D2"},
+      {V0: "MOUSE", V1: "M1"},
+      {FOO: "BAR"}
+    ].each do |record|
+      @output.write record
+    end
+
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline#unique_values with disallowed option raises" do
+    assert_raise(BioPieces::OptionError) { @p.unique_values(key: :V0, foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#unique_values with allowed options don't raise" do
+    assert_nothing_raised { @p.unique_values(key: :V0) }
+  end
+
+  test "BioPieces::Pipeline#unique_values returns correctly" do
+    @p.unique_values(key: "V0").run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:V0=>"HUMAN", :V1=>"H1"}'
+    expected << '{:V0=>"DOG", :V1=>"D1"}'
+    expected << '{:V0=>"MOUSE", :V1=>"M1"}'
+    expected << '{:FOO=>"BAR"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline#unique_values with options[:invert] returns correctly" do
+    @p.unique_values(key: "V0", invert: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:V0=>"HUMAN", :V1=>"H2"}'
+    expected << '{:V0=>"HUMAN", :V1=>"H3"}'
+    expected << '{:V0=>"DOG", :V1=>"D2"}'
+    expected << '{:FOO=>"BAR"}'
+
+    assert_equal(expected, result)
+  end
 end

@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,10 +23,40 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  VERSION = "0.3.9"
+require 'test/helper'
+
+class TestUclust < Test::Unit::TestCase 
+  test "BioPieces::Pipeline#uclust with disallowed option raises" do
+    p = BioPieces::Pipeline.new
+    assert_raise(BioPieces::OptionError) { p.uclust(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline#uclust with allowed option don't raise" do
+    p = BioPieces::Pipeline.new
+    assert_nothing_raised { p.uclust(identity: 1, strand: :both) }
+  end
+
+  test "BioPieces::Pipeline#uclust outputs msa correctly" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write({one: 1, two: 2, three: 3})
+    output.write({SEQ: "gtgtgtagctacgatcagctagcgatcgagctatatgttt"})
+    output.write({SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.close
+
+    p = BioPieces::Pipeline.new
+    p.uclust(identity: 0.97, strand: "plus", align: true).run(input: input, output: output2)
+    result   = input2.map { |h| h.to_s }.sort_by { |a| a.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:RECORD_TYPE=>"uclust", :CLUSTER=>0, :SEQ_NAME=>"*1", :SEQ=>"GTgtgtAGCTACGATCAGCTAGCGATCGAGCTATATGTTT", :SEQ_LEN=>40}}
+    expected << %Q{{:RECORD_TYPE=>"uclust", :CLUSTER=>1, :SEQ_NAME=>"*2", :SEQ=>"ATCGATCGATCGATCGATCGATCGATCGTACGACGTAGCT", :SEQ_LEN=>40}}
+    expected << %Q{{:one=>1, :two=>2, :three=>3}}
+
+    assert_equal(expected, result)
+  end
 end

@@ -26,15 +26,16 @@
 
 module BioPieces
   module Commands
-    # == Run usearch_global on sequences in the stream.
+    # == Run uclust on sequences in the stream.
     # 
-    # This is a wrapper for the +usearch+ tool to run the program usearch_global.
-    # Basically sequence type records are searched against a reference database
-    # and records with hit information are output.
+    # This is a wrapper for the +usearch+ tool to run the program uclust.
+    # Basically sequence type records are clustered de-novo and records
+    # containing sequence and cluster information is output. If the +align+
+    # option is given the sequnces will be aligned.
     #
     # Please refer to the manual:
     #
-    # http://drive5.com/usearch/manual/usearch_global.html
+    # http://www.drive5.com/usearch/manual/cmd_cluster_smallmem.html
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
     #
@@ -42,26 +43,26 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    usearch_global(<database: <file>, <identity: float>, <strand: "plus|both">[, cpus: <uint>])
+    #    uclust(<identity: float>, <strand: "plus|both">[, align: <bool>[, cpus: <uint>]])
     # 
     # === Options
     #
-    # * database: <file>   - Database to search (in FASTA format).
     # * identity: <float>  - Similarity for matching in percent between 0.0 and 1.0.
     # * strand:   <string> - For nucleotide search report hits from plus or both strands.
+    # * align:    <bool>   - Align sequences.
     # * cpus:     <uint>   - Number of CPU cores to use (default=1).
     #
     # == Examples
     # 
-    def usearch_global(options = {})
+    def uclust(options = {})
       require 'parallel'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :database, :identity, :strand, :cpus)
-      options_required(options, :database, :identity)
-      options_allowed_values(options, strand: ["plus", "both"])
-      options_files_exist(options, :database)
+      options_allowed(options, :identity, :strand, :align, :cpus)
+      options_required(options, :identity, :strand)
+      options_allowed_values(options, strand: ["plus", "both", :plus, :both])
+      options_allowed_values(options, align:  [nil, false, true])
       options_assert(options, ":identity >  0.0")
       options_assert(options, ":identity <= 1.0")
       options_assert(options, ":cpus >= 1")
@@ -70,8 +71,8 @@ module BioPieces
       options[:cpus] ||= 1
 
       lmb = lambda do |input, output, status|
-        status[:sequences_in] = 0
-        status[:hits_out]     = 0
+        status[:sequences_in]  = 0
+        status[:sequences_out] = 0
 
         status_track(status) do
           begin
@@ -82,9 +83,6 @@ module BioPieces
               input.each_with_index do |record, i|
                 status[:records_in] += 1
 
-                output << record
-
-                status[:records_out] += 1
 
                 if record[:SEQ]
                   status[:sequences_in] += 1
@@ -93,25 +91,51 @@ module BioPieces
                   entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
                   ios.puts entry.to_fasta
+                else
+                  output << record
+
+                  status[:records_out] += 1
                 end
               end
             end
 
             begin
-              BioPieces::Usearch.usearch_global(input: tmp_in, 
-                                                output: tmp_out,
-                                                database: options[:database],
-                                                strand: options[:strand],
-                                                identity: options[:identity],
-                                                cpus: options[:cpus],
-                                                verbose: options[:verbose])
+              BioPieces::Usearch.cluster_smallmem(input: tmp_in, 
+                                                  output: tmp_out,
+                                                  strand: options[:strand],
+                                                  identity: options[:identity],
+                                                  align: options[:align],
+                                                  cpus: options[:cpus],
+                                                  verbose: options[:verbose])
 
-              BioPieces::Usearch.open(tmp_out) do |ios|
-                ios.each(:uc) do |record|
-                  record[:RECORD_TYPE] = "usearch"
-                  output << record
-                  status[:hits_out]    += 1
-                  status[:records_out] += 1
+              if options[:align]
+                cluster = 0
+
+                BioPieces::Fasta.open(tmp_out) do |ios|
+                  ios.each do |entry|
+                    if entry.seq_name == 'consensus'
+                      cluster += 1
+                    else
+                      record = {}
+                      record[:RECORD_TYPE] = "uclust"
+                      record[:CLUSTER]     = cluster
+                      record.merge!(entry.to_bp)
+
+                      output << record
+                      status[:sequences_out] += 1
+                      status[:records_out] += 1
+                    end
+                  end
+                end
+
+                status[:clusters_out] = cluster
+              else
+                BioPieces::Usearch.open(tmp_out) do |ios|
+                  ios.each(:uc) do |record|
+                    record[:RECORD_TYPE] = "uclust"
+                    output << record
+                    status[:records_out] += 1
+                  end
                 end
               end
             rescue BioPieces::UsearchError => e

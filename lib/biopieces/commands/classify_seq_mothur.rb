@@ -134,8 +134,12 @@ module BioPieces
             tmp_out = Dir.glob("#{tmp_dir}/input.*.taxonomy").first
 
             BioPieces::CSV.open(tmp_out) do |ios|
-              ios.each_hash(header: [:SEQ_NAME, :TAXONOMY]) do |new_record|
+              ios.each_hash do |new_record|
+                new_record[:SEQ_NAME] = new_record[:V0]
+                new_record[:TAXONOMY] = new_record[:V1]
                 new_record[:TAXONOMY].tr!('"', '')
+                new_record.delete(:V0)
+                new_record.delete(:V1)
 
                 new_levels = []
                 levels = new_record[:TAXONOMY].split(';')

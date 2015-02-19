@@ -40,20 +40,19 @@ module BioPieces
     # +reject+ can be used to chose what columns to read.
     #
     # == Usage
-    #    read_table(input: <glob>[, first: <uint>|last: <uint>][, columns: <list>
-    #               [, keys: <list>][, skip: <uint>[, delimiter: <string>
-    #               [, select: <list> | reject: <list>]]]])
+    #    read_table(input: <glob>[, first: <uint>|last: <uint>][, select: <list>
+    #               |, reject: <list>[, keys: <list>][, skip: <uint>
+    #               [, delimiter: <string>]]])
     #
     # === Options
     # * input <glob>       - Input file or file glob expression.
     # * first <uint>       - Only read in the _first_ number of entries.
     # * last <uint>        - Only read in the _last_ number of entries.
-    # * columns <list>     - List of columns to read in that order.
+    # * select <list>      - List of column indexes or header keys to read.
+    # * reject <list>      - List of column indexes or header keys to skip.   
     # * keys <list>        - List of key identifiers to use for each column.
     # * skip <uint>        - Number of initial lines to skip (default=0).
     # * delimiter <string> - Delimter to use for separating columsn (default="\s+").
-    # * select <list>      - List of header keys to read in that order (requires header).
-    # * reject <list>      - Read all header keys exect the rejected (requires header).
     #
     # == Examples
     #
@@ -120,35 +119,60 @@ module BioPieces
     #    {:ORGANISM=>"Cat", :SEQ=>"AAATGCA", :COUNT=>2342}
     # 
     # It is possible to select a subset of columns to read by using the
-    # +columns+ option which takes a comma separated list of columns numbers
-    # (first column is designated 0) as argument. So to read in only the
-    # sequence and the count so that the count comes before the sequence do:
+    # +select+ option which takes a comma separated list of columns numbers
+    # (first column is designated 0) or header keys as (requires header)
+    # argument. So to read in only the sequence and the count so that the
+    # count comes before the sequence do:
     # 
-    #    BP.new.read_table(input: "test.tab", skip: 1, columns: [2, 1]).dump.run
+    #    BP.new.read_table(input: "test.tab", skip: 1, select: [2, 1]).dump.run
     #
     #    {:V0=>23524, :V1=>"ATACGTCAG"}
     #    {:V0=>2442, :V1=>"AGCATGAC"}
     #    {:V0=>234, :V1=>"GACTG"}
     #    {:V0=>2342, :V1=>"AAATGCA"}
-    # 
-    # It is also possible to rename the columns with the +keys+ option:
-    # 
-    #    BP.new.read_table(input: "test.tab", skip: 1, columns: [2, 1], keys: [:COUNT, :SEQ]).dump.run
     #
-    #    {:COUNT=>23524, :SEQ=>"ATACGTCAG"}
-    #    {:COUNT=>2442, :SEQ=>"AGCATGAC"}
-    #    {:COUNT=>234, :SEQ=>"GACTG"}
-    #    {:COUNT=>2342, :SEQ=>"AAATGCA"}
+    # Alternatively, if a header line was present in the file:
+    #
+    #     #Organism  Sequence   Count
+    #
+    # Then the header keys can be used:
+    #
+    #    BP.new.read_table(input: "test.tab", skip: 1, select: [:Count, :Sequence]).dump.run
+    #
+    #    {:Count=>23524, :Sequence=>"ATACGTCAG"}
+    #    {:Count=>2442, :Sequence=>"AGCATGAC"}
+    #    {:Count=>234, :Sequence=>"GACTG"}
+    #    {:Count=>2342, :Sequence=>"AAATGCA"}
+    #
+    # Likewise, it is possible to reject specified columns from being read
+    # using the +reject+ option: 
+    # 
+    #    BP.new.read_table(input: "test.tab", skip: 1, reject: [2, 1]).dump.run
+    #
+    #    {:V0=>"Human"}
+    #    {:V0=>"Dog"}
+    #    {:V0=>"Mouse"}
+    #    {:V0=>"Cat"}
+    #
+    # And again, the header keys can be used if a header is present:
+    #
+    #    BP.new.read_table(input: "test.tab", skip: 1, reject: [:Count, :Sequence]).dump.run
+    #
+    #    {:Organism=>"Human"}
+    #    {:Organism=>"Dog"}
+    #    {:Organism=>"Mouse"}
+    #    {:Organism=>"Cat"}
+    #
     def read_table(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :input, :first, :last, :keys, :columns, :skip, :delimiter, :select, :reject)
+      options_allowed(options, :input, :first, :last, :keys, :skip, :delimiter, :select, :reject)
       options_required(options, :input)
       options_glob(options, :input)
       options_files_exist(options, :input)
       options_unique(options, :first, :last)
       options_unique(options, :select, :reject)
-      options_list_unique(options, :keys, :columns, :select, :reject)
+      options_list_unique(options, :keys, :select, :reject)
       options_assert(options, ":first >= 0")
       options_assert(options, ":last >= 0")
       options_assert(options, ":skip >= 0")
@@ -165,20 +189,16 @@ module BioPieces
             end
           end
 
-          keys    = options[:keys].map { |key| key.to_sym } if options[:keys]
-          count   = 0
-          buffer  = []
+          keys   = options[:keys].map { |key| key.to_sym } if options[:keys]
+          count  = 0
+          buffer = []
 
           catch :break do
             options[:input].each do |file|
               BioPieces::CSV.open(file) do |ios|
                 ios.skip(options[:skip])
 
-                header = keys || ios.header(delimiter: options[:delimiter], columns: options[:columns]) 
-                
                 ios.each_hash(delimiter: options[:delimiter],
-                              header:    header,
-                              columns:   options[:columns],
                               select:    options[:select],
                               reject:    options[:reject]) do |record|
                   if options[:last]

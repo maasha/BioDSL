@@ -35,12 +35,12 @@ class FastqTest < Test::Unit::TestCase
     @fastq = BioPieces::Fastq.new(@io)
   end
 
-  test "#get_entry obtains the correct seq_name" do
-    assert_equal("test1", @fastq.get_entry.seq_name)
+  test "#next_entry obtains the correct seq_name" do
+    assert_equal("test1", @fastq.next_entry.seq_name)
   end
 
-  test "#get_entry with two entries obtain correct sequences" do
-    assert_equal("ATCG", @fastq.get_entry.seq)
-    assert_equal("atcg", @fastq.get_entry.seq)
+  test "#next_entry with two entries obtain correct sequences" do
+    assert_equal("ATCG", @fastq.next_entry.seq)
+    assert_equal("atcg", @fastq.next_entry.seq)
   end
 end

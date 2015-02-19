@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency("narray",         ">= 0.6.0")
   s.add_dependency("mail",           ">= 2.5.4")
   s.add_dependency("msgpack",        ">= 0.5.8")
-  s.add_dependency("gnuplotter",     ">= 1.0.0")
+  s.add_dependency("gnuplotter",     ">= 1.0.1")
   s.add_dependency("parallel",       ">= 1.0.0")
   s.add_dependency("pqueue",         ">= 2.0.2")
   s.add_dependency("google_hash",    ">= 0.8.4")

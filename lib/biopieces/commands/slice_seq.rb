@@ -26,102 +26,96 @@
 
 module BioPieces
   module Commands
-    # == Calculate the mean or local mean of quality SCORES in the stream.
+    # == Slice sequences in the stream and obtain subsequences.
+    #
+    # Slice subsequences from sequences using index positions, that is single
+    # postion residues, or using ranges for stretches of residues.
+    #
+    # All positions are 0-based.
+    #
+    # If the records also contain quality SCORES these are also sliced.
     # 
-    # +mean_scores+ calculates either the global or local mean value or quality
-    # SCORES in the stream. The quality SCORES are encoded Phred style in
-    # character string.
-    #
-    # The global (default) behaviour calculates the SCORES_MEAN as the sum of
-    # all the scores over the length of the SCORES string.
-    #
-    # The local means SCORES_MEAN_LOCAL are calculated using means from a
-    # sliding window, where the smallest mean is returned.
-    #
-    # Thus, subquality records, with either an overall low mean quality or with
-    # local dip in quality, can be filtered using +grab+.
-    #
     # == Usage
     # 
-    #    mean_scores([local: <bool>[, window_size: <uint>]])
+    #    slice_seq(<slice: <index>|<range>>)
     #
     # === Options
     #
-    # * local:       <bool> - Calculate local mean score (default=false).
-    # * window_size: <uint> - Size of sliding window (defaul=5).
-    #
+    # * slice: <index> - Slice a one residue subsequence.
+    # * slice: <range> - Slice a range from the sequence.
+    # 
     # == Examples
     # 
     # Consider the following FASTQ entry in the file test.fq:
     # 
     #    @HWI-EAS157_20FFGAAXX:2:1:888:434
-    #    TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG
+    #    TTGGTCGCTCGCTCCGCGACCTCAGATCAGACGTGGGCGAT
     #    +
-    #    BCDEFGHIIIIIII,,,,,IFFIIIIIIIIIII
+    #    !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI
     #
-    # The values of the scores in decimal are:
+    # To slice the second residue from the beginning do:
     #
-    #    SCORES: 33;34;35;36;37;38;39;40;40;40;40;40;40;40;11;11;11;11;11;40;
-    #            37;37;40;40;40;40;40;40;40;40;40;40;40;
-    # 
-    # To calculate the mean score do:
-    # 
-    #    BP.new.read_fastq(input: "test.fq").mean_scores.dump.run
+    #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: 2).dump.run
     #
     #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
-    #     :SEQ=>"TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG",
-    #     :SEQ_LEN=>33,
-    #     :SCORES=>"BCDEFGHIIIIIII,,,,,IFFIIIIIIIIIII",
-    #     :SCORES_MEAN=>34.58}
+    #     :SEQ=>"G",
+    #     :SEQ_LEN=>1,
+    #     :SCORES=>"#"}
     #
-    # To calculate local means for a sliding window, do:
-    #
-    #    BP.new.read_fastq(input: "test.fq").mean_scores(local: true).dump.run
+    # To slice the last residue do:
+    #    
+    #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: -1).dump.run
     #
     #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
-    #     :SEQ=>"TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG",
-    #     :SEQ_LEN=>33,
-    #     :SCORES=>"BCDEFGHIIIIIII,,,,,IFFIIIIIIIIIII",
-    #     :SCORES_MEAN_LOCAL=>11.0}
+    #     :SEQ=>"T",
+    #     :SEQ_LEN=>1,
+    #     :SCORES=>"I"}
     #
-    # Which indicates a local minimum was located at the stretch of ,,,,, =
-    # 11+11+11+11+11 / 5 = 11.0
-    def mean_scores(options = {})
+    # To slice the first 5 residues do:
+    #    
+    #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: 0 ... 5).dump.run
+    #
+    #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
+    #     :SEQ=>"TTGGT",
+    #     :SEQ_LEN=>5,
+    #     :SCORES=>"!\"\#$%"}
+    # 
+    # To slice the last 5 residues do:
+    #
+    #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: -5 .. -1).dump.run
+    #
+    #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
+    #     :SEQ=>"GCGAT",
+    #     :SEQ_LEN=>5,
+    #     :SCORES=>"EFGHI"} 
+    def slice_seq(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :local, :window_size)
-      options_tie(options, window_size: :local)
-      options_allowed_values(options, local: [true, false])
-      options_assert(options, ":window_size > 1")
-
-      options[:window_size] ||= 5
+      options_allowed(options, :slice)
+      options_required(options, :slice)
 
       lmb = lambda do |input, output, status|
         status_track(status) do
-          min   = Float::INFINITY
-          max   = 0
-          sum   = 0
-          mean  = 0.0
-          count = 0
+          status[:sequences_in]  = 0
+          status[:sequences_out] = 0
+          status[:residues_in]   = 0
+          status[:residues_out]  = 0
 
           input.each do |record|
             status[:records_in] += 1
 
-            if record[:SCORES] and record[:SCORES].length > 0
+            if record[:SEQ]
               entry = BioPieces::Seq.new_bp(record)
 
-              if options[:local]
-                mean = entry.scores_mean_local(options[:window_size]).round(2)
-                record[:SCORES_MEAN_LOCAL] = mean
-              else
-                mean = entry.scores_mean.round(2)
-                record[:SCORES_MEAN] = mean
-              end
+              status[:sequences_in] += 1
+              status[:residues_in]  += entry.length
 
-              sum   += mean
-              min    = mean if mean < min
-              max    = mean if mean > max
-              count += 1
+              entry = entry[options[:slice]]
+
+              status[:sequences_out] += 1
+              status[:residues_out]  += entry.length
+
+              record.merge! entry.to_bp
             end
 
             output << record
@@ -129,9 +123,9 @@ module BioPieces
             status[:records_out] += 1
           end
 
-          status[:min_mean]  = min
-          status[:max_mean]  = max
-          status[:mean_mean] = (sum.to_f / count).round(2)
+          status[:residues_delta]         = status[:residues_out] - status[:residues_in]
+          status[:residues_delta_mean]    = (status[:residues_delta].to_f / status[:records_out]).round(2)
+          status[:residues_delta_percent] = (100 * status[:residues_delta].to_f / status[:residues_out]).round(2)
         end
       end
 

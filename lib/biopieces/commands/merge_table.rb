@@ -110,9 +110,14 @@ module BioPieces
             BioPieces::CSV.open(file) do |ios|
               ios.skip(options[:skip])
 
-              header = keys || ios.header(delimiter: options[:delimiter], columns: options[:columns]) 
-              
-              ios.each_hash(delimiter: options[:delimiter], header: header, columns: options[:columns]) do |record|
+              ios.each_hash(delimiter: options[:delimiter], select: options[:columns]) do |record|
+                if keys
+                  record.first(keys.size).each_with_index do |(key, value), i|
+                    record.delete(key)
+                    record[keys[i]] = value
+                  end
+                end
+
                 status[:rows_total] += 1
 
                 if record[key]

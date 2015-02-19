@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,10 +23,57 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  VERSION = "0.3.9"
+require 'test/helper'
+
+class TestDegapSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::DegapSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.degap_seq(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::DegapSeq with valid options don't raise" do
+    assert_nothing_raised { @p.degap_seq(columns_only: true) }
+  end
+
+  test "BioPieces::Pipeline::DegapSeq returns correctly" do
+    @output.write({SEQ: "AT--C.G~"})
+    @output.close
+    @p.degap_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = '{:SEQ=>"ATCG", :SEQ_LEN=>4}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::DegapSeq with :columns_only and uneven seq lengths raises" do
+    @output.write({SEQ: "AT--C.G~"})
+    @output.write({SEQ: "AT--C.G"})
+    @output.close
+    assert_raise(BioPieces::SeqError) { @p.degap_seq(columns_only: true).run(input: @input, output: @output2) }
+  end
+
+  test "BioPieces::Pipeline::DegapSeq with :columns_only returns correctly" do
+    @output.write({SEQ: "ATA-C.G~"})
+    @output.write({SEQ: "AT--C.G."})
+    @output.close
+    @p.degap_seq(columns_only: true).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ=>"ATACG", :SEQ_LEN=>5}'
+    expected << '{:SEQ=>"AT-CG", :SEQ_LEN=>5}'
+
+    assert_equal(expected, result)
+  end
 end

@@ -1,18 +1,19 @@
 .section
   %a{:name => anchor}
-  %h2 Command: #{name}
+  %h2
+    Command: #{name}
+    %a{:href => help_url(name), :title => "Click for help on #{name}", :target => "_blank"} ?
   %p.command #{command}
   = render_status stats
   = render_time time_start, time_stop, time_elapsed
   - if has_input? options
     %h3 Input
     - options[:input].each do |input|
-      %p 
-        %a{:href => input.sub(/[^\/]+\//, '')} #{input}
+      %p #{input}
   - if has_output? options
     %h3 Output
     %p
-      %a{:href => options[:output].sub(/[^\/]+\//, '')} #{options[:output]}
+      %a{:href => options[:output].split('/').last} #{options[:output].split('/').last}
     
   - if has_png? options
     = render_png options

@@ -93,12 +93,18 @@ module BioPieces
               end
             end
 
-            BioPieces::Usearch.uchime_ref(input: tmp_in, 
-                                          output: tmp_out,
-                                          database: options[:database],
-                                          strand: options[:strand],
-                                          cpus: options[:cpus],
-                                          verbose: options[:verbose])
+            begin
+              BioPieces::Usearch.uchime_ref(input: tmp_in, 
+                                            output: tmp_out,
+                                            database: options[:database],
+                                            strand: options[:strand],
+                                            cpus: options[:cpus],
+                                            verbose: options[:verbose])
+            rescue BioPieces::UsearchError => e
+              unless e.message =~ /Empty input file/
+                raise
+              end
+            end
 
             Fasta.open(tmp_out) do |ios|
               ios.each do |entry|

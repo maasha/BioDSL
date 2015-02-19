@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,10 +23,53 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  VERSION = "0.3.9"
+require 'test/helper'
+
+class TestMaskSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    hash = {
+      SEQ_NAME: "test",
+      SEQ: "gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag",
+      SEQ_LEN: 82,
+      SCORES: %q[!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III]
+    }
+
+    @output.write hash
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::MaskSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.mask_seq(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::MaskSeq with valid options don't raise" do
+    assert_nothing_raised { @p.mask_seq(mask: :hard) }
+  end
+
+  test "BioPieces::Pipeline::MaskSeq with mask: :soft returns correctly" do
+    @p.mask_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:SEQ_NAME=>"test", :SEQ=>"gatcgatcgtacgagcagcaTCTGACGTATCGATCGTTGATTAGTTGCTAGCTATGCAGTCTacgacgagcatgctagcTAG", :SEQ_LEN=>82, :SCORES=>"!\\"\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::MaskSeq with mask: :hard returns correctly" do
+    @p.mask_seq(mask: "hard").run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = %Q{{:SEQ_NAME=>"test", :SEQ=>"NNNNNNNNNNNNNNNNNNNNTCTGACGTATCGATCGTTGATTAGTTGCTAGCTATGCAGTCTNNNNNNNNNNNNNNNNNTAG", :SEQ_LEN=>82, :SCORES=>"!\\"\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+
+    assert_equal(expected, result)
+  end
 end

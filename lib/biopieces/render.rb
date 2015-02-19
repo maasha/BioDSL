@@ -129,5 +129,9 @@ module BioPieces
     def root_dir
       File.join(File.dirname(__FILE__), '..', '..', 'www')
     end
+
+    def help_url(command)
+      "http://www.rubydoc.info/gems/biopieces/#{BioPieces::VERSION}/BioPieces/Commands:#{command}"
+    end
   end
 end

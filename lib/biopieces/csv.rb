@@ -57,101 +57,63 @@ module BioPieces
     end
 
     # Method that reads all CSV data from a file into an array of arrays (array
-    # of rows) which is returned. Using the option[:header] parses any single
-    # header line prefixed with '#'.
-    def self.read(file, options = {})
+    # of rows) which is returned. In the default mode all columns are read.
+    # Using the select option subselects the columns based on a given Array or
+    # if a heder line is present a given Hash. Visa versa for the reject option.
+    # Header lines are prefixed with '#' and are returned if the include_header
+    # option is given.
+    #
+    # Options:
+    #   * include_header
+    #   * delimiter.
+    #   * select.
+    #   * reject.
+    def self.read_array(file, options = {})
       data = []
 
       self.open(file) do |ios|
-        if options[:include_header]
-          data << ios.header.map { |h| h.to_s }
-        end
-
-        ios.each_array { |row| data << row } 
+        ios.each_array(options) { |row| data << row } 
       end
 
       data
     end
 
+    # Method that reads all CSV data from a file into an array of hashes (array
+    # of rows) which is returned. In the default mode all columns are read.
+    # Using the select option subselects the columns based on a given Array or
+    # if a heder line is present a given Hash. Visa versa for the reject option.
+    # Header lines are prefixed with '#'.
+    #
+    # Options:
+    #   * delimiter.
+    #   * select.
+    #   * reject.
+    def self.read_hash(file, options = {})
+      data = []
+
+      self.open(file) do |ios|
+        ios.each_hash(options) { |row| data << row } 
+      end
+
+      data
+    end
+
+    # Constructor method for CSV.
     def initialize(io)
       @io        = io
       @delimiter = "\s"
       @header    = nil
+      @fields    = nil
+      @types     = nil
     end
 
-    # Method to return a table header prefixed with '#'. If a header was
-    # already located it is returned, otherwise only the first 10 lines
-    # are examined and if no header is found nil is returned. If header is
-    # found it is returned as an array.
-    #
-    #   CSV.header(options={}) -> Array
-    #
-    # Options:
-    #   * :delimiter - specify an alternative field delimiter (default="\s").
-    #   * :columns   - specify a list or range of header columns to return.
-    def header(options = {})
-      return @header if @header
-
-      delimiter = options[:delimiter] || @delimiter
-      columns   = options[:columns]
-
-      @io.each_with_index do |line, i|
-        line.chomp!
-        next if line.empty?
-
-        if line[0] == '#'
-          fields = line[1 .. -1].split(delimiter)
-
-          if columns and columns.max >= fields.size
-            raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c >= fields.size }}"
-          end
-
-          if columns
-            @header = fields.values_at(*columns).map { |h| h.to_sym }
-          else
-            @header = fields.map { |h| h.to_sym }
-          end
-
-          return @header
-        end
-
-        if i == 10
-          break
-        end
-      end
-
-      @io.rewind
-
-      nil
-    end
-
-    # Method to skip a given number or lines.
+    # Method to skip a given number or non-empty lines.
     def skip(num)
-      num.times { @io.get_entry }
-    end
+      while num != 0 and line = @io.gets
+        line.chomp!
 
-    # Method to iterate over a CSV IO object yielding lines or an enumerator
-    #   CSV.each { |item| block }  -> ary
-    #   CSV.each                   -> Enumerator
-    def each(options = {})
-      return to_enum :each unless block_given?
-
-      got_header = false
-
-      @io.each do |line|
-        next if line.chomp.empty?
-        
-        if line[0] == '#'
-          if options[:include_header] and not got_header
-            got_header = true
-            yield line[1 .. -1] 
-          end
-        else
-          yield line
-        end
+        num -= 1 unless line.empty?
       end
-
-      self
     end
 
     # Method to iterate over a CSV IO object yielding arrays or an enumerator
@@ -159,64 +121,37 @@ module BioPieces
     #   CSV.each_array(options={})                  -> Enumerator
     #
     # Options:
-    #   * :delimiter - specify an alternative field delimiter (default="\s").
-    #   * :columns   - specify a list or range of columns to output in that order.
-    #   * :select    - select columns by header to output in that order (requires header).
-    #   * :reject    - reject columns by header (requires header).
+    #   * :include_header -
+    #   * :delimiter      - 
+    #   * :select         - 
+    #   * :reject         - 
     def each_array(options = {})
       return to_enum :each_array unless block_given?
 
       delimiter = options[:delimiter] || @delimiter
-      columns   = options[:columns]
-
-      if options[:select]
-        header = self.header(delimiter: delimiter, columns: columns)
-
-        raise BioPieces::CSVError, "No header found" unless header
-
-        unless ([*options[:select]] - header).empty?
-          raise BioPieces::CSVError, "No such columns: #{[*options[:select]] - header}"
-        end
-
-        columns = header.map.with_index.to_h.values_at(*options[:select])
-      end
-
-      if options[:reject]
-        header = self.header(delimiter: delimiter, columns: columns)
-
-        raise BioPieces::CSVError, "No header found" unless header
-
-        unless ([*options[:reject]] - header).empty?
-          raise BioPieces::CSVError, "No such columns: #{[*options[:reject]] - header}"
-        end
-
-        columns = header.map.with_index.to_h.delete_if { |k, v| options[:reject].include? k }.values
-      end
-
-      types = nil
-      check = true
 
       @io.each do |line|
         line.chomp!
-        next if line.empty? or line[0] == '#'
+        next if line.empty?
 
         fields = line.split(delimiter)
 
-        if columns
-          types  = determine_types(line, delimiter).values_at(*columns) unless types
+        if line[0] == '#'
+          get_header(fields, options) unless @header
+          get_fields(fields, options) unless @fields
 
-          if check
-            if columns.max >= fields.size
-              raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c >= fields.size }}"
-            end
-            check = false
+          if options[:include_header]
+            yield @header.map { |h| h.to_s }
           end
-
-          yield fields.values_at(*columns).convert_types(types)
         else
-          types = determine_types(line, delimiter) unless types
+          get_header(fields, options)    unless @header
+          get_fields(fields, options) unless @fields
 
-          yield fields.convert_types(types)
+          fields = fields.values_at(*@fields) if @fields
+
+          determine_types(fields) unless @types
+
+          yield fields.convert_types(@types)
         end
       end
 
@@ -224,96 +159,19 @@ module BioPieces
     end
 
     # Method to iterate over a CSV IO object yielding hashes or an enumerator
-    #   CSV.each_hash(options={}) { |item| block } -> ary
+    #   CSV.each_hash(options={}) { |item| block } -> hash
     #   CSV.each_hash(options={})                  -> Enumerator
     #
     # Options:
-    #   * :delimiter - specify an alternative field delimiter (default="\s").
-    #   * :columns   - specify a list or range of columns to output.
-    #   * :headers   - list of headers to use as keys.
-    #   * :select    - select columns by header to output (requires header).
-    #   * :reject    - reject columns by header (requires header).
+    #   * :delimiter      - 
+    #   * :select         - 
+    #   * :reject         - 
     def each_hash(options = {})
-      return to_enum :each_hash unless block_given?
-
-      delimiter = options[:delimiter] || @delimiter
-      columns   = options[:columns]
-      header    = options[:header]
-
-      if columns and header
-        if columns.size != header.size
-          raise CSVError, "Requested columns and header sizes mismatch: #{columns} != #{header}"
-        end
-      end
-
-      if options[:select]
-        header = self.header(delimiter: delimiter, columns: columns)
-
-        raise BioPieces::CSVError, "No header found" unless header
-
-        unless ([*options[:select]] - header).empty?
-          raise BioPieces::CSVError, "No such columns: #{[*options[:select]] - header}"
-        end
-
-        columns = header.map.with_index.to_h.values_at(*options[:select])
-        header  = options[:select]
-      end
-
-      if options[:reject]
-        header = self.header(delimiter: delimiter, columns: columns)
-
-        raise BioPieces::CSVError, "No header found" unless header
-
-        unless ([*options[:reject]] - header).empty?
-          raise BioPieces::CSVError, "No such columns: #{[*options[:reject]] - header}"
-        end
-
-        columns = header.map.with_index.to_h.delete_if { |k, v| options[:reject].include? k }.values
-        header.reject! { |k| options[:reject].include? k }
-      end
-
-      types = nil
-      check = true
-
-      @io.each do |line|
-        line.chomp!
-        next if line.empty? or line[0] == '#'
+      each_array(options) do |array|
         hash = {}
 
-        fields = line.split(delimiter)
-
-        if columns
-          types = determine_types(line, delimiter).values_at(*columns) unless types
-
-          if check
-            if columns.max > fields.size
-              raise CSVError, "Requested columns out of bounds: #{columns.select { |c| c > fields.size }}"
-            end
-
-            check = false
-          end
-
-          if header
-            fields.values_at(*columns).convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
-          else
-            fields.values_at(*columns).convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
-          end
-        else
-          types = determine_types(line, delimiter) unless types
-
-          if header
-            if check
-              if header.size > fields.size
-                raise BioPieces::CSVError, "Header contains more fields than columns: #{header.size} > #{fields.size}"
-              end
-
-              check = false
-            end
-
-            fields.convert_types(types).each_with_index { |e, i| hash[header[i].to_sym] = e }
-          else
-            fields.convert_types(types).each_with_index { |e, i| hash["V#{i}".to_sym] = e }
-          end
+        array.convert_types(@types).each_with_index do |field, i|
+          hash[@header[i]] = field
         end
 
         yield hash
@@ -324,11 +182,87 @@ module BioPieces
 
     private
 
-    # Method that determines the data types used in a row.
-    def determine_types(line, delimiter)
+    # Method to set the @header given a list of fields (a row).
+    # Options:
+    #   * :select - list of column indexes, names or a range to select.
+    #   * :reject - list of column indexes, names or a range to reject.
+    def get_header(fields, options)
+      if fields[0][0] == '#'
+        fields[0] = fields[0][1 .. -1] 
+        @header = fields.map { |h| h.to_sym }
+      else
+        @header = []
+        fields.each_with_index { |field, i| @header << "V#{i}".to_sym }
+      end
+
+      if options[:select]
+        if options[:select].first.is_a? Fixnum
+          if options[:select].max >= @header.size
+            raise CSVError, "Selected columns out of bounds: #{options[:select].select { |c| c >= @header.size }}"
+          end
+        else
+          options[:select].each do |value|
+            raise CSVError, "Selected value: #{value} not in header: #{@header}" unless @header.include? value.to_sym
+          end
+        end
+      elsif options[:reject]
+        if options[:reject].first.is_a? Fixnum
+          if options[:reject].max >= @header.size
+            raise CSVError, "Rejected columns out of bounds: #{options[:reject].reject { |c| c >= @header.size }}"
+          end
+        else
+          options[:reject].map do |value|
+            raise CSVError, "Rejected value: #{value} not found in header: #{@header}" unless @header.include? value.to_sym
+          end
+        end
+      end
+
+      @header
+    end
+
+    # Method to determine the indexes of fields to be parsed and store these in
+    # @fields.
+    # Options:
+    #   * :select - list of column indexes, names or a range to select.
+    #   * :reject - list of column indexes, names or a range to reject.
+    def get_fields(fields, options)
+      if options[:select]
+        if options[:select].first.is_a? Fixnum
+          @fields = options[:select]
+        else
+          raise CSVError, "No header found" unless @header
+
+          fields = []
+
+          options[:select].each do |value|
+            fields << @header.index(value.to_sym)
+          end
+
+          @fields = fields
+        end
+
+        @header = @header.values_at(*@fields)
+      elsif options[:reject]
+        if options[:reject].first.is_a? Fixnum
+          reject = options[:reject].is_a?(Range) ? options[:reject].to_a : options[:reject]
+          @fields = (0 ... fields.size).to_a - reject
+        else
+          raise CSVError, "No header found" unless @header
+
+          reject = options[:reject].map { |r| r.to_sym }
+
+          @fields = @header.map.with_index.to_h.delete_if { |k, v| reject.include? k }.values
+        end
+
+        @header = @header.values_at(*@fields)
+      end
+    end
+
+    # Method that determines the data types used in an array of fields.
+    def determine_types(fields)
       types = []
 
-      line.split(delimiter).each do |field|
+      fields.each do |field|
         field = field.to_num
 
         if field.is_a? Fixnum
@@ -342,12 +276,12 @@ module BioPieces
         end
       end
 
-      types
+      @types = types
     end
 
     class IO < Filesys
-      def rewind
-        @io.rewind
+      def gets
+        @io.gets
       end
     end
   end

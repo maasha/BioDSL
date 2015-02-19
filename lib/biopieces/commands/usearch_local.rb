@@ -26,15 +26,15 @@
 
 module BioPieces
   module Commands
-    # == Run usearch_global on sequences in the stream.
+    # == Run usearch_local on sequences in the stream.
     # 
-    # This is a wrapper for the +usearch+ tool to run the program usearch_global.
+    # This is a wrapper for the +usearch+ tool to run the program usearch_local.
     # Basically sequence type records are searched against a reference database
     # and records with hit information are output.
     #
     # Please refer to the manual:
     #
-    # http://drive5.com/usearch/manual/usearch_global.html
+    # http://drive5.com/usearch/manual/cmd_usearch_local.html
     #
     # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
     #
@@ -42,7 +42,7 @@ module BioPieces
     # 
     # == Usage
     # 
-    #    usearch_global(<database: <file>, <identity: float>, <strand: "plus|both">[, cpus: <uint>])
+    #    usearch_local(<database: <file>, <identity: float>, <strand: "plus|both">[, cpus: <uint>])
     # 
     # === Options
     #
@@ -53,7 +53,7 @@ module BioPieces
     #
     # == Examples
     # 
-    def usearch_global(options = {})
+    def usearch_local(options = {})
       require 'parallel'
 
       options_orig = options.dup
@@ -98,13 +98,13 @@ module BioPieces
             end
 
             begin
-              BioPieces::Usearch.usearch_global(input: tmp_in, 
-                                                output: tmp_out,
-                                                database: options[:database],
-                                                strand: options[:strand],
-                                                identity: options[:identity],
-                                                cpus: options[:cpus],
-                                                verbose: options[:verbose])
+              BioPieces::Usearch.usearch_local(input: tmp_in, 
+                                               output: tmp_out,
+                                               database: options[:database],
+                                               strand: options[:strand],
+                                               identity: options[:identity],
+                                               cpus: options[:cpus],
+                                               verbose: options[:verbose])
 
               BioPieces::Usearch.open(tmp_out) do |ios|
                 ios.each(:uc) do |record|
@@ -114,10 +114,7 @@ module BioPieces
                   status[:records_out] += 1
                 end
               end
-            rescue BioPieces::UsearchError => e
-              unless e.message =~ /Empty input file/
-                raise
-              end
+            rescue UsearchError
             end
           ensure
             tmp_in.unlink
@@ -132,4 +129,3 @@ module BioPieces
     end
   end
 end
-
