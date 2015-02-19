@@ -59,5 +59,6 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal("1", @index.get_node(1).name)
     assert_equal("2", @index.get_node(2).name)
     assert_equal("3", @index.get_node(3).name)
+    assert_equal("3", @index.get_node(3).kmers)
   end
 end
