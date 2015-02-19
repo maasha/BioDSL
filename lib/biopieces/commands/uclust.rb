@@ -71,7 +71,8 @@ module BioPieces
       options[:cpus] ||= 1
 
       lmb = lambda do |input, output, status|
-        status[:sequences_in] = 0
+        status[:sequences_in]  = 0
+        status[:sequences_out] = 0
 
         status_track(status) do
           begin
@@ -121,10 +122,13 @@ module BioPieces
                       record.merge!(entry.to_bp)
 
                       output << record
+                      status[:sequences_out] += 1
                       status[:records_out] += 1
                     end
                   end
                 end
+
+                status[:clusters_out] = cluster
               else
                 BioPieces::Usearch.open(tmp_out) do |ios|
                   ios.each(:uc) do |record|
