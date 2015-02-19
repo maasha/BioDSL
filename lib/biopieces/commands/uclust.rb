@@ -127,6 +127,8 @@ module BioPieces
                     end
                   end
                 end
+
+                status[:clusters_out] = cluster
               else
                 BioPieces::Usearch.open(tmp_out) do |ios|
                   ios.each(:uc) do |record|
