@@ -46,6 +46,10 @@ module BioPieces
       # Constructor Index object.
       def initialize(options)
         @options   = options                                            # Option hash.
+        raise TaxonomyError, "missing kmer_size option"  unless @options[:kmer_size]
+        raise TaxonomyError, "missing step_size option"  unless @options[:step_size]
+        raise TaxonomyError, "missing output_dir option" unless @options[:output_dir]
+        raise TaxonomyError, "missing prefix option"     unless @options[:prefix]
         @seq_id    = 0                                                  # Sequence id.
         @node_id   = 0                                                  # Node id.
         @tree      = TaxNode.new(nil, :r, "root", nil, nil, @node_id)   # Root level tree node.
@@ -264,53 +268,18 @@ module BioPieces
       # Constructor for initializing a Search object.
       def initialize(options)
         @options    = options
+        raise TaxonomyError, "missing kmer_size option" unless @options[:kmer_size]
+        raise TaxonomyError, "missing step_size option" unless @options[:step_size]
+        raise TaxonomyError, "missing dir option"       unless @options[:dir]
+        raise TaxonomyError, "missing prefix option"    unless @options[:prefix]
+        raise TaxonomyError, "missing consensus option" unless @options[:consensus]
+        raise TaxonomyError, "missing coverage option"  unless @options[:coverage]
+        raise TaxonomyError, "missing hits_max option"  unless @options[:hits_max]
+
         @count_ary  = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
         @hit_ary    = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
-        @cache      = Hash.new { |h, k| h[k] = {} }
         @tax_index  = load_tax_index
         @kmer_index = load_kmer_index
-      end
-
-      # Method to load and return the tax_index from file.
-      def load_tax_index
-        tax_index = {}
-
-        File.open(File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")) do |ios|
-          ios.each do |line|
-            line.chomp!
-
-            next if line[0] == '#'
-
-            seq_id, node_id, level, name, parent_id = line.split("\t")
-
-            tax_index[node_id.to_i] = Node.new(seq_id.to_i, node_id.to_i, level.to_sym, name, parent_id.to_i)
-          end
-        end
-
-        puts "tax index loaded"
-
-        tax_index
-      end
-
-      # Method to load and return the kmer_index from file.
-      def load_kmer_index
-        kmer_index = Hash.new { |h, k| h[k] = {} }
-
-        File.open(File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")) do |ios|
-          ios.each do |line|
-            line.chomp!
-
-            next if line[0] == '#'
-
-            level, kmer, nodes = line.split("\t")
-
-            kmer_index[level.to_sym][kmer.to_i] = nodes.split(';').map { |n| n.to_i }.pack("I*")
-          end
-        end
-
-        puts "kmer index loaded"
-
-        kmer_index
       end
 
       # Method to execute a search for a given sequence entry. First the
@@ -370,6 +339,44 @@ module BioPieces
       end
 
       private
+
+      # Method to load and return the tax_index from file.
+      def load_tax_index
+        tax_index = {}
+
+        File.open(File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")) do |ios|
+          ios.each do |line|
+            line.chomp!
+
+            next if line[0] == '#'
+
+            seq_id, node_id, level, name, parent_id = line.split("\t")
+
+            tax_index[node_id.to_i] = Node.new(seq_id.to_i, node_id.to_i, level.to_sym, name, parent_id.to_i)
+          end
+        end
+
+        tax_index
+      end
+
+      # Method to load and return the kmer_index from file.
+      def load_kmer_index
+        kmer_index = Hash.new { |h, k| h[k] = {} }
+
+        File.open(File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")) do |ios|
+          ios.each do |line|
+            line.chomp!
+
+            next if line[0] == '#'
+
+            level, kmer, nodes = line.split("\t")
+
+            kmer_index[level.to_sym][kmer.to_i] = nodes.split(';').map { |n| n.to_i }.pack("I*")
+          end
+        end
+
+        kmer_index
+      end
 
       # Method that given a list of kmers and a taxonomic level
       # lookups all the nodes for each kmer and increment the
@@ -608,9 +615,9 @@ module BioPieces
           while node = @tax_index[node_id]
             nodes << node
 
-            node_id = node.parent_id
+            break if node.level == :r # At root level
 
-            break if node_id == 0 # root node
+            node_id = node.parent_id
           end
 
           nodes.reverse
