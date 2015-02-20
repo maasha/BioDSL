@@ -75,7 +75,7 @@ module BioPieces
 
       size = Seq::DNA.size ** options[:kmer_size]
 
-      if @kmer_ary and @kmer_ary.count == size
+      if defined? @kmer_ary and @kmer_ary.count == size
         @kmer_ary.zero!
       else
         @kmer_ary = BioPieces::CAry.new(size, 1)
