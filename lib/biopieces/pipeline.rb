@@ -79,8 +79,11 @@ module BioPieces
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
       options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir, :report, :force)
-      options_allowed_values(options, fork: [true, false, nil], thread: [true, false, nil])
+      options_allowed_values(options, verbose: [true, false, nil])
+      options_allowed_values(options, fork: [true, false, nil])
+      options_allowed_values(options, thread: [true, false, nil])
       options_conflict(options, fork: :thread)
+      options_conflict(options, progress: :verbose)
       options_tie(options, subject: :email)
       options_files_exists_force(options, :report)
 

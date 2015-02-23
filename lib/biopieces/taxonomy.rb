@@ -46,14 +46,15 @@ module BioPieces
       # Constructor Index object.
       def initialize(options)
         @options   = options                                            # Option hash.
-        raise TaxonomyError, "missing kmer_size option"  unless @options[:kmer_size]
-        raise TaxonomyError, "missing step_size option"  unless @options[:step_size]
-        raise TaxonomyError, "missing output_dir option" unless @options[:output_dir]
-        raise TaxonomyError, "missing prefix option"     unless @options[:prefix]
         @seq_id    = 0                                                  # Sequence id.
         @node_id   = 0                                                  # Node id.
         @tree      = TaxNode.new(nil, :r, "root", nil, nil, @node_id)   # Root level tree node.
         @node_id  += 1
+
+        raise TaxonomyError, "missing kmer_size option"  unless @options[:kmer_size]
+        raise TaxonomyError, "missing step_size option"  unless @options[:step_size]
+        raise TaxonomyError, "missing output_dir option" unless @options[:output_dir]
+        raise TaxonomyError, "missing prefix option"     unless @options[:prefix]
       end
 
       # Method to return the number of nodes in the index tree. 
@@ -304,7 +305,7 @@ module BioPieces
       def execute(entry)
         kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
 
-        puts "DEBUG Q: #{entry.seq_name}" if $VERBOSE
+        puts "DEBUG Q: #{entry.seq_name}" if BioPieces::debug
 
         TAX_LEVELS.reverse.each do |level|
           kmers_lookup(kmers, level)
@@ -313,9 +314,9 @@ module BioPieces
           hit_count = @options[:hits_max] if @options[:hits_max] < hit_count
 
           if hit_count == 0
-            puts "DEBUG no hits @ #{level}" if $VERBOSE
+            puts "DEBUG no hits @ #{level}" if BioPieces::debug
           else
-            puts "DEBUG hit(s) @ #{level}"  if $VERBOSE
+            puts "DEBUG hit(s) @ #{level}"  if BioPieces::debug
             taxpaths = []
 
             (0 ... hit_count).each do |i|
@@ -323,7 +324,7 @@ module BioPieces
 
               taxpath = TaxPath.new(node_id, count, kmers.size, @tax_index)
 
-              if $VERBOSE
+              if BioPieces::debug
                 seq_id = @tax_index[node_id].seq_id
                 puts "DEBUG S_ID: #{seq_id} KMERS: [#{count}/#{kmers.size}] #{taxpath}"
               end
