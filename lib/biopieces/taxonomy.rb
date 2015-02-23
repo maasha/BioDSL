@@ -45,10 +45,10 @@ module BioPieces
 
       # Constructor Index object.
       def initialize(options)
-        @options   = options                                            # Option hash.
-        @seq_id    = 0                                                  # Sequence id.
-        @node_id   = 0                                                  # Node id.
-        @tree      = TaxNode.new(nil, :r, "root", nil, nil, @node_id)   # Root level tree node.
+        @options   = options                                       # Option hash.
+        @seq_id    = 0                                             # Sequence id.
+        @node_id   = 0                                             # Node id.
+        @tree      = TaxNode.new(nil, :r, "root", nil, @node_id)   # Root level tree node.
         @node_id  += 1
 
         raise TaxonomyError, "missing kmer_size option"  unless @options[:kmer_size]
@@ -105,35 +105,20 @@ module BioPieces
 
           raise TaxonomyError, "Unexpected tax id in #{entry.seq_name}" if level.downcase.to_sym != TAX_LEVELS[i + 1]
 
-          if tax_levels[i + 1] and tax_levels[i + 1].split('#')[1]
-            leaf = false
-          else
-            leaf = true
-          end
-
           if name
             raise TaxonomyError, "Gapped tax level info in #{entry.seq_name}" if i > 0 and not old_name
 
-            if leaf    # FIXME - test for node first, then leaf -> TaxBuilder.cpp
-              kmers = Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
-
-              if node[name]
-                if node[name].kmers
-                  node[name].kmers |= kmers
-                else
-                  node[name].kmers = kmers
-                end
-              else
-                node[name] = TaxNode.new(node, level.downcase.to_sym, name, kmers, @seq_id, @node_id)
-                @node_id += 1
-              end
+            if child = node[name]
             else
-              unless node[name]
-                node[name] = TaxNode.new(node, level.downcase.to_sym, name, nil, @seq_id, @node_id)
-                @node_id += 1
-              end
+              child = TaxNode.new(node, level.downcase.to_sym, name, @seq_id, @node_id)
+              @node_id += 1
             end
 
+            if leaf?(tax_levels, i)
+              child.kmers |= Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
+            end
+
+            node[name] = child
             node = node[name]
           end
 
@@ -145,41 +130,13 @@ module BioPieces
         self
       end
 
-      # FIXME TODO Substitute Set with list.
       # Remap and save taxonomic tree to index files.
       def save
-        kmer_hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = Set.new } }
-
         tree_union(@tree)
 
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
-          ios.puts ["#SEQ_ID", "NODE_ID", "LEVEL", "NAME", "PARENT_ID"].join("\t")
-          queue = [@tree]
-
-          while !queue.empty?
-            node = queue.shift
-
-            ios.puts [node.seq_id, node.node_id, node.level, node.name, node.parent_id ].join("\t")
-
-            node.kmers.to_a.map { |kmer| kmer_hash[node.level][kmer].add(node.node_id) }
-
-            node.children.each_value do |child|
-              queue.unshift(child) unless child.nil?
-            end
-          end
-        end
-
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
-          ios.puts ["#LEVEL", "KMER", "NODES"].join("\t")
-
-          kmer_hash.each do |level, kmer_nodes|
-            kmer_nodes.keys.sort.each do |kmer|
-              nodes = kmer_nodes[kmer].to_a.sort.join(';')
-
-              ios.puts [level, kmer, nodes].join("\t")
-            end
-          end
-        end
+        kmer_index = build_kmer_index
+        save_kmer_index(kmer_index)
+        save_tax_index
       end
 
       # Testing method to get a node given an id. Returns nil if node wasn't found.
@@ -214,17 +171,81 @@ module BioPieces
         end
       end
 
+      private
+
+      # Method that determines if a node is a leaf or not.
+      def leaf?(tax_levels, i)
+        if tax_levels[i + 1] and tax_levels[i + 1].split('#')[1]
+          leaf = false
+        else
+          leaf = true
+        end
+      end
+
+      # Construct the kmer index.
+      def build_kmer_index
+        kmer_index = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = [] } }
+
+        queue = [@tree]
+
+        while !queue.empty?
+          node = queue.shift
+
+          node.kmers.to_a.map { |kmer| kmer_index[node.level][kmer] << node.node_id }
+
+          node.children.each_value do |child|
+            queue.unshift(child) unless child.nil?
+          end
+        end
+
+        kmer_index
+      end
+
+      # Save tax index to file.
+      def save_tax_index
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
+          ios.puts ["#SEQ_ID", "NODE_ID", "LEVEL", "NAME", "PARENT_ID"].join("\t")
+          queue = [@tree]
+
+          while !queue.empty?
+            node = queue.shift
+
+            ios.puts [node.seq_id, node.node_id, node.level, node.name, node.parent_id ].join("\t")
+
+            node.children.each_value do |child|
+              queue.unshift(child) unless child.nil?
+            end
+          end
+        end
+      end
+
+      # Save kmer index to file.
+      def save_kmer_index(kmer_index)
+        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
+          ios.puts ["#LEVEL", "KMER", "NODES"].join("\t")
+
+          kmer_index.each do |level, kmer_nodes|
+            kmer_nodes.keys.sort.each do |kmer|
+              nodes = kmer_nodes[kmer].sort.join(';')
+
+              ios.puts [level, kmer, nodes].join("\t")
+            end
+          end
+        end
+      end
+
+
       # Class for the nodes used for constructing the taxonomic tree.
       class TaxNode
         attr_accessor :kmers
         attr_reader :parent, :level, :name, :children, :seq_id, :node_id
 
         # Constructor for TaxNode objects.
-        def initialize(parent, level, name, kmers, seq_id, node_id)
+        def initialize(parent, level, name, seq_id, node_id)
           @parent   = parent   # Parent node.
           @level    = level    # Taxonomic level.
           @name     = name     # Taxonomic name.
-          @kmers    = kmers    # Kmer vector.
+          @kmers    = Set.new  # Kmer set.
           @seq_id   = seq_id   # Sequence id (a representative seq for debugging).
           @node_id  = node_id  # Node id.
           @children = {}       # Child node hash.
