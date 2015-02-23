@@ -24,7 +24,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  trap("INT") { exit! } unless BioPieces::Config::DEBUG
+#  trap("INT") { exit! } unless BioPieces::Config::DEBUG
 
   class PipelineError < StandardError; end
 
@@ -78,7 +78,8 @@ module BioPieces
     def run(options = {})
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir, :report, :force)
+      options_allowed(options, :debug, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir, :report, :force)
+      options_allowed_values(options, debug: [true, false, nil])
       options_allowed_values(options, verbose: [true, false, nil])
       options_allowed_values(options, fork: [true, false, nil])
       options_allowed_values(options, thread: [true, false, nil])
@@ -86,6 +87,9 @@ module BioPieces
       options_conflict(options, progress: :verbose)
       options_tie(options, subject: :email)
       options_files_exists_force(options, :report)
+
+      BioPieces::debug   = options[:debug]
+      BioPieces::verbose = options[:verbose]
 
       if options[:output_dir]
         FileUtils.mkdir_p(options[:output_dir]) unless File.exist?(options[:output_dir])

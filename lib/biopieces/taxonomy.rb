@@ -114,7 +114,7 @@ module BioPieces
           if name
             raise TaxonomyError, "Gapped tax level info in #{entry.seq_name}" if i > 0 and not old_name
 
-            if leaf
+            if leaf    # FIXME - test for node first, then leaf -> TaxBuilder.cpp
               kmers = Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
 
               if node[name]
@@ -145,6 +145,7 @@ module BioPieces
         self
       end
 
+      # FIXME TODO Substitute Set with list.
       # Remap and save taxonomic tree to index files.
       def save
         kmer_hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = Set.new } }
@@ -152,7 +153,7 @@ module BioPieces
         tree_union(@tree)
 
         File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
-            ios.puts ["#SEQ_ID", "NODE_ID", "LEVEL", "NAME", "PARENT_ID"].join("\t")
+          ios.puts ["#SEQ_ID", "NODE_ID", "LEVEL", "NAME", "PARENT_ID"].join("\t")
           queue = [@tree]
 
           while !queue.empty?
