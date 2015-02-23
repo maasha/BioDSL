@@ -35,7 +35,6 @@ class VerboseTest < Test::Unit::TestCase
   end
 
   test "BioPieces::verbose returns correctly" do
-    assert_equal(false, BioPieces::verbose)
     BioPieces::verbose = true
     assert_equal(true, BioPieces::verbose)
   end

@@ -35,7 +35,6 @@ class DebugTest < Test::Unit::TestCase
   end
 
   test "BioPieces::debug returns correctly" do
-    assert_equal(false, BioPieces::debug)
     BioPieces::debug = true
     assert_equal(true, BioPieces::debug)
   end
