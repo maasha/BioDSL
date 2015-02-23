@@ -69,10 +69,8 @@ Cat         AAATGCA     3.42
 
 END
 
-    io    = StringIO.new(table)
-    io2   = StringIO.new(table2)
-    io3   = StringIO.new(table3)
-    @csv  = BioPieces::CSV.new(io)
+    io   = StringIO.new(table)
+    @csv = BioPieces::CSV.new(io)
 
     @table  = table
     @table2 = table2

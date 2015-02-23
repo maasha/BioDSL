@@ -112,9 +112,9 @@ module BioPieces
 
               ios.each_hash(delimiter: options[:delimiter], select: options[:columns]) do |record|
                 if keys
-                  record.first(keys.size).each_with_index do |(key, value), i|
-                    record.delete(key)
-                    record[keys[i]] = value
+                  record.first(keys.size).each_with_index do |(k, v), i|
+                    record.delete(k)
+                    record[keys[i]] = v
                   end
                 end
 

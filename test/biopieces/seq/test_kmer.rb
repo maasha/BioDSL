@@ -88,7 +88,8 @@ class TestKmer < Test::Unit::TestCase
 
   test "#to_kmers with kmer_size: 5 returns correctly" do
     result = @entry.to_kmers(kmer_size: 5)
-    expected = [172, 690, 713, 807, 156, 625, 452, 786, 72, 290, 139, 557, 180, 722]
+    expected = [72, 139, 156, 172, 180, 290, 452, 557, 625, 690, 713, 722, 786, 807]
+    assert_equal(expected, result)
   end
 
   test "#to_kmers with kmer_size: 5 and step_size: 2 returns correctly" do
