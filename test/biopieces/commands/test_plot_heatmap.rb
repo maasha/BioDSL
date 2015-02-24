@@ -75,12 +75,13 @@ set autoscale yfix
 set nokey
 set tic scale 0
 set palette rgbformulae 22,13,10
+set logscale cb
 unset xtics
 unset ytics
 plot \"-\" matrix with image
-0.0 0.3 0.48 0.6
-0.7 0.78 0.85 0.9
-0.95 1.0 1.04 1.08
+1 2 3 4
+5 6 7 8
+9 10 11 12
 e
 EOF
 
