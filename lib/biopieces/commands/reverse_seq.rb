@@ -49,7 +49,7 @@ module BioPieces
     #    +
     #    >>>>>FFFFD@A?A0AE0FG
     # 
-    # To trim both ends simply do:
+    # To reverse the sequence simply do:
     # 
     #    BP.new.read_fastq(input:"test.fq").reverse_seq.dump.run
     #
