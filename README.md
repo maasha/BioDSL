@@ -90,6 +90,7 @@ Available Biopieces
   * [read_fasta]                       (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:read_fasta)
   * [read_fastq]                       (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:read_fastq)
   * [read_table]                       (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:read_table)
+  * [reverse_seq]                      (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:reverse_seq)
   * [slice_seq]                        (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:slice_seq)
   * [sort]                             (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:sort)
   * [split_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:split_pair_seq)
