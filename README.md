@@ -71,6 +71,7 @@ Available Biopieces
   * [cluster_otus]                     (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:cluster_otus)
   * [collapse_otus]                    (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:collapse_otus)
   * [collect_otus]                     (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:collect_otus)
+  * [complement_seq]                   (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:complement_seq)
   * [count]                            (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:count)
   * [degap_seq]                        (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:degap_seq)
   * [dereplicate_seq]                  (http://www.rubydoc.info/gems/biopieces/0.3.9/BioPieces/Commands:dereplicate_seq)
