@@ -63,6 +63,27 @@ plot \"-\" matrix with image
 e
 EOF
 
+    @expected2 = <<EOF
+set terminal dumb
+set title \"Heatmap\"
+set xlabel \"x\"
+set ylabel \"y\"
+set output \"\"
+set view map
+set autoscale xfix
+set autoscale yfix
+set nokey
+set tic scale 0
+set palette rgbformulae 22,13,10
+unset xtics
+unset ytics
+plot \"-\" matrix with image
+0.0 0.3 0.48 0.6
+0.7 0.78 0.85 0.9
+0.95 1.0 1.04 1.08
+e
+EOF
+
     @p = BioPieces::Pipeline.new
   end
 
@@ -88,6 +109,12 @@ EOF
     result = capture_stderr { @p.plot_heatmap(output: @file, test: true).run(input: @input, output: @output2) }
     result.sub!(/set output "[^"]+"/, 'set output ""')
     assert_equal(@expected, result)
+  end
+
+  test "BioPieces::Pipeline::PlotHeatmap to file with logscale outputs correctly" do
+    result = capture_stderr { @p.plot_heatmap(output: @file, logscale: true, test: true).run(input: @input, output: @output2) }
+    result.sub!(/set output "[^"]+"/, 'set output ""')
+    assert_equal(@expected2, result)
   end
 
   test "BioPieces::Pipeline::PlotHeatmap to existing file raises" do
