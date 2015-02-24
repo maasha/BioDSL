@@ -41,7 +41,7 @@ module BioPieces
         ios.puts self
         ios.puts PP.pp(self.status, '') if self.respond_to? :status
         ios.puts "ERROR"
-        ios.puts exception
+        ios.puts exception.message
         ios.puts exception.backtrace
       end
     end

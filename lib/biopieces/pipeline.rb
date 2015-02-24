@@ -24,7 +24,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-#  trap("INT") { exit! } unless BioPieces::Config::DEBUG
+  trap("INT") { raise "Interrupted: ctrl-c pressed" }
 
   class PipelineError < StandardError; end
 
@@ -125,7 +125,7 @@ module BioPieces
      self
     rescue Exception => exception
       unless BioPieces::test
-        STDERR.puts "Error in run: " + exception.to_s
+        STDERR.puts "Error in run: #{exception.message}"
         STDERR.puts exception.backtrace if BioPieces::verbose
         log_error(exception)
         exit 2
