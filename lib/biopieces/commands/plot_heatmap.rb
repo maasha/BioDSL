@@ -97,6 +97,7 @@ module BioPieces
           gp.set   nokey:     true
           gp.set   tic:       "scale 0"
           gp.set   palette:   "rgbformulae 22,13,10"
+          gp.set   logscale:  "cb" if options[:logscale]
           gp.unset xtics:     true
           gp.unset ytics:     true
 
@@ -118,12 +119,7 @@ module BioPieces
                 headings.reject! {|r| skip_keys[r] } if options[:skip]
               end
 
-              if options[:logscale]
-                plotter << record.values_at(*headings).map { |x| x == 0 ? 0 : ::Math.log10(x).round(2) }
-              else
-                plotter << record.values_at(*headings)
-              end
-
+              plotter << record.values_at(*headings)
               keys    =  record.keys unless keys
 
               if output
