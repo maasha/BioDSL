@@ -70,6 +70,7 @@ module BioPieces
   require 'biopieces/taxonomy'
   require 'biopieces/serializer'
   require 'biopieces/stream'
+  require 'biopieces/test'
   require 'biopieces/usearch'
   require 'biopieces/verbose'
 end

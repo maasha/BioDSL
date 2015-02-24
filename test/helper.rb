@@ -36,7 +36,7 @@ require 'biopieces'
 require 'test/unit'
 require 'mocha/test_unit'
 
-ENV['BIOPIECES_ENV'] = 'test'
+ENV['BP_TEST'] = "true"
 
 module Kernel
   def capture_stdout

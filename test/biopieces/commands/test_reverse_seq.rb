@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,27 +27,37 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module LogHelper
-    require 'pp'
+require 'test/helper'
 
-    def log_ok
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '')
-        ios.puts "OK"
-      end
-    end
+class TestReverseSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
-    def log_error(exception)
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '') if self.respond_to? :status
-        ios.puts "ERROR"
-        ios.puts exception.message
-        ios.puts exception.backtrace
-      end
-    end
+    hash = {
+      SEQ_NAME: "test",
+      SEQ: "gatcgatcgt",
+      SEQ_LEN: 10,
+      SCORES: "ABCDEFGHII"
+    }
+
+    @output.write hash
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::ReverseSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.reverse_seq(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::ReverseSeq returns correctly" do
+    @p.reverse_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:SEQ_NAME=>"test", :SEQ=>"tgctagctag", :SEQ_LEN=>10, :SCORES=>"IIHGFEDCBA"}}
+
+    assert_equal(expected, result)
   end
 end
-

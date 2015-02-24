@@ -92,10 +92,8 @@ module BioPieces
       # all observed oligos for that particular node. Thus all child nodes 
       # contain a subset of oligos compared to the parent node.
       def add(entry)
-        node = @tree
-
-        old_name = false
-        
+        node       = @tree
+        old_name   = false
         tax_levels = entry.seq_name.split(';')
 
         raise TaxonomyError, "Wrong number of tax levels in #{entry.seq_name}" unless tax_levels.size == TAX_LEVELS.size - 1
@@ -233,7 +231,6 @@ module BioPieces
           end
         end
       end
-
 
       # Class for the nodes used for constructing the taxonomic tree.
       class TaxNode

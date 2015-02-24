@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,27 +27,41 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module LogHelper
-    require 'pp'
+require 'test/helper'
 
-    def log_ok
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '')
-        ios.puts "OK"
-      end
-    end
+class TestComplementSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
 
-    def log_error(exception)
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '') if self.respond_to? :status
-        ios.puts "ERROR"
-        ios.puts exception.message
-        ios.puts exception.backtrace
-      end
-    end
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::ComplementSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.complement_seq(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::ComplementSeq of DNA returns correctly" do
+    @output.write({SEQ: "gatcGATCGT"})
+    @output.close
+    @p.complement_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ=>"ctagCTAGCA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ComplementSeq of RNA returns correctly" do
+    @output.write({SEQ: "gaucGAUCGU"})
+    @output.close
+    @p.complement_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ=>"cuagCUAGCA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, result)
   end
 end
-

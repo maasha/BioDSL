@@ -20,31 +20,21 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module LogHelper
-    require 'pp'
+  # Class variabel visible across the BioPieces module scope.
+  @@test = false
 
-    def log_ok
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '')
-        ios.puts "OK"
-      end
-    end
+  # Class variable getter method.
+  def self.test
+    @@test
+  end
 
-    def log_error(exception)
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '') if self.respond_to? :status
-        ios.puts "ERROR"
-        ios.puts exception.message
-        ios.puts exception.backtrace
-      end
-    end
+  # Class variable setter method.
+  def self.test=(x)
+    @@test = x
   end
 end
-

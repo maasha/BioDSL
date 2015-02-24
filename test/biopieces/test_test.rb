@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -24,27 +27,16 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module LogHelper
-    require 'pp'
+require 'test/helper'
 
-    def log_ok
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '')
-        ios.puts "OK"
-      end
-    end
+class TestTest < Test::Unit::TestCase
+  def teardown
+    BioPieces::test = false
+  end
 
-    def log_error(exception)
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '') if self.respond_to? :status
-        ios.puts "ERROR"
-        ios.puts exception.message
-        ios.puts exception.backtrace
-      end
-    end
+  test "BioPieces::test returns correctly" do
+    BioPieces::test = true
+    assert_equal(true, BioPieces::test)
   end
 end
 

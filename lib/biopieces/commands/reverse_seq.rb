@@ -20,30 +20,80 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of the Biopieces framework (www.biopieces.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module LogHelper
-    require 'pp'
+  module Commands
+    # == Reverse sequences in the stream.
+    #
+    # +reverse_seq+ reverses sequences in the stream. If a SCORES key is found
+    # then the SCORES are also reversed.
+    #
+    # +reverse_seq+ can be used together with +complment_seq+ to reverse-
+    # complement sequences.
+    #
+    # == Usage
+    # 
+    #    reverse_seq()
+    #
+    # === Options
+    #
+    # == Examples
+    # 
+    # Consider the following FASTQ entry in the file test.fq:
+    # 
+    #    @M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185
+    #    TTGTAAAACGACGGCCAGTG
+    #    +
+    #    >>>>>FFFFD@A?A0AE0FG
+    # 
+    # To reverse the sequence simply do:
+    # 
+    #    BP.new.read_fastq(input:"test.fq").reverse_seq.dump.run
+    #
+    #    {:SEQ_NAME=>"M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185",
+    #     :SEQ=>"GTGACCGGCAGCAAAATGTT",
+    #     :SEQ_LEN=>20,
+    #     :SCORES=>"GF0EA0A?A@DFFFF>>>>>"}
+    def reverse_seq(options = {})
+      options_orig = options.dup
+      options_load_rc(options, __method__)
+      options_allowed(options, nil)
 
-    def log_ok
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '')
-        ios.puts "OK"
-      end
-    end
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_in]  = 0
+          status[:sequences_out] = 0
+          status[:residues_in]   = 0
+          status[:residues_out]  = 0
 
-    def log_error(exception)
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
-        ios.puts self
-        ios.puts PP.pp(self.status, '') if self.respond_to? :status
-        ios.puts "ERROR"
-        ios.puts exception.message
-        ios.puts exception.backtrace
+          input.each do |record|
+            status[:records_in] += 1
+
+            if record[:SEQ]
+              entry = BioPieces::Seq.new_bp(record)
+              entry.reverse!
+
+              status[:sequences_in]  += 1
+              status[:sequences_out] += 1
+              status[:residues_in]   += entry.length
+              status[:residues_out]  += entry.length
+
+              record.merge! entry.to_bp
+            end
+
+            output << record
+
+            status[:records_out] += 1
+          end
+        end
       end
+
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+
+      self
     end
   end
 end
