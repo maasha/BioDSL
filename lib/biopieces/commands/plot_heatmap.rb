@@ -68,10 +68,11 @@ module BioPieces
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :keys, :skip, :output, :force, :terminal, :title, :xlabel, :ylabel, :test)
+      options_allowed(options, :keys, :skip, :output, :force, :terminal, :title, :xlabel, :ylabel, :logscale, :test)
       options_unique(options, :keys, :skip)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_allowed_values(options, test: [nil, true, false])
+      options_allowed_values(options, logscale: [nil, true, false])
       options_files_exists_force(options, :output)
 
       options[:terminal] ||= :dumb
@@ -117,7 +118,12 @@ module BioPieces
                 headings.reject! {|r| skip_keys[r] } if options[:skip]
               end
 
-              plotter << record.values_at(*headings)
+              if options[:logscale]
+                plotter << record.values_at(*headings).map { |x| x == 0 ? 0 : ::Math.log10(x).round(2) }
+              else
+                plotter << record.values_at(*headings)
+              end
+
               keys    =  record.keys unless keys
 
               if output
@@ -127,7 +133,6 @@ module BioPieces
               end
             end
           end
-
 
           if options[:test]
             $stderr.puts gp.to_gp
