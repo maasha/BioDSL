@@ -33,6 +33,6 @@ Gem::Specification.new do |s|
   s.add_dependency("terminal-table", ">= 1.4.5")
   s.add_dependency("tilt",           ">= 2.0.1")
   s.add_development_dependency("bundler", ">= 1.7.4")
-  s.add_development_dependency("simplecov", ">= 0.7.1")
+  s.add_development_dependency("simplecov", ">= 0.9.2")
   s.add_development_dependency("mocha",     ">= 1.0.0")
 end

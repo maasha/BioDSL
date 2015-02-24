@@ -161,7 +161,9 @@ module BioPieces
             if record[:SEQ_NAME] and record[:SEQ]
               status[:sequences_in] += 1
 
-              index.add(BioPieces::Seq.new(seq_name: record[:SEQ_NAME], seq: record[:SEQ]))
+              _, seq_name = record[:SEQ_NAME].split(' ', 2)
+
+              index.add(BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
             end
 
             output << record
