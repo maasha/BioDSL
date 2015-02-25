@@ -162,7 +162,6 @@ module BioPieces
     #    {:Organism=>"Dog"}
     #    {:Organism=>"Mouse"}
     #    {:Organism=>"Cat"}
-    #
     def read_table(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)

@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,16 +23,42 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Config
-    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1           # save status every n second.
-    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
-    SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+require 'test/helper'
+
+class TestIndexTaxonomy < Test::Unit::TestCase 
+  def setup
+    @tmpdir = Dir.mktmpdir("BioPieces")
+
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    @p = BioPieces::Pipeline.new
   end
+
+  def teardown
+    FileUtils.rm_r @tmpdir
+  end
+
+  test "BioPieces::Pipeline::IndexTaxonomy with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.index_taxonomy(output_dir: @tmpdir, foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::IndexTaxonomy with valid options don't raise" do
+    assert_nothing_raised { @p.index_taxonomy(prefix: "foo", output_dir: @tmpdir) }
+  end
+
+#  test "BioPieces::Pipeline::IndexTaxonomy returns correctly" do
+#    @output.write({SEQ: "AT--C.G~"})
+#    @output.close
+#    @p.index_taxonomy(output_dir: @tmpdir).run(input: @input, output: @output2)
+#
+#    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+#    expected = '{:SEQ=>"ATCG", :SEQ_LEN=>4}'
+#
+#    assert_equal(expected, result)
+#  end
 end

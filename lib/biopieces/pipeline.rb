@@ -24,7 +24,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  trap("INT") { exit! } unless BioPieces::Config::DEBUG
+  trap("INT") { raise "Interrupted: ctrl-c pressed" }
 
   class PipelineError < StandardError; end
 
@@ -78,11 +78,19 @@ module BioPieces
     def run(options = {})
       raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
 
-      options_allowed(options, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir, :report, :force)
-      options_allowed_values(options, fork: [true, false, nil], thread: [true, false, nil])
+      options_allowed(options, :debug, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir, :report, :force)
+      options_allowed_values(options, debug: [true, false, nil])
+      options_allowed_values(options, verbose: [true, false, nil])
+      options_allowed_values(options, fork: [true, false, nil])
+      options_allowed_values(options, thread: [true, false, nil])
       options_conflict(options, fork: :thread)
+      options_conflict(options, progress: :verbose)
       options_tie(options, subject: :email)
       options_files_exists_force(options, :report)
+
+      BioPieces::debug   = options[:debug]
+      BioPieces::verbose = options[:verbose]
+      BioPieces::test    = ENV['BP_TEST']
 
       if options[:output_dir]
         FileUtils.mkdir_p(options[:output_dir]) unless File.exist?(options[:output_dir])
@@ -112,18 +120,18 @@ module BioPieces
       email_send  if @options[:email]
       report_save if @options[:report]
 
-      log_ok
+      log_ok unless BioPieces::test
 
      self
- #   rescue Exception => exception
- #     unless ENV['BIOPIECES_ENV'] and ENV['BIOPIECES_ENV'] == 'test'
- #       STDERR.puts "Error in run: " + exception.to_s
- #       STDERR.puts exception.backtrace if @options[:verbose]
- #       log_error(exception)
- #       exit 2
- #     else
- #       raise exception
- #     end
+    rescue Exception => exception
+      unless BioPieces::test
+        STDERR.puts "Error in run: #{exception.message}"
+        STDERR.puts exception.backtrace if BioPieces::verbose
+        log_error(exception)
+        exit 2
+      else
+        raise exception
+      end
     ensure
       history_save
     end

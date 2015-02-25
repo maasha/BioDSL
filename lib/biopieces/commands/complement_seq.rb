@@ -25,11 +25,80 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Config
-    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1           # save status every n second.
-    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
-    SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+  module Commands
+    # == Complment sequences in the stream.
+    #
+    # +complement_seq+ complements sequences in the stream. The sequence type - 
+    # DNA or RNA - is guessed by inspected the first sequence in the stream.
+    #
+    # +complement_seq+ can be used together with +reverse_seq+ to reverse-
+    # complement sequences.
+    #
+    # == Usage
+    # 
+    #    complement_seq()
+    #
+    # === Options
+    #
+    # == Examples
+    # 
+    # Consider the following FASTQ entry in the file test.fq:
+    # 
+    #    @M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185
+    #    TTGTAAAACGACGGCCAGTG
+    #    +
+    #    >>>>>FFFFD@A?A0AE0FG
+    # 
+    # To complement the sequence do:
+    # 
+    #    BP.new.read_fastq(input:"test.fq").complement_seq.dump.run
+    #
+    #    {:SEQ_NAME=>"M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185",
+    #     :SEQ=>"AACATTTTGCTGCCGGTCAC",
+    #     :SEQ_LEN=>20,
+    #     :SCORES=>">>>>>FFFFD@A?A0AE0FG"}
+    def complement_seq(options = {})
+      options_orig = options.dup
+      options_load_rc(options, __method__)
+      options_allowed(options, nil)
+
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_in]  = 0
+          status[:sequences_out] = 0
+          status[:residues_in]   = 0
+          status[:residues_out]  = 0
+
+          type = nil
+
+          input.each do |record|
+            status[:records_in] += 1
+
+            if record[:SEQ]
+              entry = BioPieces::Seq.new_bp(record)
+              type = entry.type_guess unless type
+              entry.type = type
+              entry.complement!
+
+              status[:sequences_in]  += 1
+              status[:sequences_out] += 1
+              status[:residues_in]   += entry.length
+              status[:residues_out]  += entry.length
+
+              record.merge! entry.to_bp
+            end
+
+            output << record
+
+            status[:records_out] += 1
+          end
+        end
+      end
+
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+
+      self
+    end
   end
 end
+

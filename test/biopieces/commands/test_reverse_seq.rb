@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,16 +23,41 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Config
-    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1           # save status every n second.
-    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
-    SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+require 'test/helper'
+
+class TestReverseSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    hash = {
+      SEQ_NAME: "test",
+      SEQ: "gatcgatcgt",
+      SEQ_LEN: 10,
+      SCORES: "ABCDEFGHII"
+    }
+
+    @output.write hash
+    @output.close
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::ReverseSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.reverse_seq(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::ReverseSeq returns correctly" do
+    @p.reverse_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:SEQ_NAME=>"test", :SEQ=>"tgctagctag", :SEQ_LEN=>10, :SCORES=>"IIHGFEDCBA"}}
+
+    assert_equal(expected, result)
   end
 end

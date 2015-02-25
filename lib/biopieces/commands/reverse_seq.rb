@@ -25,11 +25,76 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Config
-    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1           # save status every n second.
-    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
-    SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+  module Commands
+    # == Reverse sequences in the stream.
+    #
+    # +reverse_seq+ reverses sequences in the stream. If a SCORES key is found
+    # then the SCORES are also reversed.
+    #
+    # +reverse_seq+ can be used together with +complment_seq+ to reverse-
+    # complement sequences.
+    #
+    # == Usage
+    # 
+    #    reverse_seq()
+    #
+    # === Options
+    #
+    # == Examples
+    # 
+    # Consider the following FASTQ entry in the file test.fq:
+    # 
+    #    @M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185
+    #    TTGTAAAACGACGGCCAGTG
+    #    +
+    #    >>>>>FFFFD@A?A0AE0FG
+    # 
+    # To reverse the sequence simply do:
+    # 
+    #    BP.new.read_fastq(input:"test.fq").reverse_seq.dump.run
+    #
+    #    {:SEQ_NAME=>"M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185",
+    #     :SEQ=>"GTGACCGGCAGCAAAATGTT",
+    #     :SEQ_LEN=>20,
+    #     :SCORES=>"GF0EA0A?A@DFFFF>>>>>"}
+    def reverse_seq(options = {})
+      options_orig = options.dup
+      options_load_rc(options, __method__)
+      options_allowed(options, nil)
+
+      lmb = lambda do |input, output, status|
+        status_track(status) do
+          status[:sequences_in]  = 0
+          status[:sequences_out] = 0
+          status[:residues_in]   = 0
+          status[:residues_out]  = 0
+
+          input.each do |record|
+            status[:records_in] += 1
+
+            if record[:SEQ]
+              entry = BioPieces::Seq.new_bp(record)
+              entry.reverse!
+
+              status[:sequences_in]  += 1
+              status[:sequences_out] += 1
+              status[:residues_in]   += entry.length
+              status[:residues_out]  += entry.length
+
+              record.merge! entry.to_bp
+            end
+
+            output << record
+
+            status[:records_out] += 1
+          end
+        end
+      end
+
+      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+
+      self
+    end
   end
 end
+

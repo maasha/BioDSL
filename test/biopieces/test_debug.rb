@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,16 +23,20 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Config
-    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1           # save status every n second.
-    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
-    SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+require 'test/helper'
+
+class DebugTest < Test::Unit::TestCase
+  def teardown
+    BioPieces::debug = false
+  end
+
+  test "BioPieces::debug returns correctly" do
+    BioPieces::debug = true
+    assert_equal(true, BioPieces::debug)
   end
 end
+

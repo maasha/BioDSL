@@ -68,10 +68,11 @@ module BioPieces
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :keys, :skip, :output, :force, :terminal, :title, :xlabel, :ylabel, :test)
+      options_allowed(options, :keys, :skip, :output, :force, :terminal, :title, :xlabel, :ylabel, :logscale, :test)
       options_unique(options, :keys, :skip)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_allowed_values(options, test: [nil, true, false])
+      options_allowed_values(options, logscale: [nil, true, false])
       options_files_exists_force(options, :output)
 
       options[:terminal] ||= :dumb
@@ -96,6 +97,7 @@ module BioPieces
           gp.set   nokey:     true
           gp.set   tic:       "scale 0"
           gp.set   palette:   "rgbformulae 22,13,10"
+          gp.set   logscale:  "cb" if options[:logscale]
           gp.unset xtics:     true
           gp.unset ytics:     true
 
@@ -127,7 +129,6 @@ module BioPieces
               end
             end
           end
-
 
           if options[:test]
             $stderr.puts gp.to_gp

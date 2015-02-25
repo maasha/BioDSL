@@ -53,6 +53,7 @@ end
 module BioPieces
   require 'biopieces/cary'
   require 'biopieces/commands'
+  require 'biopieces/debug'
   require 'biopieces/helpers'
   require 'biopieces/seq'
   require 'biopieces/config'
@@ -69,7 +70,9 @@ module BioPieces
   require 'biopieces/taxonomy'
   require 'biopieces/serializer'
   require 'biopieces/stream'
+  require 'biopieces/test'
   require 'biopieces/usearch'
+  require 'biopieces/verbose'
 end
 
 BP = BioPieces::Pipeline # Module alias for irb short hand

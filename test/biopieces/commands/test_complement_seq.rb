@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,16 +23,45 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of Biopieces (www.biopieces.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  module Config
-    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1           # save status every n second.
-    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
-    SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+require 'test/helper'
+
+class TestComplementSeq < Test::Unit::TestCase 
+  def setup
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  test "BioPieces::Pipeline::ComplementSeq with invalid options raises" do
+    assert_raise(BioPieces::OptionError) { @p.complement_seq(foo: "bar") }
+  end
+
+  test "BioPieces::Pipeline::ComplementSeq of DNA returns correctly" do
+    @output.write({SEQ: "gatcGATCGT"})
+    @output.close
+    @p.complement_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ=>"ctagCTAGCA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::ComplementSeq of RNA returns correctly" do
+    @output.write({SEQ: "gaucGAUCGU"})
+    @output.close
+    @p.complement_seq.run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ=>"cuagCUAGCA", :SEQ_LEN=>10}'
+
+    assert_equal(expected, result)
   end
 end
