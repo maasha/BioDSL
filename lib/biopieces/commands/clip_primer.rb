@@ -29,8 +29,8 @@ module BioPieces
     # == Clip sequences in the stream at a specified primer location.
     # 
     # +clip_primer+ locates a specified +primer+ in sequences in the stream and
-    # clips the sequence after the match if the +direction+ is forward or 
-    # before the match is the +direction+ is reverse. Using the 
+    # clips the sequence after the match if the +direction+ is forward or
+    # before the match is the +direction+ is reverse. Using the
     # +reverse_complement+ option the primer sequence will be reverse
     # complemented prior to matching. Using the +search_distance+ option will
     # limit the primer search to the beginning of the sequence if the
