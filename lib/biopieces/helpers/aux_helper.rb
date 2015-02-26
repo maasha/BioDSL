@@ -30,17 +30,7 @@ module BioPieces
 
     # Method that raises if the given command is not found on the system.
     def aux_exist(command)
-      raise "command: #{command} not found" unless aux_exist?(command)
-    end
-
-    # Method that returns true or false depending on a command is found on the
-    # system.
-    def aux_exist?(command)
-      if BioPieces::Filesys.which(command)
-        return true
-      else
-        return false
-      end
+      raise "command: #{command} not found" unless BioPieces::Filesys.which(command)
     end
   end
 end
