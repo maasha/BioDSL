@@ -132,8 +132,7 @@ module BioPieces
       def save
         tree_union(@tree)
 
-        kmer_index = build_kmer_index
-        save_kmer_index(kmer_index)
+        save_kmer_index
         save_tax_index
       end
 
@@ -180,25 +179,6 @@ module BioPieces
         end
       end
 
-      # Construct the kmer index.
-      def build_kmer_index
-        kmer_index = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] = [] } }
-
-        queue = [@tree]
-
-        while !queue.empty?
-          node = queue.shift
-
-          node.kmers.to_a.map { |kmer| kmer_index[node.level][kmer] << node.node_id }
-
-          node.children.each_value do |child|
-            queue.unshift(child) unless child.nil?
-          end
-        end
-
-        kmer_index
-      end
-
       # Save tax index to file.
       def save_tax_index
         File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
@@ -217,18 +197,35 @@ module BioPieces
         end
       end
 
-      # Save kmer index to file.
-      def save_kmer_index(kmer_index)
+      # Construct and save kmer index to file. This is done BFS style one
+      # taxonomic level at a time to save memory.
+      def save_kmer_index
         File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
           ios.puts ["#LEVEL", "KMER", "NODES"].join("\t")
 
-          kmer_index.each do |level, kmer_nodes|
-            kmer_nodes.keys.sort.each do |kmer|
-              nodes = kmer_nodes[kmer].sort.join(';')
+          level = 0
+          queue = [@tree]
 
-              ios.puts [level, kmer, nodes].join("\t")
+          while !queue.empty?
+            kmer_index = Hash.new { |h, k| h[k] = [] }
+            new_queue = []
+
+            queue.each do |node|
+              node.kmers.to_a.map { |kmer| kmer_index[kmer] << node.node_id }
+              node.children.each_value { |child| new_queue << child unless child.nil? }
             end
+
+            kmer_index.keys.sort.each do |kmer|
+              nodes = kmer_index[kmer].sort.join(';')
+
+              ios.puts [TAX_LEVELS[level], kmer, nodes].join("\t")
+            end
+
+            queue = new_queue
+            level += 1
           end
+
+          kmer_index
         end
       end
 
