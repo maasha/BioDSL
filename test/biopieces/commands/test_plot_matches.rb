@@ -31,6 +31,8 @@ require 'test/helper'
 
 class TestPlotMatches < Test::Unit::TestCase 
   def setup
+    omit("gnuplot not found") unless BioPieces::Filesys.which("gnuplot")
+
     @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.plot')
 

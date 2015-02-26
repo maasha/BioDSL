@@ -109,6 +109,7 @@ module BioPieces
       options_allowed_values(options, test: [nil, true, false])
       options_required(options, :key)
       options_files_exists_force(options, :output)
+      aux_exist("gnuplot")
 
       key   = options[:key]
       value = options[:value]

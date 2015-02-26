@@ -109,6 +109,7 @@ module BioPieces
       options_allowed_values(options, test: [true, false])
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_files_exists_force(options, :output)
+      aux_exist("gnuplot")
 
       options[:terminal] ||= :dumb
       options[:title]    ||= "Mean Quality Scores"

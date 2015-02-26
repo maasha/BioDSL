@@ -31,6 +31,8 @@ require 'test/helper'
 
 class TestAssembleSeqSpades < Test::Unit::TestCase 
   def setup
+    omit("spades.py not found") unless BioPieces::Filesys.which("spades.py")
+
     @p = BioPieces::Pipeline.new
   end
 

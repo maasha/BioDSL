@@ -31,6 +31,8 @@ require 'test/helper'
 
 class TestClassifySeqMothur < Test::Unit::TestCase 
   def setup
+    omit("mothur not found") unless BioPieces::Filesys.which("mothur")
+
     @p = BP.new
     @database = __FILE__
     @taxonomy = __FILE__

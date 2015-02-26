@@ -78,6 +78,7 @@ module BioPieces
       options_assert(options, ":confidence <= 100")
       options_assert(options, ":cpus >= 1")
       options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      aux_exist("mothur")
 
       options[:confidence] ||= 80
       options[:cpus]       ||= 1
