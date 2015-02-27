@@ -40,6 +40,11 @@ module BioPieces
     #      :SEQ=>"AGCATCGACTAGCAGCATTT",
     #      :SEQ_LEN=>20}
     #
+    # It is possible to read in pair-end data interleaved by using the +input2+
+    # option. Thus a read is in turn from input and input2. If the
+    # +reverse_complement+ option is used, then the input2 reads will be
+    # reverse-complemented.
+    #
     # Input files may be compressed with gzip og bzip2.
     #
     # For more about the FASTQ format:
@@ -47,44 +52,61 @@ module BioPieces
     # http://en.wikipedia.org/wiki/Fasta_format
     # 
     # == Usage
-    #    read_fastq(input: <glob>[, first: <uint>|last: <uint>])
+    #    read_fastq(input: <glob>[, input2: <glob>[, first: <uint>|last: <uint>
+    #               [, reverse_complement: <bool>]]])
     #
     # === Options
-    # * input <glob> - Input file or file glob expression.
-    # * first <uint> - Only read in the _first_ number of entries.
-    # * last <uint>  - Only read in the _last_ number of entries.
+    # * input <glob>               - Input file or file glob expression.
+    # * input2 <glob>              - Input file or file glob expression.
+    # * first <uint>               - Only read in the _first_ number of entries.
+    # * last <uint>                - Only read in the _last_ number of entries.
+    # * reverse_complement: <bool> - Reverse-complements input2 reads.
     #
     # == Examples
     #
     # To read all FASTQ entries from a file:
     #
-    #    read_fastq(input: "test.fq")
+    #    BP.new.read_fastq(input: "test.fq").dump.run
     #
     # To read all FASTQ entries from a gzipped file:
     #
-    #    read_fastq(input: "test.fq.gz")
+    #    BP.new.read_fastq(input: "test.fq.gz").dump.run
     #
     # To read in only 10 records from a FASTQ file:
     #
-    #    read_fastq(input: "test.fq", first: 10)
+    #    BP.new.read_fastq(input: "test.fq", first: 10).dump.run
     #
     # To read in the last 10 records from a FASTQ file:
     #
-    #    read_fastq(input: "test.fq", last: 10)
+    #    BP.new.read_fastq(input: "test.fq", last: 10).dump.run
     #
     # To read all FASTQ entries from multiple files:
     #
-    #    read_fastq(input: "test1.fq,test2.fq")
+    #    BP.new.read_fastq(input: "test1.fq,test2.fq").dump.run
     #
     # To read FASTQ entries from multiple files using a glob expression:
     #
-    #    read_fastq(input: "*.fq")
+    #    BP.new.read_fastq(input: "*.fq").dump.run
+    #
+    # To read FASTQ entries from pair-end data:
+    #
+    #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
+    #
+    # To read FASTQ entries from pair-end data:
+    #
+    #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
+    #
+    # To read FASTQ entries from pair-end data and reverse-complement read2:
+    #
+    #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq", reverse_complement: true).dump.run
     def read_fastq(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
       options[:encoding] ||= :auto
-      options_allowed(options, :encoding, :input, :input2, :first, :last)
+      options_allowed(options, :encoding, :input, :input2, :first, :last, :reverse_complement)
       options_allowed_values(options, encoding: [:auto, :base_33, :base_64])
+      options_allowed_values(options, reverse_complement: [nil, true, false])
+      options_tie(options, reverse_complement: :input2)
       options_required(options, :input)
       options_glob(options, :input, :input2)
       options_files_exist(options, :input, :input2)
@@ -109,6 +131,7 @@ module BioPieces
 
           count  = 0
           buffer = []
+          type   = nil
 
           catch :break do
             if options[:input] and options[:input2]
@@ -132,6 +155,12 @@ module BioPieces
                     else
                       raise BioPieces::SeqError, "Could not auto-detect quality score encoding"
                     end
+                  end
+
+                  if options[:reverse_complement]
+                    type = entry2.type_guess unless type
+                    entry2.type = type
+                    entry2.reverse!.complement!
                   end
 
                   entry1.qual_convert!(encoding, :base_33)

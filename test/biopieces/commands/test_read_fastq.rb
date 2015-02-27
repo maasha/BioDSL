@@ -361,6 +361,18 @@ EOF
     assert_equal(expected, stream_result)
   end
 
+  test "BioPieces::Pipeline::ReadFastq with base_64 :input and :input2 and :reverse_complement returns correctly" do
+    @p.read_fastq(input: @file2, input2: @file3, first: 2, reverse_complement: true).run(output: @output2)
+
+    expected = ""
+    expected << %Q{{:SEQ_NAME=>"M01168:16:000000000-A1R9L:1:1101:14862:1868 1:N:0:14", :SEQ=>"TGGGGAATATTGGACAATGGGGGCAACCCTGATCCAGCA", :SEQ_LEN=>39, :SCORES=>"<??????BDDDDDDDDGGGGGGGHHIIIEHIHHFGGHFH"}}
+    expected << %Q{{:SEQ_NAME=>"M01168:16:000000000-A1R9L:1:1101:14862:1868 2:N:0:14", :SEQ=>"TACTGACGCTGAGGTACGAAAGCGTGGGTAGCAAACAGG", :SEQ_LEN=>39, :SCORES=>"9FEHDHHGE;F;IHFFHFFFEEFDDDDDB<-<BB?????"}}
+
+    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+
+    assert_equal(expected, stream_result)
+  end
+
   test "BioPieces::Pipeline::ReadFastq with flux returns correctly" do
     @p.read_fastq(input: @file2, encoding: :base_33).run(input: @input, output: @output2)
 
