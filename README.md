@@ -118,11 +118,39 @@ Features
 
 Progress:
 
+Show nifty progress table with commands, records read and emittet and time.
+
 `BP.new.read_fasta(input: "input.fna").dump.run(progress: true)`
+
+Verbose:
+
+Output verbose messages from commands and the run status.
+
+`BP.new.read_fasta(input: "input.fna").dump.run(verbose: true)`
+
+Debug:
+
+Output debug messages from commands using these.
+
+`BP.new.read_fasta(input: "input.fna").dump.run(debug: true)`
 
 E-mail notification:
 
+Send an email when run is complete.
+
 `BP.new.read_fasta(input: "input.fna").dump.run(email: mail@maasha.dk, subject: "Script done!")`
+
+Report:
+
+Create an HTML report of the run stats:
+
+`BP.new.read_fasta(input: "input.fna").dump.run(report: "status.html")`
+
+Output dir:
+
+All output files from commands are put in a specified dir:
+
+`BP.new.read_fasta(input: "input.fna").dump.run(output_dir: "Results")`
 
 
 Configuration File
@@ -149,7 +177,11 @@ Contributing
 ------------
 
 Fork it
+
 Create your feature branch (git checkout -b my-new-feature)
+
 Commit your changes (git commit -am 'Add some feature')
+
 Push to the branch (git push origin my-new-feature)
+
 Create new Pull Request
