@@ -161,7 +161,7 @@ module BioPieces
         node.children.each_value do |child|
           if node.kmers.nil? and child.kmers.nil?
           elsif node.kmers.nil?
-            node.kmers = child.kmers.dup
+            node.kmers = child.kmers
           else
             node.kmers |= child.kmers if child.kmers
           end
