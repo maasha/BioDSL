@@ -31,6 +31,8 @@ require 'test/helper'
 
 class TestSliceAlign < Test::Unit::TestCase 
   def setup
+    require 'tempfile'
+
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
@@ -44,6 +46,18 @@ class TestSliceAlign < Test::Unit::TestCase
     @output.close
 
     @p = BioPieces::Pipeline.new
+
+    @template_file = Tempfile.new("slice_align")
+
+    File.open(@template_file, 'w') do |ios|
+      ios.puts ">template"
+      ios.puts "CTGAATACG-------CCATTCGATGG---"
+    end
+  end
+
+  def teardown
+    @template_file.close
+    @template_file.unlink
   end
 
   test "BioPieces::Pipeline::SliceAlign with invalid options raises" do
@@ -91,7 +105,7 @@ class TestSliceAlign < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::SliceAlign with primers returns correctly" do
-    @p.slice_align(forward: 'CGCATACG', reverse: "GAGGGG").run(input: @input, output: @output2)
+    @p.slice_align(forward: 'CGCATACG', reverse: "GAGGGG", max_mismatches: 0, max_insertions: 0, max_deletions: 0).run(input: @input, output: @output2)
 
     result   = @input2.map { |h| h.to_s }.reduce(:<<)
     expected = ""
@@ -101,6 +115,24 @@ class TestSliceAlign < Test::Unit::TestCase
     expected << '{:SEQ_NAME=>"ID3", :SEQ=>"CGTATGTG-------CCCTTCGGGG", :SEQ_LEN=>25}'
     expected << '{:SEQ_NAME=>"ID4", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}'
     expected << '{:SEQ_NAME=>"ID5", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}'
+    expected << '{:FOO=>"BAR"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::SliceAlign with primers and template_file returns correctly" do
+    @p.
+    slice_align(forward: 'GAATACG', reverse: "ATTCGAT", template_file: @template_file, max_mismatches: 0, max_insertions: 0, max_deletions: 0).
+    run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"ID0", :SEQ=>"GCATACG-------CCCTGAGGG", :SEQ_LEN=>23}'
+    expected << '{:SEQ_NAME=>"ID1", :SEQ=>"GCATGAT-------ACCTGAGGG", :SEQ_LEN=>23}'
+    expected << '{:SEQ_NAME=>"ID2", :SEQ=>"GCATATACTCTTGACGCTAAAGC", :SEQ_LEN=>23}'
+    expected << '{:SEQ_NAME=>"ID3", :SEQ=>"GTATGTG-------CCCTTCGGG", :SEQ_LEN=>23}'
+    expected << '{:SEQ_NAME=>"ID4", :SEQ=>"GGATAAG-------CCCTTACGG", :SEQ_LEN=>23}'
+    expected << '{:SEQ_NAME=>"ID5", :SEQ=>"GGATAAG-------CCCTTACGG", :SEQ_LEN=>23}'
     expected << '{:FOO=>"BAR"}'
 
     assert_equal(expected, result)

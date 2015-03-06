@@ -147,6 +147,7 @@ module BioPieces
     end
 
     # Method that raises if given files don't exists.
+    # Example:  options_files_exist(options, :input)
     def options_files_exist(options, *args)
       args.each do |arg|
         if options[arg]

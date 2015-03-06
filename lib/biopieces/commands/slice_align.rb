@@ -70,9 +70,20 @@ module BioPieces
     def slice_align(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :slice, :forward, :reverse)
+      options_allowed(options, :slice, :forward, :reverse, :max_mismatches, :max_insertions, :max_deletions, :template_file)
       options_tie(options, forward: :reverse, reverse: :forward)
       options_conflict(options, slice: :forward)
+      options_files_exist(options, :template_file)
+      options_assert(options, ":max_mismatches >= 0")
+      options_assert(options, ":max_insertions >= 0")
+      options_assert(options, ":max_deletions >= 0")
+      options_assert(options, ":max_mismatches <= 5")
+      options_assert(options, ":max_insertions <= 5")
+      options_assert(options, ":max_deletions <= 5")
+
+      options[:max_mismatches] ||= 2
+      options[:max_insertions] ||= 1
+      options[:max_deletions]  ||= 1
 
       lmb = lambda do |input, output, status|
         status_track(status) do
@@ -81,7 +92,8 @@ module BioPieces
           status[:residues_in]   = 0
           status[:residues_out]  = 0
 
-          indels = Seq::INDELS.sort.join
+          indels   = BioPieces::Seq::INDELS.sort.join
+          template = BioPieces::Fasta.read(options[:template_file]).first if options[:template_file]
 
           input.each do |record|
             status[:records_in] += 1
@@ -93,28 +105,25 @@ module BioPieces
               status[:residues_in]  += entry.length
 
               unless options[:slice]
-                compact   = Seq.new(seq: entry.seq.dup.delete(indels))
                 pos_index = []
-                entry.seq.chars.each_with_index { |c, i| pos_index << i unless indels.include? c }
 
-                fmatch = compact.patmatch(options[:forward],
-                                          max_mismatches: options[:max_mismatches],
-                                          max_insertions: options[:max_insertions],
-                                          max_deletions: options[:max_deletions])
+                if template
+                  compact = Seq.new(seq: template.seq.dup.delete(indels))
+                  template.seq.chars.each_with_index { |c, i| pos_index << i unless indels.include? c }
+                else
+                  compact = Seq.new(seq: entry.seq.dup.delete(indels))
+                  entry.seq.chars.each_with_index { |c, i| pos_index << i unless indels.include? c }
+                end
+
+                fmatch = compact.patmatch(options[:forward], options)
 
                 raise BioPieces::SeqError, "forward primer: #{options[:forward]} not found" if fmatch.nil?
 
-                rmatch = compact.patmatch(options[:reverse],
-                                          max_mismatches: options[:max_mismatches],
-                                          max_insertions: options[:max_insertions],
-                                          max_deletions: options[:max_deletions])
+                rmatch = compact.patmatch(options[:reverse], options)
 
                 raise BioPieces::SeqError, "reverse primer: #{options[:reverse]} not found" if rmatch.nil?
 
-                mbeg = fmatch.pos
-                mend = rmatch.pos + rmatch.length - 1
-
-                options[:slice] = Range.new(pos_index[mbeg], pos_index[mend])
+                options[:slice] = Range.new(pos_index[fmatch.pos], pos_index[rmatch.pos + rmatch.length - 1])
               end
 
               entry = entry[options[:slice]]
