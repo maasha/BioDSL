@@ -170,7 +170,7 @@ module BioPieces
                 if options[:reverse_complement]
                   entry1.type = :dna
                   entry2.type = :dna
-                  entry2.reverse!.complement!
+                  entry2.reverse!.complement! if entry2.length > 0
                 end
 
                 entry1 << entry2
