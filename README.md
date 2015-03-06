@@ -106,6 +106,7 @@ Available Biopieces
   * [write_fasta]                      (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_fasta)
   * [write_fastq]                      (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_fastq)
   * [write_table]                      (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_table)
+  * [write_tree]                       (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_tree)
 
 Log and History
 ---------------
