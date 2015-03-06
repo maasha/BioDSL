@@ -62,6 +62,7 @@ Available Biopieces
 -------------------
 
   * [add_key]                          (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:add_key)                          
+  * [align_seq_mothur]                 (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:align_seq_mothur)                          
   * [analyze_residue_distribution]     (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:analyze_residue_distribution)
   * [assemble_pairs]                   (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:assemble_pairs)
   * [assemble_seq_spades]              (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:assemble_seq_spades)
@@ -105,6 +106,7 @@ Available Biopieces
   * [write_fasta]                      (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_fasta)
   * [write_fastq]                      (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_fastq)
   * [write_table]                      (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_table)
+  * [write_tree]                       (http://www.rubydoc.info/gems/biopieces/0.4.0/BioPieces/Commands:write_tree)
 
 Log and History
 ---------------
