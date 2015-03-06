@@ -51,7 +51,7 @@ class TestWriteTree < Test::Unit::TestCase
   end
 
   def teardown
-    FileUtils.rm_r @tmpdir
+    FileUtils.rm_r @tmpdir if @tmpdir
   end
 
   test "BioPieces::Pipeline::WriteTree with invalid options raises" do
