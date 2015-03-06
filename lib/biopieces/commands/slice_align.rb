@@ -30,10 +30,18 @@ module BioPieces
     #
     # +slice_align+ slices an alignment to extract subsequence from all
     # sequences in the stream. This is done by either specifying a range
-    # (0-based) or a set of primers that is then used to locate the range to
-    # be sliced from the sequences. This is done by matching the primers to the
-    # first sequence in the stream allowing for a specified number of
-    # mismatches, insertions and deletions.
+    # or a set of primers that is then used to locate the range to be sliced
+    # from the sequences.
+    #
+    # If a range is given with the +slice+ option the potitions (0-based) must
+    # be corresponding the the aligned sequence, i.e with gaps.
+    #
+    # If a set of primers are given with the +forward+ and +reverse+ options
+    # (or the +forward_rc+ and +reverse_rc+ options) these primers are used to
+    # locate the matching positions in the first entry and this range is used
+    # to slice this and any following sequences. It is possible to specify
+    # fuzzy primer matching by using the +max_mismatches+, +max_insertions+ and
+    # +max_deletions+ options. Moreover, IUPAC ambigity codes are allowed.
     #
     # It is also possible to specify a template file using the +template_file+
     # option. The template file should be a file with one FASTA formatted
@@ -67,6 +75,82 @@ module BioPieces
     # 
     # == Examples
     # 
+    # Consider the following alignment in the file `test.fna`
+    #
+    #    >ID00000000
+    #    CCGCATACG-------CCCTGAGGGG----
+    #    >ID00000001
+    #    CCGCATGAT-------ACCTGAGGGT----
+    #    >ID00000002
+    #    CCGCATATACTCTTGACGCTAAAGCGTAGT
+    #    >ID00000003
+    #    CCGTATGTG-------CCCTTCGGGG----
+    #    >ID00000004
+    #    CCGGATAAG-------CCCTTACGGG----
+    #    >ID00000005
+    #    CCGGATAAG-------CCCTTACGGG----
+    #
+    # We can slice the alignment with +slice_align+ using a range:
+    #
+    #    BP.new.read_fasta(input: "test.fna").slice_align(slice: 14 .. 27).dump.run
+    #
+    #    {:SEQ_NAME=>"ID00000000", :SEQ=>"--CCCTGAGGGG--", :SEQ_LEN=>14}
+    #    {:SEQ_NAME=>"ID00000001", :SEQ=>"--ACCTGAGGGT--", :SEQ_LEN=>14}
+    #    {:SEQ_NAME=>"ID00000002", :SEQ=>"GACGCTAAAGCGTA", :SEQ_LEN=>14}
+    #    {:SEQ_NAME=>"ID00000003", :SEQ=>"--CCCTTCGGGG--", :SEQ_LEN=>14}
+    #    {:SEQ_NAME=>"ID00000004", :SEQ=>"--CCCTTACGGG--", :SEQ_LEN=>14}
+    #    {:SEQ_NAME=>"ID00000005", :SEQ=>"--CCCTTACGGG--", :SEQ_LEN=>14}
+    #
+    # Or we could slice the alignment using a set of primers:
+    #
+    #    BP.new.
+    #    read_fasta(input: "test.fna").
+    #    slice_align(forward: "CGCATACG", reverse: "GAGGGG", max_mismatches: 0, max_insertions: 0, max_deletions: 0).
+    #    dump.run
+    #
+    #    {:SEQ_NAME=>"ID00000000", :SEQ=>"CGCATACG-------CCCTGAGGGG", :SEQ_LEN=>25}
+    #    {:SEQ_NAME=>"ID00000001", :SEQ=>"CGCATGAT-------ACCTGAGGGT", :SEQ_LEN=>25}
+    #    {:SEQ_NAME=>"ID00000002", :SEQ=>"CGCATATACTCTTGACGCTAAAGCG", :SEQ_LEN=>25}
+    #    {:SEQ_NAME=>"ID00000003", :SEQ=>"CGTATGTG-------CCCTTCGGGG", :SEQ_LEN=>25}
+    #    {:SEQ_NAME=>"ID00000004", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}
+    #    {:SEQ_NAME=>"ID00000005", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}
+    #
+    # Now, if we have a template file with the following FASTA entry:
+    #
+    #    >template
+    #    CTGAATACG-------CCATTCGATGG---
+    #
+    # and spefifying primers these will be matched to the template and the hit
+    # positions used for slicing:
+    # 
+    #    BP.new.
+    #    read_fasta(input: "test.fna").
+    #    slice_align(template_file: "template.fna", forward: "GAATACG", reverse: "ATTCGAT", max_mismatches: 0, max_insertions: 0, max_deletions: 0).
+    #    dump.run
+    #
+    #    {:SEQ_NAME=>"ID00000000", :SEQ=>"GCATACG-------CCCTGAGGG", :SEQ_LEN=>23}
+    #    {:SEQ_NAME=>"ID00000001", :SEQ=>"GCATGAT-------ACCTGAGGG", :SEQ_LEN=>23}
+    #    {:SEQ_NAME=>"ID00000002", :SEQ=>"GCATATACTCTTGACGCTAAAGC", :SEQ_LEN=>23}
+    #    {:SEQ_NAME=>"ID00000003", :SEQ=>"GTATGTG-------CCCTTCGGG", :SEQ_LEN=>23}
+    #    {:SEQ_NAME=>"ID00000004", :SEQ=>"GGATAAG-------CCCTTACGG", :SEQ_LEN=>23}
+    #    {:SEQ_NAME=>"ID00000005", :SEQ=>"GGATAAG-------CCCTTACGG", :SEQ_LEN=>23}
+    #
+    # Finally, specifying a template file and an interval the positions used for
+    # slicing will be the ungapped positions from the template sequence. This
+    # is useful if you are slicing 16S rRNA alignments and want the _E.coli_
+    # corresponding positions - simply use the _E.coli_ sequence as template.
+    #
+    #    BP.new.
+    #    read_fasta(input: "test.fna").
+    #    slice_align(template_file: "template.fna", slice: 4 .. 14).
+    #    dump.run
+    #    
+    #    {:SEQ_NAME=>"ID00000000", :SEQ=>"ATACG-------CCCTGA", :SEQ_LEN=>18}
+    #    {:SEQ_NAME=>"ID00000001", :SEQ=>"ATGAT-------ACCTGA", :SEQ_LEN=>18}
+    #    {:SEQ_NAME=>"ID00000002", :SEQ=>"ATATACTCTTGACGCTAA", :SEQ_LEN=>18}
+    #    {:SEQ_NAME=>"ID00000003", :SEQ=>"ATGTG-------CCCTTC", :SEQ_LEN=>18}
+    #    {:SEQ_NAME=>"ID00000004", :SEQ=>"ATAAG-------CCCTTA", :SEQ_LEN=>18}
+    #    {:SEQ_NAME=>"ID00000005", :SEQ=>"ATAAG-------CCCTTA", :SEQ_LEN=>18}
     def slice_align(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
