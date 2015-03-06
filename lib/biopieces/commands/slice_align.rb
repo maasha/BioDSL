@@ -70,8 +70,7 @@ module BioPieces
     def slice_align(options = {})
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :slice, :forward, :reverse, :max_mismatches, :max_insertions, :max_deletions, :template_file)
-      options_tie(options, forward: :reverse, reverse: :forward)
+      options_allowed(options, :slice, :forward, :forward_rc, :reverse, :reverse_rc, :max_mismatches, :max_insertions, :max_deletions, :template_file)
       options_conflict(options, slice: :forward)
       options_files_exist(options, :template_file)
       options_assert(options, ":max_mismatches >= 0")
@@ -85,6 +84,16 @@ module BioPieces
       options[:max_insertions] ||= 1
       options[:max_deletions]  ||= 1
 
+      if options[:forward_rc]
+        options[:forward] = Seq.new(seq: options[:forward_rc], type: :dna).reverse.complement.seq
+      end
+
+      if options[:reverse_rc]
+        options[:reverse] = Seq.new(seq: options[:reverse_rc], type: :dna).reverse.complement.seq
+      end
+
+      options_tie(options, forward: :reverse, reverse: :forward)
+
       lmb = lambda do |input, output, status|
         status_track(status) do
           status[:sequences_in]  = 0
@@ -92,8 +101,18 @@ module BioPieces
           status[:residues_in]   = 0
           status[:residues_out]  = 0
 
-          indels   = BioPieces::Seq::INDELS.sort.join
-          template = BioPieces::Fasta.read(options[:template_file]).first if options[:template_file]
+          indels = BioPieces::Seq::INDELS.sort.join
+
+          if options[:template_file]
+            template = BioPieces::Fasta.read(options[:template_file]).first
+
+            if options[:slice]
+              pos_index = []
+              compact = Seq.new(seq: template.seq.dup.delete(indels))
+              template.seq.chars.each_with_index { |c, i| pos_index << i unless indels.include? c }
+              options[:slice] = Range.new(pos_index[options[:slice].first], pos_index[options[:slice].last])
+            end
+          end
 
           input.each do |record|
             status[:records_in] += 1

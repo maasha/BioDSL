@@ -120,6 +120,38 @@ class TestSliceAlign < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test "BioPieces::Pipeline::SliceAlign with forward_rc primer returns correctly" do
+    @p.slice_align(forward_rc: 'cgtatgcg', reverse: "GAGGGG", max_mismatches: 0, max_insertions: 0, max_deletions: 0).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"ID0", :SEQ=>"CGCATACG-------CCCTGAGGGG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID1", :SEQ=>"CGCATGAT-------ACCTGAGGGT", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID2", :SEQ=>"CGCATATACTCTTGACGCTAAAGCG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID3", :SEQ=>"CGTATGTG-------CCCTTCGGGG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID4", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID5", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}'
+    expected << '{:FOO=>"BAR"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::SliceAlign with reverse_rc primer returns correctly" do
+    @p.slice_align(forward: 'CGCATACG', reverse_rc: "cccctc", max_mismatches: 0, max_insertions: 0, max_deletions: 0).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"ID0", :SEQ=>"CGCATACG-------CCCTGAGGGG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID1", :SEQ=>"CGCATGAT-------ACCTGAGGGT", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID2", :SEQ=>"CGCATATACTCTTGACGCTAAAGCG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID3", :SEQ=>"CGTATGTG-------CCCTTCGGGG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID4", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}'
+    expected << '{:SEQ_NAME=>"ID5", :SEQ=>"CGGATAAG-------CCCTTACGGG", :SEQ_LEN=>25}'
+    expected << '{:FOO=>"BAR"}'
+
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline::SliceAlign with primers and template_file returns correctly" do
     @p.
     slice_align(forward: 'GAATACG', reverse: "ATTCGAT", template_file: @template_file, max_mismatches: 0, max_insertions: 0, max_deletions: 0).
@@ -133,6 +165,22 @@ class TestSliceAlign < Test::Unit::TestCase
     expected << '{:SEQ_NAME=>"ID3", :SEQ=>"GTATGTG-------CCCTTCGGG", :SEQ_LEN=>23}'
     expected << '{:SEQ_NAME=>"ID4", :SEQ=>"GGATAAG-------CCCTTACGG", :SEQ_LEN=>23}'
     expected << '{:SEQ_NAME=>"ID5", :SEQ=>"GGATAAG-------CCCTTACGG", :SEQ_LEN=>23}'
+    expected << '{:FOO=>"BAR"}'
+
+    assert_equal(expected, result)
+  end
+
+  test "BioPieces::Pipeline::SliceAlign with template_file and slice returns correctly" do
+    @p.slice_align(template_file: @template_file, slice: 4 .. 14).run(input: @input, output: @output2)
+
+    result   = @input2.map { |h| h.to_s }.reduce(:<<)
+    expected = ""
+    expected << '{:SEQ_NAME=>"ID0", :SEQ=>"ATACG-------CCCTGA", :SEQ_LEN=>18}'
+    expected << '{:SEQ_NAME=>"ID1", :SEQ=>"ATGAT-------ACCTGA", :SEQ_LEN=>18}'
+    expected << '{:SEQ_NAME=>"ID2", :SEQ=>"ATATACTCTTGACGCTAA", :SEQ_LEN=>18}'
+    expected << '{:SEQ_NAME=>"ID3", :SEQ=>"ATGTG-------CCCTTC", :SEQ_LEN=>18}'
+    expected << '{:SEQ_NAME=>"ID4", :SEQ=>"ATAAG-------CCCTTA", :SEQ_LEN=>18}'
+    expected << '{:SEQ_NAME=>"ID5", :SEQ=>"ATAAG-------CCCTTA", :SEQ_LEN=>18}'
     expected << '{:FOO=>"BAR"}'
 
     assert_equal(expected, result)
