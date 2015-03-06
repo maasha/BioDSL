@@ -30,6 +30,10 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 require 'test/helper'
 
 class TestUclust < Test::Unit::TestCase 
+  def setup
+    omit("usearch not found") unless BioPieces::Filesys.which("usearch")
+  end
+
   test "BioPieces::Pipeline#uclust with disallowed option raises" do
     p = BioPieces::Pipeline.new
     assert_raise(BioPieces::OptionError) { p.uclust(foo: "bar") }

@@ -69,6 +69,7 @@ module BioPieces
       options_allowed_values(options, careful: [true, false, nil])
       options_assert(options, ":cpus >= 1")
       options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      aux_exist("spades.py")
 
       options[:cpus] ||= 1
 

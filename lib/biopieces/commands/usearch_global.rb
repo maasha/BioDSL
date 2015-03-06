@@ -66,6 +66,7 @@ module BioPieces
       options_assert(options, ":identity <= 1.0")
       options_assert(options, ":cpus >= 1")
       options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      aux_exist("usearch")
 
       options[:cpus] ||= 1
 

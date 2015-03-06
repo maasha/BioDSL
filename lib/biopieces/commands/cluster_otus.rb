@@ -64,6 +64,7 @@ module BioPieces
       options_allowed(options, :identity)
       options_assert(options, ":identity >= 0.0")
       options_assert(options, ":identity <= 1.0")
+      aux_exist("usearch")
 
       options[:identity] ||= 0.97
 

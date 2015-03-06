@@ -62,6 +62,7 @@ module BioPieces
       options_files_exist(options, :database)
       options_assert(options, ":cpus >= 1")
       options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      aux_exist("usearch")
 
       options[:cpus]   ||= 1
       options[:strand] ||= "plus"  # This option cannot be changed in usearch7.0

@@ -50,6 +50,10 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
     @p = BP.new
   end
 
+  def teardown
+    FileUtils.rm_r @tmpdir
+  end
+
   test "BioPieces::Pipeline#analyze_residue_distribution with disallowed option raises" do
     assert_raise(BioPieces::OptionError) { @p.analyze_residue_distribution(foo: "bar") }
   end
