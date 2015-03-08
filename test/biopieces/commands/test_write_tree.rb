@@ -31,9 +31,10 @@ require 'test/helper'
 
 class TestWriteTree < Test::Unit::TestCase 
   def setup
+    @tmpdir = Dir.mktmpdir("BioPieces")
+
     omit("FastTree not found") unless BioPieces::Filesys.which("FastTree")
 
-    @tmpdir = Dir.mktmpdir("BioPieces")
     @file   = File.join(@tmpdir, 'test.tree')
 
     @input, @output   = BioPieces::Stream.pipe
