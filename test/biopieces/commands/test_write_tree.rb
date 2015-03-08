@@ -33,7 +33,7 @@ class TestWriteTree < Test::Unit::TestCase
   def setup
     @tmpdir = Dir.mktmpdir("BioPieces")
 
-    omit("FastTree not found") unless BioPieces::Filesys.which("FastTree")
+    skip("FastTree not found") unless BioPieces::Filesys.which("FastTree")
 
     @file   = File.join(@tmpdir, 'test.tree')
 
