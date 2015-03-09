@@ -59,6 +59,9 @@ module Kernel
 end
 
 class Test::Unit::TestCase
+  # Ruby 2.2 have omit, < 2.2 have skip
+  alias :omit :skip if ! self.instance_methods.include? :omit
+
   def self.test(desc, &impl)
     define_method("test #{desc}", &impl)
   end
