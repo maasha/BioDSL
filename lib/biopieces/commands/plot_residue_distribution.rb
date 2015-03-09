@@ -75,6 +75,7 @@ module BioPieces
       options_allowed_values(options, count: [nil, true, false])
       options_allowed_values(options, test: [nil, true, false])
       options_files_exists_force(options, :output)
+      aux_exist("gnuplot")
 
       options[:terminal] ||= :dumb
       options[:title]    ||= "Residue Distribution"

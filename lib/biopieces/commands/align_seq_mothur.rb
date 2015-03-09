@@ -26,66 +26,68 @@
 
 module BioPieces
   module Commands
-    # == Run usearch_global on sequences in the stream.
+    # == Align sequences in the stream using Mothur.
     # 
-    # This is a wrapper for the +usearch+ tool to run the program usearch_global.
-    # Basically sequence type records are searched against a reference database
-    # and records with hit information are output.
+    # This is a wrapper for the +mothur+ command +align.seqs()+. Basically,
+    # it aligns sequences to a reference alignment.
     #
     # Please refer to the manual:
     #
-    # http://drive5.com/usearch/manual/usearch_global.html
+    # http://www.mothur.org/wiki/Align.seqs
     #
-    # Usearch 7.0 must be installed for +usearch+ to work. Read more here:
+    # Mothur must be installed for +align_seq_mothurs+ to work. Read more here:
     #
-    # http://www.drive5.com/usearch/
+    # http://www.mothur.org/
     # 
     # == Usage
     # 
-    #    usearch_global(<database: <file>, <identity: float>, <strand: "plus|both">[, cpus: <uint>])
+    #    align_seq_mothur(<template_file: <file>>[, cpus: <uint>])
     # 
     # === Options
     #
-    # * database: <file>   - Database to search (in FASTA format).
-    # * identity: <float>  - Similarity for matching in percent between 0.0 and 1.0.
-    # * strand:   <string> - For nucleotide search report hits from plus or both strands.
-    # * cpus:     <uint>   - Number of CPU cores to use (default=1).
+    # * template_file: <file>  - File with template alignment in FASTA format.
+    # * cpus: <uint>           - Number of CPU cores to use (default=1).
     #
     # == Examples
     # 
-    def usearch_global(options = {})
+    # To align the entries in the FASTA file `test.fna` to the template alignment
+    # in the file `template.fna` do:
+    #
+    #    BP.new.
+    #    read_fasta(input: "test.fna").
+    #    align_seq_mothur(template_file: "template.fna").
+    #    run
+    def align_seq_mothur(options = {})
       require 'parallel'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :database, :identity, :strand, :cpus)
-      options_required(options, :database, :identity)
-      options_allowed_values(options, strand: ["plus", "both"])
-      options_files_exist(options, :database)
-      options_assert(options, ":identity >  0.0")
-      options_assert(options, ":identity <= 1.0")
+      options_allowed(options, :template_file, :cpus)
+      options_required(options, :template_file)
+      options_files_exist(options, :template_file)
       options_assert(options, ":cpus >= 1")
       options_assert(options, ":cpus <= #{Parallel.processor_count}")
-      aux_exist("usearch")
+      aux_exist("mothur")
 
       options[:cpus] ||= 1
 
       lmb = lambda do |input, output, status|
-        status[:sequences_in] = 0
-        status[:hits_out]     = 0
+        status[:sequences_in]  = 0
+        status[:sequences_out] = 0
+        status[:residues_in]   = 0
+        status[:residues_out]  = 0
 
         status_track(status) do
+          tmp_dir = File.join(Dir.tmpdir, "#{Time.now.to_i}#{$$}")
+
           begin
-            tmp_in  = Tempfile.new("uclust")
-            tmp_out = Tempfile.new("uclust")
+            Dir.mkdir(tmp_dir)
+
+            tmp_in = File.join(tmp_dir, "input.fasta")
 
             BioPieces::Fasta.open(tmp_in, 'w') do |ios|
               input.each_with_index do |record, i|
                 status[:records_in] += 1
-
-                output << record
-
-                status[:records_out] += 1
 
                 if record[:SEQ]
                   status[:sequences_in] += 1
@@ -93,36 +95,39 @@ module BioPieces
 
                   entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
+                  status[:residues_in] += entry.length
+
                   ios.puts entry.to_fasta
-                end
-              end
-            end
-
-            begin
-              BioPieces::Usearch.usearch_global(input: tmp_in, 
-                                                output: tmp_out,
-                                                database: options[:database],
-                                                strand: options[:strand],
-                                                identity: options[:identity],
-                                                cpus: options[:cpus],
-                                                verbose: options[:verbose])
-
-              BioPieces::Usearch.open(tmp_out) do |ios|
-                ios.each(:uc) do |record|
-                  record[:RECORD_TYPE] = "usearch"
+                else
                   output << record
-                  status[:hits_out]    += 1
                   status[:records_out] += 1
                 end
               end
-            rescue BioPieces::UsearchError => e
-              unless e.message =~ /Empty input file/
-                raise
+            end
+
+            cmd = %Q{mothur "#set.dir(input=#{tmp_dir}); set.dir(output=#{tmp_dir}); align.seqs(candidate=#{tmp_in}, template=#{options[:template_file]}, processors=#{options[:cpus]})"}
+
+            if BioPieces::verbose
+              system(cmd)
+            else
+              system("#{cmd} > /dev/null 2>&1")
+            end
+
+            raise "Mothur failed" unless $?.success?
+
+            tmp_out = File.join(tmp_dir, "input.align")
+
+            BioPieces::Fasta.open(tmp_out) do |ios|
+              ios.each do |entry|
+                output << entry.to_bp
+                status[:records_out]   += 1
+                status[:sequences_out] += 1
+                status[:residues_out]  += entry.length
               end
             end
           ensure
-            tmp_in.unlink
-            tmp_out.unlink
+            File.unlink("8mer") if File.exist? "8mer"
+            FileUtils.rm_rf(tmp_dir)
           end
         end
       end

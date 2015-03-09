@@ -31,6 +31,8 @@ require 'test/helper'
 
 class TestUchimeRef < Test::Unit::TestCase 
   def setup
+    omit("usearch not found") unless BioPieces::Filesys.which("usearch")
+
     @db = File.join(File.dirname(__FILE__), '..', '..', '..', 'data', 'chimera_db.fna')
   end
 

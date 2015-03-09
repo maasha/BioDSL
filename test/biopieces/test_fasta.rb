@@ -35,6 +35,8 @@ class FastaTest < Test::Unit::TestCase
   end
 
   def teardown
+    File.unlink("#{@file.path}.gz")  if File.exist? "#{@file.path}.gz"  
+    File.unlink("#{@file.path}.bz2") if File.exist? "#{@file.path}.bz2"  
     @file.close
     @file.unlink
   end

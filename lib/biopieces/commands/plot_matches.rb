@@ -109,6 +109,7 @@ module BioPieces
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11, :aqua, :png, :pdf])
       options_allowed_values(options, test: [nil, true, false])
       options_files_exists_force(options, :output)
+      aux_exist("gnuplot")
 
       options[:direction] ||= :both
       options[:terminal]  ||= :dumb

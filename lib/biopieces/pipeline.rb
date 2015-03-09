@@ -36,6 +36,7 @@ module BioPieces
     include BioPieces::LogHelper
     include BioPieces::OptionsHelper
     include BioPieces::StatusHelper
+    include BioPieces::AuxHelper
 
     attr_accessor :commands, :status
 
