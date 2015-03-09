@@ -105,11 +105,7 @@ module BioPieces
               end
             end
 
-            cmd = %Q{mothur "#set.dir(input=#{tmp_dir}); \
-                              set.dir(output=#{tmp_dir}); \
-                              align.seqs(candidate=#{tmp_in}, \
-                              template=#{options[:template_file]}, \
-                              processors=#{options[:cpus]})"}
+            cmd = %Q{mothur "#set.dir(input=#{tmp_dir}); set.dir(output=#{tmp_dir}); align.seqs(candidate=#{tmp_in}, template=#{options[:template_file]}, processors=#{options[:cpus]})"}
 
             if BioPieces::verbose
               system(cmd)
