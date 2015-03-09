@@ -252,34 +252,37 @@ module BioPieces
 
           if options[:pretty]
             table = Terminal::Table.new
-            table.headings = headings if options[:header]
 
-            first_row = rows.first.dup
+            unless rows.empty?
+              table.headings = headings if options[:header]
 
-            if options[:commify]
-              rows.each do |row|
-                row.each_with_index do |cell, i|
-                  if cell.is_a? Integer
-                    row[i] = cell.to_i.commify
-                  elsif cell.is_a? Float
-                    row[i] = cell.to_f.commify
+              first_row = rows.first.dup
+
+              if options[:commify]
+                rows.each do |row|
+                  row.each_with_index do |cell, i|
+                    if cell.is_a? Integer
+                      row[i] = cell.to_i.commify
+                    elsif cell.is_a? Float
+                      row[i] = cell.to_f.commify
+                    end
                   end
                 end
               end
-            end
 
-            if options[:first]
-              table.rows = rows.first(options[:first])
-            elsif options[:last]
-              table.rows = rows.last(options[:last])
-            else
-              table.rows = rows
-            end
+              if options[:first]
+                table.rows = rows.first(options[:first])
+              elsif options[:last]
+                table.rows = rows.last(options[:last])
+              else
+                table.rows = rows
+              end
 
-            first_row.each_with_index do |cell, i|
-              begin Float(cell)
-                table.align_column(i, :right)
-              rescue
+              first_row.each_with_index do |cell, i|
+                begin Float(cell)
+                  table.align_column(i, :right)
+                rescue
+                end
               end
             end
 
