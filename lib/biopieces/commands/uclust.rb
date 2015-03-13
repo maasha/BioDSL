@@ -55,6 +55,7 @@ module BioPieces
     # == Examples
     # 
     def uclust(options = {})
+      require 'tempfile'
       require 'parallel'
 
       options_orig = options.dup
@@ -76,26 +77,31 @@ module BioPieces
         status[:sequences_out] = 0
 
         status_track(status) do
+          tmp_rec = Tempfile.new("uclust_records")
+          tmp_in  = Tempfile.new("uclust_in")
+          tmp_out = Tempfile.new("uclust_out")
+
           begin
-            tmp_in  = Tempfile.new("uclust")
-            tmp_out = Tempfile.new("uclust")
+            File.open(tmp_rec, 'wb') do |ios_rec|
+              BioPieces::Serializer.new(ios_rec) do |s|
+                BioPieces::Fasta.open(tmp_in, 'w') do |ios|
+                  input.each_with_index do |record, i|
+                    status[:records_in] += 1
 
-            BioPieces::Fasta.open(tmp_in, 'w') do |ios|
-              input.each_with_index do |record, i|
-                status[:records_in] += 1
+                    if record[:SEQ]
+                      status[:sequences_in] += 1
+                      record[:SEQ_NAME] ||= i.to_s
 
+                      entry = BioPieces::Seq.new(seq_name: record[:SEQ_NAME], seq: record[:SEQ])
 
-                if record[:SEQ]
-                  status[:sequences_in] += 1
-                  seq_name = record[:SEQ_NAME] || i.to_s
+                      ios.puts entry.to_fasta
+                    else
+                      status[:records_out] += 1
+                      output << record
+                    end
 
-                  entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
-
-                  ios.puts entry.to_fasta
-                else
-                  output << record
-
-                  status[:records_out] += 1
+                    s << record
+                  end
                 end
               end
             end
@@ -108,43 +114,62 @@ module BioPieces
                                                   align: options[:align],
                                                   cpus: options[:cpus],
                                                   verbose: options[:verbose])
-
-              if options[:align]
-                cluster = 0
-
-                BioPieces::Fasta.open(tmp_out) do |ios|
-                  ios.each do |entry|
-                    if entry.seq_name == 'consensus'
-                      cluster += 1
-                    else
-                      record = {}
-                      record[:RECORD_TYPE] = "uclust"
-                      record[:CLUSTER]     = cluster
-                      record.merge!(entry.to_bp)
-
-                      output << record
-                      status[:sequences_out] += 1
-                      status[:records_out] += 1
-                    end
-                  end
-                end
-
-                status[:clusters_out] = cluster
-              else
-                BioPieces::Usearch.open(tmp_out) do |ios|
-                  ios.each(:uc) do |record|
-                    record[:RECORD_TYPE] = "uclust"
-                    output << record
-                    status[:records_out] += 1
-                  end
-                end
-              end
             rescue BioPieces::UsearchError => e
               unless e.message =~ /Empty input file/
                 raise
               end
             end
+
+            if options[:align]
+              cluster = 0
+
+              BioPieces::Fasta.open(tmp_out) do |ios|
+                ios.each do |entry|
+                  if entry.seq_name == 'consensus'
+                    cluster += 1
+                  else
+                    record = {}
+                    record[:RECORD_TYPE] = "uclust"
+                    record[:CLUSTER]     = cluster
+                    record.merge!(entry.to_bp)
+
+                    output << record
+                    status[:sequences_out] += 1
+                    status[:records_out] += 1
+                  end
+                end
+              end
+
+              status[:clusters_out] = cluster
+            else
+              results = {}
+
+              BioPieces::Usearch.open(tmp_out) do |ios|
+                ios.each(:uc) do |record|
+                  record[:RECORD_TYPE] = "uclust"
+
+                  results[record[:Q_ID]] = record
+                end
+              end
+
+              File.open(tmp_rec, 'rb') do |ios_rec|
+                BioPieces::Serializer.new(ios_rec) do |s|
+                  s.each do |record|
+                    if record[:SEQ_NAME]
+                      if r = results[record[:SEQ_NAME]]
+                        output << record.merge(r)
+                        status[:sequences_out] += 1
+                        status[:records_out] += 1
+                      else
+                        raise BioPieces::UsearchError, "Sequence name: #{record[:SEQ_NAME]} not found in uclust results"
+                      end
+                    end
+                  end
+                end
+              end
+            end
           ensure
+            tmp_rec.unlink
             tmp_in.unlink
             tmp_out.unlink
           end

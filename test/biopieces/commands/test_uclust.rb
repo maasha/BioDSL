@@ -44,6 +44,26 @@ class TestUclust < Test::Unit::TestCase
     assert_nothing_raised { p.uclust(identity: 1, strand: :both) }
   end
 
+  test "BioPieces::Pipeline#uclust outputs correctly" do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write({one: 1, two: 2, three: 3})
+    output.write({SEQ: "gtgtgtagctacgatcagctagcgatcgagctatatgttt"})
+    output.write({SEQ: "atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"})
+    output.close
+
+    p = BioPieces::Pipeline.new
+    p.uclust(identity: 0.97, strand: "plus").run(input: input, output: output2)
+    result   = input2.map { |h| h.to_s }.sort_by { |a| a.to_s }.reduce(:<<)
+    expected = ""
+    expected << %Q{{:SEQ=>"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct", :SEQ_NAME=>"2", :TYPE=>"C", :CLUSTER=>1, :CLUSTER_SIZE=>1, :STRAND=>"*", :CIGAR=>"*", :Q_ID=>"2", :RECORD_TYPE=>"uclust"}}
+    expected << %Q{{:SEQ=>"gtgtgtagctacgatcagctagcgatcgagctatatgttt", :SEQ_NAME=>"1", :TYPE=>"C", :CLUSTER=>0, :CLUSTER_SIZE=>1, :STRAND=>"*", :CIGAR=>"*", :Q_ID=>"1", :RECORD_TYPE=>"uclust"}}
+    expected << %Q{{:one=>1, :two=>2, :three=>3}}
+
+    assert_equal(expected, result)
+  end
+
   test "BioPieces::Pipeline#uclust outputs msa correctly" do
     input, output   = BioPieces::Stream.pipe
     input2, output2 = BioPieces::Stream.pipe
