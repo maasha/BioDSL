@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
@@ -32,18 +32,33 @@ require 'test/helper'
 class TestOptionsHelper < Test::Unit::TestCase 
   include BioPieces::OptionsHelper
 
-  test "#options_allowed with disallowed option raises" do
-    options = {bar: "foo"}
+  test '#options_allowed with disallowed option raises' do
+    options = {bar: 'foo'}
     assert_raise(BioPieces::OptionError) { options_allowed(options, :foo) }
   end
 
-  test "#options_allowed with allowed option don't raise" do
-    options = {foo: "bar"}
+  test '#options_allowed with allowed option don\'t raise' do
+    options = {foo: 'bar'}
     assert_nothing_raised { options_allowed(options, :foo) }
   end
 
-  test "#options_allowed with no options don't raise" do
+  test '#options_allowed with no options don\'t raise' do
     options = {}
     assert_nothing_raised { options_allowed(options, :foo) }
+  end
+
+  test '#options_files_exist with no option don\'t raise' do
+    options = {}
+    assert_nothing_raised { options_files_exist(options, :foo) }
+  end
+
+  test '#options_files_exist with non-existing file raise' do
+    options = {input: 'ljg34gj324'}
+    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
+  end
+
+  test '#options_files_exist with Array of non-existing files raise' do
+    options = {input: [__FILE__, 'h23j42h34']}
+    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
   end
 end

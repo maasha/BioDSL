@@ -165,8 +165,21 @@ module BioPieces
       end
     end
 
-    # Method that raises if given files don't exists.
-    # Example:  options_files_exist(options, :input)
+    # Method that fails if given files don't exists.
+    #
+    # options - Hash with options to check.
+    # args    - Symbol or Array of Symbols which are keys in the option
+    #           Hash and whos values to check.
+    #
+    # Examples
+    #
+    #   options_files_exist(options, :input)
+    #     # => nil
+    #
+    #   options_files_exist(options, [:input1, :input2])
+    #     # => nil
+    #
+    # Returns nothing.
     def options_files_exist(options, *args)
       args.each do |arg|
         if options[arg]
@@ -179,6 +192,8 @@ module BioPieces
           end
         end
       end
+
+      nil
     end
 
     # Method that raises if given directories don't exists.
