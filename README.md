@@ -77,6 +77,7 @@ Available Biopieces
   * [degap_seq]                        (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:degap_seq)
   * [dereplicate_seq]                  (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:dereplicate_seq)
   * [dump]                             (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:dump)
+  * [filter_rrna]                      (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:filter_rrna)
   * [grab]                             (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:grab)
   * [index_taxonomy]                   (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:index_taxonomy)
   * [mean_scores]                      (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:mean_scores)
