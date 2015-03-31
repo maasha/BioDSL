@@ -77,4 +77,9 @@ class TestOptionsHelper < Test::Unit::TestCase
     options = {input: glob}
     assert_nothing_raised { options_files_exist(options, :input) }
   end
+
+  test '#options_files_exist with non-existing file and glob don\'t raise' do
+    options = {input: 'f234rs*d32'}
+    assert_nothing_raised { options_files_exist(options, :input) }
+  end
 end
