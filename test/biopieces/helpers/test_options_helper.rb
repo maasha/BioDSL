@@ -57,8 +57,18 @@ class TestOptionsHelper < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
   end
 
+  test '#options_files_exist with non-existing files raise' do
+    options = {input: __FILE__, input2: '32g4g24g23'}
+    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input, :input2) }
+  end
+
   test '#options_files_exist with Array of non-existing files raise' do
     options = {input: [__FILE__, 'h23j42h34']}
     assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
+  end
+
+  test '#options_files_exist with Arrays of non-existing files raise' do
+    options = {input: [__FILE__], input2: ['h23j42h34']}
+    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input, :input2) }
   end
 end
