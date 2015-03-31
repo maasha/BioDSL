@@ -101,7 +101,12 @@ module BioPieces
             ref_index = options[:ref_index]
             ref_fasta = options[:ref_fasta]
 
-            ref_index.sub!(/\*$/, '')          if ref_index.is_a? String
+            if ref_index.is_a? Array
+              ref_index.map { |f| f.sub!(/\*$/, '') }
+            else
+              ref_index.sub!(/\*$/, '')
+            end
+
             ref_fasta = [ref_fasta.split(',')] if ref_fasta.is_a? String 
             ref_index = [ref_index.split(',')] if ref_index.is_a? String 
 
