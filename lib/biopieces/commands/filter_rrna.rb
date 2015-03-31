@@ -68,12 +68,12 @@ module BioPieces
 
       lmb = lambda do |input, output, status|
         status_track(status) do
-          status[:sequences_in] = 0
-          status[:residues_in]  = 0
+          status[:sequences_in]  = 0
+          status[:sequences_out] = 0
+          status[:residues_in]   = 0
+          status[:residues_out]  = 0
 
           Dir.mktmpdir do |tmp_dir|
-            names_hash = {}
-
             tmp_file = File.join(tmp_dir, 'tmp_file')
             seq_file = File.join(tmp_dir, 'seq_file')
             out_file = File.join(tmp_dir, 'out_file')
@@ -89,8 +89,7 @@ module BioPieces
                     if record.key? :SEQ
                       entry = BioPieces::Seq.new_bp(record)
                       entry.seq_name = i
-                      names_hash[i]  = record[:SEQ_NAME] || i
-                      seq_io << entry.to_fasta 
+                      seq_io.puts entry.to_fasta 
                       status[:sequences_in] += 1
                       status[:residues_in]  += entry.length
                     end
@@ -98,6 +97,10 @@ module BioPieces
                 end
               end
             end
+
+            options[:ref_index].sub!(/\*$/, '')                    if options[:ref_index].is_a? String
+            options[:ref_fasta] = [options[:ref_fasta].split(',')] if options[:ref_fasta].is_a? String 
+            options[:ref_index] = [options[:ref_index].split(',')] if options[:ref_index].is_a? String 
 
             # fasta1,id1:fasta2,id2:...
             ref_files = options[:ref_fasta].zip(options[:ref_index]).map { |m| m.join(',') }.join(':')
@@ -108,27 +111,31 @@ module BioPieces
             cmd << "--reads #{seq_file}"
             cmd << "--aligned #{out_file}"
             cmd << '--fastx'
-            cmd << '-v 1' if BioPieces::verbose
+            cmd << '-v' if BioPieces::verbose
+
+            $stderr.puts "Running command: #{cmd.join(' ')}" if BioPieces::verbose
 
             system(cmd.join(' '))
 
             raise "command failed: #{cmd.join( ' ')}" unless $?.success?
 
-            BioPieces::Fasta.open(out_file, 'r') do |ios|
+            filter = Set.new
+
+            BioPieces::Fasta.open("#{out_file}.fasta", 'r') do |ios|
               ios.each do |entry|
                 filter << entry.seq_name.to_i
               end
             end
 
-            File.open(file, 'rb') do |ios|
+            File.open(tmp_file, 'rb') do |ios|
               BioPieces::Serializer.new(ios) do |s|
                 s.each_with_index do |record, i|
                   if record.key? :SEQ
-                    unless filter.include? names_hash[i]
+                    unless filter.include? i
                       output << record
-                      status[:records_out] += 1
+                      status[:records_out]   += 1
                       status[:sequences_out] += 1
-                      status[:residues_out]  += entry.length
+                      status[:residues_out]  += record[:SEQ].length
                     end
                   else
                     output << record
@@ -138,6 +145,11 @@ module BioPieces
               end
             end
           end
+
+          status[:sequences_delta]         = status[:sequences_out] - status[:sequences_in]
+          status[:sequences_delta_percent] = (100 * status[:sequences_delta].to_f / status[:sequences_in]).round(2)
+          status[:residues_delta]          = status[:residues_out] - status[:residues_in]
+          status[:residues_delta_percent]  = (100 * status[:residues_delta].to_f / status[:residues_in]).round(2)
         end
       end
 
