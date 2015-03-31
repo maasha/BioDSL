@@ -54,7 +54,7 @@ module BioPieces
     #    BP.new.
     #    read_fastq(input: "reads.fq").
     #    filter_rrna(ref_fasta: ["silva-arc-23s-id98.fasta"],
-    #                ref_index: ["silva-arc-23s-id98.fasta.idx"]).
+    #                ref_index: ["silva-arc-23s-id98.fasta.idx*"]).
     #    write_fastq(output: "clean.fq").
     #    run
     #
