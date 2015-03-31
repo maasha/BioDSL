@@ -71,4 +71,10 @@ class TestOptionsHelper < Test::Unit::TestCase
     options = {input: [__FILE__], input2: ['h23j42h34']}
     assert_raise(BioPieces::OptionError) { options_files_exist(options, :input, :input2) }
   end
+
+  test '#options_files_exist with existing file and glob don\'t raise' do
+    glob = __FILE__.sub(/\.rb$/, '*')
+    options = {input: glob}
+    assert_nothing_raised { options_files_exist(options, :input) }
+  end
 end

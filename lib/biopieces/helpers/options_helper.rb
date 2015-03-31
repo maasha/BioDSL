@@ -186,6 +186,8 @@ module BioPieces
           files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
 
           files.each do |file|
+            file = Dir.glob(file).select { |f| File.file? f }.first if file.include? '*'
+
             unless File.file? File.expand_path(file)
               fail BioPieces::OptionError, "For option #{arg} - no such file: #{file}"
             end
