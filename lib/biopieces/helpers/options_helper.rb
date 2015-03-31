@@ -252,6 +252,8 @@ module BioPieces
 
       return unless File.exist? rc_file
 
+      rc_options = Hash.new { |h, k | h[k] = [] }
+
       File.open(rc_file) do |ios|
         ios.each do |line|
           line.chomp!
@@ -259,13 +261,23 @@ module BioPieces
           next if line.empty?
           next if line[0] == '#'
 
-          fields = line.split(/\s+/)
+          fields    = line.split(/\s+/)
+          fields[0] = fields[0].to_sym
+          fields[1] = fields[1].to_sym
 
-          if fields.first.to_sym == command
-            unless options[fields[1].to_sym]
-              options[fields[1].to_sym] = fields[2]
+          if fields.first == command
+            unless options.key? fields[1]
+              rc_options[fields[1]] << fields[2]
             end
           end
+        end
+      end
+
+      rc_options.each do |key, value|
+        if value.size == 1
+          options[key] = value.first
+        else
+          options[key] = value
         end
       end
     end
