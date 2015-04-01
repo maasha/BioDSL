@@ -48,8 +48,8 @@ module BioPieces
     #
     # === Options
     #
-    # * kmer_min: <uint> - Minimum k-mer value (default: 20).
-    # * kmer_max: <uint> - Maximum k-mer value (default: 100).
+    # * kmer_min: <uint> - Minimum k-mer value (default: 24).
+    # * kmer_max: <uint> - Maximum k-mer value (default: 128).
     # * cpus: <uint>     - Number of CPUs to use (default: 1).
     # 
     # == Examples
@@ -63,7 +63,7 @@ module BioPieces
     #    write_fasta(output: "contigs.fna").
     #    run
     def assemble_seq_idba(options = {})
-      require_relative 'filter_rrna/filter_rrna'
+      require_relative 'assemble_seq_idba/assemble_seq_idba'
       require 'parallel'
 
       options_orig = options.dup
@@ -77,7 +77,9 @@ module BioPieces
       options_assert(options, ":cpus <= #{Parallel.processor_count}")
       aux_exist("idba_ud")
 
-      options[:cpus] ||= 1
+      options[:kmer_min] ||= 24
+      options[:kmer_max] ||= 48
+      options[:cpus]     ||= 1
 
       lmb = AssembleSeqIdba.run(options)
 
