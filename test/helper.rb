@@ -32,6 +32,8 @@ end
 
 SimpleCov.command_name 'test:units'
 
+require 'tempfile'
+require 'fileutils'
 require 'biopieces'
 require 'test/unit'
 require 'mocha/test_unit'
