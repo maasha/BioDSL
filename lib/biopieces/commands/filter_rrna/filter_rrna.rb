@@ -1,32 +1,35 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of the Biopieces framework (www.biopieces.org).        #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
   module Commands
+    # Class returning the lambda for the filter_rrna command.
     class FilterRrna
+      require 'English'
       require 'set'
 
       include StatusHelper
@@ -46,11 +49,7 @@ module BioPieces
 
       def run
         status_track(@status) do
-          Dir.mktmpdir do |tmp_dir|
-            tmp_file = File.join(tmp_dir, 'tmp_file')
-            seq_file = File.join(tmp_dir, 'seq_file')
-            out_file = File.join(tmp_dir, 'out_file')
-
+          in_tmp_dir do |tmp_file, seq_file, out_file|
             status_init
             ref_files = process_ref_files
             process_input(tmp_file, seq_file)
@@ -63,6 +62,18 @@ module BioPieces
       end
 
       private
+
+      def in_tmp_dir(&block)
+        fail unless block
+
+        Dir.mktmpdir do |tmp_dir|
+          tmp_file = File.join(tmp_dir, 'tmp_file')
+          seq_file = File.join(tmp_dir, 'seq_file')
+          out_file = File.join(tmp_dir, 'out_file')
+
+          block.call(tmp_file, seq_file, out_file)
+        end
+      end
 
       def status_init
         @status[:sequences_in]  = 0
@@ -95,26 +106,27 @@ module BioPieces
           ref_index.sub!(/\*$/, '')
         end
 
-        ref_fasta = [ref_fasta.split(',')] if ref_fasta.is_a? String 
-        ref_index = [ref_index.split(',')] if ref_index.is_a? String 
+        ref_fasta = [ref_fasta.split(',')] if ref_fasta.is_a? String
+        ref_index = [ref_index.split(',')] if ref_index.is_a? String
 
         ref_fasta.zip(ref_index).map { |m| m.join(',') }.join(':')
       end
 
       def execute_sortmerna(ref_files, seq_file, out_file)
-        cmd = []
-        cmd << 'sortmerna'
+        cmd = ['sortmerna']
         cmd << "--ref #{ref_files}"
         cmd << "--reads #{seq_file}"
         cmd << "--aligned #{out_file}"
         cmd << '--fastx'
-        cmd << '-v' if BioPieces::verbose
+        cmd << '-v' if BioPieces.verbose
 
-        $stderr.puts "Running command: #{cmd.join(' ')}" if BioPieces::verbose
+        cmd_line = cmd.join(' ')
 
-        system(cmd.join(' '))
+        $stderr.puts "Running command: #{cmd_line}" if BioPieces.verbose
 
-        raise "command failed: #{cmd.join( ' ')}" unless $?.success?
+        system(cmd_line)
+
+        fail "command failed: #{cmd_line}" unless $CHILD_STATUS.success?
       end
 
       def parse_sortme_output(out_file)
@@ -136,19 +148,20 @@ module BioPieces
               @input.each_with_index do |record, i|
                 @status[:records_in] += 1
 
-                s << record
-
-                if record.key? :SEQ
-                  entry = BioPieces::Seq.new_bp(record)
-                  entry.seq_name = i
-                  seq_io.puts entry.to_fasta 
-                  @status[:sequences_in] += 1
-                  @status[:residues_in]  += entry.length
-                end
+                s      << record
+                # FIXME: need << method
+                seq_io.puts record2entry(record, i).to_fasta if record.key? :SEQ
               end
             end
           end
         end
+      end
+
+      def record2entry(record, i)
+        entry = BioPieces::Seq.new(seq_name: i, seq: record[:SEQ])
+        @status[:sequences_in] += 1
+        @status[:residues_in]  += entry.length
+        entry
       end
 
       def process_output(tmp_file, filter)
@@ -173,4 +186,3 @@ module BioPieces
     end
   end
 end
-
