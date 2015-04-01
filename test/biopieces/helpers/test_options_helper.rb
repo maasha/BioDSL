@@ -78,8 +78,8 @@ class TestOptionsHelper < Test::Unit::TestCase
     assert_nothing_raised { options_files_exist(options, :input) }
   end
 
-  test '#options_files_exist with non-existing file and glob don\'t raise' do
+  test '#options_files_exist with non-matching glob raises' do
     options = {input: 'f234rs*d32'}
-    assert_nothing_raised { options_files_exist(options, :input) }
+    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
   end
 end
