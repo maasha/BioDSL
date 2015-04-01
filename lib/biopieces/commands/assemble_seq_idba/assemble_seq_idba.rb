@@ -27,7 +27,7 @@
 
 module BioPieces
   module Commands
-    # Class returning the lambda for the filter_rrna command.
+    # Class returning the lambda for the assemble_seq_idba command.
     class AssembleSeqIdba
       include StatusHelper
 
