@@ -64,7 +64,7 @@ module BioPieces
       private
 
       def in_tmp_dir(&block)
-        fail unless block
+        fail "No block given" unless block
 
         Dir.mktmpdir do |tmp_dir|
           tmp_file = File.join(tmp_dir, 'tmp_file')
