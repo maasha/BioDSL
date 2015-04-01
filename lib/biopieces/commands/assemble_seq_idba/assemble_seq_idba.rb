@@ -69,6 +69,13 @@ module BioPieces
         end
       end
 
+      def status_init
+        @status[:sequences_in]  = 0
+        @status[:sequences_out] = 0
+        @status[:residues_in]   = 0
+        @status[:residues_out]  = 0
+      end
+
       def process_input(fasta_in)
         BioPieces::Fasta.open(fasta_in, 'w') do |fasta_io|
           @input.each do |record|
@@ -87,6 +94,24 @@ module BioPieces
             end
           end
         end
+      end
+
+      def execute_idba(fasta_in, tmp_dir)
+        cmd = []
+        cmd << 'idba_ud'
+        cmd << "--read #{fasta_in}"
+        cmd << "--out #{tmp_dir}"
+        cmd << "--mink #{@options[:kmer_min]}"
+        cmd << "--maxk #{@options[:kmer_max]}"
+        cmd << "--num_threads #{@options[:cpus]}"
+        cmd << "> /dev/null 2>&1" unless BioPieces.verbose
+
+        cmd_line = cmd.join(' ')
+
+        $stderr.puts "Running: #{cmd_line}" if BioPieces.verbose
+        system(cmd_line)
+
+        fail cmd_line unless $?.success?
       end
 
       def process_output(fasta_out)
@@ -109,45 +134,21 @@ module BioPieces
         lengths
       end
 
-      def status_init
-        @status[:sequences_in]  = 0
-        @status[:sequences_out] = 0
-        @status[:residues_in]   = 0
-        @status[:residues_out]  = 0
-      end
-
       def status_term(lengths)
-        status[:contig_max] = lengths.first
-        status[:contig_min] = lengths.last
+        @status[:contig_max] = lengths.first || 0
+        @status[:contig_min] = lengths.last  || 0
+        @status[:contig_n50] = 0
 
         count = 0
 
         lengths.each do |length|
           count += length
 
-          if count >= status[:residues_out] * 0.50
-            status[:contig_n50] = length
+          if count >= @status[:residues_out] * 0.50
+            @status[:contig_n50] = length
             break
           end
         end
-      end
-
-      def execute_idba(fasta_in, tmp_dir)
-        cmd = []
-        cmd << 'idba_ud'
-        cmd << "--read #{fasta_in}"
-        cmd << "--out #{tmp_dir}"
-        cmd << "--mink #{@options[:kmer_min]}"
-        cmd << "--maxk #{@options[:kmer_max]}"
-        cmd << "--num_threads #{@options[:cpus]}"
-        cmd << "> /dev/null 2>&1" unless BioPieces.verbose
-
-        cmd_line = cmd.join(' ')
-
-        $stderr.puts "Running: #{cmd_line}" if BioPieces.verbose
-        system(cmd_line)
-
-        fail cmd_line unless $?.success?
       end
     end
   end

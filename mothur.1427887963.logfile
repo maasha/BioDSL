@@ -1,0 +1,53 @@
+Linux version
+
+Using ReadLine
+
+Running 64Bit Version
+
+mothur v.1.32.1
+Last updated: 10/16/2013
+
+by
+Patrick D. Schloss
+
+Department of Microbiology & Immunology
+University of Michigan
+pschloss@umich.edu
+http://www.mothur.org
+
+When using, please cite:
+Schloss, P.D., et al., Introducing mothur: Open-source, platform-independent, community-supported software for describing and comparing microbial communities. Appl Environ Microbiol, 2009. 75(23):7537-41.
+
+Distributed under the GNU General Public License
+
+Type 'help()' for information on the commands that are available
+
+Type 'quit()' to exit program
+Script Mode
+
+
+mothur > set.dir(input=/tmp/142788796312562)
+Mothur's directories:
+inputDir=/tmp/142788796312562/
+
+mothur > set.dir(output=/tmp/142788796312562)
+Mothur's directories:
+outputDir=/tmp/142788796312562/
+
+mothur > align.seqs(candidate=/tmp/142788796312562/input.fasta, template=/tmp/template20150401-12562-nespnx, processors=1)
+
+Using 1 processors.
+
+Reading in the /tmp/template20150401-12562-nespnx template sequences...	DONE.
+It took 0 to read  1 sequences.
+Aligning sequences from /tmp/142788796312562/input.fasta ...
+One of your candidate sequences is longer than you longest template sequence. Your longest template sequence is 20. Your candidate is 21.
+It took 0 secs to align 1 sequences.
+
+
+Output File Names: 
+/tmp/142788796312562/input.align
+/tmp/142788796312562/input.align.report
+
+
+mothur > quit()
