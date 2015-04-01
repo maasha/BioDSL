@@ -26,50 +26,62 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  # Module for creating a namespace for all Commands.
   module Commands
-    # == Filter rRNA sequences from the stream.
+    # == Assemble sequences the stream using IDBA_UD.
+    # 
+    # +assemble_seq_idba+ is a wrapper around the prokaryotic metagenome
+    # assembler IDBA_UD:
     #
-    # Description
+    # http://i.cs.hku.hk/~alse/hkubrg/projects/idba_ud/
     #
-    # +filter_rrna+ utilizes +sortmerna+ to identify and filter ribosomal RNA
-    # sequences from the stream. The +sortmerna+ and +indexdb_rna+ executables
-    # must be installed for +filter_rrna+ to work.
+    # Any records containing sequence information will be included in the
+    # assembly, but only the assembled contig sequences will be output to the
+    # stream.
     #
-    # Indexed reference files are produced using +indexdb_rna+.
-    #
-    # For more about the sortmerna look here:
-    #
-    # http://bioinfo.lifl.fr/RNA/sortmerna/
+    # The sequences records may contain quality scores, and if the sequence
+    # names indicates that the sequence order is inter-leaved paired-end
+    # assembly will be performed.
     #
     # == Usage
-    #    filter_rrna(ref_fasta: <file(s)>, ref_index: <file(s)>)
+    # 
+    #    assemble_seq_idba([kmer_min: <uint>[, kmer_max: <uint>[, cpus: <uint>]]])
     #
     # === Options
-    # * ref_fasta <file(s)> - One or more reference FASTA files.
-    # * ref_index <file(s)> - One or more index reference files.
     #
+    # * kmer_min: <uint> - Minimum k-mer value (default: 24).
+    # * kmer_max: <uint> - Maximum k-mer value (default: 128).
+    # * cpus: <uint>     - Number of CPUs to use (default: 1).
+    # 
     # == Examples
-    #
-    # To filter all reads matching the SILVA archaea 23S rRNA do:
+    # 
+    # If you have two pair-end sequence files with the Illumina data then you
+    # can assemble these using assemble_seq_idba like this:
     #
     #    BP.new.
-    #    read_fastq(input: "reads.fq").
-    #    filter_rrna(ref_fasta: ["silva-arc-23s-id98.fasta"],
-    #                ref_index: ["silva-arc-23s-id98.fasta.idx*"]).
-    #    write_fastq(output: "clean.fq").
+    #    read_fastq(input: "file1.fq", input2: "file2.fq).
+    #    assemble_seq_idba.
+    #    write_fasta(output: "contigs.fna").
     #    run
-    #
-    def filter_rrna(options = {})
-      require_relative 'filter_rrna/filter_rrna'
+    def assemble_seq_idba(options = {})
+      require_relative 'assemble_seq_idba/assemble_seq_idba'
+      require 'parallel'
 
       options_orig = options.dup
       options_load_rc(options, __method__)
-      options_allowed(options, :ref_fasta, :ref_index)
-      options_files_exist(options, :ref_fasta, :ref_index)
-      aux_exist("sortmerna")
+      options_allowed(options, :kmer_min, :kmer_max, :cpus)
+      options_assert(options, ":kmer_min >= 16")
+      options_assert(options, ":kmer_min <= 256")
+      options_assert(options, ":kmer_max >= 16")
+      options_assert(options, ":kmer_max <= 512")
+      options_assert(options, ":cpus >= 1")
+      options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      aux_exist("idba_ud")
 
-      lmb = FilterRrna.run(options)
+      options[:kmer_min] ||= 24
+      options[:kmer_max] ||= 48
+      options[:cpus]     ||= 1
+
+      lmb = AssembleSeqIdba.run(options)
 
       @commands << BioPieces::Pipeline::Command.new(__method__, options,
                                                     options_orig, lmb)
