@@ -38,11 +38,11 @@ class TestAssembleSeqIdba < Test::Unit::TestCase
   end
 
   test "BioPieces::Pipeline::AssembleSeqIdba with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.assemble_seq_ibda(foo: "bar") }
+    assert_raise(BioPieces::OptionError) { @p.assemble_seq_idba(foo: "bar") }
   end
 
   test "BioPieces::Pipeline::AssembleSeqIdba with valid options don't raise" do
-    assert_nothing_raised { @p.assemble_seq_ibda(cpus: 1) }
+    assert_nothing_raised { @p.assemble_seq_idba(cpus: 1) }
   end
 
   # FIXME: tests missing!
