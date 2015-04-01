@@ -48,8 +48,7 @@ module BioPieces
     def options_allowed(options, *allowed)
       options.each_key do |option|
         unless allowed.include? option
-          fail BioPieces::OptionError, "Disallowed option: #{option}. Allowed" \
-            "options: #{allowed.join(', ')}"
+          fail BioPieces::OptionError, "Disallowed option: #{option}. Allowed options: #{allowed.join(', ')}"
         end
       end
 
