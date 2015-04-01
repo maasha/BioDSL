@@ -67,6 +67,7 @@ module BioPieces
       options_load_rc(options, __method__)
       options_allowed(options, :ref_fasta, :ref_index)
       options_files_exist(options, :ref_fasta, :ref_index)
+      aux_exist("sortmerna")
 
       lmb = FilterRrna.run(options)
 
