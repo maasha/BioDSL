@@ -32,10 +32,11 @@ require 'test/helper'
 
 class TestFilterRrna < Test::Unit::TestCase 
   def setup
+    @tmp_dir   = Dir.mktmpdir('filter_rrna')
+
     omit("sortmerna not found")   unless BioPieces::Filesys.which("sortmerna")
     omit("indexdb_rna not found") unless BioPieces::Filesys.which("indexdb_rna")
 
-    @tmp_dir   = Dir.mktmpdir('filter_rrna')
     @ref_fasta = File.join(@tmp_dir, 'test.fna')
     @ref_index = "#{@ref_fasta}.idx"
 
