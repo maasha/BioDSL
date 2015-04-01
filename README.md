@@ -65,6 +65,7 @@ Available Biopieces
   * [align_seq_mothur]                 (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:align_seq_mothur)                          
   * [analyze_residue_distribution]     (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:analyze_residue_distribution)
   * [assemble_pairs]                   (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:assemble_pairs)
+  * [assemble_seq_idba]                (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:assemble_seq_idba)
   * [assemble_seq_spades]              (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:assemble_seq_spades)
   * [classify_seq]                     (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:classify_seq)
   * [classify_seq_mothur]              (http://www.rubydoc.info/gems/biopieces/0.4.1/BioPieces/Commands:classify_seq_mothur)
