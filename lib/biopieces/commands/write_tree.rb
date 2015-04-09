@@ -59,6 +59,7 @@ module BioPieces
       options_allowed(options, :force, :output, :type)
       options_allowed_values(options, type: [:dna, :rna, :protein])
       options_files_exists_force(options, :output)
+      aux_exist("FastTree")
 
       lmb = lambda do |input, output, status|
         status_track(status) do

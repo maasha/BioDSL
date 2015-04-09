@@ -1,5 +1,6 @@
 *.swp
 *.gem
+mothur.*.logfile
 coverage/
 doc/
 pkg/

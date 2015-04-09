@@ -135,7 +135,8 @@ module BioPieces
       @qual     = options[:qual]
 
       if @seq and @qual and @seq.length != @qual.length
-        raise SeqError, "Sequence length and score length mismatch: #{@seq.length} != #{@qual.length}"
+        raise SeqError, "Sequence length and score length mismatch:" \
+        "#{@seq.length} != #{@qual.length}"
       end
     end
 
