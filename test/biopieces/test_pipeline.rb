@@ -35,31 +35,33 @@ class PipelineTest < Test::Unit::TestCase
     @p = BP.new
   end
 
-  test 'BioPieces::Pipeline#to_s without .run() returns correctly' do
+  test 'BioPieces::Pipeline#to_s w/o options and w/o .run() returns OK' do
+    @p.commands << BioPieces::Command.new('dump', :iterate, nil, {})
+    expected = %{BP.new.dump}
+    assert_equal(expected, @p.to_s)
+  end
+
+  test 'BioPieces::Pipeline#to_s with options and w/o .run() returns OK' do
     @p.commands << BioPieces::Command.new('read_fasta', :iterate, nil,
                                           input: 'test.fna')
     expected = %{BP.new.read_fasta(input: "test.fna")}
     assert_equal(expected, @p.to_s)
   end
 
-  test 'BioPieces::Pipeline#to_s with options and .run() returns correctly' do
+  test 'BioPieces::Pipeline#to_s w/o options and .run() returns OK' do
+    @p.commands << BioPieces::Command.new('dump', :iterate, nil, {})
+    @p.complete = true
+    expected = %{BP.new.dump.run}
+    assert_equal(expected, @p.run.to_s)
+  end
+
+  test 'BioPieces::Pipeline#to_s with options and .run() returns OK' do
     @p.commands << BioPieces::Command.new('read_fasta', :iterate, nil,
                                           input: 'test.fna')
     @p.complete = true
     expected = %{BP.new.read_fasta(input: "test.fna").run}
     assert_equal(expected, @p.run.to_s)
   end
-
-#  test 'BioPieces::Pipeline#to_s with \" in options returns correctly' do
-#    expected = %{BP.new.read_fasta(input: "#{@fasta_file}").grab(select: "foo").run}
-#    capture_stdout { @p.read_fasta(input: @fasta_file).grab(select: "foo").run }
-#    assert_equal(expected, @p.to_s)
-#  end
-#
-#  test 'BioPieces::Pipeline#to_s with .run() and options returns correctly' do
-#    expected = %{BP.new.read_fasta(input: "#{@fasta_file}").run(verbose: false)}
-#    assert_equal(expected, @p.read_fasta(input: @fasta_file).run(verbose: false).to_s)
-#  end
 
   test 'BioPieces::Pipeline#run with no commands raises' do
     assert_raise(BioPieces::PipelineError) { @p.run }

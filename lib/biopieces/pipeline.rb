@@ -229,14 +229,9 @@ module BioPieces
   end
 end
 
-
 __END__
 
 module BioPieces
-  trap("INT") { raise "Interrupted: ctrl-c pressed" }
-
-  class PipelineError < StandardError; end
-
   class Pipeline
     require 'mail'
 
