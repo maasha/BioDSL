@@ -24,54 +24,75 @@
 # This software is part of Biopieces (www.biopieces.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-
 module BioPieces
   # Module containing methods to check options in various ways.
   module OptionsHelper
     BioPieces::OptionsError = Class.new(StandardError)
 
-    # Method that raises if options include any option not in the allowed Array.
+    private
+
+    # Method that fails if options include any non-allowed options.
     #
-    # options - The Hash with options to be checked.
-    # allowed - One or more allowed options.
+    # @param options [Hash] The Hash with options to be checked.
+    # @param allowed [Symbol, Array] One or more allowed options.
     #
-    # Examples
+    # @example That raises:
+    #   options_allowed({foo: 'bar'}, :foobar)
     #
-    #   options_allowed({foo: "bar"}, :foo)
-    #   # => nil
+    # @example That passes:
+    #   options_allowed({foo: 'bar'}, :foo, :one)
     #
-    #   options_allowed({foo: "bar"}, :foobar)
-    #   # => Raises
-    #
-    # Returns nothing.
-    # Raises BioPieces::OptionError on any options not in the allowed Array.
+    # @raise [BioPieces::OptionError] If non-allowed options located.
     def options_allowed(options, *allowed)
       options.each_key do |option|
         unless allowed.include? option
-          fail BioPieces::OptionError, "Disallowed option: #{option}. Allowed options: #{allowed.join(', ')}"
+          fail BioPieces::OptionError, "Disallowed option: #{option}. " \
+            "Allowed options: #{allowed.join(', ')}"
         end
       end
-
-      nil
     end
 
     # Method that raises of options include any option value not in the allowed
     # hash.
+    #
+    # @param options [Hash] The Hash with options to be checked.
+    # @param allowed [Symbol, Array] One or more allowed options.
+    #
+    # @example That raises:
+    #   options_allowed_values(foo: 'bar', foo: 1)
+    #
+    # @example That passes:
+    #   options_allowed_values(foo: 'bar', foo: ['bar', 'rab'])
+    #
+    # @raise [BioPieces::OptionError] If non-allowed options located.
     def options_allowed_values(options, allowed)
       allowed.each do |key, values|
-        if options[key]
-          unless values.include? options[key]
-            fail BioPieces::OptionError, "Disallowed option value: #{options[key]}. Allowed options: #{values.join(', ')}"
-          end
+        next unless options[key]
+
+        unless values.include? options[key]
+          fail BioPieces::OptionError, 'Disallowed option value: ' \
+            "#{options[key]}. Allowed options: #{values.join(', ')}"
         end
       end
     end
 
     # Method that raises if options don't include options in the required list.
+    #
+    # @param options [Hash] The Hash with options to be checked.
+    # @param required [Symbol, Array] One or more required options.
+    #
+    # @example That raises:
+    #   options_required(foo: 'bar', foo: 1)
+    #
+    # @example That passes:
+    #   options_required(foo: 'bar', one: 'two', :foo, :one)
+    #
+    # @raise [BioPieces::OptionError] Unless all required options are given.
     def options_required(options, *required)
       required.each do |option|
         unless options[option]
-          fail BioPieces::OptionError, "Required option missing: #{option}. Required options: #{required.join(', ')}"
+          fail BioPieces::OptionError, "Required option missing: #{option}. " \
+            "Required options: #{required.join(', ')}"
         end
       end
     end
@@ -129,18 +150,18 @@ module BioPieces
     # Method to expand all options in the glob list into lists of paths.
     def options_glob(options, *globs)
       globs.each do |option|
-        if options[option] && !options[option].is_a?(Array)
-          expanded_paths = []
-          options[option].split(/, */).each do |glob_expression|
-            if glob_expression.include? '*'
-              expanded_paths += Dir.glob(glob_expression).sort.select { |file| File.file? file }
-            else
-              expanded_paths << glob_expression
-            end
-          end
+        next unless options[option] && !options[option].is_a?(Array)
 
-          options[option] = expanded_paths
+        expanded_paths = []
+        options[option].split(/, */).each do |glob_expression|
+          if glob_expression.include? '*'
+            expanded_paths += Dir.glob(glob_expression).sort.select { |file| File.file? file }
+          else
+            expanded_paths << glob_expression
+          end
         end
+
+        options[option] = expanded_paths
       end
     end
 
@@ -166,52 +187,46 @@ module BioPieces
 
     # Method that fails if given files don't exists.
     #
-    # options - Hash with options to check.
-    # args    - Symbol or Array of Symbols which are keys in the option
-    #           Hash and whos values to check.
+    # @param options [Hash]
+    #   Hash with options to check.
     #
-    # Examples
+    # @param args [Symbol, Array]
+    #   Symbol or Array of Symbols which are keys in the option Hash and whos
+    #   values to check.
     #
+    # @example With a given Symbol.
     #   options_files_exist(options, :input)
-    #     # => nil
     #
+    # @example With a given Array.
     #   options_files_exist(options, [:input1, :input2])
-    #     # => nil
     #
-    # Returns nothing.
+    # @raise [BioPieces::OptionError] on non-existing files.
     def options_files_exist(options, *args)
       args.each do |arg|
-        if options[arg]
-          files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
+        next unless options[arg]
+        files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
 
-          files.each do |file|
-            if file.include? '*'
-              first = Dir.glob(file).select { |f| File.file? f }.first
-              fail BioPieces::OptionError, "For option #{arg} - glob expression: #{file} didn't match any files" if first.nil?
-              file = first
-            end
+        files.each do |file|
+          file = glob_check(file, arg) if file.include? '*'
 
-            unless File.file? File.expand_path(file)
-              fail BioPieces::OptionError, "For option #{arg} - no such file: #{file}"
-            end
+          unless File.file? File.expand_path(file)
+            fail BioPieces::OptionError, "For option #{arg} - no such file: #{file}"
           end
         end
       end
-
-      nil
     end
 
     # Method that raises if given directories don't exists.
     # Usage: options_dirs_exist(options, :dir)
     def options_dirs_exist(options, *args)
       args.each do |arg|
-        if options[arg]
-          dirs = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
+        next unless options[arg]
 
-          dirs.each do |dir|
-            unless File.directory? File.expand_path(dir)
-              fail BioPieces::OptionError, "For option #{arg} - no such directory: #{dir}"
-            end
+        dirs = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
+
+        dirs.each do |dir|
+          unless File.directory? File.expand_path(dir)
+            fail BioPieces::OptionError, "For option #{arg} - no such directory: #{dir}"
           end
         end
       end
@@ -221,13 +236,13 @@ module BioPieces
     # Usage: options_files_exists_force(options, :output)
     def options_files_exists_force(options, *args)
       args.each do |arg|
-        if options[arg]
-          files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
+        next unless options[arg]
 
-          files.each do |file|
-            if File.file?(file) && !options[:force]
-              fail BioPieces::OptionError, "File exists: #{file} - use 'force: true' to override"
-            end
+        files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
+
+        files.each do |file|
+          if File.file?(file) && !options[:force]
+            fail BioPieces::OptionError, "File exists: #{file} - use 'force: true' to override"
           end
         end
       end
@@ -251,7 +266,7 @@ module BioPieces
 
       return unless File.exist? rc_file
 
-      rc_options = Hash.new { |h, k | h[k] = [] }
+      rc_options = Hash.new { |h, k| h[k] = [] }
 
       File.open(rc_file) do |ios|
         ios.each do |line|
@@ -264,10 +279,10 @@ module BioPieces
           fields[0] = fields[0].to_sym
           fields[1] = fields[1].to_sym
 
-          if fields.first == command
-            unless options.key? fields[1]
-              rc_options[fields[1]] << fields[2]
-            end
+          next unless fields.first == command
+
+          unless options.key? fields[1]
+            rc_options[fields[1]] << fields[2]
           end
         end
       end
@@ -279,6 +294,23 @@ module BioPieces
           options[key] = value
         end
       end
+    end
+
+    # Check if a glob expressoin, a string with a *, matches any files and fail
+    # if that is not the case.
+    #
+    # @param glob [String] Glob expression (containing *) to check.
+    #
+    # @param key [Symbol] Option Hash key whos value is the glob expression.
+    #
+    # @raise [BioPieces::OptionError] If the glob expression fail to match.
+    #
+    # @return [String] The first mathing file.
+    def glob_check(glob, key)
+      first = Dir.glob(glob).select { |f| File.file? f }.first
+      fail BioPieces::OptionError, "For option #{key} - glob expression: " \
+        "#{glob} didn't match any files" if first.nil?
+      first
     end
   end
 end

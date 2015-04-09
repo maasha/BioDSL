@@ -29,6 +29,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
+# Test class for OptionHelper.
 class TestOptionsHelper < Test::Unit::TestCase 
   include BioPieces::OptionsHelper
 
@@ -37,14 +38,40 @@ class TestOptionsHelper < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { options_allowed(options, :foo) }
   end
 
-  test '#options_allowed with allowed option don\'t raise' do
+  test '#options_allowed with allowed option dont raise' do
     options = {foo: 'bar'}
     assert_nothing_raised { options_allowed(options, :foo) }
   end
 
-  test '#options_allowed with no options don\'t raise' do
+  test '#options_allowed with no options dont raise' do
     options = {}
     assert_nothing_raised { options_allowed(options, :foo) }
+  end
+
+  test '#options_allowed_values with disallowed value raises' do
+    options = {bar: 'foo'}
+
+    assert_raise(BioPieces::OptionError) do
+      options_allowed_values(options, bar: [1])
+    end
+  end
+
+  test '#options_allowed_values with allowed value dont raise' do
+    options = {bar: 'foo'}
+    assert_nothing_raised { options_allowed_values(options, bar: ['foo']) }
+  end
+
+  test '#options_required w/o required options raises' do
+    options = {bar: 'foo'}
+
+    assert_raise(BioPieces::OptionError) do
+      options_required(options, :foo)
+    end
+  end
+
+  test '#options_required with required options dont raise' do
+    options = {bar: 'foo', one: 'two'}
+    assert_nothing_raised { options_required(options, :bar, :one) }
   end
 
   test '#options_files_exist with no option don\'t raise' do
