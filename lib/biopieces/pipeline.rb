@@ -122,13 +122,13 @@ module BioPieces
 
     # format a Pipeline to a pretty string which is returned.
     def to_s
-      command_string = 'BP.new'
+      command_strings = %w(BP new)
 
-      @commands.each { |command| command_string << command.to_s }
+      @commands.each { |command| command_strings << command.to_s }
 
       if @complete
         if @options.empty?
-          command_string << '.run'
+          command_strings << 'run'
         else
           options = []
 
@@ -136,11 +136,11 @@ module BioPieces
             options << "#{key}: #{value}"
           end
 
-          command_string << ".run(#{options.join(', ')})"
+          command_strings << "run(#{options.join(', ')})"
         end
       end
 
-      command_string
+      command_strings.join('.')
     end
 
     private
