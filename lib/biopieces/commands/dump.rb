@@ -25,9 +25,43 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  # Dump module
+  # == Dump records in stream to STDOUT.
+  # 
+  # +dump+ outputs records from the stream to STDOUT.
+  # 
+  # == Usage
+  # 
+  #    dump([first: <uint> |last: <uint>])
+  # 
+  # === Options
+  #
+  # * first <uint> - Only dump the first number of records.
+  # * last <uint>  - Only dump the last number of records.
+  # 
+  # == Examples
+  # 
+  # To dump all records in the stream:
+  #
+  #    dump
+  #
+  # To dump only the _first_ 10 records:
+  #
+  #    dump(first: 10)
+  #
+  # To dump only the _last_ 10 records:
+  # 
+  #    dump(last: 10)
   module Dump
+    require 'biopieces/helpers/options_helper'
+    extend OptionsHelper
+
     def self.lmb(options)
+      options_load_rc(options, __method__)
+      options_allowed(options, :first, :last)
+      options_unique(options, :first, :last)
+      options_assert(options, ":first > 0")
+      options_assert(options, ":last > 0")
+
       lambda do |input, output, inlines, status|
         records_in  = 0
         records_out = 0
@@ -52,39 +86,8 @@ end
 
 __END__
   module Commands
-    # == Dump records in stream to STDOUT.
-    # 
-    # +dump+ outputs records from the stream to STDOUT.
-    # 
-    # == Usage
-    # 
-    #    dump([first: <uint> |last: <uint>])
-    # 
-    # === Options
-    #
-    # * first <uint> - Only dump the first number of records.
-    # * last <uint>  - Only dump the last number of records.
-    # 
-    # == Examples
-    # 
-    # To dump all records in the stream:
-    #
-    #    dump
-    #
-    # To dump only the _first_ 10 records:
-    #
-    #    dump(first: 10)
-    #
-    # To dump only the _last_ 10 records:
-    # 
-    #    dump(last: 10)
     def dump(options = {})
       options_orig = options
-      options_load_rc(options, __method__)
-      options_allowed(options, :first, :last)
-      options_unique(options, :first, :last)
-      options_assert(options, ":first > 0")
-      options_assert(options, ":last > 0")
 
       lmb = lambda do |input, output, status|
         status_track(status) do

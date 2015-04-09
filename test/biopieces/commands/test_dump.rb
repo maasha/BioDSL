@@ -50,48 +50,48 @@ class TestDump < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { @p.dump(foo: "bar") }
   end
 
-  test "BioPieces::Pipeline#dump with bad first raises" do
-    assert_raise(BioPieces::OptionError) { @p.dump(first: 0) }
-  end
-
-  test "BioPieces::Pipeline#dump with bad last raises" do
-    assert_raise(BioPieces::OptionError) { @p.dump(last: 0) }
-  end
-
-  test "BioPieces::Pipeline#dump with first and last raises" do
-    assert_raise(BioPieces::OptionError) { @p.dump(first: 1, last: 1) }
-  end
-
-  test "BioPieces::Pipeline#dump returns correctly" do
-    stdout_result = capture_stdout { @p.dump.run(input: @input, output: @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
-
-    stdout_expected = "{:one=>1, :two=>2, :three=>3}\n{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}\n{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-    stream_expected = "{:one=>1, :two=>2, :three=>3}{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-
-    assert_equal(stdout_expected, stdout_result.chomp)
-    assert_equal(stream_expected, stream_result)
-  end
-
-  test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
-    stdout_result = capture_stdout { @p.dump(first: 1).run(input: @input, output: @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
-
-    stdout_expected = "{:one=>1, :two=>2, :three=>3}"
-    stream_expected = "{:one=>1, :two=>2, :three=>3}"
-
-    assert_equal(stdout_expected, stdout_result.chomp)
-    assert_equal(stream_expected, stream_result)
-  end
-
-  test "BioPieces::Pipeline#dump with options[last: 1] returns correctly" do
-    stdout_result = capture_stdout { @p.dump(last: 1).run(input: @input, output: @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
-
-    stdout_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-    stream_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-
-    assert_equal(stdout_expected, stdout_result.chomp)
-    assert_equal(stream_expected, stream_result)
-  end
+#  test "BioPieces::Pipeline#dump with bad first raises" do
+#    assert_raise(BioPieces::OptionError) { @p.dump(first: 0) }
+#  end
+#
+#  test "BioPieces::Pipeline#dump with bad last raises" do
+#    assert_raise(BioPieces::OptionError) { @p.dump(last: 0) }
+#  end
+#
+#  test "BioPieces::Pipeline#dump with first and last raises" do
+#    assert_raise(BioPieces::OptionError) { @p.dump(first: 1, last: 1) }
+#  end
+#
+#  test "BioPieces::Pipeline#dump returns correctly" do
+#    stdout_result = capture_stdout { @p.dump.run(input: @input, output: @output2) }
+#    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+#
+#    stdout_expected = "{:one=>1, :two=>2, :three=>3}\n{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}\n{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+#    stream_expected = "{:one=>1, :two=>2, :three=>3}{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+#
+#    assert_equal(stdout_expected, stdout_result.chomp)
+#    assert_equal(stream_expected, stream_result)
+#  end
+#
+#  test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
+#    stdout_result = capture_stdout { @p.dump(first: 1).run(input: @input, output: @output2) }
+#    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+#
+#    stdout_expected = "{:one=>1, :two=>2, :three=>3}"
+#    stream_expected = "{:one=>1, :two=>2, :three=>3}"
+#
+#    assert_equal(stdout_expected, stdout_result.chomp)
+#    assert_equal(stream_expected, stream_result)
+#  end
+#
+#  test "BioPieces::Pipeline#dump with options[last: 1] returns correctly" do
+#    stdout_result = capture_stdout { @p.dump(last: 1).run(input: @input, output: @output2) }
+#    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+#
+#    stdout_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+#    stream_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+#
+#    assert_equal(stdout_expected, stdout_result.chomp)
+#    assert_equal(stream_expected, stream_result)
+#  end
 end
