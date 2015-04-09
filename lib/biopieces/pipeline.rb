@@ -1,27 +1,236 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+module BioPieces
+  trap('INT') { fail 'Interrupted: ctrl-c pressed' }
+
+  # Error class for Pipeline errors.
+  PipelineError = Class.new(StandardError)
+
+  # Pipeline class
+  class Pipeline
+    require 'biopieces/command'
+    require 'biopieces/status'
+    require 'biopieces/helpers/options_helper'
+
+    # Constant Hash where the keys are command names [Symbol] and the value
+    # is the type [Symbol] of command, which can be :iterate or :inline.
+    TYPE = {
+      cat:      :iterate,
+      wc:       :inline,
+      truncate: :inline,
+      dump:     :iterate
+    }
+
+    attr_accessor :commands, :complete
+
+    # Pipeline class constructor.
+    def initialize
+      @commands = []     # Array of Commands in the Pipeline.
+      @options  = {}     # Options hash.
+      @inlines  = [[]]   # Array of Commands to run inline.
+      @enums    = [[]]   # Array of Enumerators.
+      @complete = false  # Flag denoting if run was completed.
+    end
+
+    # @return [Integer] The size or number of commands in a pipeline.
+    def size
+      @commands.size
+    end
+
+    # Method for merging one pipeline onto another.
+    #
+    # @param other [Pipeline] Pipeline to merge.
+    #
+    # @return [self].
+    def <<(other)
+      other.commands.map { |command| commands << command }
+      other.status.map   { |status|  self.status << status }
+
+      self
+    end
+
+    # Method that adds two Pipelines and return a new Pipeline.
+    def +(other)
+      unless other.is_a?(BioPieces::Pipeline)
+        fail PipelineError, "Not a pipeline: #{other.inspect}"
+      end
+
+      p = self.class.new
+      p << self
+      p << other
+    end
+
+    # Removes last command from a Pipeline and returns a new Pipeline with this
+    # command.
+    def pop
+      p = BioPieces::Pipeline.new
+      p.commands = [@commands.pop]
+      p
+    end
+
+    # Run all the commands in the Pipeline.
+    #
+    # @param options [Hash]
+    # @option options [Boolean] :verbose (false) Enable verbose output.
+    #
+    # @raise [PipelineError] If no commands are added to the pipeline.
+    #
+    # @return [self]
+    def run(options = {})
+      @options = options
+
+      if @commands.empty?
+        fail BioPieces::PipelineError, 'No commands added to pipeline'
+      end
+
+      unless @complete
+        Status.track(@commands) { run_commands && @complete = true }
+        @complete = true
+      end
+
+      self
+    end
+
+    # Return a list of all status hashes from the commands.
+    # @todo Needs proper formatting of output.
+    def status
+      @commands.each_with_object([]) { |e, a| a << e.status }
+    end
+
+    # format a Pipeline to a pretty string which is returned.
+    def to_s
+      command_string = 'BP.new'
+
+      @commands.each { |command| command_string << command.to_s }
+
+      if @complete
+        if @options.empty?
+          command_string << '.run'
+        else
+          options = []
+
+          @options.each_pair do |key, value|
+            options << "#{key}: #{value}"
+          end
+
+          command_string << ".run(#{options.join(', ')})"
+        end
+      end
+
+      command_string
+    end
+
+    private
+
+    # Add a command to the pipeline. This is done by first requiring the
+    # relevant Class/Module and then calling the relevant command.
+    #
+    # @param method [Symbol] Method name.
+    # @param args   [Array]  Method arguments.
+    # @param block  [Proc]   Method block.
+    #
+    # @example Here we add the command `dump` to the pipeline.
+    #     Pipeline.new.dump
+    #       # => self
+    #
+    # @return [self]
+    def method_missing(method, *args, &block)
+      require_file(method)
+
+      if BioPieces.const_defined? method.to_s.capitalize
+        options = args.first || {}
+
+        lmb = BioPieces.const_get(method.to_s.capitalize).send(:lmb, options)
+
+        @commands << Command.new(method, TYPE[method], lmb, options)
+      else
+        super
+      end
+
+      self
+    end
+
+    # Require a file form the lib/commands directory given a method name that
+    # must match the file name. E.g. `require_file(:dump)` requires the file
+    # `lib/commands/dump.rb`.
+    #
+    # @param method [Symbol]
+    #   The name of the method.
+    #
+    # @raise [Errno::ENOENT] If no such file was found.
+    def require_file(method)
+      return if BioPieces.const_defined? method.to_s.capitalize
+
+      file = File.join('lib', 'biopieces', 'commands', "#{method}.rb")
+
+      fail Errno::ENOENT, "No such file: #{file}" unless File.exist? file
+
+      require File.join('biopieces', 'commands', method.to_s)
+    end
+
+    # Run all commands in the Pipeline.
+    def run_commands
+      @commands.each do |command|
+        command.status[:time_start] = Time.now
+
+        case command.type
+        when :inline  then run_inline(command)
+        when :iterate then run_iterate(command)
+        else
+          fail "Unknown type: #{command.type}"
+        end
+      end
+
+      @enums.last.each {}
+
+      # @commands.each do |command| # TODO: this should be part of a #to_s
+      #   command.status.calc_time_elapsed
+      #   command.status.calc_delta
+      # end
+    end
+
+    # Run all inline commands in the Pipeline.
+    def run_inline(command)
+      @inlines.last << command
+    end
+
+    # Run all iterate commands in the Pipeline.
+    def run_iterate(command)
+      input  = @enums.last
+      inline = @inlines.last
+      @enums << Enumerator.new { |output| command.call(input, output, inline) }
+      inline.map(&:terminate)
+      command.terminate
+      @inlines << []
+    end
+  end
+end
+
+
+__END__
 
 module BioPieces
   trap("INT") { raise "Interrupted: ctrl-c pressed" }
@@ -49,30 +258,6 @@ module BioPieces
     # Returns the size or number of commands in a pipeline.
     def size
       @commands.size
-    end
-
-    # Method for merging one pipeline onto another.
-    def <<(pipeline)
-      pipeline.commands.map { |command| self.commands << command }
-      pipeline.status.map   { |status|  self.status   << status }
-
-      self
-    end
-
-    # Method that adds two Pipelines and return a new Pipeline.
-    def +(pipeline)
-      raise ArgumentError, "Not a pipeline: #{pipeline.inspect}" unless self.class === pipeline
-
-      p = self.class.new
-      p << self
-      p << pipeline
-    end
-
-    # Removes last command from a Pipeline and returns a new Pipeline with this command.
-    def pop
-      p = BioPieces::Pipeline.new
-      p.commands = [@commands.pop]
-      p
     end
 
     # Run a Pipeline.
@@ -137,48 +322,6 @@ module BioPieces
       history_save
     end
 
-    def run_fork
-      input  = @options[:input]  || []
-      output = @options[:output]
-      forks  = []
-
-      @commands[1 .. -1].reverse.each do |cmd|
-        parent = BioPieces::Fork.execute do |child|
-          cmd.run(child.input, output)
-        end
-        
-        output = parent.output
-
-        forks << parent
-      end
-
-      @commands.first.run(input, output)
-
-      forks.reverse.each { |f| f.wait }
-    end
-
-    def run_thread
-      input   = @options[:input]  || []
-      output  = @options[:output]
-      threads = []
-
-      @commands[1 .. -1].reverse.each do |command|
-        io_read, io_write = BioPieces::Channel.pair
-
-        threads << Thread.new(command, io_read, output) do |cmd, iin, iout|
-          cmd.run(iin, iout)
-          iout.terminate if iout
-        end
-
-        output = io_write
-      end
-
-      @commands.first.run(input, output)
-      output.terminate
-
-      threads.reverse.each { |t| t.join }
-    end
-
     def run_enumerate
       enums = [@options[:input]]
 
@@ -194,29 +337,6 @@ module BioPieces
       else
         enums.last.each {}
       end
-    end
-
-    # format a Pipeline to a pretty string which is returned.
-    def to_s
-      command_string = "BP.new"
-
-      @commands.each { |command| command_string << command.to_s }
-
-      unless @status.empty?
-        if @options.empty?
-          command_string << ".run"
-        else
-          options = []
-
-          @options.each_pair do |key, value|
-            options << "#{key}: #{value}"
-          end
-
-          command_string << ".run(#{options.join(", ")})"
-        end
-      end
-
-      command_string
     end
 
     # Send email notification to email address specfied in @options[:email],
@@ -293,27 +413,6 @@ module BioPieces
       ensure
         input.close if input.respond_to? :close
         output.close if output.respond_to? :close
-      end
-
-      def to_s
-        options_list = []
-
-        @options_orig.each do |key, value|
-          if value.is_a? String
-            value = Regexp::quote(value) if key == :delimiter
-            options_list << %{#{key}: "#{value}"}
-          elsif value.is_a? Symbol
-            options_list << "#{key}: :#{value}"
-          else
-            options_list << "#{key}: #{value}"
-          end
-        end
-
-        if @options.empty?
-          ".#{@name}"
-        else
-          ".#{@name}(#{options_list.join(", ")})"
-        end
       end
     end
   end

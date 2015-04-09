@@ -25,6 +25,32 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  # Dump module
+  module Dump
+    def self.lmb(options)
+      lambda do |input, output, inlines, status|
+        records_in  = 0
+        records_out = 0
+
+        input.each do |record|
+          records_in += 1
+          inlines.map { |inline| inline.call(record) }
+
+          puts record
+
+          if output
+            output << record
+            records_out += 1
+          end
+        end
+
+        return {records_in: records_in, records_out: records_out}
+      end
+    end
+  end
+end
+
+__END__
   module Commands
     # == Dump records in stream to STDOUT.
     # 
