@@ -27,6 +27,8 @@
 module BioPieces
   # Module containing methods to check options in various ways.
   module OptionsHelper
+    require 'csv'
+
     BioPieces::OptionsError = Class.new(StandardError)
 
     private
@@ -109,10 +111,10 @@ module BioPieces
     #
     # @raise [BioPieces::OptionError] If multiple required options are found.
     def options_required_unique(options, *unique)
-      if unique.select { |option| options[option] }.size > 1
-        fail BioPieces::OptionError, 'Multiple required uniques options ' \
-          "used: #{unique.join(', ')}"
-      end
+      return unless unique.select { |option| options[option] }.size > 1
+
+      fail BioPieces::OptionError, 'Multiple required uniques options ' \
+        "used: #{unique.join(', ')}"
     end
 
     # Method that raises if options include non-unique options.
@@ -266,7 +268,6 @@ module BioPieces
       end
     end
 
-
     # Method that fails if given directories don't exist.
     #
     # @param options [Hash]
@@ -336,16 +337,7 @@ module BioPieces
       globs.each do |option|
         next unless options[option] && !options[option].is_a?(Array)
 
-        expanded_paths = []
-        options[option].split(/, */).each do |glob_expression|
-          if glob_expression.include? '*'
-            expanded_paths += Dir.glob(glob_expression).sort.select { |file| File.file? file }
-          else
-            expanded_paths << glob_expression
-          end
-        end
-
-        options[option] = expanded_paths
+        options[option] = expand_glob(options[option])
       end
     end
 
@@ -363,33 +355,11 @@ module BioPieces
       return unless File.exist? BioPieces::Config::RC_FILE
 
       rc_options = Hash.new { |h, k| h[k] = [] }
+      rc_table   = ::CSV.read(BioPieces::Config::RC_FILE, col_sep: "\s").
+                   select { |row| row.first.to_sym == command }
 
-      File.open(BioPieces::Config::RC_FILE) do |ios|
-        ios.each do |line|
-          line.chomp!
-
-          next if line.empty?
-          next if line[0] == '#'
-
-          fields    = line.split(/\s+/)
-          fields[0] = fields[0].to_sym
-          fields[1] = fields[1].to_sym
-
-          next unless fields.first == command
-
-          unless options.key? fields[1]
-            rc_options[fields[1]] << fields[2]
-          end
-        end
-      end
-
-      rc_options.each do |key, value|
-        if value.size == 1
-          options[key] = value.first
-        else
-          options[key] = value
-        end
-      end
+      add_to_rc_options(rc_table, rc_options, options)
+      add_to_options(rc_options, options)
     end
 
     # Check if a glob expressoin, a string with a *, matches any files and fail
@@ -407,6 +377,41 @@ module BioPieces
       fail BioPieces::OptionError, "For option #{key} - glob expression: " \
         "#{glob} didn't match any files" if first.nil?
       first
+    end
+
+    # Expand a glob expression into a list of paths.
+    #
+    # @param expr [String] Comma sperated glob expression.
+    #
+    # @return [Array] List of expanded paths.
+    def expand_glob(expr)
+      paths = []
+
+      expr.split(/, */).each do |glob|
+        if glob.include? '*'
+          paths += Dir.glob(glob).sort.select { |file| File.file? file }
+        else
+          paths << glob
+        end
+      end
+
+      paths
+    end
+
+    def add_to_options(rc_options, options)
+      rc_options.each do |key, value|
+        if value.size == 1
+          options[key] = value.first
+        else
+          options[key] = value
+        end
+      end
+    end
+
+    def add_to_rc_options(rc_table, rc_options, options)
+      rc_table.each do |row|
+        options.key?(row[1].to_sym) || rc_options[row[1].to_sym] << row[2]
+      end
     end
   end
 end
