@@ -4,3 +4,4 @@ mothur.*.logfile
 coverage/
 doc/
 pkg/
+.yardoc/
