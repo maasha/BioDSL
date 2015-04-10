@@ -1,41 +1,46 @@
 #!/usr/bin/env ruby
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
 # Test class for OptionHelper.
-class TestOptionsHelper < Test::Unit::TestCase 
+class TestOptionsHelper < Test::Unit::TestCase
   include BioPieces::OptionsHelper
+
+  def setup
+    @err = BioPieces::OptionError
+  end
 
   test '#options_allowed with disallowed option raises' do
     options = {bar: 'foo'}
-    assert_raise(BioPieces::OptionError) { options_allowed(options, :foo) }
+    assert_raise(@err) { options_allowed(options, :foo) }
   end
 
   test '#options_allowed with allowed option dont raise' do
@@ -51,7 +56,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_allowed_values with disallowed value raises' do
     options = {bar: 'foo'}
 
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(@err) do
       options_allowed_values(options, bar: [1])
     end
   end
@@ -64,7 +69,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_required w/o required options raises' do
     options = {bar: 'foo'}
 
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(@err) do
       options_required(options, :foo)
     end
   end
@@ -77,12 +82,12 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_required_unique with non-unique required options raises' do
     options = {bar: 'foo', one: 'two'}
 
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(@err) do
       options_required_unique(options, :bar, :one)
     end
   end
 
-  test '#options_required_unique with with unique required options dont raise' do
+  test '#options_required_unique with unique required options dont raise' do
     options = {bar: 'foo', one: 'two'}
     assert_nothing_raised { options_required_unique(options, :one) }
   end
@@ -90,7 +95,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_unique with non-unique options raises' do
     options = {bar: 'foo', one: 'two'}
 
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(@err) do
       options_unique(options, :bar, :one)
     end
   end
@@ -108,7 +113,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_list_unique with duplicate elements raise' do
     options = {foo: [0, 0]}
 
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(@err) do
       options_list_unique(options, :foo)
     end
   end
@@ -121,25 +126,25 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_tie w/o tie option raises' do
     options = {gzip: true}
 
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(@err) do
       options_tie(options, gzip: :output)
     end
   end
 
   test '#options_tie with tie option dont raise' do
-    options = {gzip: true, output: "foo"}
+    options = {gzip: true, output: 'foo'}
     assert_nothing_raised { options_tie(options, gzip: :output) }
   end
 
   test '#options_tie with reverse tie option dont raise' do
-    options = {gzip: true, output: "foo"}
+    options = {gzip: true, output: 'foo'}
     assert_nothing_raised { options_tie(options, output: :gzip) }
   end
 
   test '#options_conflict with conflicting options raise' do
     options = {select: true, reject: true}
 
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(@err) do
       options_conflict(options, select: :reject)
     end
   end
@@ -161,22 +166,22 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_files_exist with non-existing file raise' do
     options = {input: 'ljg34gj324'}
-    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
+    assert_raise(@err) { options_files_exist(options, :input) }
   end
 
   test '#options_files_exist with one non-existing file raise' do
     options = {input: __FILE__, input2: '32g4g24g23'}
-    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input, :input2) }
+    assert_raise(@err) { options_files_exist(options, :input, :input2) }
   end
 
   test '#options_files_exist with Array of non-existing files raise' do
-    options = {input: [__FILE__, 'h23j42h34']}
-    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
+    options = {input: %w(__FILE__ h23j42h34)}
+    assert_raise(@err) { options_files_exist(options, :input) }
   end
 
   test '#options_files_exist with Arrays of non-existing files raise' do
     options = {input: [__FILE__], input2: ['h23j42h34']}
-    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input, :input2) }
+    assert_raise(@err) { options_files_exist(options, :input, :input2) }
   end
 
   test '#options_files_exist with existing file and glob don\'t raise' do
@@ -187,7 +192,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_files_exist with non-matching glob raises' do
     options = {input: 'f234rs*d32'}
-    assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
+    assert_raise(@err) { options_files_exist(options, :input) }
   end
 
   test '#options_files_exist_force w/o options dont raise' do
@@ -202,7 +207,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_files_exist_force w/o force raise' do
     options = {input: __FILE__}
-    assert_raise(BioPieces::OptionError) { options_files_exist_force(options, :input) }
+    assert_raise(@err) { options_files_exist_force(options, :input) }
   end
 
   test '#options_dirs_exist w/o options dont raise' do
@@ -217,27 +222,27 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_dirs_exist with non-existing dir raise' do
     options = {input: 'ljg34gj324'}
-    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input) }
+    assert_raise(@err) { options_dirs_exist(options, :input) }
   end
 
   test '#options_dirs_exist with one non-existing dir raise' do
     options = {input: __dir__, input2: '32g4g24g23'}
-    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input, :input2) }
+    assert_raise(@err) { options_dirs_exist(options, :input, :input2) }
   end
 
   test '#options_dirs_exist with Array of non-existing dirs raise' do
     options = {input: [__dir__, 'h23j42h34']}
-    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input) }
+    assert_raise(@err) { options_dirs_exist(options, :input) }
   end
 
   test '#options_dirs_exist with Arrays of non-existing dirs raise' do
     options = {input: [__dir__], input2: ['h23j42h34']}
-    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input, :input2) }
+    assert_raise(@err) { options_dirs_exist(options, :input, :input2) }
   end
 
   test '#options_assert with false statement raise' do
     options = {min: 0}
-    assert_raise(BioPieces::OptionError) { options_assert(options, ':min > 0') }
+    assert_raise(@err) { options_assert(options, ':min > 0') }
   end
 
   test '#options_assert with true statement dont raise' do
@@ -254,7 +259,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   end
 
   test 'options_load_rc with existing option returns correctly' do
-    file = Tempfile.new("rc_file")
+    file = Tempfile.new('rc_file')
     BioPieces::Config::RC_FILE = file.path
 
     begin
@@ -269,7 +274,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   end
 
   test 'options_load_rc w/o existing option returns correctly' do
-    file = Tempfile.new("rc_file")
+    file = Tempfile.new('rc_file')
     BioPieces::Config::RC_FILE = file.path
 
     begin
