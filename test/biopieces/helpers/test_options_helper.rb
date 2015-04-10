@@ -74,9 +74,89 @@ class TestOptionsHelper < Test::Unit::TestCase
     assert_nothing_raised { options_required(options, :bar, :one) }
   end
 
-  test '#options_files_exist with no option don\'t raise' do
+  test '#options_required_unique with non-unique required options raises' do
+    options = {bar: 'foo', one: 'two'}
+
+    assert_raise(BioPieces::OptionError) do
+      options_required_unique(options, :bar, :one)
+    end
+  end
+
+  test '#options_required_unique with with unique required options dont raise' do
+    options = {bar: 'foo', one: 'two'}
+    assert_nothing_raised { options_required_unique(options, :one) }
+  end
+
+  test '#options_unique with non-unique options raises' do
+    options = {bar: 'foo', one: 'two'}
+
+    assert_raise(BioPieces::OptionError) do
+      options_unique(options, :bar, :one)
+    end
+  end
+
+  test '#options_unique with unique options dont raise' do
+    options = {bar: 'foo', one: 'two'}
+    assert_nothing_raised { options_unique(options, :one) }
+  end
+
+  test '#options_unique with no options dont raise' do
+    options = {}
+    assert_nothing_raised { options_unique(options, :one) }
+  end
+
+  test '#options_list_unique with duplicate elements raise' do
+    options = {foo: [0, 0]}
+
+    assert_raise(BioPieces::OptionError) do
+      options_list_unique(options, :foo)
+    end
+  end
+
+  test '#options_list_unique with unique elements dont raise' do
+    options = {foo: [0, 1]}
+    assert_nothing_raised { options_list_unique(options, :foo) }
+  end
+
+  test '#options_tie w/o tie option raises' do
+    options = {gzip: true}
+
+    assert_raise(BioPieces::OptionError) do
+      options_tie(options, gzip: :output)
+    end
+  end
+
+  test '#options_tie with tie option dont raise' do
+    options = {gzip: true, output: "foo"}
+    assert_nothing_raised { options_tie(options, gzip: :output) }
+  end
+
+  test '#options_tie with reverse tie option dont raise' do
+    options = {gzip: true, output: "foo"}
+    assert_nothing_raised { options_tie(options, output: :gzip) }
+  end
+
+  test '#options_conflict with conflicting options raise' do
+    options = {select: true, reject: true}
+
+    assert_raise(BioPieces::OptionError) do
+      options_conflict(options, select: :reject)
+    end
+  end
+
+  test '#options_conflict with non-conflicting options dont raise' do
+    options = {select: true}
+    assert_nothing_raised { options_conflict(options, select: :reject) }
+  end
+
+  test '#options_files_exist w/o options dont raise' do
     options = {}
     assert_nothing_raised { options_files_exist(options, :foo) }
+  end
+
+  test '#options_files_exist with file dont raise' do
+    options = {input: __FILE__}
+    assert_nothing_raised { options_files_exist(options, :input) }
   end
 
   test '#options_files_exist with non-existing file raise' do
@@ -84,7 +164,7 @@ class TestOptionsHelper < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
   end
 
-  test '#options_files_exist with non-existing files raise' do
+  test '#options_files_exist with one non-existing file raise' do
     options = {input: __FILE__, input2: '32g4g24g23'}
     assert_raise(BioPieces::OptionError) { options_files_exist(options, :input, :input2) }
   end
@@ -108,5 +188,35 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_files_exist with non-matching glob raises' do
     options = {input: 'f234rs*d32'}
     assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
+  end
+
+  test '#options_dirs_exist w/o options dont raise' do
+    options = {}
+    assert_nothing_raised { options_dirs_exist(options, :foo) }
+  end
+
+  test '#options_dirs_exist with dir dont raise' do
+    options = {input: __dir__}
+    assert_nothing_raised { options_dirs_exist(options, :input) }
+  end
+
+  test '#options_dirs_exist with non-existing dir raise' do
+    options = {input: 'ljg34gj324'}
+    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input) }
+  end
+
+  test '#options_dirs_exist with one non-existing dir raise' do
+    options = {input: __dir__, input2: '32g4g24g23'}
+    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input, :input2) }
+  end
+
+  test '#options_dirs_exist with Array of non-existing dirs raise' do
+    options = {input: [__dir__, 'h23j42h34']}
+    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input) }
+  end
+
+  test '#options_dirs_exist with Arrays of non-existing dirs raise' do
+    options = {input: [__dir__], input2: ['h23j42h34']}
+    assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input, :input2) }
   end
 end

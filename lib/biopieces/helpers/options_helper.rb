@@ -52,17 +52,16 @@ module BioPieces
       end
     end
 
-    # Method that raises of options include any option value not in the allowed
-    # hash.
+    # Method that raises if options include any non-allowed values.
     #
     # @param options [Hash] The Hash with options to be checked.
     # @param allowed [Symbol, Array] One or more allowed options.
     #
     # @example That raises:
-    #   options_allowed_values(foo: 'bar', foo: 1)
+    #   options_allowed_values({foo: 'bar'}, foo: 1)
     #
     # @example That passes:
-    #   options_allowed_values(foo: 'bar', foo: ['bar', 'rab'])
+    #   options_allowed_values({foo: 'bar'}, foo: ['bar', 'rab'])
     #
     # @raise [BioPieces::OptionError] If non-allowed options located.
     def options_allowed_values(options, allowed)
@@ -76,16 +75,16 @@ module BioPieces
       end
     end
 
-    # Method that raises if options don't include options in the required list.
+    # Method that raises if options don't include all required options.
     #
     # @param options [Hash] The Hash with options to be checked.
     # @param required [Symbol, Array] One or more required options.
     #
     # @example That raises:
-    #   options_required(foo: 'bar', foo: 1)
+    #   options_required({foo: 'bar'}, foo: 1)
     #
     # @example That passes:
-    #   options_required(foo: 'bar', one: 'two', :foo, :one)
+    #   options_required({foo: 'bar', one: 'two'}, :foo, :one)
     #
     # @raise [BioPieces::OptionError] Unless all required options are given.
     def options_required(options, *required)
@@ -97,90 +96,108 @@ module BioPieces
       end
     end
 
-    # Method that raises if options include multiple options in the unique list.
+    # Method that raises if options include multiple required options.
+    #
+    # @param options [Hash] The Hash with options to be checked.
+    # @param unique [Symbol, Array] Options that must be unique.
+    #
+    # @example That raises:
+    #   options_required_unique({foo: 'bar', one: 'two'}, :foo, :one)
+    #
+    # @example That passes:
+    #   options_required_unique({foo: 'bar', one: 'two'}, :foo)
+    #
+    # @raise [BioPieces::OptionError] If multiple required options are found.
     def options_required_unique(options, *unique)
-      lookup = []
-
-      unique.each do |option|
-        lookup << option if options[option]
-      end
-
-      if lookup.size > 1
-        fail BioPieces::OptionError, "Multiple required uniques options used: #{unique.join(', ')}"
-      elsif lookup.size == 0
-        fail BioPieces::OptionError, "Required unique option missing: #{unique.join(', ')}"
+      if unique.select { |option| options[option] }.size > 1
+        fail BioPieces::OptionError, 'Multiple required uniques options ' \
+          "used: #{unique.join(', ')}"
       end
     end
 
-    # Method that raises if options don't contain at least one option in the single list.
-    def options_required_single(options, *single)
-      lookup = []
-
-      single.each do |option|
-        lookup << option if options[option]
-      end
-
-      return unless lookup.size == 0
-
-      fail BioPieces::OptionError, "Required single option missing: #{single.join(', ')}"
-    end
-
-    # Method that raises if options include multiple options in the unique list.
+    # Method that raises if options include non-unique options.
+    #
+    # @param options [Hash] Hash with options to check.
+    # @param unique [Symbol, Array] List of options that must be unique.
+    #
+    # @example That raises:
+    #   options_unique({foo: 'bar', one: 1}, :foo, :one)
+    #
+    # @example That passes:
+    #   options_unique({foo: 'bar', one: 'two'}, :foo)
+    #
+    # @example That passes:
+    #   options_unique({}, :foo)
+    #
+    # @raise [BioPieces::OptionError] If non-unique options are found.
     def options_unique(options, *unique)
-      lookup = []
+      return unless unique.select { |option| options[option] }.size > 1
 
-      unique.each do |option|
-        lookup << option if options[option]
-      end
-
-      return unless lookup.size > 1
-      fail BioPieces::OptionError, "Multiple uniques options used: #{unique.join(', ')}"
+      fail BioPieces::OptionError, 'Multiple uniques options used: ' \
+        "#{unique.join(', ')}"
     end
 
     # Method that raises if options include lists with duplicate elements.
-    # Usage options_unique_list(options, :keys, :skip)
+    #
+    # @param options [Hash] Hash with options to check.
+    # @param lists [Symbol, Array] Lists whos element to check for duplicates.
+    #
+    # @example That raises:
+    #   options_unique_list({foo: [0, 0]}, :foo)
+    #
+    # @example That passes:
+    #   options_unique_list({foo: [0, 1]}, :foo)
+    #
+    # @raise [BioPieces::OptionError] If duplicate elements are found.
     def options_list_unique(options, *lists)
       lists.each do |list|
         if options[list] && options[list].uniq.size != options[list].size
-          fail BioPieces::OptionError, "Duplicate elements found in list #{list}: #{options[list]}"
+          fail BioPieces::OptionError, 'Duplicate elements found in list ' \
+            "#{list}: #{options[list]}"
         end
-      end
-    end
-
-    # Method to expand all options in the glob list into lists of paths.
-    def options_glob(options, *globs)
-      globs.each do |option|
-        next unless options[option] && !options[option].is_a?(Array)
-
-        expanded_paths = []
-        options[option].split(/, */).each do |glob_expression|
-          if glob_expression.include? '*'
-            expanded_paths += Dir.glob(glob_expression).sort.select { |file| File.file? file }
-          else
-            expanded_paths << glob_expression
-          end
-        end
-
-        options[option] = expanded_paths
       end
     end
 
     # Method that raises if one option is given without some other.
-    # Example: options_tie gzip: :options, bzip2: :options
-    def options_tie(options, ties)
-      ties.each do |option, tie|
-        if options[option] && !options[tie]
-          fail BioPieces::OptionError, "Tie option: #{tie} not in @options: #{options.keys.join(', ')}"
+    # Example: options_tie gzip: :output, bzip2: :output
+    #
+    # @param options [Hash] Hash with options to check.
+    # @param others [Hash] Hash with key/value pairs denoting ties.
+    #
+    # @example That raises:
+    #   options_tie({gzip: true}, gzip: :output)
+    #
+    # @example That passes:
+    #   options_tie({output: "foo", gzip: true}, gzip: :output)
+    #
+    # @raise [BioPieces::OptionError] If option found without it's tie.
+    def options_tie(options, others)
+      others.each do |option, other|
+        if options[option] && !options[other]
+          fail BioPieces::OptionError, 'Tie option: #{other} not in options: ' \
+            "#{options.keys.join(', ')}"
         end
       end
     end
 
     # Method that raises if conflicting options are used.
     # Example: select: :evaluate, reject: :evaluate
+    #
+    # @param options [Hash] Hash with options to check.
+    # @param conflicts [Hash] Hash with conflicting key/value pairs.
+    #
+    # @example That raises:
+    #   options_tie({reject: true, select: true}, reject: :select)
+    #
+    # @example That passes:
+    #   options_tie({reject: true}, reject: :select)
+    #
+    # @raise [BioPieces::OptionError] If conflicting options are found.
     def options_conflict(options, conflicts)
       conflicts.each do |option, conflict|
         if options[option] && options[conflict]
-          fail BioPieces::OptionError, "Conflicting options: #{option}, #{conflict}"
+          fail BioPieces::OptionError, "Conflicting options: #{option}, " \
+            "#{conflict}"
         end
       end
     end
@@ -210,14 +227,29 @@ module BioPieces
           file = glob_check(file, arg) if file.include? '*'
 
           unless File.file? File.expand_path(file)
-            fail BioPieces::OptionError, "For option #{arg} - no such file: #{file}"
+            fail BioPieces::OptionError, "For option #{arg} - no such file: " \
+              "#{file}"
           end
         end
       end
     end
 
-    # Method that raises if given directories don't exists.
-    # Usage: options_dirs_exist(options, :dir)
+    # Method that fails if given directories don't exists.
+    #
+    # @param options [Hash]
+    #   Hash with options to check.
+    #
+    # @param args [Symbol, Array]
+    #   Symbol or Array of Symbols which are keys in the option Hash and whos
+    #   values to check.
+    #
+    # @example With a given Symbol.
+    #   options_dirs_exist(options, :input)
+    #
+    # @example With a given Array.
+    #   options_dirs_exist(options, [:input1, :input2])
+    #
+    # @raise [BioPieces::OptionError] on non-existing directories.
     def options_dirs_exist(options, *args)
       args.each do |arg|
         next unless options[arg]
@@ -226,7 +258,8 @@ module BioPieces
 
         dirs.each do |dir|
           unless File.directory? File.expand_path(dir)
-            fail BioPieces::OptionError, "For option #{arg} - no such directory: #{dir}"
+            fail BioPieces::OptionError, "For option #{arg} - no such " \
+              "directory: #{dir}"
           end
         end
       end
@@ -259,6 +292,24 @@ module BioPieces
       return if eval expression
 
       fail BioPieces::OptionError, "Assertion failed: #{expression}"
+    end
+
+    # Method to expand all options in the glob list into lists of paths.
+    def options_glob(options, *globs)
+      globs.each do |option|
+        next unless options[option] && !options[option].is_a?(Array)
+
+        expanded_paths = []
+        options[option].split(/, */).each do |glob_expression|
+          if glob_expression.include? '*'
+            expanded_paths += Dir.glob(glob_expression).sort.select { |file| File.file? file }
+          else
+            expanded_paths << glob_expression
+          end
+        end
+
+        options[option] = expanded_paths
+      end
     end
 
     def options_load_rc(options, command)
