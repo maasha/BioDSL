@@ -202,7 +202,7 @@ module BioPieces
       end
     end
 
-    # Method that fails if given files don't exists.
+    # Method that fails if given files don't exist.
     #
     # @param options [Hash]
     #   Hash with options to check.
@@ -234,7 +234,40 @@ module BioPieces
       end
     end
 
-    # Method that fails if given directories don't exists.
+    # Method that fails if files exist unless the force option flag is set.
+    #
+    # @param options [Hash]
+    #   Hash with options to check.
+    #
+    # @param args [Symbol, Array]
+    #   Symbol or Array of Symbols which are keys in the option Hash and whos
+    #   values to check.
+    #
+    # @example That raises
+    #   options_files_exist_force({file: __FILE__}}, :file)
+    #
+    # @example That passes
+    #   options_files_exist_force({file: __FILE__, force: true}, :file)
+    #
+    # @raise [BioPieces::OptionError]
+    #   If files exist and the force option flag is not set
+    def options_files_exist_force(options, *args)
+      args.each do |arg|
+        next unless options[arg]
+
+        files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
+
+        files.each do |file|
+          if File.file?(file) && !options[:force]
+            fail BioPieces::OptionError, "File exist: #{file} - use " \
+              "'force: true' to override"
+          end
+        end
+      end
+    end
+
+
+    # Method that fails if given directories don't exist.
     #
     # @param options [Hash]
     #   Hash with options to check.
@@ -265,24 +298,19 @@ module BioPieces
       end
     end
 
-    # Method that raises if files exists unless options[:force] == true.
-    # Usage: options_files_exists_force(options, :output)
-    def options_files_exists_force(options, *args)
-      args.each do |arg|
-        next unless options[arg]
-
-        files = (options[arg].is_a? Array) ? options[arg] : [options[arg]]
-
-        files.each do |file|
-          if File.file?(file) && !options[:force]
-            fail BioPieces::OptionError, "File exists: #{file} - use 'force: true' to override"
-          end
-        end
-      end
-    end
-
-    # Method to assert a given expression.
-    # Usage: options_assert(options, ":overlap_min > 0")
+    # Assert a given expression.
+    #
+    # @param options [Hash] Hash with options to check.
+    #
+    # @param expression [String] Expersion to assert.
+    #
+    # @example That raises:
+    #   options_assert({min: 0}, ':min > 0')
+    #
+    # @example That passes:
+    #   options_assert({{min: 0}, ':min == 0')
+    #
+    # @raise [BioPieces::OptionError] If assertion fails.
     def options_assert(options, expression)
       options.each do |key, value|
         expression.gsub!(/:#{key}/, value.to_s)
@@ -294,7 +322,16 @@ module BioPieces
       fail BioPieces::OptionError, "Assertion failed: #{expression}"
     end
 
-    # Method to expand all options in the glob list into lists of paths.
+    # Expand all glob path options into lists of paths.
+    #
+    # @param options [Hash] Hash with options to check.
+    #
+    # @param globs [Symbol, Array] Paths with glob to expand.
+    #
+    # @example
+    #   options = {input: 'foo*'}
+    #   options_glob(options, :input)
+    #   options == {input: ['foo.rb', 'foo.txt']}
     def options_glob(options, *globs)
       globs.each do |option|
         next unless options[option] && !options[option].is_a?(Array)
@@ -312,14 +349,22 @@ module BioPieces
       end
     end
 
+    # Load options from rc file and use these unless given or default options
+    # are specified. Option precedence: specified > default > rc.
+    #
+    # @param options [Hash] Hash with options to check.
+    # @param command [Symbol] Command for which to load options.
+    #
+    # @example
+    #   options = {}
+    #   options_load_rc(options, :some_option)
+    #   options == {option1: 'value1', option2: 'value2'}
     def options_load_rc(options, command)
-      rc_file = File.join(ENV['HOME'], '.biopiecesrc')
-
-      return unless File.exist? rc_file
+      return unless File.exist? BioPieces::Config::RC_FILE
 
       rc_options = Hash.new { |h, k| h[k] = [] }
 
-      File.open(rc_file) do |ios|
+      File.open(BioPieces::Config::RC_FILE) do |ios|
         ios.each do |line|
           line.chomp!
 

@@ -190,6 +190,21 @@ class TestOptionsHelper < Test::Unit::TestCase
     assert_raise(BioPieces::OptionError) { options_files_exist(options, :input) }
   end
 
+  test '#options_files_exist_force w/o options dont raise' do
+    options = {}
+    assert_nothing_raised { options_files_exist_force(options, :input) }
+  end
+
+  test '#options_files_exist_force with force dont raise' do
+    options = {input: __FILE__, force: true}
+    assert_nothing_raised { options_files_exist_force(options, :input) }
+  end
+
+  test '#options_files_exist_force w/o force raise' do
+    options = {input: __FILE__}
+    assert_raise(BioPieces::OptionError) { options_files_exist_force(options, :input) }
+  end
+
   test '#options_dirs_exist w/o options dont raise' do
     options = {}
     assert_nothing_raised { options_dirs_exist(options, :foo) }
@@ -218,5 +233,53 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_dirs_exist with Arrays of non-existing dirs raise' do
     options = {input: [__dir__], input2: ['h23j42h34']}
     assert_raise(BioPieces::OptionError) { options_dirs_exist(options, :input, :input2) }
+  end
+
+  test '#options_assert with false statement raise' do
+    options = {min: 0}
+    assert_raise(BioPieces::OptionError) { options_assert(options, ':min > 0') }
+  end
+
+  test '#options_assert with true statement dont raise' do
+    options = {min: 0}
+    assert_nothing_raised { options_assert(options, ':min == 0') }
+  end
+
+  test '#options_glob returns correctly' do
+    glob    = __FILE__[0..-3] + '*'
+    options = {input: glob}
+    options_glob(options, :input)
+
+    assert_equal([__FILE__], options[:input])
+  end
+
+  test 'options_load_rc with existing option returns correctly' do
+    file = Tempfile.new("rc_file")
+    BioPieces::Config::RC_FILE = file.path
+
+    begin
+      File.write(file, 'test foo bar')
+      options = {foo: 123}
+      options_load_rc(options, :test)
+      assert_equal({foo: 123}, options)
+    ensure
+      file.unlink
+      file.close
+    end
+  end
+
+  test 'options_load_rc w/o existing option returns correctly' do
+    file = Tempfile.new("rc_file")
+    BioPieces::Config::RC_FILE = file.path
+
+    begin
+      File.write(file, 'test foo bar')
+      options = {}
+      options_load_rc(options, :test)
+      assert_equal({foo: 'bar'}, options)
+    ensure
+      file.unlink
+      file.close
+    end
   end
 end
