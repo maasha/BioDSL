@@ -31,6 +31,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 require 'test/helper'
 
 # Test class for OptionHelper.
+# rubocop:disable Metrics/ClassLength,
 class TestOptionsHelper < Test::Unit::TestCase
   include BioPieces::OptionsHelper
 
@@ -55,10 +56,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_allowed_values with disallowed value raises' do
     options = {bar: 'foo'}
-
-    assert_raise(@err) do
-      options_allowed_values(options, bar: [1])
-    end
+    assert_raise(@err) { options_allowed_values(options, bar: [1]) }
   end
 
   test '#options_allowed_values with allowed value dont raise' do
@@ -68,10 +66,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_required w/o required options raises' do
     options = {bar: 'foo'}
-
-    assert_raise(@err) do
-      options_required(options, :foo)
-    end
+    assert_raise(@err) { options_required(options, :foo) }
   end
 
   test '#options_required with required options dont raise' do
@@ -81,10 +76,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_required_unique with non-unique required options raises' do
     options = {bar: 'foo', one: 'two'}
-
-    assert_raise(@err) do
-      options_required_unique(options, :bar, :one)
-    end
+    assert_raise(@err) { options_required_unique(options, :bar, :one) }
   end
 
   test '#options_required_unique with unique required options dont raise' do
@@ -94,10 +86,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_unique with non-unique options raises' do
     options = {bar: 'foo', one: 'two'}
-
-    assert_raise(@err) do
-      options_unique(options, :bar, :one)
-    end
+    assert_raise(@err) { options_unique(options, :bar, :one) }
   end
 
   test '#options_unique with unique options dont raise' do
@@ -113,9 +102,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_list_unique with duplicate elements raise' do
     options = {foo: [0, 0]}
 
-    assert_raise(@err) do
-      options_list_unique(options, :foo)
-    end
+    assert_raise(@err) { options_list_unique(options, :foo) }
   end
 
   test '#options_list_unique with unique elements dont raise' do
@@ -126,9 +113,7 @@ class TestOptionsHelper < Test::Unit::TestCase
   test '#options_tie w/o tie option raises' do
     options = {gzip: true}
 
-    assert_raise(@err) do
-      options_tie(options, gzip: :output)
-    end
+    assert_raise(@err) { options_tie(options, gzip: :output) }
   end
 
   test '#options_tie with tie option dont raise' do
@@ -143,10 +128,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_conflict with conflicting options raise' do
     options = {select: true, reject: true}
-
-    assert_raise(@err) do
-      options_conflict(options, select: :reject)
-    end
+    assert_raise(@err) { options_conflict(options, select: :reject) }
   end
 
   test '#options_conflict with non-conflicting options dont raise' do
