@@ -356,7 +356,7 @@ module BioPieces
 
       rc_options = Hash.new { |h, k| h[k] = [] }
       rc_table   = ::CSV.read(BioPieces::Config::RC_FILE, col_sep: "\s").
-                   select { |row| row.first.to_sym == command }
+                   select { |row| row.first && row.first.to_sym == command }
 
       add_to_rc_options(rc_table, rc_options, options)
       add_to_options(rc_options, options)
