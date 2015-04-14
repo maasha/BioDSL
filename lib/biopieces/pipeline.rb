@@ -132,9 +132,7 @@ module BioPieces
         else
           options = []
 
-          @options.each_pair do |key, value|
-            options << "#{key}: #{value}"
-          end
+          @options.each_pair { |key, value| options << "#{key}: #{value}" }
 
           command_strings << "run(#{options.join(', ')})"
         end
@@ -204,7 +202,12 @@ module BioPieces
         end
       end
 
-      @enums.last.each {}
+      if @options[:output]
+        @enums.last.each { |record| @options[:output].write record }
+        @options[:output].close   # TODO this close is ugly here
+      else
+        @enums.last.each {}
+      end
 
       # @commands.each do |command| # TODO: this should be part of a #to_s
       #   command.status.calc_time_elapsed
@@ -219,7 +222,7 @@ module BioPieces
 
     # Run all iterate commands in the Pipeline.
     def run_iterate(command)
-      input  = @enums.last
+      input  = @options[:input] || @enums.last
       inline = @inlines.last
       @enums << Enumerator.new { |output| command.call(input, output, inline) }
       inline.map(&:terminate)
