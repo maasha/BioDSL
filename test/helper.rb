@@ -67,4 +67,8 @@ class Test::Unit::TestCase
   def self.test(desc, &impl)
     define_method("test #{desc}", &impl)
   end
+
+  def collect_result
+    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  end
 end
