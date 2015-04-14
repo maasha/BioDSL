@@ -56,6 +56,13 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     extend OptionsHelper
 
+    # Check the dump options and return a lambda for the dump command.
+    #
+    # @param [Hash] options Options hash.
+    # @option options [Integer] :first Dump first number of records.
+    # @option options [Integer] :last  Dump last number of records.
+    #
+    # @return [Proc] Returns the dump command lambda.
     def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :first, :last)
@@ -66,12 +73,22 @@ module BioPieces
       new(options).lmb
     end
 
+    # Constructor for the Dump class.
+    #
+    # @param [Hash] options Options hash.
+    # @option options [Integer] :first Dump first number of records.
+    # @option options [Integer] :last  Dump last number of records.
+    #
+    # @return [Dump] Returns an instance of the Dump class.
     def initialize(options)
       @options     = options
       @records_in  = 0
       @records_out = 0
     end
 
+    # Return a lambda for the dump command.
+    #
+    # @return [Proc] Returns the dump command lambda.
     def lmb
       lambda do |input, output, inlines, status|
         if @options[:first]
@@ -82,12 +99,18 @@ module BioPieces
           dump_all(input, output, inlines)
         end
 
-        return {records_in: @records_in, records_out: @records_out}
+        status[:records_in]  = @records_in
+        status[:records_out] = @records_out
       end
     end
 
     private
 
+    # Dump the first number of records.
+    #
+    # @param input [Enumerator::Yielder] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
+    # @param inlines [Array] List if inline commands to call.
     def dump_first(input, output, inlines)
       input.first(@options[:first]).each do |record|
         @records_in += 1
@@ -102,6 +125,11 @@ module BioPieces
       end
     end
 
+    # Dump the last number of records.
+    #
+    # @param input [Enumerator::Yielder] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
+    # @param inlines [Array] List if inline commands to call.
     def dump_last(input, output, inlines)
       buffer = []
       last   = @options[:last]
@@ -124,6 +152,11 @@ module BioPieces
       end
     end
 
+    # Dump all records.
+    #
+    # @param input [Enumerator::Yielder] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
+    # @param inlines [Array] List if inline commands to call.
     def dump_all(input, output, inlines)
       input.each do |record|
         @records_in += 1

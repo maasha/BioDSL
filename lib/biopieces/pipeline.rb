@@ -48,11 +48,11 @@ module BioPieces
 
     # Pipeline class constructor.
     def initialize
-      @commands = []     # Array of Commands in the Pipeline.
-      @options  = {}     # Options hash.
-      @inlines  = [[]]   # Array of Commands to run inline.
-      @enums    = [[]]   # Array of Enumerators.
-      @complete = false  # Flag denoting if run was completed.
+      @commands = []      # Array of Commands in the Pipeline.
+      @options  = {}      # Options hash.
+      @inlines  = [[]]    # Array of Commands to run inline.
+      @enums    = [[]]    # Array of Enumerators.
+      @complete = false   # Flag denoting if run was completed.
     end
 
     # @return [Integer] The size or number of commands in a pipeline.

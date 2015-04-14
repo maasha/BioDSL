@@ -42,12 +42,11 @@ module BioPieces
       @status  = Status.new
     end
 
-    # Callback method for executing a Command lambda which returns a status
-    # information which is added to the Status hash.
+    # Callback method for executing a Command lambda.
     #
     # @param args [Array] List of arguments used in the callback.
     def call(*args)
-      @status.status.merge! @lmb.call(*args, @status)
+      @lmb.call(*args, @status)
     end
 
     # Terminate the status.
