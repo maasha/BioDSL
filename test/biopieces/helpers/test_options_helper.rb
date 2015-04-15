@@ -237,6 +237,11 @@ class TestOptionsHelper < Test::Unit::TestCase
     assert_equal([__FILE__], options_glob(glob))
   end
 
+  test '#options_glob with Array returns correctly' do
+    glob    = __FILE__[0..-3] + '*'
+    assert_equal([__FILE__, __FILE__], options_glob([glob, glob]))
+  end
+
   test 'options_load_rc with existing option returns correctly' do
     file = Tempfile.new('rc_file')
     BioPieces::Config::RC_FILE = file.path

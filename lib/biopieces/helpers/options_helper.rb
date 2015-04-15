@@ -334,8 +334,9 @@ module BioPieces
     # @return [Array] List of expanded paths.
     def options_glob(expr)
       paths = []
+      list  = expr.is_a?(Array) ? expr.join(',') : expr
 
-      expr.split(/, */).each do |glob|
+      list.split(/, */).each do |glob|
         if glob.include? '*'
           paths += Dir.glob(glob).sort.select { |file| File.file? file }
         else
