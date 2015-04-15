@@ -323,22 +323,27 @@ module BioPieces
       fail BioPieces::OptionError, "Assertion failed: #{expression}"
     end
 
-    # Expand all glob path options into lists of paths.
+    # Expand a given glob expression into lists of paths.
     #
-    # @param options [Hash] Hash with options to check.
-    #
-    # @param globs [Symbol, Array] Paths with glob to expand.
+    # @param expr [String] Comma sperated glob expressions.
     #
     # @example
-    #   options = {input: 'foo*'}
-    #   options_glob(options, :input)
-    #   options == {input: ['foo.rb', 'foo.txt']}
-    def options_glob(options, *globs)
-      globs.each do |option|
-        next unless options[option] && !options[option].is_a?(Array)
+    #   options_glob('foo*')
+    #     # => ['foo.rb', 'foo.txt']
+    #
+    # @return [Array] List of expanded paths.
+    def options_glob(expr)
+      paths = []
 
-        options[option] = expand_glob(options[option])
+      expr.split(/, */).each do |glob|
+        if glob.include? '*'
+          paths += Dir.glob(glob).sort.select { |file| File.file? file }
+        else
+          paths << glob
+        end
       end
+
+      paths
     end
 
     # Load options from rc file and use these unless given or default options
@@ -377,25 +382,6 @@ module BioPieces
       fail BioPieces::OptionError, "For option #{key} - glob expression: " \
         "#{glob} didn't match any files" if first.nil?
       first
-    end
-
-    # Expand a glob expression into a list of paths.
-    #
-    # @param expr [String] Comma sperated glob expression.
-    #
-    # @return [Array] List of expanded paths.
-    def expand_glob(expr)
-      paths = []
-
-      expr.split(/, */).each do |glob|
-        if glob.include? '*'
-          paths += Dir.glob(glob).sort.select { |file| File.file? file }
-        else
-          paths << glob
-        end
-      end
-
-      paths
     end
 
     def add_to_options(rc_options, options)

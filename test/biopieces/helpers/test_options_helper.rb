@@ -234,10 +234,7 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test '#options_glob returns correctly' do
     glob    = __FILE__[0..-3] + '*'
-    options = {input: glob}
-    options_glob(options, :input)
-
-    assert_equal([__FILE__], options[:input])
+    assert_equal([__FILE__], options_glob(glob))
   end
 
   test 'options_load_rc with existing option returns correctly' do
