@@ -148,10 +148,12 @@ module BioPieces
     def method_missing(method, *args, &block)
       require_file(method)
 
-      if BioPieces.const_defined? method.to_s.capitalize
+      const = method.to_s.split('_').map(&:capitalize).join('')
+
+      if BioPieces.const_defined? const
         options = args.first || {}
 
-        lmb = BioPieces.const_get(method.to_s.capitalize).send(:lmb, options)
+        lmb = BioPieces.const_get(const).send(:lmb, options)
 
         @commands << Command.new(method, lmb, options)
       else
