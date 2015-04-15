@@ -90,13 +90,13 @@ module BioPieces
     #
     # @return [Proc] Returns the dump command lambda.
     def lmb
-      lambda do |input, output, inlines, status|
+      lambda do |input, output, status|
         if @options[:first]
-          dump_first(input, output, inlines)
+          dump_first(input, output)
         elsif @options[:last]
-          dump_last(input, output, inlines)
+          dump_last(input, output)
         else
-          dump_all(input, output, inlines)
+          dump_all(input, output)
         end
 
         status[:records_in]  = @records_in
@@ -110,11 +110,9 @@ module BioPieces
     #
     # @param input [Enumerator::Yielder] Input stream.
     # @param output [Enumerator::Yielder] Output stream.
-    # @param inlines [Array] List if inline commands to call.
-    def dump_first(input, output, inlines)
+    def dump_first(input, output)
       input.first(@options[:first]).each do |record|
         @records_in += 1
-        inlines.map { |inline| inline.call(record) }
 
         puts record
 
@@ -129,14 +127,12 @@ module BioPieces
     #
     # @param input [Enumerator::Yielder] Input stream.
     # @param output [Enumerator::Yielder] Output stream.
-    # @param inlines [Array] List if inline commands to call.
-    def dump_last(input, output, inlines)
+    def dump_last(input, output)
       buffer = []
       last   = @options[:last]
 
       input.each do |record|
         @records_in += 1
-        inlines.map { |inline| inline.call(record) }
 
         buffer << record
         buffer.shift if buffer.size > last
@@ -156,11 +152,9 @@ module BioPieces
     #
     # @param input [Enumerator::Yielder] Input stream.
     # @param output [Enumerator::Yielder] Output stream.
-    # @param inlines [Array] List if inline commands to call.
-    def dump_all(input, output, inlines)
+    def dump_all(input, output)
       input.each do |record|
         @records_in += 1
-        inlines.map { |inline| inline.call(record) }
 
         puts record
 

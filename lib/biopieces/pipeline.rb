@@ -35,22 +35,12 @@ module BioPieces
     require 'biopieces/status'
     require 'biopieces/helpers/options_helper'
 
-    # Constant Hash where the keys are command names [Symbol] and the value
-    # is the type [Symbol] of command, which can be :iterate or :inline.
-    TYPE = {
-      cat:      :iterate,
-      wc:       :inline,
-      truncate: :inline,
-      dump:     :iterate
-    }
-
     attr_accessor :commands, :complete
 
     # Pipeline class constructor.
     def initialize
       @commands = []      # Array of Commands in the Pipeline.
       @options  = {}      # Options hash.
-      @inlines  = [[]]    # Array of Commands to run inline.
       @enums    = [[]]    # Array of Enumerators.
       @complete = false   # Flag denoting if run was completed.
     end
@@ -107,7 +97,7 @@ module BioPieces
       end
 
       unless @complete
-        Status.track(@commands) { run_commands && @complete = true }
+        Status.track(@commands) { run_commands }
         @complete = true
       end
 
@@ -163,7 +153,7 @@ module BioPieces
 
         lmb = BioPieces.const_get(method.to_s.capitalize).send(:lmb, options)
 
-        @commands << Command.new(method, TYPE[method], lmb, options)
+        @commands << Command.new(method, lmb, options)
       else
         super
       end
@@ -193,13 +183,9 @@ module BioPieces
     def run_commands
       @commands.each do |command|
         command.status[:time_start] = Time.now
-
-        case command.type
-        when :inline  then run_inline(command)
-        when :iterate then run_iterate(command)
-        else
-          fail "Unknown type: #{command.type}"
-        end
+        input  = @options[:input] || @enums.last
+        @enums << Enumerator.new { |output| command.call(input, output) }
+        command.terminate
       end
 
       if @options[:output]
@@ -213,21 +199,6 @@ module BioPieces
       #   command.status.calc_time_elapsed
       #   command.status.calc_delta
       # end
-    end
-
-    # Run all inline commands in the Pipeline.
-    def run_inline(command)
-      @inlines.last << command
-    end
-
-    # Run all iterate commands in the Pipeline.
-    def run_iterate(command)
-      input  = @options[:input] || @enums.last
-      inline = @inlines.last
-      @enums << Enumerator.new { |output| command.call(input, output, inline) }
-      inline.map(&:terminate)
-      command.terminate
-      @inlines << []
     end
   end
 end

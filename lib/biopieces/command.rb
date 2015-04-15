@@ -26,17 +26,15 @@
 module BioPieces
   # Command class for initiating and calling commands.
   class Command
-    attr_reader :name, :type, :status
+    attr_reader :name, :status
 
     # Constructor for Command objects.
     #
     # @param name    [Symbol] Name of command.
-    # @param type    [Symbol] Command type.
     # @param lmb     [Proc]   Lambda for command callback execution.
     # @param options [Hash]   Options hash.
-    def initialize(name, type, lmb, options)
+    def initialize(name, lmb, options)
       @name    = name
-      @type    = type
       @lmb     = lmb
       @options = options
       @status  = Status.new
