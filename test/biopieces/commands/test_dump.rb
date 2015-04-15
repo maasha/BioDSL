@@ -30,7 +30,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-# Test calss for the Dump command.
+# Test class for the dump command.
 class TestDump < Test::Unit::TestCase
   def setup
     @input, @output   = BioPieces::Stream.pipe
@@ -64,11 +64,11 @@ class TestDump < Test::Unit::TestCase
     result1 = capture_stdout { @p.dump.run(input: @input, output: @output2) }
     result2 = collect_result
 
-    expected = <<-EXP1.gsub(/^\s+\|/, '')
+    expected = <<-EXP.gsub(/^\s+\|/, '')
       |{:one=>1, :two=>2, :three=>3}
       |{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}
       |{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}
-    EXP1
+    EXP
 
     assert_equal(expected, result1)
     assert_equal(expected, result2)
