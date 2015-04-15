@@ -56,7 +56,7 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     extend OptionsHelper
 
-    # Check the dump options and return a lambda for the dump command.
+    # Check the options and return a lambda for the command.
     #
     # @param [Hash] options Options hash.
     # @option options [Integer] :first Dump first number of records.
