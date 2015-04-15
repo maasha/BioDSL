@@ -43,7 +43,7 @@ module BioPieces
   # For more about the FASTA format:
   #
   # http://en.wikipedia.org/wiki/Fasta_format
-  # 
+  #
   # == Usage
   #    read_fasta(input: <glob>[, first: <uint>|last: <uint>])
   #
@@ -82,18 +82,36 @@ module BioPieces
     extend OptionsHelper
     include OptionsHelper
 
+    # Check the options and return a lambda for the command.
+    #
+    # @param [Hash] options Options hash.
+    # @option options [String, Array] :input String or Array with glob
+    #   expressions.
+    # @option options [Integer] :first Dump first number of records.
+    # @option options [Integer] :last  Dump last number of records.
+    #
+    # @return [Proc] Returns the dump command lambda.
     def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :input, :first, :last)
       options_required(options, :input)
       options_files_exist(options, :input)
       options_unique(options, :first, :last)
-      options_assert(options, ":first >= 0")
-      options_assert(options, ":last >= 0")
+      options_assert(options, ':first >= 0')
+      options_assert(options, ':last >= 0')
 
       new(options).lmb
     end
 
+    # Constructor for the ReadFasta class.
+    #
+    # @param [Hash] options Options hash.
+    # @option options [String, Array] :input String or Array with glob
+    #   expressions.
+    # @option options [Integer] :first Dump first number of records.
+    # @option options [Integer] :last  Dump last number of records.
+    #
+    # @return [ReadFasta] Returns an instance of the ReadFasta class.
     def initialize(options)
       @options       = options
       @records_in    = 0
@@ -106,16 +124,17 @@ module BioPieces
       @buffer        = []
     end
 
+    # Return a lambda for the read_fasta command.
+    #
+    # @return [Proc] Returns the read_Fasta command lambda.
     def lmb
       lambda do |input, output, status|
         read_input(input, output)
 
         options_glob(@options[:input]).each do |file|
           BioPieces::Fasta.open(file) do |ios|
-            if @options[:first]
-              read_first(ios, output)
-            elsif @options[:last]
-              read_last(ios, output)
+            if @options[:first] && read_first(ios, output)
+            elsif @options[:last] && read_last(ios)
             else
               read_all(ios, output)
             end
@@ -124,27 +143,31 @@ module BioPieces
 
         write_buffer(output) if @options[:last]
 
-        status[:records_in]    = @records_in
-        status[:records_out]   = @records_out
-        status[:sequences_in]  = @sequences_in
-        status[:sequences_out] = @sequences_out
-        status[:residues_in]   = @residues_in
-        status[:residues_out]  = @residues_out
+        assign_status(status)
       end
     end
 
     private
 
+    # Read and emit records from the input to the output stream.
+    #
+    # @param input  [Enumerable::Yielder] Input stream.
+    # @param output [Enumerable::Yielder] Output stream.
     def read_input(input, output)
-      if input
-        input.each do |record|
-          output << record
-          @records_in  += 1
-          @records_out += 1
-        end
+      return unless input
+
+      input.each do |record|
+        output << record
+        @records_in  += 1
+        @records_out += 1
       end
     end
 
+    # Read in a specified number of entries from the input and emit to the
+    # output.
+    #
+    # @param [BioPieces::Fasta] FASTA file input stream.
+    # @param output [Enumerable::Yielder] Output stream.
     def read_first(input, output)
       first = @options[:first]
 
@@ -160,7 +183,12 @@ module BioPieces
       end
     end
 
-    def read_last(input, output)
+    # Read in entries from input and cache the specified last number in a
+    # buffer.
+    #
+    # @param [BioPieces::Fasta] FASTA file input stream.
+    # @param output [Enumerable::Yielder] Output stream.
+    def read_last(input)
       last = @options[:last]
 
       input.each do |entry|
@@ -169,6 +197,10 @@ module BioPieces
       end
     end
 
+    # Read in all entries from input and emit to output.
+    #
+    # @param [BioPieces::Fasta] FASTA file input stream.
+    # @param output [Enumerable::Yielder] Output stream.
     def read_all(input, output)
       input.each do |entry|
         output << entry.to_bp
@@ -179,6 +211,9 @@ module BioPieces
       end
     end
 
+    # Emit all entries in buffer to output.
+    #
+    # @param output [Enumerable::Yielder] Output stream.
     def write_buffer(output)
       @buffer.each do |entry|
         output << entry.to_bp
@@ -189,6 +224,16 @@ module BioPieces
       end
     end
 
+    # Assign all stats to the status hash.
+    #
+    # @param status [Hash] Status hash.
+    def assign_status(status)
+      status[:records_in]    = @records_in
+      status[:records_out]   = @records_out
+      status[:sequences_in]  = @sequences_in
+      status[:sequences_out] = @sequences_out
+      status[:residues_in]   = @residues_in
+      status[:residues_out]  = @residues_out
+    end
   end
 end
-
