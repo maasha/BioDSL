@@ -90,7 +90,7 @@ module BioPieces
     # @option options [Integer] :first Dump first number of records.
     # @option options [Integer] :last  Dump last number of records.
     #
-    # @return [Proc] Returns the dump command lambda.
+    # @return [Proc] Returns the command lambda.
     def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :input, :first, :last)
@@ -111,7 +111,7 @@ module BioPieces
     # @option options [Integer] :first Dump first number of records.
     # @option options [Integer] :last  Dump last number of records.
     #
-    # @return [ReadFasta] Returns an instance of the ReadFasta class.
+    # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
       @options       = options
       @records_in    = 0
@@ -126,7 +126,7 @@ module BioPieces
 
     # Return a lambda for the read_fasta command.
     #
-    # @return [Proc] Returns the read_Fasta command lambda.
+    # @return [Proc] Returns the read_fasta command lambda.
     def lmb
       lambda do |input, output, status|
         read_input(input, output)
