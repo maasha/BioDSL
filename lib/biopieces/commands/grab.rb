@@ -27,21 +27,21 @@
 
 module BioPieces
   # == Grab records in stream.
-  # 
+  #
   # +grab+ select records from the stream by matching patterns to keys or
   # values. +grab+ is  Biopieces' equivalent of Unix' +grep+, however, +grab+
   # is much more versatile.
-  # 
-  # NB! If chaining multiple +grab+ commands then use the most restrictive +grab+
-  # first in order to get the best performance.
-  # 
+  #
+  # NB! If chaining multiple +grab+ commands then use the most restrictive
+  # +grab+ first in order to get the best performance.
+  #
   # == Usage
-  # 
+  #
   #    grab(<select: <pattern>|select_file: <file>|reject: <pattern>|
   #                reject_file: <file>|evaluate: <expression>|exact: <bool>>
   #               [, keys: <list>|keys_only: <bool>|values_only: <bool>|
   #               ignore_case: <bool>])
-  # 
+  #
   # === Options
   #
   # * select: <pattern>      - Select records matching <pattern> which is
@@ -58,40 +58,40 @@ module BioPieces
   # * values_only: <bool>    - Only grab for values.
   # * ignore_case: <bool>    - Ignore case when grabbing with regex (does not
   #   work with +evaluate+ and +exact+).
-  # 
+  #
   # == Examples
-  # 
+  #
   # To easily grab all records in the stream that has any mentioning of the
   # pattern 'human' just pipe the data stream through grab like this:
-  # 
+  #
   #    grab(select: "human")
-  # 
+  #
   # This will search for the pattern 'human' in all keys and all values. The
   # +select+ option alternatively uses an array of patterns, so in order to
   # match one of multiple patterns do:
-  # 
+  #
   #    grab(select: ["human", "mouse"])
-  # 
+  #
   # It is also possible to invoke flexible matching using regex (regular
-  # expressions) instead of simple pattern matching. If you want to +grab+ 
+  # expressions) instead of simple pattern matching. If you want to +grab+
   # records with the sequence +ATCG+ or +GCTA+ you can do this:
-  # 
+  #
   #    grab(select: "ATCG|GCTA")
-  # 
+  #
   # Or if you want to +grab+ sequences beginning with +ATCG+:
-  # 
+  #
   #    grab(select: "^ATCG")
-  # 
+  #
   # It is also possible to use the +select_file+ option to load patterns from
   # a file with one pattern per line.
-  # 
+  #
   #    grab(select_file: "patterns.txt")
-  # 
+  #
   # If you want the opposite result - to find all records that does not match
   # the a pattern, use the +reject+ option:
-  # 
+  #
   #    grab(reject: "human")
-  # 
+  #
   # Similar to +select_file+ there is a +reject_file+ option to load patterns
   # from a file, and use any of these patterns to reject records:
   #
@@ -102,42 +102,43 @@ module BioPieces
   # prevent matching of +SEQ+ in any record value, and in fact +SEQ+ is a not
   # uncommon peptide sequence you could get an unwanted record. Also, this
   # will give an increase in speed since only the keys are searched:
-  # 
+  #
   #    grab(select: "SEQ", keys_only: true)
-  # 
+  #
   # However, if you are interested in +grabbing+ the peptide sequence +SEQ+ and
   # not the +SEQ+ key, just use the +vals_only+ option:
-  # 
+  #
   #    grab(select: "SEQ", vals_only: true)
-  # 
+  #
   # Also, if you want to +grab+ for certain key/value pairs you can supply a
   # comma separated list or an array of keys whos values will then be grabbed
   # using the +keys+ option. This is handy if your records contain large
   # genomic sequences and you don't want to search the entire sequence for
   # e.g. the organism name - it is much faster to tell +grab+ which keys to
   # search the value for:
-  # 
+  #
   #    grab(select: "human", keys: :SEQ_NAME)
-  # 
+  #
   # You can also use the +evaluate+ option to +grab+ records that fulfill an
   # expression. So to +grab+ all records with a sequence length greater than 30:
-  # 
+  #
   #    grab(evaluate: 'SEQ_LEN > 30')
-  # 
-  # If you want to +grab+ all records containing the pattern 'human' and where the
-  # sequence length is greater that 30, you do this by running the stream through
-  # +grab+ twice:
-  # 
+  #
+  # If you want to +grab+ all records containing the pattern 'human' and where
+  # the sequence length is greater that 30, you do this by running the stream
+  # through +grab+ twice:
+  #
   #    grab(select: 'human').grab(evaluate: 'SEQ_LEN > 30')
-  # 
+  #
   # Finally, it is possible to +grab+ for exact pattern using the +exact+
   # option. This is much faster than the default regex pattern grabbing
   # because with +exact+ the patterns are used to create a lookup hash for
   # instant matching of keys or values. This is useful if you e.g. have a
-  # file with ID numbers and you want to +grab+ matching records from the 
+  # file with ID numbers and you want to +grab+ matching records from the
   # stream:
-  # 
+  #
   #    grab(select_file: "ids.txt", keys: :ID, exact: true)
+  # rubocop:disable ClassLength
   class Grab
     require 'biopieces/helpers/options_helper'
     extend OptionsHelper
@@ -179,7 +180,6 @@ module BioPieces
     #
     # @return [Proc] Returns the command lambda.
     def self.lmb(options)
-      options_orig = options.dup
       options_load_rc(options, __method__)
       options_allowed(options, :select, :select_file, :reject, :reject_file,
                       :evaluate, :exact, :keys, :keys_only, :values_only,
@@ -187,8 +187,8 @@ module BioPieces
       options_required_unique(options, :select, :select_file, :reject,
                               :reject_file, :evaluate)
       options_conflict(options, keys: :evaluate, keys_only: :evaluate,
-                       values_only: :evaluate, ignore_case: :evaluate, exact: :evaluate)
-      options_conflict(options, keys_only: :keys, values_only: :keys)
+                                values_only: :evaluate, ignore_case: :evaluate,
+                                exact: :evaluate)
       options_unique(options, :keys_only, :values_only)
       options_files_exist(options, :select_file, :reject_file)
 
@@ -255,9 +255,9 @@ module BioPieces
           match = case
                   when @exact then exact_match? record
                   when @regex then regex_match? record
-                  when @eval  then eval_match?  record
+                  when @eval  then eval_match? record
                   end
-          
+
           emit_match(output, record, match)
         end
 
@@ -265,7 +265,7 @@ module BioPieces
       end
     end
 
-    private 
+    private
 
     # Emit a record to the output stream if a match was found and w/o invert
     # matching, or if no match was found and with invert matching.
@@ -290,13 +290,13 @@ module BioPieces
     def compile_keys
       return unless @options[:keys]
 
-      case @options[:keys].class
-      when Array
+      case @options[:keys].class.to_s
+      when 'Array'
         @options[:keys].map(&:to_sym)
-      when Symbol
+      when 'Symbol'
         [@options[:keys]]
-      when String
-        @options[:keys].split(/, */).map { |k| k = k.sub(/^:/, '').to_sym }
+      when 'String'
+        @options[:keys].split(/, */).map { |key| key.sub(/^:/, '').to_sym }
       end
     end
 
@@ -329,10 +329,13 @@ module BioPieces
     #
     # @return [Array] List of patterns.
     def compile_patterns_select_file
+      patterns = []
+
       File.open(@options[:select_file]) do |ios|
-        patterns = []
         ios.each_line { |line| patterns << line.chomp.to_num }
       end
+
+      patterns
     end
 
     # Compile a list of patterns to reject from an Array, a String, an Integer
@@ -352,22 +355,26 @@ module BioPieces
     #
     # @return [Array] List of patterns.
     def compile_patterns_reject_file
+      patterns = []
+
       File.open(@options[:reject_file]) do |ios|
-        patterns = []
         ios.each_line { |line| patterns << line.chomp.to_num }
       end
+
+      patterns
     end
 
     # Compile a list of regexes for matching.
     #
     # @return [Array] List of regexes.
     def compile_regexes
+      return if     @exact
       return unless @patterns
 
       if @options[:ignore_case]
-        @patterns.inject([]) { |list, pat| list << Regexp.new(/#{pat}/i) }
+        @patterns.inject([]) { |a, e| a << Regexp.new(/#{e}/i) }
       else
-        @patterns.inject([]) { |list, pat| list << Regexp.new(/#{pat}/) }
+        @patterns.inject([]) { |a, e| a << Regexp.new(/#{e}/) }
       end
     end
 
@@ -382,7 +389,7 @@ module BioPieces
       lookup = Set.new
 
       @patterns.each do |pattern|
-        if pattern.is_a? Float or pattern.is_a? Integer
+        if pattern.is_a?(Float) || pattern.is_a?(Integer)
           lookup << pattern
         else
           lookup << pattern.to_sym
@@ -401,7 +408,7 @@ module BioPieces
       keys = @keys || record.keys
 
       if @keys_only
-        return true if exact_match_keys?(record, keys)
+        return true if exact_match_keys?(keys)
       elsif @vals_only
         return true if exact_match_values?(record, keys)
       else
@@ -413,13 +420,12 @@ module BioPieces
 
     # Match exactly any record keys.
     #
-    # @param record [Hash] Record to match.
     # @param keys [Array] List of keys to match.
     #
     # @return [Boolean] True if exact match found.
-    def exact_match_keys?(record, keys)
+    def exact_match_keys?(keys)
       keys.each do |key|
-        return true if record.key? key
+        return true if @exact.include?(key)
       end
 
       false
@@ -450,7 +456,7 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_key_values?(record, keys)
       keys.each do |key|
-        return true if record.key? key
+        return true if @exact.include?(key)
 
         if (value = record[key])
           return true if value.is_a?(String)  && @exact.include?(value.to_sym)
@@ -465,7 +471,7 @@ module BioPieces
       keys = @keys || record.keys
 
       if @keys_only
-        return true if regex_match_keys?(record, keys)
+        return true if regex_match_keys?(keys)
       elsif @vals_only
         return true if regex_match_values?(record, keys)
       else
@@ -477,11 +483,10 @@ module BioPieces
 
     # Match using regex any record keys.
     #
-    # @param record [Hash] Record to match.
     # @param keys [Array] List of keys to match.
     #
     # @return [Boolean] True if regex match found.
-    def regex_match_keys?(record, keys)
+    def regex_match_keys?(keys)
       keys.each do |key|
         @regex.each do |regex|
           return true if key.to_s =~ regex
@@ -499,10 +504,11 @@ module BioPieces
     # @return [Boolean] True if regex match found.
     def regex_match_values?(record, keys)
       keys.each do |key|
-        if (value = record[key])
-          @regex.each do |regex|
-            return true if value.to_s =~ regex
-          end
+        next unless record[key]
+        value = record[key]
+
+        @regex.each do |regex|
+          return true if value.to_s =~ regex
         end
       end
 
@@ -521,10 +527,11 @@ module BioPieces
           return true if key.to_s =~ regex
         end
 
-        if (value = record[key])
-          @regex.each do |regex|
-            return true if value.to_s =~ regex
-          end
+        next unless record[key]
+        value = record[key]
+
+        @regex.each do |regex|
+          return true if value.to_s =~ regex
         end
       end
 
