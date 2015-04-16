@@ -408,14 +408,12 @@ module BioPieces
       keys = @keys || record.keys
 
       if @keys_only
-        return true if exact_match_keys?(keys)
+        exact_match_keys?(keys)
       elsif @vals_only
-        return true if exact_match_values?(record, keys)
+        exact_match_values?(record, keys)
       else
-        return true if exact_match_key_values?(record, keys)
+        exact_match_key_values?(record, keys)
       end
-
-      false
     end
 
     # Match exactly any record keys.
@@ -458,9 +456,11 @@ module BioPieces
       keys.each do |key|
         return true if @exact.include?(key)
 
-        if (value = record[key])
-          return true if value.is_a?(String)  && @exact.include?(value.to_sym)
-          return true if !value.is_a?(String) && @exact.include?(value)
+        next unless record[key]
+        value = record[key]
+
+        if @exact.include?(value.respond_to?(:to_sym) ? value.to_sym : value)
+          return true
         end
       end
 
@@ -471,14 +471,12 @@ module BioPieces
       keys = @keys || record.keys
 
       if @keys_only
-        return true if regex_match_keys?(keys)
+        regex_match_keys?(keys)
       elsif @vals_only
-        return true if regex_match_values?(record, keys)
+        regex_match_values?(record, keys)
       else
-        return true if regex_match_key_values?(record, keys)
+        regex_match_key_values?(record, keys)
       end
-
-      false
     end
 
     # Match using regex any record keys.
@@ -544,19 +542,21 @@ module BioPieces
     #
     # @return [Boolean] True if eval match found.
     def eval_match?(record)
-      expr = @eval.gsub(/:\w+/) do |match|
-        key = match[1..-1].to_sym
+      expr = []
 
-        if record[key]
-          match = record[key]
+      @eval.split("\s").each do |item|
+        if item[0] == ':'
+          key = item[1..-1].to_sym
+
+          return false unless record[key]
+
+          expr << record[key]
         else
-          return false
+          expr << item
         end
       end
 
-      return true if eval expr
-
-      false
+      eval expr.join(' ')
     end
 
     # Assign all stats to the status hash.
