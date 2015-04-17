@@ -166,7 +166,7 @@ module BioPieces
     # Read in a specified number of entries from the input and emit to the
     # output.
     #
-    # @param [BioPieces::Fasta] FASTA file input stream.
+    # @param input [BioPieces::Fasta] FASTA file input stream.
     # @param output [Enumerable::Yielder] Output stream.
     def read_first(input, output)
       first = @options[:first]
@@ -186,8 +186,7 @@ module BioPieces
     # Read in entries from input and cache the specified last number in a
     # buffer.
     #
-    # @param [BioPieces::Fasta] FASTA file input stream.
-    # @param output [Enumerable::Yielder] Output stream.
+    # @param input [BioPieces::Fasta] FASTA file input stream.
     def read_last(input)
       last = @options[:last]
 
@@ -199,7 +198,7 @@ module BioPieces
 
     # Read in all entries from input and emit to output.
     #
-    # @param [BioPieces::Fasta] FASTA file input stream.
+    # @param input [BioPieces::Fasta] FASTA file input stream.
     # @param output [Enumerable::Yielder] Output stream.
     def read_all(input, output)
       input.each do |entry|

@@ -54,7 +54,7 @@ module BioPieces
 
     # Return string representation of a Command object.
     # 
-    # @returns [String] With formmated command.
+    # @return [String] With formated command.
     def to_s
       options_list = []
 
