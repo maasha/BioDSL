@@ -1,91 +1,110 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of the Biopieces framework (www.biopieces.org).        #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Commands
-    # == Add a key/value pair to all records in stream.
-    # 
-    # +add_key+ can be used to add a fixed value to a specified key to all
-    # records in the stream, or add a numeric forth running number (zero-based)
-    # with a specified prefix.
+  # == Add a key/value pair to all records in stream.
+  #
+  # +add_key+ can be used to add a fixed value to a specified key to all
+  # records in the stream, or add a numeric forth running number (zero-based)
+  # with a specified prefix.
+  #
+  # == Usage
+  #
+  #    add_key(<key: <string>[, value: <string> | prefix: <string>])
+  #
+  # === Options
+  #
+  # * key: <string>    - Key to add or overwrite.
+  # * value: <string>  - Value to use with +key+.
+  # * prefix: <string> - Prefix to use with +key+.
+  #
+  # == Examples
+  #
+  # To add a value to all records in the stream do:
+  #
+  #    add_key(key: "FOO", value: "BAR")
+  #
+  # To add a forth running number to all records in the stream do:
+  #
+  #    add_key(key: :ID, prefix: "")
+  #
+  # Finally, to add a forth running number with a prefix do:
+  #
+  #    add_key(key: :ID, prefix: "ID_")
+  module AddKey
+    require 'biopieces/helpers/options_helper'
+    extend OptionsHelper
+
+    # Check the options and return a lambda for the command.
     #
-    # == Usage
-    # 
-    #    add_key(<key: <string>[, value: <string> | prefix: <string>])
-    # 
-    # === Options
+    # @param [Hash] options Options hash.
+    # @option options [Symbol] :key    Key to add or replace.
+    # @option options [String] :value  Value to use with :key.
+    # @option options [String] :prefix Prefix to use with :key.
     #
-    # * key: <string>    - Key to add or overwrite.
-    # * value: <string>  - Value to use with +key+.
-    # * prefix: <string> - Prefix to use with +key+.
-    # 
-    # == Examples
-    # 
-    # To add a value to all records in the stream do:
-    #
-    #    add_key(key: "FOO", value: "BAR")
-    #
-    # To add a forth running number to all records in the stream do:
-    # 
-    #    add_key(key: :ID, prefix: "")
-    #
-    # Finally, to add a forth running number with a prefix do:
-    #
-    #    add_key(key: :ID, prefix: "ID_")
-    def add_key(options = {})
-      options_orig = options
+    # @return [Proc] Returns the command lambda.
+    def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :key, :value, :prefix)
       options_required(options, :key)
       options_required_unique(options, :value, :prefix)
 
-      lmb = lambda do |input, output, status|
-        status_track(status) do
-          input.each_with_index do |record, i|
-            status[:records_in] += 1
+      add_key(options)
+    end
 
-            if options[:value]
-              value = options[:value]
-            else
-              value = "#{options[:prefix]}#{i}"
-            end
+    # Add a key or replace a key for all records with a specified value or a
+    # forthrunning number with a prefix.
+    #
+    # @param [Hash] options Options hash.
+    # @option options [Symbol] :key    Key to add or replace.
+    # @option options [String] :value  Value to use with :key.
+    # @option options [String] :prefix Prefix to use with :key.
+    #
+    # @return [Proc] Returns the command lambda.
+    def self.add_key(options)
+      records_in  = 0
+      records_out = 0
 
-            record[options[:key].to_sym] = value
+      lambda do |input, output, status|
+        input.each_with_index do |record, i|
+          records_in += 1
 
-            output << record
+          value = options[:value] ? options[:value] : "#{options[:prefix]}#{i}"
 
-            status[:records_out] += 1
-          end
+          record[options[:key].to_sym] = value
+
+          output << record
+
+          records_out += 1
         end
+
+        status[:records_in]  = records_in
+        status[:records_out] = records_out
       end
-
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
-
-      self
     end
   end
 end
-
