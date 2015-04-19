@@ -58,7 +58,7 @@ module BioPieces
   #
   # To trim both ends simply do:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq.dump.run
+  #    BP.new.read_fastq(input: "test.fq").trim_seq.trim_seq.run
   #
   #    SEQ_NAME: test
   #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcat
@@ -68,7 +68,7 @@ module BioPieces
   #
   # Use the +quality_min+ option to change the minimum value to discard:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq(quality_min: 25).dump.run
+  #    BP.new.read_fastq(input: "test.fq").trim_seq(quality_min: 25).trim_seq.run
   #
   #    SEQ_NAME: test
   #    SEQ: cgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
@@ -78,7 +78,7 @@ module BioPieces
   #
   # To trim the left end only (use :rigth for right end only), do:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq(mode: :left).dump.run
+  #    BP.new.read_fastq(input: "test.fq").trim_seq(mode: :left).trim_seq.run
   #
   #    SEQ_NAME: test
   #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
@@ -89,7 +89,7 @@ module BioPieces
   # To increase the length of stretch of good quality residues to match, use
   # the +length_min+ option:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq(length_min: 4).dump.run
+  #    BP.new.read_fastq(input: "test.fq").trim_seq(length_min: 4).trim_seq.run
   #
   #    SEQ_NAME: test
   #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtct
@@ -100,6 +100,20 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     extend OptionsHelper
 
+    # Check the options and return a lambda for the command.
+    #
+    # @param [Hash] options Options hash.
+    #
+    # @option options [Integer] :quality_min
+    #   TrimSeq minimum quality (default=20).
+    #
+    # @option options [Symbol] :mode
+    #   TrimSeq mode (default=:both).
+    #
+    # @option options [Integer] :length_min
+    #   TrimSeq stretch length triggering trim (default=3).
+    #
+    # @return [Proc] Returns the trim_seq command lambda.
     def self.lmb(options = {})
       options_load_rc(options, __method__)
       options_allowed(options, :quality_min, :length_min, :mode)
@@ -115,6 +129,22 @@ module BioPieces
       new(options).lmb
     end
 
+    # Constructor for the TrimSeq class.
+    #
+    # @param [Hash] options Options hash.
+    #
+    # @option options [Integer] :quality_min
+    #   TrimSeq minimum quality (default=20).
+    #
+    # @option options [Symbol] :mode
+    #   TrimSeq mode (default=:both).
+    #
+    # @option options [Integer] :length_min
+    #   TrimSeq stretch length triggering trim (default=3).
+    #
+    # @return [Proc] Returns the trim_seq command lambda.
+    #
+    # @return [TrimSeq] Returns an instance of the TrimSeq class.
     def initialize(options)
       @options       = options
       @records_in    = 0
@@ -129,6 +159,9 @@ module BioPieces
       @len  = options[:length_min]
     end
 
+    # Return a lambda for the trim_seq command.
+    #
+    # @return [Proc] Returns the trim_seq command lambda.
     def lmb
       lambda do |input, output, status|
         input.each do |record|
@@ -147,6 +180,9 @@ module BioPieces
 
     private
 
+    # Trim sequence in a given record with sequence info.
+    #
+    # @param record [Hash] BioPieces record
     def trim_seq(record)
       entry = BioPieces::Seq.new_bp(record)
 
