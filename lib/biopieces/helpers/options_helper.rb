@@ -29,7 +29,7 @@ module BioPieces
   module OptionsHelper
     require 'csv'
 
-    BioPieces::OptionsError = Class.new(StandardError)
+    BioPieces::OptionError = Class.new(StandardError)
 
     private
 
