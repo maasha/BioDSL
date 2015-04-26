@@ -114,7 +114,7 @@ module BioPieces
     # @option options [Integer] :kmer_max Maximum kmer value.
     # @option options [Integer] :cpus CPUs to use.
     #
-    # @return [ReadFasta] Returns an instance of the class.
+    # @return [AssembleSeqIdba] Returns an instance of the class.
     def initialize(options)
       @options       = options
       @records_in    = 0
