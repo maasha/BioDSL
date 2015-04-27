@@ -188,7 +188,7 @@ module BioPieces
     # @param template_file [String] Path to template file.
     # @param cpus          [Integer] Number of CPUs to use.
     #
-    # @raise [RunTimeError] If sytem call fails.
+    # @raise [RunTimeError] If system call fails.
     def run_mothur(template_file, cpus)
       cmd = <<-CMD.gsub(/^\s+\|/, '').delete("\n")
         |mothur "#set.dir(input=#{@tmp_dir});
