@@ -71,22 +71,22 @@ module BioPieces
       @stderr  = nil
 
       if File.size(@options[:input]) == 0
-        raise UsearchError, %{Empty input file -> "#{@options[:input].path}"}
+        raise UsearchError, %{Empty input file -> "#{@options[:input]}"}
       end
     end
 
     def cluster_smallmem
       command = []
       command << "usearch"
-      command << "-cluster_smallmem #{@options[:input].path}"
+      command << "-cluster_smallmem #{@options[:input]}"
       command << "-id #{@options[:identity]}"
       command << "-threads #{@options[:cpus]}" if @options[:cpus]
       command << "-strand #{@options[:strand]}"
 
       if @options[:align]
-        command << "-msaout #{@options[:output].path}"
+        command << "-msaout #{@options[:output]}"
       else
-        command << "-uc #{@options[:output].path}"
+        command << "-uc #{@options[:output]}"
       end
 
       execute(command)
@@ -97,8 +97,8 @@ module BioPieces
     def cluster_otus
       command = []
       command << "usearch"
-      command << "-cluster_otus #{@options[:input].path}"
-      command << "-otus #{@options[:output].path}"
+      command << "-cluster_otus #{@options[:input]}"
+      command << "-otus #{@options[:output]}"
       command << "-id #{@options[:identity]}"
       command << "-threads #{@options[:cpus]}" if @options[:cpus]
 
@@ -110,11 +110,11 @@ module BioPieces
     def uchime_ref
       command = []
       command << "usearch"
-      command << "-uchime_ref #{@options[:input].path}"
+      command << "-uchime_ref #{@options[:input]}"
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}"
       command << "-threads #{@options[:cpus]}" if @options[:cpus]
-      command << "-nonchimeras #{@options[:output].path}"
+      command << "-nonchimeras #{@options[:output]}"
 
       execute(command)
 
@@ -125,12 +125,12 @@ module BioPieces
       command = []
       command << "usearch"
       command << "-notrunclabels"
-      command << "-usearch_global #{@options[:input].path}"
+      command << "-usearch_global #{@options[:input]}"
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}" if @options[:strand]
       command << "-threads #{@options[:cpus]}"  if @options[:cpus]
       command << "-id #{@options[:identity]}"
-      command << "-uc #{@options[:output].path}"
+      command << "-uc #{@options[:output]}"
 
       execute(command)
 
@@ -141,12 +141,12 @@ module BioPieces
       command = []
       command << "usearch"
       command << "-notrunclabels"
-      command << "-usearch_local #{@options[:input].path}"
+      command << "-usearch_local #{@options[:input]}"
       command << "-db #{@options[:database]}"
       command << "-strand #{@options[:strand]}" if @options[:strand]
       command << "-threads #{@options[:cpus]}"  if @options[:cpus]
       command << "-id #{@options[:identity]}"
-      command << "-uc #{@options[:output].path}"
+      command << "-uc #{@options[:output]}"
 
       execute(command)
 
