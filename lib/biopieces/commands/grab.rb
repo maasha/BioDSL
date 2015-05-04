@@ -138,6 +138,7 @@ module BioPieces
   # stream:
   #
   #    grab(select_file: "ids.txt", keys: :ID, exact: true)
+  #
   # rubocop:disable ClassLength
   class Grab
     require 'biopieces/helpers/options_helper'
