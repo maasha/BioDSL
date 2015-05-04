@@ -1,179 +1,280 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of the Biopieces framework (www.biopieces.org).        #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Commands
-    # == Remove gaps from sequences or gap only columns in alignments.
-    # 
-    # +degap_seq+ remove gaps from sequences (the letters ~-_.). If the option
-    # +columns_only+ is used then gaps from aligned sequences will be removed,
-    # if and only if the the entire columns consists of gaps.
+  # == Remove gaps from sequences or gap only columns in alignments.
+  #
+  # +degap_seq+ remove gaps from sequences (the letters ~-_.). If the option
+  # +columns_only+ is used then gaps from aligned sequences will be removed, if
+  # and only if the the entire columns consists of gaps.
+  #
+  # == Usage
+  #
+  #    degap_seq([columns_only: <bool>])
+  #
+  # === Options
+  #
+  # * columns_only: <bool> - Remove gap columns only (default=false).
+  #
+  # == Examples
+  #
+  # Consider the following FASTA entries in the file `test.fna`:
+  #
+  #    >test1
+  #    A-G~T.C_
+  #    >test2
+  #    AGG_T-C~
+  #
+  # To remove all gaps from all sequences do:
+  #
+  #    BP.new.read_fasta(input: "test.fna").degap_seq.dump.run
+  #
+  #    {:SEQ_NAME=>"test1", :SEQ=>"AGTC", :SEQ_LEN=>4}
+  #    {:SEQ_NAME=>"test2", :SEQ=>"AGGTC", :SEQ_LEN=>5}
+  #
+  #
+  # To remove all gap-only columns use the +columns_only+ option:
+  #
+  #    BP.new.
+  #    read_fasta(input: "test.fna").
+  #    degap_seq(columns_only: true).
+  #    dump.
+  #    run
+  #
+  #    {:SEQ_NAME=>"test1", :SEQ=>"A-GTC", :SEQ_LEN=>5}
+  #    {:SEQ_NAME=>"test2", :SEQ=>"AGGTC", :SEQ_LEN=>5}
+  #
+  # rubocop:disable ClassLength
+  class DegapSeq
+    require 'narray'
+    require 'biopieces/helpers/options_helper'
+
+    extend OptionsHelper
+    include OptionsHelper
+
+    # Check options and return lambda for degap_seq command.
     #
-    # == Usage
-    # 
-    #    degap_seq([columns_only: <bool>])
+    # @param options [Hash] Options Hash.
     #
-    # === Options
+    # @option options [Boolean] :columns_only
+    #   Flag indicating that only gap-columns only shoule be removed.
     #
-    # * columns_only: <bool> - Remove gap columns only (default=false).
-    # 
-    # == Examples
-    # 
-    # Consider the following FASTA entries in the file `test.fna`:
-    # 
-    #    >test1
-    #    A-G~T.C_
-    #    >test2
-    #    AGG_T-C~
-    # 
-    # To remove all gaps from all sequences do:
-    #
-    #    BP.new.read_fasta(input: "test.fna").degap_seq.dump.run
-    #
-    #    {:SEQ_NAME=>"test1", :SEQ=>"AGTC", :SEQ_LEN=>4}
-    #    {:SEQ_NAME=>"test2", :SEQ=>"AGGTC", :SEQ_LEN=>5}
-    # 
-    #
-    # To remove all gap-only columns use the +columns_only+ option:
-    #
-    #    BP.new.read_fasta(input: "test.fna").degap_seq(columns_only: true).dump.run
-    #
-    #    {:SEQ_NAME=>"test1", :SEQ=>"A-GTC", :SEQ_LEN=>5}
-    #    {:SEQ_NAME=>"test2", :SEQ=>"AGGTC", :SEQ_LEN=>5}
-    def degap_seq(options = {})
-      options_orig = options.dup
+    # @return [Proc] Command lambda.
+    def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :columns_only)
       options_allowed_values(options, columns_only: [true, false, nil])
 
-      lmb = lambda do |input, output, status|
-        status_track(status) do
-          status[:sequences_in]  = 0
-          status[:sequences_out] = 0
-          status[:residues_in]   = 0
-          status[:residues_out]  = 0
+      new(options).lmb
+    end
 
-          indels = BioPieces::Seq::INDELS.sort.join("")
+    # Constructor for DegapSeq.
+    #
+    # @param options [Hash] Options Hash.
+    #
+    # @option options [Boolean] :columns_only
+    #   Flag indicating that only gap-columns only shoule be removed.
+    #
+    # @return [DegapSeq] Instance of DegapSeq.
+    def initialize(options)
+      @options       = options
+      @records_in    = 0
+      @records_out   = 0
+      @sequences_in  = 0
+      @sequences_out = 0
+      @residues_in   = 0
+      @residues_out  = 0
+      @indels        = BioPieces::Seq::INDELS.sort.join('')
+      @na_mask       = nil
+      @max_len       = nil
+      @count         = 0
+    end
 
-          if options[:columns_only]
-            require 'tempfile'
-            require 'narray'
+    # Return the command lambda for DegapSeq.
+    #
+    # @return [Proc] Command lambda.
+    def lmb
+      lambda do |input, output, status|
+        if @options[:columns_only]
+          degap_columns(input, output)
+        else
+          degap_all(input, output)
+        end
 
-            na_mask = nil
-            max_len = nil
-            count   = 0
+        assign_status(status)
+      end
+    end
 
-            file = Tempfile.new("degap_seq")
+    private
 
-            begin
-              File.open(file, 'wb') do |ios|
-                BioPieces::Serializer.new(ios) do |s|
-                  input.each do |record|
-                    status[:records_in] += 1
+    # Remove all gap-only columns from all sequences in input stream and output
+    # to output stream.
+    #
+    # @param input [Enumerator] Input stream.
+    # @param output [Enumerator::Yeilder] Output stream.
+    def degap_columns(input, output)
+      TmpDir.create('degap_seq') do |tmp_file, _|
+        process_input(input, tmp_file)
+        create_mask
+        process_output(output, tmp_file)
+      end
+    end
 
-                    if record[:SEQ]
-                      status[:sequences_in] += 1
-                      status[:residues_in]  += record[:SEQ].length
+    # Serialize all input record to a temporary file and at the same time add
+    # all sequence type records to the gap mask.
+    #
+    # @param input [Enumerator] Input stream.
+    # @param tmp_file [String] Path to temporary file.
+    def process_input(input, tmp_file)
+      File.open(tmp_file, 'wb') do |ios|
+        BioPieces::Serializer.new(ios) do |s|
+          input.each do |record|
+            @records_in += 1
 
-                      max_len = record[:SEQ].length unless max_len
-
-                      if max_len != record[:SEQ].length
-                        raise BioPieces::SeqError, "Uneven seq lengths: #{max_len} != #{record[:SEQ].length}"
-                      end
-
-                      na_mask = NArray.int(record[:SEQ].length) unless na_mask
-                      na_seq  = NArray.to_na(record[:SEQ], "byte")
-                      indels.each_char { |c| na_mask += na_seq.eq(c.ord) }
-
-                      count += 1
-                    end
-
-                    s << record
-                  end
-                end
-              end
-
-              na_mask = na_mask.ne count
-
-              File.open(file, 'rb') do |ios|
-                BioPieces::Serializer.new(ios) do |s|
-                  s.each do |record|
-                    if record[:SEQ]
-                      na_seq           = NArray.to_na(record[:SEQ], "byte")
-                      record[:SEQ]     = na_seq[na_mask].to_s
-                      record[:SEQ_LEN] = record[:SEQ].length
-
-                      status[:sequences_out] += 1
-                      status[:residues_out]  += record[:SEQ].length
-                    end
-
-                    output << record
-                    status[:records_out] += 1
-                  end
-                end
-              end
-            ensure
-              file.close
-              file.unlink
+            if (seq = record[:SEQ])
+              mask_add(seq)
+              @count += 1
             end
-          else
-            input.each do |record|
-              status[:records_in] += 1
 
-              if record[:SEQ]
-                entry = BioPieces::Seq.new_bp(record)
-
-                status[:sequences_in] += 1
-                status[:residues_in]  += entry.length
-
-                entry.seq.delete!(indels)
-
-                status[:sequences_out] += 1
-                status[:residues_out]  += entry.length
-
-                record.merge! entry.to_bp
-              end
-
-              output << record
-
-              status[:records_out] += 1
-            end
+            s << record
           end
-
-          status[:residues_delta]         = status[:residues_out] - status[:residues_in]
-          status[:residues_delta_mean]    = (status[:residues_delta].to_f / status[:records_out]).round(2)
-          status[:residues_delta_percent] = (100 * status[:residues_delta].to_f / status[:residues_out]).round(2)
-          status[:columns_removed]        = na_mask.count_false if options[:columns_only]
         end
       end
+    end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+    # Add sequence gaps to mask.
+    #
+    # @param seq [String] Sequences.
+    def mask_add(seq)
+      @sequences_in += 1
+      @residues_in  += seq.length
 
-      self
+      @max_len ||= seq.length
+
+      check_length(seq)
+
+      @na_mask ||= NArray.int(seq.length)
+      na_seq  = NArray.to_na(seq, 'byte')
+      @indels.each_char { |c| @na_mask += na_seq.eq(c.ord) }
+    end
+
+    # Check if sequence length match max_len.
+    #
+    # @param seq [String] Sequences.
+    #
+    # @raise [BioPieces::SeqError] if sequence length and max_len don't match.
+    def check_length(seq)
+      return if @max_len == seq.length
+      fail BioPieces::SeqError,
+           "Uneven seq lengths: #{@max_len} != #{seq.length}"
+    end
+
+    # Create a mask for all-gap columns.
+    def create_mask
+      @na_mask = @na_mask.ne @count
+    end
+
+    # Read all serialized records from the temporary file and emit to the output
+    # stream records with degapped sequences.
+    #
+    # @param output [Enumerator::Yeilder] Output stream.
+    # @param tmp_file [String] Path to temporary file.
+    def process_output(output, tmp_file)
+      File.open(tmp_file, 'rb') do |ios|
+        BioPieces::Serializer.new(ios) do |s|
+          s.each do |record|
+            remove_residues(record) if record[:SEQ]
+
+            output << record
+            @records_out += 1
+          end
+        end
+      end
+    end
+
+    # Given a BioPieces record containing sequence information
+    # remove all residues based on the na_mask.
+    #
+    # @param record [Hash] BioPieces record.
+    def remove_residues(record)
+      na_seq           = NArray.to_na(record[:SEQ], 'byte')
+      record[:SEQ]     = na_seq[@na_mask].to_s
+      record[:SEQ_LEN] = record[:SEQ].length
+
+      @sequences_out += 1
+      @residues_out  += record[:SEQ].length
+    end
+
+    # Remove all gaps from all sequences in input stream and output to output
+    # stream.
+    #
+    # @param input [Enumerator] Input stream.
+    # @param output [Enumerator::Yeilder] Output stream.
+    def degap_all(input, output)
+      input.each do |record|
+        @records_in += 1
+
+        degap_seq(record) if record.key? :SEQ
+
+        output << record
+
+        @records_out += 1
+      end
+    end
+
+    # Given a BioPieces record with sequence information, remove all gaps from
+    # the sequence.
+    #
+    # @param record [Hash] BioPieces record.
+    def degap_seq(record)
+      entry = BioPieces::Seq.new_bp(record)
+
+      @sequences_in += 1
+      @residues_in  += entry.length
+
+      entry.seq.delete!(@indels)
+
+      @sequences_out += 1
+      @residues_out  += entry.length
+
+      record.merge! entry.to_bp
+    end
+
+    # Assign values to status hash.
+    #
+    # @param status [Hash] Status hash.
+    def assign_status(status)
+      status[:records_in]      = @records_in
+      status[:records_out]     = @records_out
+      status[:sequences_in]    = @sequences_in
+      status[:sequences_out]   = @sequences_out
+      status[:residues_in]     = @residues_in
+      status[:residues_out]    = @residues_out
+      status[:columns_removed] = @na_mask.count_false if @options[:columns_only]
     end
   end
 end
-
