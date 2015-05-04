@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
@@ -30,65 +30,87 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..', '..')
 
 require 'test/helper'
 
-class TestFilterRrna < Test::Unit::TestCase 
+# Test class for FilterRrna.
+class TestFilterRrna < Test::Unit::TestCase
   def setup
-    @tmp_dir   = Dir.mktmpdir('filter_rrna')
+    @tmp_dir = Dir.mktmpdir('filter_rrna')
 
-    omit("sortmerna not found")   unless BioPieces::Filesys.which("sortmerna")
-    omit("indexdb_rna not found") unless BioPieces::Filesys.which("indexdb_rna")
+    omit('sortmerna not found')   unless BioPieces::Filesys.which('sortmerna')
+    omit('indexdb_rna not found') unless BioPieces::Filesys.which('indexdb_rna')
 
+    setup_test_streams
+    setup_test_data
+    setup_fasta_file
+    setup_indexdb
+
+    @p = BioPieces::Pipeline.new
+  end
+
+  def setup_test_streams
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+  end
+
+  def setup_test_data
+    @hash1 = {
+      SEQ_NAME: 'test1',
+      SEQ: 'gatcagatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcag',
+      SEQ_LEN: 60
+    }
+
+    @hash2 = {
+      SEQ_NAME: 'test2',
+      SEQ: 'ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag',
+      SEQ_LEN: 60
+    }
+
+    @output.write @hash1
+    @output.write @hash2
+    @output.close
+  end
+
+  def setup_fasta_file
     @ref_fasta = File.join(@tmp_dir, 'test.fna')
     @ref_index = "#{@ref_fasta}.idx"
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
-
-    hash1 = {
-      SEQ_NAME: 'test1',
-      SEQ: 'gatcagatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcag',
-      SEQ_LEN: 60,
-    }
-
-    hash2 = {
-      SEQ_NAME: 'test2',
-      SEQ: 'ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag',
-      SEQ_LEN: 60,
-    }
-
-    @output.write hash1
-    @output.write hash2
-    @output.close
-
     BioPieces::Fasta.open(@ref_fasta, 'w') do |ios|
-      ios.puts BioPieces::Seq.new_bp(hash1).to_fasta
+      ios.puts BioPieces::Seq.new_bp(@hash1).to_fasta
     end
+  end
 
+  def setup_indexdb
     cmd = "indexdb_rna --ref #{@ref_fasta},#{@ref_index}"
     system(cmd)
 
-    fail "Running command failed: #{cmd}" unless $?.success?
-
-    @p = BioPieces::Pipeline.new
+    fail "Running command failed: #{cmd}" unless $CHILD_STATUS.success?
   end
 
   def teardown
     FileUtils.rm_rf(@tmp_dir)
   end
 
-  test "BioPieces::Pipeline::FilterRrna with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__, foo: "bar") }
+  test 'BioPieces::Pipeline::FilterRrna with invalid options raises' do
+    assert_raise(BioPieces::OptionError) do
+      @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__, foo: 'bar')
+    end
   end
 
-  test "BioPieces::Pipeline::FilterRrna with valid options don't raise" do
-    assert_nothing_raised { @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__) }
+  test 'BioPieces::Pipeline::FilterRrna with valid options don\'t raise' do
+    assert_nothing_raised do
+      @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__)
+    end
   end
 
-  test "BioPieces::Pipeline::FilterRrna returns correctly" do
-    @p.filter_rrna(ref_fasta: @ref_fasta, ref_index: "#{@ref_index}*").run(input: @input, output: @output2)
+  test 'BioPieces::Pipeline::FilterRrna returns correctly' do
+    @p.filter_rrna(ref_fasta: @ref_fasta, ref_index: "#{@ref_index}*").
+      run(input: @input, output: @output2)
 
-    result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag\", :SEQ_LEN=>60}"
+    expected = <<-EXP.gsub(/^\s+|\|/, '').delete("\n")
+      |{:SEQ_NAME=>"test2",
+      | :SEQ=>"ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag",
+      | :SEQ_LEN=>60}
+    EXP
 
-    assert_equal(expected, result)
+    assert_equal(expected, collect_result.chomp)
   end
 end
