@@ -1,44 +1,48 @@
 #!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
-class TestMaskSeq < Test::Unit::TestCase 
+# Test class for MaskSeq.
+#
+# rubocop:disable Metrics/LineLength
+class TestMaskSeq < Test::Unit::TestCase
   def setup
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
     hash = {
-      SEQ_NAME: "test",
-      SEQ: "gatcgatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag",
+      SEQ_NAME: 'test',
+      SEQ: 'gatcgatcgtacgagcagcatctgacgtatcgatcatgcagtctacgacgagcatgctagctag',
       SEQ_LEN: 82,
-      SCORES: %q[!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III]
+      SCORES: '!"#$%&()*+,-013456;<=>?@ABCDEIIHGCBA@?>=<;:9843210/.-,+*)(&%$III'
     }
 
     @output.write hash
@@ -47,29 +51,37 @@ class TestMaskSeq < Test::Unit::TestCase
     @p = BioPieces::Pipeline.new
   end
 
-  test "BioPieces::Pipeline::MaskSeq with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.mask_seq(foo: "bar") }
+  test 'BioPieces::Pipeline::MaskSeq with invalid options raises' do
+    assert_raise(BioPieces::OptionError) { @p.mask_seq(foo: 'bar') }
   end
 
-  test "BioPieces::Pipeline::MaskSeq with valid options don't raise" do
+  test 'BioPieces::Pipeline::MaskSeq with valid options don\'t raise' do
     assert_nothing_raised { @p.mask_seq(mask: :hard) }
   end
 
-  test "BioPieces::Pipeline::MaskSeq with mask: :soft returns correctly" do
+  test 'BioPieces::Pipeline::MaskSeq with mask: :soft returns correctly' do
     @p.mask_seq.run(input: @input, output: @output2)
 
-    result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = %Q{{:SEQ_NAME=>"test", :SEQ=>"gatcgatcgtacgagcagcaTCTGACGTATCGATCGTTGATTAGTTGCTAGCTATGCAGTCTacgacgagcatgctagcTAG", :SEQ_LEN=>82, :SCORES=>"!\\"\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+    expected = <<-EXP.gsub(/^\s+\|/, '')
+      |{:SEQ_NAME=>"test",
+      | :SEQ=>"gatcgatcgtacgagcAGCATCTGACGTATCGATCATGCAGTCTAcgacgagcatgctagcTAG",
+      | :SEQ_LEN=>64,
+      | :SCORES=>"!\\\"\\\#$%&()*+,-013456;<=>?@ABCDEIIHGCBA@?>=<;:9843210/.-,+*)(&%$III"}
+    EXP
 
-    assert_equal(expected, result)
+    assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test "BioPieces::Pipeline::MaskSeq with mask: :hard returns correctly" do
-    @p.mask_seq(mask: "hard").run(input: @input, output: @output2)
+  test 'BioPieces::Pipeline::MaskSeq with mask: :hard returns correctly' do
+    @p.mask_seq(mask: 'hard').run(input: @input, output: @output2)
 
-    result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = %Q{{:SEQ_NAME=>"test", :SEQ=>"NNNNNNNNNNNNNNNNNNNNTCTGACGTATCGATCGTTGATTAGTTGCTAGCTATGCAGTCTNNNNNNNNNNNNNNNNNTAG", :SEQ_LEN=>82, :SCORES=>"!\\"\\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$III"}}
+    expected = <<-EXP.gsub(/^\s+\|/, '')
+      |{:SEQ_NAME=>"test",
+      | :SEQ=>"NNNNNNNNNNNNNNNNAGCATCTGACGTATCGATCATGCAGTCTANNNNNNNNNNNNNNNNTAG",
+      | :SEQ_LEN=>64,
+      | :SCORES=>"!\\\"\\\#$%&()*+,-013456;<=>?@ABCDEIIHGCBA@?>=<;:9843210/.-,+*)(&%$III"}
+    EXP
 
-    assert_equal(expected, result)
+    assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 end
