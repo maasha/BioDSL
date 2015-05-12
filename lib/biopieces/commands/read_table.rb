@@ -180,6 +180,19 @@ module BioPieces
     extend OptionsHelper
     include OptionsHelper
 
+    # Check options and return command lambda for ReadTable.
+    #
+    # @param options [Hash] Options hash.
+    # @option options [String]  :input
+    # @option options [Integer] :first
+    # @option options [Integer] :last
+    # @option options [Array]   :keys
+    # @option options [Integer] :skip
+    # @option options [String]  :delimiter
+    # @option options [Boolean] :select
+    # @option options [Boolean] :reject
+    #
+    # @return [Proc] Command lambda.
     def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :input, :first, :last, :keys, :skip, :delimiter,
@@ -196,6 +209,19 @@ module BioPieces
       new(options).lmb
     end
 
+    # Constructor for ReadTable.
+    #
+    # @param options [Hash] Options hash.
+    # @option options [String]  :input
+    # @option options [Integer] :first
+    # @option options [Integer] :last
+    # @option options [Array]   :keys
+    # @option options [Integer] :skip
+    # @option options [String]  :delimiter
+    # @option options [Boolean] :select
+    # @option options [Boolean] :reject
+    #
+    # @return [ReadTable] Class instance.
     def initialize(options)
       @options     = options
       @records_in  = 0
@@ -205,6 +231,9 @@ module BioPieces
       @buffer      = []
     end
 
+    # Return command lambda for ReadTable
+    #
+    # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
         process_input(input, output)
@@ -221,12 +250,18 @@ module BioPieces
 
     private
 
+    # Return a hash with options for CVS#each_hash.
+    #
+    # @return [Hash] Read table options.
     def read_options
       {delimiter: @options[:delimiter],
        select:    @options[:select],
        reject:    @options[:reject]}
     end
 
+    # Read :first entries from input files and emit to output stream.
+    #
+    # @param output [Enumerator::Yeilder] Output stream.
     def read_first(output)
       options_glob(@options[:input]).each do |file|
         BioPieces::CSV.open(file) do |ios|
@@ -241,6 +276,9 @@ module BioPieces
       end
     end
 
+    # Read :last entries from input files and emit to output stream.
+    #
+    # @param output [Enumerator::Yeilder] Output stream.
     def read_last(output)
       options_glob(@options[:input]).each do |file|
         BioPieces::CSV.open(file) do |ios|
@@ -256,6 +294,9 @@ module BioPieces
       output_buffer(output)
     end
 
+    # Read all entries from input files and emit to output stream.
+    #
+    # @param output [Enumerator::Yeilder] Output stream.
     def read_all(output)
       options_glob(@options[:input]).each do |file|
         BioPieces::CSV.open(file) do |ios|
