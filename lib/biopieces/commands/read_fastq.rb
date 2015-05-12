@@ -113,6 +113,17 @@ module BioPieces
 
     MAX_TEST = 1_000
 
+    # Check options and return command lambda for read_fastq.
+    #
+    # @param options [Hash] Options hash.
+    # @option options [Symbol,String] :encoding
+    # @option options [String]        :input
+    # @option options [String]        :input2
+    # @option options [Integer]       :first
+    # @option options [Integer]       :last
+    # @option options [Boolean]       :reverse_complement
+    #
+    # @return [Proc] Command lambda.
     def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :encoding, :input, :input2, :first, :last,
@@ -129,6 +140,17 @@ module BioPieces
       new(options).lmb
     end
 
+    # Constructor for ReadFastq.
+    #
+    # @param options [Hash] Options hash.
+    # @option options [Symbol,String] :encoding
+    # @option options [String]        :input
+    # @option options [String]        :input2
+    # @option options [Integer]       :first
+    # @option options [Integer]       :last
+    # @option options [Boolean]       :reverse_complement
+    #
+    # @return [ReadFastq] Class instance.
     def initialize(options)
       @options       = options
       @records_in    = 0
@@ -143,6 +165,9 @@ module BioPieces
       @type          = nil
     end
 
+    # Return command lambda for ReadFastq.
+    #
+    # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
         process_input(input, output)
@@ -183,6 +208,9 @@ module BioPieces
       end
     end
 
+    # Read :first FASTQ entries from single files.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
     def read_first_single(output)
       fastq_files.each do |file|
         BioPieces::Fastq.open(file) do |ios|
@@ -198,6 +226,10 @@ module BioPieces
       end
     end
 
+    # Read :first FASTQ entries from paired files interleaved.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    #
     # rubocop: disable MethodLength
     def read_first_pair(output)
       fastq_files.each_slice(2) do |file1, file2|
@@ -218,6 +250,10 @@ module BioPieces
       end
     end
 
+    # Read :last FASTQ entries from single files.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    #
     # rubocop: enable MethodLength
     def read_last_single(output)
       fastq_files.each do |file|
@@ -233,6 +269,9 @@ module BioPieces
       output_buffer(output)
     end
 
+    # Read :last FASTQ entries from paired files interleaved.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
     def read_last_pair(output)
       fastq_files.each_slice(2) do |file1, file2|
         BioPieces::Fastq.open(file1) do |ios1|
@@ -251,6 +290,9 @@ module BioPieces
       output_buffer(output)
     end
 
+    # Read all FASTQ entries from single files.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
     def read_all_single(output)
       fastq_files.each do |file|
         BioPieces::Fastq.open(file) do |ios|
@@ -265,6 +307,9 @@ module BioPieces
       end
     end
 
+    # Read all FASTQ entries from paired files interleaved.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
     def read_all_pair(output)
       fastq_files.each_slice(2) do |file1, file2|
         BioPieces::Fastq.open(file1) do |ios1|
@@ -320,6 +365,9 @@ module BioPieces
       end
     end
 
+    # Reverse complement sequence.
+    #
+    # @param entry [BioPieces::Seq] Sequence entry.
     def reverse_complement(entry)
       @type = entry.type_guess unless @type
       entry.type = @type
