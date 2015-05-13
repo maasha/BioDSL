@@ -176,7 +176,7 @@ module BioPieces
     def options_tie(options, others)
       others.each do |option, other|
         if options[option] && !options[other]
-          fail BioPieces::OptionError, 'Tie option: #{other} not in options: ' \
+          fail BioPieces::OptionError, "Tie option: #{other} not in options: " \
             "#{options.keys.join(', ')}"
         end
       end
