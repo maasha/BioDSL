@@ -233,6 +233,14 @@ module BioPieces
         @match  = match
       end
 
+      def start
+        @pos
+      end
+
+      def stop
+        @pos + @length - 1
+      end
+
       def to_s
         "#{pos}:#{length}:#{match}"
       end
