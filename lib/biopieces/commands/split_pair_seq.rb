@@ -158,7 +158,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param record [Hash]                BioPieces record.
     #
-    # rubocop: disable Metric/AbcSize
+    # rubocop: disable Metrics/AbcSize
     def split_pair_seq(output, record)
       entry = BioPieces::Seq.new_bp(record)
 
