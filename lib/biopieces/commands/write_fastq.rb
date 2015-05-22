@@ -123,8 +123,8 @@ module BioPieces
       @residues_in        = 0
       @residues_out       = 0
       @options[:output] ||= $stdout
-      @compress           = chose_compression
-      @encoding           = chose_encoding
+      @compress           = choose_compression
+      @encoding           = choose_encoding
     end
 
     # Return command lambda for write_fastq.
@@ -185,7 +185,7 @@ module BioPieces
     # compression.
     #
     # @return [Symbol,nil] Compression.
-    def chose_compression
+    def choose_compression
       if @options[:gzip]
         :gzip
       elsif @options[:bzip2]
@@ -196,7 +196,7 @@ module BioPieces
     # Chose the quality score encoding.
     #
     # @return [Symbol,nil] Encoding.
-    def chose_encoding
+    def choose_encoding
       if @options[:encoding]
         @options[:encoding].to_sym
       else
