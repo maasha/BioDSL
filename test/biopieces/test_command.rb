@@ -32,14 +32,13 @@ require 'test/helper'
 # Test class for Command.
 class CommandTest < Test::Unit::TestCase
   test 'BioPieces::Command#to_s w/o options returns OK' do
-    command = BioPieces::Command.new('dump', :iterate, nil, {})
+    command = BioPieces::Command.new('dump', nil, {})
     expected = %{dump}
     assert_equal(expected, command.to_s)
   end
 
   test 'BioPieces::Command#to_s with options returns OK' do
-    command = BioPieces::Command.new('read_fasta', :iterate, nil,
-                                     input: 'test.fna')
+    command = BioPieces::Command.new('read_fasta', nil, input: 'test.fna')
     expected = %{read_fasta(input: "test.fna")}
     assert_equal(expected, command.to_s)
   end
