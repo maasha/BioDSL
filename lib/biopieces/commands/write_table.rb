@@ -201,7 +201,7 @@ module BioPieces
       @records_out           = 0
       @compress              = choose_compression
       @headings              = nil
-      @header                = true if @options[:header]
+      @header                = @options[:header] ? true : false
       @last                  = []
       @rows                  = []
     end
