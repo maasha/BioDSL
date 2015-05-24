@@ -386,7 +386,7 @@ module BioPieces
       status[:records_out]   = @records_out
       status[:sequences_in]  = @sequences_in
       status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @redidues_in
+      status[:residues_in]   = @residues_in
       status[:residues_out]  = @residues_out
     end
 
