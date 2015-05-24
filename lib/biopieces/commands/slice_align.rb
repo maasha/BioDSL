@@ -281,7 +281,7 @@ module BioPieces
     # Given a position index use slice positions to locate equivalent postitions
     # in the template sequence.
     #
-    # @param [PosIndex] Position index.
+    # @param pos_index [PosIndex] Position index.
     def setup_template_slice_range(pos_index)
       start = pos_index[@slice.first]
       stop  = pos_index[@slice.last]
@@ -292,7 +292,7 @@ module BioPieces
     # Given a position index use primers to locate the slice positions in the
     # template sequence.
     #
-    # @param [PosIndex] Position index.
+    # @param pos_index [PosIndex] Position index.
     def setup_template_slice_primers(pos_index)
       compact   = Seq.new(seq: @template.seq.dup.delete(@indels))
       fmatch    = find_match(@forward, compact)

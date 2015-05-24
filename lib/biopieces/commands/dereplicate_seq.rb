@@ -55,8 +55,8 @@ module BioPieces
   #
   #    BP.new.read_fasta(input: "test.fna").dereplicate_seq.dump.run
   #
-  # {:SEQ_NAME=>"test1", :SEQ=>"ATGC", :SEQ_LEN=>4, :SEQ_COUNT=>2}
-  # {:SEQ_NAME=>"test3", :SEQ=>"GCAT", :SEQ_LEN=>4, :SEQ_COUNT=>1}
+  #    {:SEQ_NAME=>"test1", :SEQ=>"ATGC", :SEQ_LEN=>4, :SEQ_COUNT=>2}
+  #    {:SEQ_NAME=>"test3", :SEQ=>"GCAT", :SEQ_LEN=>4, :SEQ_COUNT=>1}
   class DereplicateSeq
     require 'google_hash'
     require 'biopieces/helpers/options_helper'

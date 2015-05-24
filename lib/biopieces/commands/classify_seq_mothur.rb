@@ -143,8 +143,8 @@ module BioPieces
     # Process input data and save sequences to a temporary file for
     # classifcation.
     #
-    # @param input [Enumerator] Input stream.
-    # @param ouput [Enumerator::Yielder] Output stream.
+    # @param input  [Enumerator] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
     # @param tmp_in [String] Path to temporary FASTA file.
     def process_input(input, output, tmp_in)
       BioPieces::Fasta.open(tmp_in, 'w') do |ios|

@@ -353,7 +353,7 @@ module BioPieces
     # * coerce encoding
     # * check score range
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entries [Array] Sequence entries.
     def check_entry(*entries)
       entries.each do |entry|
         determine_encoding(entry)

@@ -155,8 +155,8 @@ module BioPieces
 
     # Merge entry pair and return a new biopieces record with this.
     #
-    # @param entry1 [BioPieces::Seq] Sequence entry 1.
-    # @param entry2 [BioPieces::Seq] Sequence entry 2.
+    # @param record1 [Hash] BioPieces record 1.
+    # @param record2 [Hash] BioPieces record 2.
     #
     # @return [Hash] BioPieces record.
     def merge_pair_seq(record1, record2)

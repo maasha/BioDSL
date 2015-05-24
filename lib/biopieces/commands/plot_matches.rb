@@ -272,8 +272,6 @@ module BioPieces
     end
 
     # Output plot data
-    #
-    # @param [GnuPlotter] Plot object
     def plot_output
       @gp.set output: @options[:output] if @options[:output]
 
@@ -298,7 +296,7 @@ module BioPieces
 
     # Assign values to status hash.
     #
-    # @param [Hash] Status hash.
+    # @param status [Hash] Status hash.
     def assign_status(status)
       status[:records_in]  = @records_in
       status[:records_out] = @records_out

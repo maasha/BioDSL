@@ -233,7 +233,7 @@ module BioPieces
 
     # Assign values to status hash.
     #
-    # @param [Hash] Status hash.
+    # @param status [Hash] Status hash.
     def assign_status(status)
       status[:records_in]  = @records_in
       status[:records_out] = @records_out

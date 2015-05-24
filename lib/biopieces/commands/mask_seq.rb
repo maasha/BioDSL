@@ -166,7 +166,7 @@ module BioPieces
 
     # Soft mask sequences in given entry.
     #
-    # @param [biopieces::seq] sequences entry.
+    # @param entry [biopieces::seq] sequences entry.
     def mask_seq_soft(entry)
       entry.mask_seq_soft!(@options[:quality_min])
       @masked += entry.seq.count('a-z')
@@ -174,7 +174,7 @@ module BioPieces
 
     # Hard mask sequences in given entry.
     #
-    # @param [biopieces::seq] sequences entry.
+    # @param entry [biopieces::seq] sequences entry.
     def mask_seq_hard(entry)
       entry.mask_seq_hard!(@options[:quality_min])
       @masked += entry.seq.count('N')

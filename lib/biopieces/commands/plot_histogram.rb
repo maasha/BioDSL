@@ -144,7 +144,7 @@ module BioPieces
 
     # Set default values for options hash.
     #
-    # @param [Hash] Options hash.
+    # @param options [Hash] Options hash.
     def self.defaults(options)
       options[:terminal] ||= :dumb
       options[:title]    ||= 'Histogram'
@@ -301,8 +301,6 @@ module BioPieces
 
     # Determine if xtics should be plottet and unset these if not. Don't plot
     # xtics if more than 50 strings.
-    #
-    # @param [GnuPlotter] Plot object
     def plot_fix_xtics
       return unless @count_hash.keys.first.class == String &&
                     @count_hash.size > 50
@@ -310,8 +308,6 @@ module BioPieces
     end
 
     # Output plot data
-    #
-    # @param [GnuPlotter] Plot object
     def plot_output
       @gp.set output: @options[:output] if @options[:output]
 
@@ -326,7 +322,7 @@ module BioPieces
 
     # Assign values to status hash.
     #
-    # @param [Hash] Status hash.
+    # @param status [Hash] Status hash.
     def assign_status(status)
       status[:records_in]  = @records_in
       status[:records_out] = @records_out

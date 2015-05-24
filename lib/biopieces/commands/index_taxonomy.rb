@@ -231,7 +231,7 @@ module BioPieces
 
     # Add to the taxonomy index the sequence information from a given record.
     #
-    # @param [Hash] BioPieces record with sequence info.
+    # @param record [Hash] BioPieces record with sequence info.
     def add_to_index(record)
       @sequences_in += 1
 
