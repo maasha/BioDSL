@@ -109,7 +109,7 @@ module BioPieces
       @sequences_out = 0
       @residues_in   = 0
       @residues_out  = 0
-      @cluster_out   = 0
+      @clusters_out  = 0
     end
 
     # Return command lambda for uclust.
@@ -241,9 +241,9 @@ module BioPieces
       BioPieces::Fasta.open(tmp_out) do |ios|
         ios.each do |entry|
           if entry.seq_name == 'consensus'
-            @cluster_out += 1
+            @clusters_out += 1
           else
-            record = {RECORD_TYPE: 'uclust', CLUSTER: @cluster_out}
+            record = {RECORD_TYPE: 'uclust', CLUSTER: @clusters_out}
             record.merge!(entry.to_bp)
 
             output << record
