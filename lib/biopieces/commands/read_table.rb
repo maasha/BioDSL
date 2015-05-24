@@ -226,7 +226,7 @@ module BioPieces
       @options     = options
       @records_in  = 0
       @records_out = 0
-      @keys        = options[:keys].map(&:to_sym) if options[:keys]
+      @keys        = options[:keys] ? options[:keys].map(&:to_sym) : nil
       @skip        = options[:skip] || 0
       @buffer      = []
     end
