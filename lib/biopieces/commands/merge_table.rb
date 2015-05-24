@@ -163,7 +163,7 @@ module BioPieces
       @non_merged     = 0
       @table          = {}
       @key            = @options[:key].to_sym
-      @keys           = @options[:keys].map(&:to_sym) if @options[:keys]
+      @keys           = options[:keys] ? @options[:keys].map(&:to_sym) : nil
     end
 
     # Return command lambda for merge_table.
