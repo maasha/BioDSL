@@ -174,6 +174,7 @@ module BioPieces
       @residues_in     = 0
       @residues_out    = 0
       @pattern         = pattern
+      @hit             = false
     end
 
     # Return command lambda for trim_primer.
@@ -337,7 +338,7 @@ module BioPieces
     # @param status [Hash] Status hash.
     def assign_status(status)
       status[:records_in]     = @records_in
-      status[:record_out]     = @record_out
+      status[:record_out]     = @records_out
       status[:sequences_in]   = @sequences_in
       status[:sequences_out]  = @sequences_out
       status[:pattern_hits]   = @pattern_hits
