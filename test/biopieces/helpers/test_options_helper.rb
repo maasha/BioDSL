@@ -244,12 +244,11 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test 'options_load_rc with existing option returns correctly' do
     file = Tempfile.new('rc_file')
-    BioPieces::Config::RC_FILE = file.path
 
     begin
       File.write(file, 'test foo bar')
       options = {foo: 123}
-      options_load_rc(options, :test)
+      options_load_rc(options, :test, file.path)
       assert_equal({foo: 123}, options)
     ensure
       file.unlink
@@ -259,12 +258,11 @@ class TestOptionsHelper < Test::Unit::TestCase
 
   test 'options_load_rc w/o existing option returns correctly' do
     file = Tempfile.new('rc_file')
-    BioPieces::Config::RC_FILE = file.path
 
     begin
       File.write(file, 'test foo bar')
       options = {}
-      options_load_rc(options, :test)
+      options_load_rc(options, :test, file.path)
       assert_equal({foo: 'bar'}, options)
     ensure
       file.unlink

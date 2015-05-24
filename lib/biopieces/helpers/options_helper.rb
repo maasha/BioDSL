@@ -352,16 +352,17 @@ module BioPieces
     #
     # @param options [Hash] Hash with options to check.
     # @param command [Symbol] Command for which to load options.
+    # @param file    [String] Path to file with defaults.
     #
     # @example
     #   options = {}
     #   options_load_rc(options, :some_option)
     #   options == {option1: 'value1', option2: 'value2'}
-    def options_load_rc(options, command)
-      return unless File.exist? BioPieces::Config::RC_FILE
+    def options_load_rc(options, command, file = BioPieces::Config::RC_FILE)
+      return unless File.exist? file
 
       rc_options = Hash.new { |h, k| h[k] = [] }
-      rc_table   = ::CSV.read(BioPieces::Config::RC_FILE, col_sep: "\s").
+      rc_table   = ::CSV.read(file, col_sep: "\s").
                    select { |row| row.first && row.first.to_sym == command }
 
       add_to_rc_options(rc_table, rc_options, options)
