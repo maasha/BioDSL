@@ -37,7 +37,7 @@ module BioPieces
       @name    = name
       @lmb     = lmb
       @options = options
-      @status  = Status.new
+      @status  = Status.new(name, options)
     end
 
     # Callback method for executing a Command lambda.
@@ -53,27 +53,24 @@ module BioPieces
     end
 
     # Return string representation of a Command object.
-    # 
+    #
     # @return [String] With formated command.
     def to_s
       options_list = []
 
       @options.each do |key, value|
-        if value.is_a? String
-          value = Regexp::quote(value) if key == :delimiter
-          options_list << %{#{key}: "#{value}"}
-        elsif value.is_a? Symbol
-          options_list << "#{key}: :#{value}"
-        else
-          options_list << "#{key}: #{value}"
-        end
+        options_list << case value.class.to_s
+                        when 'String'
+                          value = Regexp.quote(value) if key == :delimiter
+                          %(#{key}: "#{value}")
+                        when 'Symbol'
+                          "#{key}: :#{value}"
+                        else
+                          "#{key}: #{value}"
+                        end
       end
 
-      if @options.empty?
-        @name
-      else
-        "#{@name}(#{options_list.join(", ")})"
-      end
+      @options.empty? ? @name : "#{@name}(#{options_list.join(', ')})"
     end
   end
 end
