@@ -1,6 +1,8 @@
 module BioPieces
   # Status class
   class Status
+    require 'yaml'
+
     # Track the status of a running command in a seperate thread and output
     # the status at speficied intervals.
     #
@@ -29,8 +31,23 @@ module BioPieces
     attr_accessor :status
 
     # Constructor method for Status objects.
-    def initialize
-      @status = {}   # Status hash.
+    #
+    # @param name    [Symbol] Command name.
+    # @param options [Hash]   Options hash.
+    def initialize(name, options)
+      @name    = name
+      @options = options
+      @status  = {}   # Status hash.
+    end
+
+    # Return string representation of Status object in YAML.
+    #
+    # @return [String] YAML hash.
+    def to_s
+      {command: @name,
+       options: @options,
+       status:  @status
+      }.to_yaml
     end
 
     # Index getter method returning the value from the symbol hash of a given
