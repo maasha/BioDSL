@@ -33,11 +33,13 @@ module BioPieces
   class Pipeline
     require 'biopieces/command'
     require 'biopieces/status'
+    require 'biopieces/helpers/email_helper'
     require 'biopieces/helpers/history_helper'
     require 'biopieces/helpers/log_helper'
     require 'biopieces/helpers/options_helper'
     require 'mail'
 
+    include EmailHelper
     include LogHelper
     include HistoryHelper
     include OptionsHelper
@@ -122,8 +124,8 @@ module BioPieces
       end
 
       status.map { |s| puts s } if @options[:verbose]
-      #email_send                if @options[:email]
-      #report_save               if @options[:report]
+      # send_email                if @options[:email]
+      # report_save               if @options[:report]
       log_ok unless BioPieces.test
 
       self
@@ -238,35 +240,6 @@ module BioPieces
         command.status.calc_time_elapsed
         command.status.calc_delta
       end
-    end
-
-    # Send email notification to email address specfied in @options[:email],
-    # including a optional subject specified in @options[:subject], that will
-    # otherwise default to self.to_s. The body of the email will be the
-    # Pipeline status.
-    def email_send
-      unless @options[:email] == "test@foobar.com"
-        Mail.defaults do
-          delivery_method :smtp, {
-            address: "localhost",
-            port: 25,
-            enable_starttls_auto: false
-          }
-        end
-      end
-
-      html_part = Mail::Part.new do
-        content_type 'text/html; charset=UTF-8'
-        body BioPieces::Render.html(self)
-      end
-
-      mail = Mail.new
-      mail[:from]      = "do-not-reply@#{`hostname -f`.strip}"
-      mail[:to]        = @options[:email]
-      mail[:subject]   = @options[:subject] || self.to_s
-      mail.html_part = html_part
-
-      mail.deliver!
     end
 
     # Create an output directory and prefix all output files in the commands
