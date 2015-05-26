@@ -33,7 +33,14 @@ module BioPieces
   class Pipeline
     require 'biopieces/command'
     require 'biopieces/status'
+    require 'biopieces/helpers/history_helper'
+    require 'biopieces/helpers/log_helper'
     require 'biopieces/helpers/options_helper'
+    require 'mail'
+
+    include LogHelper
+    include HistoryHelper
+    include OptionsHelper
 
     attr_accessor :commands, :complete
 
@@ -90,22 +97,52 @@ module BioPieces
     #
     # @return [self]
     def run(options = {})
-      @options = options
-
       if @commands.empty?
         fail BioPieces::PipelineError, 'No commands added to pipeline'
       end
+
+      options_allowed(options, :debug, :verbose, :email, :progress, :subject, :input, :output, :output_dir, :report, :force)
+      options_allowed_values(options, debug: [true, false, nil])
+      options_allowed_values(options, verbose: [true, false, nil])
+      options_conflict(options, progress: :verbose)
+      options_tie(options, subject: :email)
+      options_files_exist_force(options, :report)
+
+      prefix_output_dir if options[:output_dir]
+
+      @options = options
+
+      BioPieces.debug   = options[:debug]
+      BioPieces.verbose = options[:verbose]
+      BioPieces.test    = ENV['BP_TEST']
 
       unless @complete
         Status.track(@commands) { run_commands }
         @complete = true
       end
 
+      status.map { |s| puts s } if @options[:verbose]
+      #email_send                if @options[:email]
+      #report_save               if @options[:report]
+      log_ok unless BioPieces.test
+
       self
+    rescue Exception => exception
+      unless BioPieces.test
+        STDERR.puts "Error in run: #{exception.message}"
+        STDERR.puts exception.backtrace if BioPieces.verbose
+        log_error(exception)
+        exit 2
+      else
+        raise exception
+      end
+    ensure
+      history_save
     end
 
-    # Return a list of all status hashes from the commands.
-    # @todo Needs proper formatting of output.
+    # Return a list of all status Objects from the commands.
+    #
+    # @return [Array] List of status objects.
     def status
       @commands.each_with_object([]) { |e, a| a << e.status }
     end
@@ -174,9 +211,9 @@ module BioPieces
     def require_file(method)
       return if BioPieces.const_defined? method.to_s.capitalize
 
-      file = File.join('lib', 'biopieces', 'commands', "#{method}.rb")
-
-      fail Errno::ENOENT, "No such file: #{file}" unless File.exist? file
+      # FIXME
+      # file = File.join('lib', 'biopieces', 'commands', "#{method}.rb")
+      # fail Errno::ENOENT, "No such file: #{file}" unless File.exist? file
 
       require File.join('biopieces', 'commands', method.to_s)
     end
@@ -197,116 +234,9 @@ module BioPieces
         @enums.last.each {}
       end
 
-      # @commands.each do |command| # TODO: this should be part of a #to_s
-      #   command.status.calc_time_elapsed
-      #   command.status.calc_delta
-      # end
-    end
-  end
-end
-
-__END__
-
-module BioPieces
-  class Pipeline
-    require 'mail'
-
-    include BioPieces::Commands
-    include BioPieces::HistoryHelper
-    include BioPieces::LogHelper
-    include BioPieces::OptionsHelper
-    include BioPieces::StatusHelper
-    include BioPieces::AuxHelper
-
-    attr_accessor :commands, :status
-
-    def initialize
-      @options  = {}
-      @commands = []
-      @status   = {}
-    end
-
-    # Returns the size or number of commands in a pipeline.
-    def size
-      @commands.size
-    end
-
-    # Run a Pipeline.
-    def run(options = {})
-      raise BioPieces::PipelineError, "No commands added to pipeline" if @commands.empty?
-
-      options_allowed(options, :debug, :verbose, :email, :progress, :subject, :input, :output, :fork, :thread, :output_dir, :report, :force)
-      options_allowed_values(options, debug: [true, false, nil])
-      options_allowed_values(options, verbose: [true, false, nil])
-      options_allowed_values(options, fork: [true, false, nil])
-      options_allowed_values(options, thread: [true, false, nil])
-      options_conflict(options, fork: :thread)
-      options_conflict(options, progress: :verbose)
-      options_tie(options, subject: :email)
-      options_files_exists_force(options, :report)
-
-      BioPieces::debug   = options[:debug]
-      BioPieces::verbose = options[:verbose]
-      BioPieces::test    = ENV['BP_TEST']
-
-      if options[:output_dir]
-        FileUtils.mkdir_p(options[:output_dir]) unless File.exist?(options[:output_dir])
-
-        @commands.each do |command|
-          if value = command.options[:output]
-            command.options[:output] = File.join(options[:output_dir], value)
-          end
-        end
-      end
-
-      @options = options
-
-      status_init
-
-      if @options[:fork]
-        @options[:progress] ? status_progress { run_fork }      : run_fork
-      elsif @options[:thread]
-        @options[:progress] ? status_progress { run_thread }    : run_thread
-      else
-        @options[:progress] ? status_progress { run_enumerate } : run_enumerate
-      end
-
-      @status[:status] = status_load
-
-      pp @status  if @options[:verbose]
-      email_send  if @options[:email]
-      report_save if @options[:report]
-
-      log_ok unless BioPieces::test
-
-     self
-    rescue Exception => exception
-      unless BioPieces::test
-        STDERR.puts "Error in run: #{exception.message}"
-        STDERR.puts exception.backtrace if BioPieces::verbose
-        log_error(exception)
-        exit 2
-      else
-        raise exception
-      end
-    ensure
-      history_save
-    end
-
-    def run_enumerate
-      enums = [@options[:input]]
-
-      @commands.each_with_index do |command, i|
-        enums << Enumerator.new do |output|
-          command.run(enums[i], output)
-        end
-      end
-
-      if @options[:output]
-        enums.last.each { |record| @options[:output].write record }
-        @options[:output].close
-      else
-        enums.last.each {}
+      @commands.each do |command| # TODO: this should be part of a #to_s
+        command.status.calc_time_elapsed
+        command.status.calc_delta
       end
     end
 
@@ -325,11 +255,9 @@ module BioPieces
         end
       end
 
-      html = BioPieces::Render.html(self)
-
       html_part = Mail::Part.new do
         content_type 'text/html; charset=UTF-8'
-        body html
+        body BioPieces::Render.html(self)
       end
 
       mail = Mail.new
@@ -341,49 +269,28 @@ module BioPieces
       mail.deliver!
     end
 
-    # Save a HTML status report to file.
-    def report_save
-      if @options[:output_dir]
-        file = File.join(@options[:output_dir], @options[:report])
-      else
-        file = @options[:report]
-      end
+    # Create an output directory and prefix all output files in the commands
+    # with this directory.
+    def prefix_output_dir
+      FileUtils.mkdir_p(@options[:output_dir]) unless File.exist?(@options[:output_dir])
 
-      File.open(file, 'w') do |ios|
-        ios.puts BioPieces::Render.html(self)
+      @commands.each do |command|
+        if value = command.options[:output]
+          command.options[:output] = File.join(@options[:output_dir], value)
+        end
       end
     end
 
-    private
+    # Save a HTML status report to file.
+    def report_save
+      file = if @options[:output_dir]
+               File.join(@options[:output_dir], @options[:report])
+             else
+               @options[:report]
+             end
 
-    class Command
-      attr_accessor :status
-      attr_reader :name, :options, :options_orig, :lmb
-
-      include BioPieces::StatusHelper
-      include BioPieces::LogHelper
-      include BioPieces::OptionsHelper
-
-      def initialize(name, options, options_orig, lmb)
-        @name         = name
-        @options      = options
-        @options_orig = options_orig
-        @lmb          = lmb
-      end
-
-      def run(input, output)
-        self.status[:time_start] = Time.now
-        self.status[:status]     = "running"
-        self.lmb.call(input, output, self.status)
-        self.status[:time_stop]  = Time.now
-        self.status[:status]     = "done"
-
-        status_save(self.status)
-
-        self.status
-      ensure
-        input.close if input.respond_to? :close
-        output.close if output.respond_to? :close
+      File.open(file, 'w') do |ios|
+        ios.puts BioPieces::Render.html(self)
       end
     end
   end
