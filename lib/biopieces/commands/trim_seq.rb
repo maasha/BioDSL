@@ -68,7 +68,11 @@ module BioPieces
   #
   # Use the +quality_min+ option to change the minimum value to discard:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq(quality_min: 25).trim_seq.run
+  #    BP.new.
+  #    read_fastq(input: "test.fq").
+  #    trim_seq(quality_min: 25).
+  #    trim_seq.
+  #    run
   #
   #    SEQ_NAME: test
   #    SEQ: cgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
