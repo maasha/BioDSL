@@ -33,6 +33,8 @@ module BioPieces
     # otherwise default to self.to_s. The body of the email will be the Pipeline
     # status.
     def send_email
+      return unless @options[:email]
+
       unless @options[:email] == 'test@foobar.com'
         Mail.defaults do
           delivery_method :smtp, {

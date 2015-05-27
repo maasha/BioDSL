@@ -29,7 +29,7 @@ module BioPieces
   # Namespace for HistoryHelper.
   module HistoryHelper
     # Save pipeline to history file unless test is set.
-    def history_save
+    def save_history
       return if BioPieces.test
 
       File.open(BioPieces::Config::HISTORY_FILE, 'a') do |ios|

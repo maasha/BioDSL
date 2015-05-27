@@ -32,6 +32,8 @@ module BioPieces
 
     # Log an OK messge to the log file.
     def log_ok
+      return if BioPieces.test
+
       File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
         ios.puts to_s
         ios.puts status.to_yaml

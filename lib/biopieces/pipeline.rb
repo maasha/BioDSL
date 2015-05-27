@@ -99,55 +99,38 @@ module BioPieces
     #
     # @return [self]
     def run(options = {})
-      BioPieces.test = ENV['BP_TEST']
+      prime_variables(options)
 
-      if @commands.empty?
-        fail BioPieces::PipelineError, 'No commands added to pipeline'
-      end
-
-      options_allowed(options, :debug, :verbose, :email, :progress, :subject, :input, :output, :output_dir, :report, :force)
-      options_allowed_values(options, debug: [true, false, nil])
-      options_allowed_values(options, verbose: [true, false, nil])
-      options_conflict(options, progress: :verbose)
-      options_tie(options, subject: :email)
-      options_files_exist_force(options, :report)
-
-      prefix_output_dir if options[:output_dir]
+      fail BioPieces::PipelineError, 'Empty pipeline' if @commands.empty?
 
       @options = options
 
-      BioPieces.debug   = options[:debug]
-      BioPieces.verbose = options[:verbose]
-
-      unless @complete
-        Status.track(@commands) { run_commands }
-        @complete = true
-      end
-
-      status.map { |s| puts s } if @options[:verbose]
-      # send_email                if @options[:email]
-      # report_save               if @options[:report]
-      log_ok unless BioPieces.test
+      check_options
+      command_runner
+      print_status
+      send_email
+      save_report
+      log_ok
 
       self
     rescue => exception
-      unless BioPieces.test
-        STDERR.puts "Error in run: #{exception.message}"
-        STDERR.puts exception.backtrace if BioPieces.verbose
-        log_error(exception)
-        exit 2
-      else
-        raise exception
-      end
+      exit_gracefully(exception)
     ensure
-      history_save
+      save_history
     end
 
     # Return a list of all status Objects from the commands.
     #
     # @return [Array] List of status objects.
     def status
-      @commands.each_with_object([]) { |e, a| a << e.status }
+      @commands.each_with_object([]) do |e, a|
+        if @complete
+          e.status.calc_time_elapsed
+          e.status.calc_delta
+        end
+
+        a << e.status
+      end
     end
 
     # format a Pipeline to a pretty string which is returned.
@@ -221,42 +204,80 @@ module BioPieces
       require File.join('biopieces', 'commands', method.to_s)
     end
 
+    # Print status.
+    def print_status
+      return unless @options[:verbose]
+
+      status.map { |s| puts s }
+    end
+
+    # Check all run options.
+    def check_options
+      options_allowed(@options, :debug, :verbose, :email, :progress, :subject,
+                      :input, :output, :output_dir, :report, :force)
+      options_allowed_values(@options, debug: [true, false, nil])
+      options_allowed_values(@options, verbose: [true, false, nil])
+      options_conflict(@options, progress: :verbose)
+      options_tie(@options, subject: :email)
+      options_files_exist_force(@options, :report)
+    end
+
     # Run all commands in the Pipeline.
     def run_commands
+      prefix_output_dir
+      run_time_start
+      run_add_enumerators
+      run_enumerate
+    end
+
+    # Add start time to the status of all commands.
+    def run_time_start
+      time = Time.now
+
       @commands.each do |command|
-        command.status[:time_start] = Time.now
+        command.status[:time_start] = time
+      end
+    end
+
+    # Add enumerators to instance array.
+    def run_add_enumerators
+      @commands.each do |command|
         input  = @options[:input] || @enums.last
         @enums << Enumerator.new { |output| command.call(input, output) }
         command.terminate
       end
+    end
 
+    # Iterate through all enumerators.
+    def run_enumerate
       if @options[:output]
         @enums.last.each { |record| @options[:output].write record }
-        @options[:output].close   # TODO this close is ugly here
+        @options[:output].close   # TODO: this close is ugly here
       else
         @enums.last.each {}
-      end
-
-      @commands.each do |command| # TODO: this should be part of a #to_s
-        command.status.calc_time_elapsed
-        command.status.calc_delta
       end
     end
 
     # Create an output directory and prefix all output files in the commands
     # with this directory.
     def prefix_output_dir
-      FileUtils.mkdir_p(@options[:output_dir]) unless File.exist?(@options[:output_dir])
+      return unless @options[:output_dir]
+
+      unless File.exist?(@options[:output_dir])
+        FileUtils.mkdir_p(@options[:output_dir])
+      end
 
       @commands.each do |command|
-        if value = command.options[:output]
+        if (value = command.options[:output])
           command.options[:output] = File.join(@options[:output_dir], value)
         end
       end
     end
 
     # Save a HTML status report to file.
-    def report_save
+    def save_report
+      return unless @options[:report]
+
       file = if @options[:output_dir]
                File.join(@options[:output_dir], @options[:report])
              else
@@ -266,6 +287,36 @@ module BioPieces
       File.open(file, 'w') do |ios|
         ios.puts BioPieces::Render.html(self)
       end
+    end
+
+    # Run all commands.
+    def command_runner
+      return if @complete
+
+      Status.track(@commands) { run_commands }
+      @complete = true
+    end
+
+    # Set some global variables.
+    #
+    # @param  options [Hash]             Options hash.
+    # @option options [Booleon] :debug   Debug flag.
+    # @option options [Booleon] :verbose Verbose flag.
+    def prime_variables(options)
+      BioPieces.test    = ENV['BP_TEST']
+      BioPieces.debug   = options[:debug]
+      BioPieces.verbose = options[:verbose]
+    end
+
+    # Output exception message and possibly stack tracre to STDERR,
+    # log error message and exit with non-zero status.
+    def exit_gracefully(exception)
+      fail exception if BioPieces.test
+
+      STDERR.puts "Error in run: #{exception.message}"
+      STDERR.puts exception.backtrace if BioPieces.verbose
+      log_error(exception)
+      exit 2
     end
   end
 end
