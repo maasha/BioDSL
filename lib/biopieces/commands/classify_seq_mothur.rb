@@ -70,7 +70,6 @@ module BioPieces
   #    run
   class ClassifySeqMothur
     require 'English'
-    require 'parallel'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
     extend AuxHelper
@@ -94,7 +93,7 @@ module BioPieces
       options_assert(options, ':confidence > 0')
       options_assert(options, ':confidence <= 100')
       options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
       aux_exist('mothur')
 
       defaults(options)

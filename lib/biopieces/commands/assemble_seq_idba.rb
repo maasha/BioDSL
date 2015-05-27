@@ -64,7 +64,6 @@ module BioPieces
   # rubocop:disable ClassLength
   class AssembleSeqIdba
     require 'English'
-    require 'parallel'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
     extend AuxHelper
@@ -87,7 +86,7 @@ module BioPieces
       options_assert(options, ':kmer_max >= 16')
       options_assert(options, ':kmer_max <= 512')
       options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
       aux_exist('idba_ud')
 
       defaults(options)

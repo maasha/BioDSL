@@ -53,7 +53,6 @@ module BioPieces
   # == Examples
   #
   class UchimeRef
-    require 'parallel'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
 
@@ -74,7 +73,7 @@ module BioPieces
       options_required(options, :database)
       options_files_exist(options, :database)
       options_assert(options, ':cpus >= 1')
-      options_assert(options, ':cpus <= #{Parallel.processor_count}')
+      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
       aux_exist('usearch')
 
       new(options).lmb

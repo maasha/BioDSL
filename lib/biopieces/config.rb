@@ -26,11 +26,14 @@
 
 module BioPieces
   module Config
+    require 'parallel'
+
     HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
     LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
     RC_FILE              = File.join(ENV['HOME'], '.biopiecesrc')
     STATUS_SAVE_INTERVAL = 1           # save status every n second.
     SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
     SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+    CORES_MAX            = Parallel.processor_count
   end
 end

@@ -75,14 +75,12 @@ module BioPieces
     #
     # @return [Proc] Returns the command lambda.
     def self.lmb(options)
-      require 'parallel'
-
       options_load_rc(options, __method__)
       options_allowed(options, :template_file, :cpus)
       options_required(options, :template_file)
       options_files_exist(options, :template_file)
       options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{Parallel.processor_count}")
+      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
       aux_exist('mothur')
 
       options[:cpus] ||= 1
