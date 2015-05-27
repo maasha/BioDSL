@@ -143,7 +143,7 @@ module BioPieces
       options[:hits_max]  ||= 50
       options[:consensus] ||= 0.51
       options[:coverage]  ||= 0.9
-      options[:best_only] = true unless options[:best_only] == false
+      options[:best_only] = true if options[:best_only].nil?
 
       run_assertions(options)
 
