@@ -99,6 +99,8 @@ module BioPieces
     #
     # @return [self]
     def run(options = {})
+      BioPieces.test = ENV['BP_TEST']
+
       if @commands.empty?
         fail BioPieces::PipelineError, 'No commands added to pipeline'
       end
@@ -116,7 +118,6 @@ module BioPieces
 
       BioPieces.debug   = options[:debug]
       BioPieces.verbose = options[:verbose]
-      BioPieces.test    = ENV['BP_TEST']
 
       unless @complete
         Status.track(@commands) { run_commands }
@@ -129,7 +130,7 @@ module BioPieces
       log_ok unless BioPieces.test
 
       self
-    rescue Exception => exception
+    rescue => exception
       unless BioPieces.test
         STDERR.puts "Error in run: #{exception.message}"
         STDERR.puts exception.backtrace if BioPieces.verbose
