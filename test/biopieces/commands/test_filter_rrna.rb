@@ -30,77 +30,87 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-# Test class for UsearchLocal.
-class TestUsearchLocal < Test::Unit::TestCase
-  require 'tempfile'
-
+# Test class for FilterRrna.
+class TestFilterRrna < Test::Unit::TestCase
   def setup
-    omit('usearch not found') unless BioPieces::Filesys.which('usearch')
+    @tmp_dir = Dir.mktmpdir('filter_rrna')
 
-    data = <<-DAT.gsub(/^\s+\|/, '')
-      |>test1
-      |gtgtgtagctacgatcagctagcgatcgagctatatgttt
-    DAT
+    omit('sortmerna not found')   unless BioPieces::Filesys.which('sortmerna')
+    omit('indexdb_rna not found') unless BioPieces::Filesys.which('indexdb_rna')
 
-    @db = Tempfile.new('database')
+    setup_test_streams
+    setup_test_data
+    setup_fasta_file
+    setup_indexdb
 
-    File.open(@db, 'w') do |ios|
-      ios << data
+    @p = BioPieces::Pipeline.new
+  end
+
+  def setup_test_streams
+    @input, @output   = BioPieces::Stream.pipe
+    @input2, @output2 = BioPieces::Stream.pipe
+  end
+
+  def setup_test_data
+    @hash1 = {
+      SEQ_NAME: 'test1',
+      SEQ: 'gatcagatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcag',
+      SEQ_LEN: 60
+    }
+
+    @hash2 = {
+      SEQ_NAME: 'test2',
+      SEQ: 'ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag',
+      SEQ_LEN: 60
+    }
+
+    @output.write @hash1
+    @output.write @hash2
+    @output.close
+  end
+
+  def setup_fasta_file
+    @ref_fasta = File.join(@tmp_dir, 'test.fna')
+    @ref_index = "#{@ref_fasta}.idx"
+
+    BioPieces::Fasta.open(@ref_fasta, 'w') do |ios|
+      ios.puts BioPieces::Seq.new_bp(@hash1).to_fasta
     end
   end
 
+  def setup_indexdb
+    cmd = "indexdb_rna --ref #{@ref_fasta},#{@ref_index}"
+    system(cmd)
+
+    fail "Running command failed: #{cmd}" unless $CHILD_STATUS.success?
+  end
+
   def teardown
-    @db.close
-    @db.unlink
+    FileUtils.rm_rf(@tmp_dir)
   end
 
-  test 'BioPieces::Pipeline#usearch_local with disallowed option raises' do
-    p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.usearch_local(foo: 'bar') }
+  test 'BioPieces::Pipeline::FilterRrna with invalid options raises' do
+    assert_raise(BioPieces::OptionError) do
+      @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__, foo: 'bar')
+    end
   end
 
-  test 'BioPieces::Pipeline#usearch_local with allowed option dont raise' do
-    p = BioPieces::Pipeline.new
-    assert_nothing_raised { p.usearch_local(database: @db.path, identity: 1) }
+  test 'BioPieces::Pipeline::FilterRrna with valid options don\'t raise' do
+    assert_nothing_raised do
+      @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__)
+    end
   end
 
-  test 'BioPieces::Pipeline#usearch_local outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioPieces::Pipeline::FilterRrna returns correctly' do
+    @p.filter_rrna(ref_fasta: @ref_fasta, ref_index: "#{@ref_index}*").
+      run(input: @input, output: @output2)
 
-    output.write(one: 1, two: 2, three: 3)
-    output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
-    output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
-    output.close
-
-    p = BioPieces::Pipeline.new
-    p.usearch_local(database: @db.path, identity: 0.97, strand: 'plus').
-      run(input: input, output: output2)
-
-    expected = <<-EXP.gsub(/^\s+\|/, '')
-      |{:SEQ=>"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"}
-      |{:SEQ=>"gtgtgtagctacgatcagctagcgatcgagctatatgttt"}
-      |{:TYPE=>"H",
-      | :CLUSTER=>0,
-      | :SEQ_LEN=>40,
-      | :IDENT=>100.0,
-      | :STRAND=>"+",
-      | :CIGAR=>"40M",
-      | :Q_ID=>"1",
-      | :S_ID=>"test1",
-      | :RECORD_TYPE=>"usearch"}
-      |{:TYPE=>"N",
-      | :CLUSTER=>0,
-      | :SEQ_LEN=>0,
-      | :STRAND=>".",
-      | :CIGAR=>"*",
-      | :Q_ID=>"2",
-      | :RECORD_TYPE=>"usearch"}
-      |{:one=>1,
-      | :two=>2,
-      | :three=>3}
+    expected = <<-EXP.gsub(/^\s+|\|/, '').delete("\n")
+      |{:SEQ_NAME=>"test2",
+      | :SEQ=>"ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag",
+      | :SEQ_LEN=>60}
     EXP
 
-    assert_equal(expected.delete("\n"), collect_sorted_result.delete("\n"))
+    assert_equal(expected, collect_result.chomp)
   end
 end

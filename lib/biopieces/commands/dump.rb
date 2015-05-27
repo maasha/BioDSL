@@ -1,114 +1,168 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of the Biopieces framework (www.biopieces.org).        #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Commands
-    # == Dump records in stream to STDOUT.
-    # 
-    # +dump+ outputs records from the stream to STDOUT.
-    # 
-    # == Usage
-    # 
-    #    dump([first: <uint> |last: <uint>])
-    # 
-    # === Options
+  # == Dump records in stream to STDOUT.
+  #
+  # +dump+ outputs records from the stream to STDOUT.
+  #
+  # == Usage
+  #
+  #    dump([first: <uint> |last: <uint>])
+  #
+  # === Options
+  #
+  # * first <uint> - Only dump the first number of records.
+  # * last <uint>  - Only dump the last number of records.
+  #
+  # == Examples
+  #
+  # To dump all records in the stream:
+  #
+  #    dump
+  #
+  # To dump only the _first_ 10 records:
+  #
+  #    dump(first: 10)
+  #
+  # To dump only the _last_ 10 records:
+  #
+  #    dump(last: 10)
+  class Dump
+    require 'biopieces/helpers/options_helper'
+    extend OptionsHelper
+
+    # Check the options and return a lambda for the command.
     #
-    # * first <uint> - Only dump the first number of records.
-    # * last <uint>  - Only dump the last number of records.
-    # 
-    # == Examples
-    # 
-    # To dump all records in the stream:
+    # @param [Hash] options Options hash.
+    # @option options [Integer] :first Dump first number of records.
+    # @option options [Integer] :last  Dump last number of records.
     #
-    #    dump
-    #
-    # To dump only the _first_ 10 records:
-    #
-    #    dump(first: 10)
-    #
-    # To dump only the _last_ 10 records:
-    # 
-    #    dump(last: 10)
-    def dump(options = {})
-      options_orig = options
+    # @return [Proc] Returns the dump command lambda.
+    def self.lmb(options)
       options_load_rc(options, __method__)
       options_allowed(options, :first, :last)
       options_unique(options, :first, :last)
-      options_assert(options, ":first > 0")
-      options_assert(options, ":last > 0")
+      options_assert(options, ':first > 0')
+      options_assert(options, ':last > 0')
 
-      lmb = lambda do |input, output, status|
-        status_track(status) do
-          if options[:first]
-            input.each_with_index do |record, i|
-              break if options[:first] == i
+      new(options).lmb
+    end
 
-              pp record
+    # Constructor for the Dump class.
+    #
+    # @param [Hash] options Options hash.
+    # @option options [Integer] :first Dump first number of records.
+    # @option options [Integer] :last  Dump last number of records.
+    #
+    # @return [Dump] Returns an instance of the Dump class.
+    def initialize(options)
+      @options     = options
+      @records_in  = 0
+      @records_out = 0
+    end
 
-              status[:records_in] += 1
+    # Return a lambda for the dump command.
+    #
+    # @return [Proc] Returns the dump command lambda.
+    def lmb
+      lambda do |input, output, status|
+        if @options[:first]
+          dump_first(input, output)
+        elsif @options[:last]
+          dump_last(input, output)
+        else
+          dump_all(input, output)
+        end
 
-              if output
-                output << record
-                status[:records_out] += 1
-              end
-            end
-          elsif options[:last]
-            buffer = []
+        status[:records_in]  = @records_in
+        status[:records_out] = @records_out
+      end
+    end
 
-            input.each do |record|
-              status[:records_in] += 1
+    private
 
-              buffer << record
-              buffer.shift if buffer.size > options[:last]
-            end
+    # Dump the first number of records.
+    #
+    # @param input [Enumerator::Yielder] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
+    def dump_first(input, output)
+      input.first(@options[:first]).each do |record|
+        @records_in += 1
 
-            buffer.each do |record|
-              pp record
+        puts record
 
-              output << record if output
-            end
-          else
-            input.each do |record|
-              status[:records_in] += 1
-
-              pp record
-
-              if output
-                output << record
-                status[:records_out] += 1
-              end
-            end
-          end
+        if output
+          output << record
+          @records_out += 1
         end
       end
+    end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+    # Dump the last number of records.
+    #
+    # @param input [Enumerator::Yielder] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
+    def dump_last(input, output)
+      buffer = []
+      last   = @options[:last]
 
-      self
+      input.each do |record|
+        @records_in += 1
+
+        buffer << record
+        buffer.shift if buffer.size > last
+      end
+
+      buffer.each do |record|
+        puts record
+
+        if output
+          output << record
+          @records_out += 1
+        end
+      end
+    end
+
+    # Dump all records.
+    #
+    # @param input [Enumerator::Yielder] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
+    def dump_all(input, output)
+      input.each do |record|
+        @records_in += 1
+
+        puts record
+
+        if output
+          output << record
+          @records_out += 1
+        end
+      end
     end
   end
 end
-

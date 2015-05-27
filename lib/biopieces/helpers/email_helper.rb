@@ -1,6 +1,3 @@
-#!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
-
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
@@ -28,79 +25,36 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'test/helper'
+module BioPieces
+  # Namespace for EmailHelper.
+  module EmailHelper
+    # Send email notification to email address specfied in @options[:email],
+    # including a optional subject specified in @options[:subject], that will
+    # otherwise default to self.to_s. The body of the email will be the Pipeline
+    # status.
+    def send_email
+      unless @options[:email] == 'test@foobar.com'
+        Mail.defaults do
+          delivery_method :smtp, {
+            address: 'localhost',
+            port: 25,
+            enable_starttls_auto: false
+          }
+        end
+      end
 
-# Test class for UsearchLocal.
-class TestUsearchLocal < Test::Unit::TestCase
-  require 'tempfile'
+      html_part = Mail::Part.new do
+        content_type 'text/html; charset=UTF-8'
+        body BioPieces::Render.html(self)
+      end
 
-  def setup
-    omit('usearch not found') unless BioPieces::Filesys.which('usearch')
+      mail = Mail.new
+      mail[:from]      = "do-not-reply@#{`hostname -f`.strip}"
+      mail[:to]        = @options[:email]
+      mail[:subject]   = @options[:subject] || self.to_s
+      mail.html_part = html_part
 
-    data = <<-DAT.gsub(/^\s+\|/, '')
-      |>test1
-      |gtgtgtagctacgatcagctagcgatcgagctatatgttt
-    DAT
-
-    @db = Tempfile.new('database')
-
-    File.open(@db, 'w') do |ios|
-      ios << data
+      mail.deliver!
     end
-  end
-
-  def teardown
-    @db.close
-    @db.unlink
-  end
-
-  test 'BioPieces::Pipeline#usearch_local with disallowed option raises' do
-    p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.usearch_local(foo: 'bar') }
-  end
-
-  test 'BioPieces::Pipeline#usearch_local with allowed option dont raise' do
-    p = BioPieces::Pipeline.new
-    assert_nothing_raised { p.usearch_local(database: @db.path, identity: 1) }
-  end
-
-  test 'BioPieces::Pipeline#usearch_local outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
-
-    output.write(one: 1, two: 2, three: 3)
-    output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
-    output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
-    output.close
-
-    p = BioPieces::Pipeline.new
-    p.usearch_local(database: @db.path, identity: 0.97, strand: 'plus').
-      run(input: input, output: output2)
-
-    expected = <<-EXP.gsub(/^\s+\|/, '')
-      |{:SEQ=>"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"}
-      |{:SEQ=>"gtgtgtagctacgatcagctagcgatcgagctatatgttt"}
-      |{:TYPE=>"H",
-      | :CLUSTER=>0,
-      | :SEQ_LEN=>40,
-      | :IDENT=>100.0,
-      | :STRAND=>"+",
-      | :CIGAR=>"40M",
-      | :Q_ID=>"1",
-      | :S_ID=>"test1",
-      | :RECORD_TYPE=>"usearch"}
-      |{:TYPE=>"N",
-      | :CLUSTER=>0,
-      | :SEQ_LEN=>0,
-      | :STRAND=>".",
-      | :CIGAR=>"*",
-      | :Q_ID=>"2",
-      | :RECORD_TYPE=>"usearch"}
-      |{:one=>1,
-      | :two=>2,
-      | :three=>3}
-    EXP
-
-    assert_equal(expected.delete("\n"), collect_sorted_result.delete("\n"))
   end
 end

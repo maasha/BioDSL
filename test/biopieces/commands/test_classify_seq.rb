@@ -30,77 +30,23 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-# Test class for UsearchLocal.
-class TestUsearchLocal < Test::Unit::TestCase
-  require 'tempfile'
-
+# Test class for ClassifySeq.
+class TestClassifySeq < Test::Unit::TestCase
   def setup
-    omit('usearch not found') unless BioPieces::Filesys.which('usearch')
+    @p = BP.new
+  end
 
-    data = <<-DAT.gsub(/^\s+\|/, '')
-      |>test1
-      |gtgtgtagctacgatcagctagcgatcgagctatatgttt
-    DAT
-
-    @db = Tempfile.new('database')
-
-    File.open(@db, 'w') do |ios|
-      ios << data
+  test 'BioPieces::Pipeline#classify_seq with disallowed option raises' do
+    assert_raise(BioPieces::OptionError) do
+      @p.classify_seq(dir: Dir.pwd, foo: 'bar')
     end
   end
 
-  def teardown
-    @db.close
-    @db.unlink
+  test 'BioPieces::Pipeline#classify_seq with allowed option dont raise' do
+    assert_nothing_raised { @p.classify_seq(dir: Dir.pwd) }
   end
 
-  test 'BioPieces::Pipeline#usearch_local with disallowed option raises' do
-    p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.usearch_local(foo: 'bar') }
-  end
-
-  test 'BioPieces::Pipeline#usearch_local with allowed option dont raise' do
-    p = BioPieces::Pipeline.new
-    assert_nothing_raised { p.usearch_local(database: @db.path, identity: 1) }
-  end
-
-  test 'BioPieces::Pipeline#usearch_local outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
-
-    output.write(one: 1, two: 2, three: 3)
-    output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
-    output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
-    output.close
-
-    p = BioPieces::Pipeline.new
-    p.usearch_local(database: @db.path, identity: 0.97, strand: 'plus').
-      run(input: input, output: output2)
-
-    expected = <<-EXP.gsub(/^\s+\|/, '')
-      |{:SEQ=>"atcgatcgatcgatcgatcgatcgatcgtacgacgtagct"}
-      |{:SEQ=>"gtgtgtagctacgatcagctagcgatcgagctatatgttt"}
-      |{:TYPE=>"H",
-      | :CLUSTER=>0,
-      | :SEQ_LEN=>40,
-      | :IDENT=>100.0,
-      | :STRAND=>"+",
-      | :CIGAR=>"40M",
-      | :Q_ID=>"1",
-      | :S_ID=>"test1",
-      | :RECORD_TYPE=>"usearch"}
-      |{:TYPE=>"N",
-      | :CLUSTER=>0,
-      | :SEQ_LEN=>0,
-      | :STRAND=>".",
-      | :CIGAR=>"*",
-      | :Q_ID=>"2",
-      | :RECORD_TYPE=>"usearch"}
-      |{:one=>1,
-      | :two=>2,
-      | :three=>3}
-    EXP
-
-    assert_equal(expected.delete("\n"), collect_sorted_result.delete("\n"))
-  end
+  # test 'BioPieces::Pipeline#classify_seq outputs correctly' do
+  #   TODO: mock this sucker.
+  # end
 end

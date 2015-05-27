@@ -68,6 +68,7 @@ module BioPieces
   require 'biopieces/fastq'
   require 'biopieces/math'
   require 'biopieces/taxonomy'
+  require 'biopieces/tmp_dir'
   require 'biopieces/serializer'
   require 'biopieces/stream'
   require 'biopieces/test'

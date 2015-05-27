@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
@@ -30,65 +30,29 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..', '..')
 
 require 'test/helper'
 
-class TestFilterRrna < Test::Unit::TestCase 
-  def setup
-    @tmp_dir   = Dir.mktmpdir('filter_rrna')
+# Test class for TmpDir
+class TmpDirTest < Test::Unit::TestCase
+  test 'BioPieces::TmpDir#create with no files returns correctly' do
+    dir = ''
 
-    omit("sortmerna not found")   unless BioPieces::Filesys.which("sortmerna")
-    omit("indexdb_rna not found") unless BioPieces::Filesys.which("indexdb_rna")
-
-    @ref_fasta = File.join(@tmp_dir, 'test.fna')
-    @ref_index = "#{@ref_fasta}.idx"
-
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
-
-    hash1 = {
-      SEQ_NAME: 'test1',
-      SEQ: 'gatcagatcgtacgagcagcatctgacgtatcgatcgttgattagttgctagctatgcag',
-      SEQ_LEN: 60,
-    }
-
-    hash2 = {
-      SEQ_NAME: 'test2',
-      SEQ: 'ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag',
-      SEQ_LEN: 60,
-    }
-
-    @output.write hash1
-    @output.write hash2
-    @output.close
-
-    BioPieces::Fasta.open(@ref_fasta, 'w') do |ios|
-      ios.puts BioPieces::Seq.new_bp(hash1).to_fasta
+    BioPieces::TmpDir.create do |tmp_dir|
+      dir = tmp_dir
+      assert_true(File.directory? dir)
     end
 
-    cmd = "indexdb_rna --ref #{@ref_fasta},#{@ref_index}"
-    system(cmd)
-
-    fail "Running command failed: #{cmd}" unless $?.success?
-
-    @p = BioPieces::Pipeline.new
+    assert_false(File.directory? dir)
   end
 
-  def teardown
-    FileUtils.rm_rf(@tmp_dir)
-  end
+  test 'BioPieces::TmpDir#create with files returns correctly' do
+    dir = ''
 
-  test "BioPieces::Pipeline::FilterRrna with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__, foo: "bar") }
-  end
+    BioPieces::TmpDir.create('foo', 'bar') do |foo, bar, tmp_dir|
+      dir = tmp_dir
+      assert_true(File.directory? dir)
+      assert_equal(File.join(dir, 'foo'), foo)
+      assert_equal(File.join(dir, 'bar'), bar)
+    end
 
-  test "BioPieces::Pipeline::FilterRrna with valid options don't raise" do
-    assert_nothing_raised { @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__) }
-  end
-
-  test "BioPieces::Pipeline::FilterRrna returns correctly" do
-    @p.filter_rrna(ref_fasta: @ref_fasta, ref_index: "#{@ref_index}*").run(input: @input, output: @output2)
-
-    result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"ggttagtcagcgactgactgactacgatatatatcgatacgcggaggtatatatagagag\", :SEQ_LEN=>60}"
-
-    assert_equal(expected, result)
+    assert_false(File.directory? dir)
   end
 end

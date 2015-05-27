@@ -1,8 +1,4 @@
-#!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
-
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                              #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
@@ -27,55 +23,54 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 # This software is part of Biopieces (www.biopieces.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+module BioPieces
+  # Command class for initiating and calling commands.
+  class Command
+    attr_reader :name, :status
 
-require 'test/helper'
-
-# Test class for Random.
-class TestRandom < Test::Unit::TestCase
-  def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
-
-    [{TEST: 1},
-     {TEST: 2},
-     {TEST: 3},
-     {TEST: 4},
-     {TEST: 5},
-     {TEST: 6}].each do |record|
-      @output.write record
+    # Constructor for Command objects.
+    #
+    # @param name    [Symbol] Name of command.
+    # @param lmb     [Proc]   Lambda for command callback execution.
+    # @param options [Hash]   Options hash.
+    def initialize(name, lmb, options)
+      @name    = name
+      @lmb     = lmb
+      @options = options
+      @status  = Status.new(name, options)
     end
 
-    @output.close
-
-    @p = BioPieces::Pipeline.new
-  end
-
-  test 'BioPieces::Pipeline#random with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) { @p.random(foo: 'bar') }
-  end
-
-  test 'BioPieces::Pipeline#random with allowed options don\'t raise' do
-    assert_nothing_raised { @p.random(number: 2) }
-  end
-
-  test 'BioPieces::Pipeline#random returns correctly' do
-    @p.random(number: 3).run(input: @input, output: @output2)
-    size = 0
-    @input2.map { size += 1 }
-
-    assert_equal(3, size)
-  end
-
-  test 'BioPieces::Pipeline#random with pairs: true returns correctly' do
-    @p.random(number: 4, pairs: true).run(input: @input, output: @output2)
-
-    size = 0
-
-    @input2.each_slice(2) do |record1, record2|
-      assert_equal(record1[:TEST].to_i, record2[:TEST].to_i - 1)
-      size += 2
+    # Callback method for executing a Command lambda.
+    #
+    # @param args [Array] List of arguments used in the callback.
+    def call(*args)
+      @lmb.call(*args, @status)
     end
 
-    assert_equal(4, size)
+    # Terminate the status.
+    def terminate
+      @status.terminate
+    end
+
+    # Return string representation of a Command object.
+    #
+    # @return [String] With formated command.
+    def to_s
+      options_list = []
+
+      @options.each do |key, value|
+        options_list << case value.class.to_s
+                        when 'String'
+                          value = Regexp.quote(value) if key == :delimiter
+                          %(#{key}: "#{value}")
+                        when 'Symbol'
+                          "#{key}: :#{value}"
+                        else
+                          "#{key}: #{value}"
+                        end
+      end
+
+      @options.empty? ? @name : "#{@name}(#{options_list.join(', ')})"
+    end
   end
 end

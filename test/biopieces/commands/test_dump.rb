@@ -1,97 +1,102 @@
 #!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
-class TestDump < Test::Unit::TestCase 
+# Test class for the dump command.
+class TestDump < Test::Unit::TestCase
   def setup
-    hash1 = {one: 1, two: 2, three: 3}
-    hash2 = {SEQ_NAME: "test1", SEQ: "atcg", SEQ_LEN: 4}
-    hash3 = {SEQ_NAME: "test2", SEQ: "gtac", SEQ_LEN: 4}
-
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
-    @output.write hash1
-    @output.write hash2
-    @output.write hash3
+    @output.write(one: 1, two: 2, three: 3)
+    @output.write(SEQ_NAME: 'test1', SEQ: 'atcg', SEQ_LEN: 4)
+    @output.write(SEQ_NAME: 'test2', SEQ: 'gtac', SEQ_LEN: 4)
     @output.close
 
     @p = BioPieces::Pipeline.new
   end
 
-  test "BioPieces::Pipeline#dump with disallowed option raises" do
-    assert_raise(BioPieces::OptionError) { @p.dump(foo: "bar") }
+  test 'BioPieces::Pipeline#dump with disallowed option raises' do
+    assert_raise(BioPieces::OptionError) { @p.dump(foo: 'bar') }
   end
 
-  test "BioPieces::Pipeline#dump with bad first raises" do
+  test 'BioPieces::Pipeline#dump with bad first raises' do
     assert_raise(BioPieces::OptionError) { @p.dump(first: 0) }
   end
 
-  test "BioPieces::Pipeline#dump with bad last raises" do
+  test 'BioPieces::Pipeline#dump with bad last raises' do
     assert_raise(BioPieces::OptionError) { @p.dump(last: 0) }
   end
 
-  test "BioPieces::Pipeline#dump with first and last raises" do
+  test 'BioPieces::Pipeline#dump with first and last raises' do
     assert_raise(BioPieces::OptionError) { @p.dump(first: 1, last: 1) }
   end
 
-  test "BioPieces::Pipeline#dump returns correctly" do
-    stdout_result = capture_stdout { @p.dump.run(input: @input, output: @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+  test 'BioPieces::Pipeline#dump returns correctly' do
+    result1 = capture_stdout { @p.dump.run(input: @input, output: @output2) }
+    result2 = collect_result
 
-    stdout_expected = "{:one=>1, :two=>2, :three=>3}\n{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}\n{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-    stream_expected = "{:one=>1, :two=>2, :three=>3}{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+    expected = <<-EXP.gsub(/^\s+\|/, '')
+      |{:one=>1, :two=>2, :three=>3}
+      |{:SEQ_NAME=>\"test1\", :SEQ=>\"atcg\", :SEQ_LEN=>4}
+      |{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}
+    EXP
 
-    assert_equal(stdout_expected, stdout_result.chomp)
-    assert_equal(stream_expected, stream_result)
+    assert_equal(expected, result1)
+    assert_equal(expected, result2)
   end
 
-  test "BioPieces::Pipeline#dump with options[first: 1] returns correctly" do
-    stdout_result = capture_stdout { @p.dump(first: 1).run(input: @input, output: @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+  test 'BioPieces::Pipeline#dump with options[first: 1] returns correctly' do
+    result1 = capture_stdout do
+      @p.dump(first: 1).run(input: @input, output: @output2)
+    end
 
-    stdout_expected = "{:one=>1, :two=>2, :three=>3}"
-    stream_expected = "{:one=>1, :two=>2, :three=>3}"
+    result2 = collect_result
 
-    assert_equal(stdout_expected, stdout_result.chomp)
-    assert_equal(stream_expected, stream_result)
+    expected = "{:one=>1, :two=>2, :three=>3}\n"
+
+    assert_equal(expected, result1)
+    assert_equal(expected, result2)
   end
 
-  test "BioPieces::Pipeline#dump with options[last: 1] returns correctly" do
-    stdout_result = capture_stdout { @p.dump(last: 1).run(input: @input, output: @output2) }
-    stream_result = @input2.map { |h| h.to_s }.reduce(:<<)
+  test 'BioPieces::Pipeline#dump with options[last: 1] returns correctly' do
+    result1 = capture_stdout do
+      @p.dump(last: 1).run(input: @input, output: @output2)
+    end
 
-    stdout_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
-    stream_expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}"
+    result2 = collect_result
 
-    assert_equal(stdout_expected, stdout_result.chomp)
-    assert_equal(stream_expected, stream_result)
+    expected = "{:SEQ_NAME=>\"test2\", :SEQ=>\"gtac\", :SEQ_LEN=>4}\n"
+
+    assert_equal(expected, result1)
+    assert_equal(expected, result2)
   end
 end

@@ -1,74 +1,87 @@
 #!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
-class TestAlignSeqMothur < Test::Unit::TestCase 
+# Test class for AlignSeqMothur.
+class TestAlignSeqMothur < Test::Unit::TestCase
   def setup
     require 'tempfile'
 
-    omit("mothur not found") unless BioPieces::Filesys.which("mothur")
+    omit('mothur not found') unless BioPieces::Filesys.which('mothur')
 
-    @template = Tempfile.new("template")
+    @template = Tempfile.new('template')
 
-    BioPieces::Fasta.open(@template, 'w') do |ios|
-      ios.puts BioPieces::Seq.new(seq_name: "ref", seq: "--a-ttc--c-a-tcga----Ttcg-at---cCa---").to_fasta
-    end
+    write_template
 
     @input, @output   = BioPieces::Stream.pipe
     @input2, @output2 = BioPieces::Stream.pipe
 
-    @output.write({SEQ_NAME: "test", SEQ: "gattccgatcgatcgatcga"})
+    @output.write(SEQ_NAME: 'test', SEQ: 'gattccgatcgatcgatcga')
     @output.close
 
     @p = BP.new
   end
 
+  def write_template
+    seq_name = 'ref'
+    seq      = '--a-ttc--c-a-tcga----Ttcg-at---cCa---'
+    BioPieces::Fasta.open(@template, 'w') do |ios|
+      ios.puts BioPieces::Seq.new(seq_name: seq_name, seq: seq).to_fasta
+    end
+  end
+
   def teardown
-    @template.close  
+    @template.close
     @template.unlink
   end
 
-  test "BioPieces::Pipeline#align_seq_mothur with disallowed option raises" do
-    assert_raise(BioPieces::OptionError) { @p.align_seq_mothur(template_file: @template, foo: "bar") }
+  test 'BioPieces::Pipeline#align_seq_mothur with disallowed option raises' do
+    assert_raise(BioPieces::OptionError) do
+      @p.align_seq_mothur(template_file: @template, foo: 'bar')
+    end
   end
 
-  test "BioPieces::Pipeline#align_seq_mothur with allowed option don't raise" do
-    assert_nothing_raised { @p.align_seq_mothur(template_file: @template, cpus: 2) }
+  test 'BioPieces::Pipeline#align_seq_mothur w. allowed option don\'t raise' do
+    assert_nothing_raised do
+      @p.align_seq_mothur(template_file: @template, cpus: 2)
+    end
   end
 
-  test "BioPieces::Pipeline#align_seq_mothur outputs correctly" do
-    @p.align_seq_mothur(template_file: @template.path).run(input: @input, output: @output2)
+  test 'BioPieces::Pipeline#align_seq_mothur outputs correctly' do
+    @p.align_seq_mothur(template_file: @template.path).
+      run(input: @input, output: @output2)
 
-    result   = @input2.map { |h| h.to_s }.reduce(:<<)
-    expected = '{:SEQ_NAME=>"test", :SEQ=>"..A-TTC--CGA-TCGA-----TCG-AT---CGA...", :SEQ_LEN=>37}'
+    expected = '{:SEQ_NAME=>"test", ' \
+      ':SEQ=>"..A-TTC--CGA-TCGA-----TCG-AT---CGA...", :SEQ_LEN=>37}'
 
-    assert_equal(expected, result)
+    assert_equal(expected, collect_result.chomp)
   end
 end

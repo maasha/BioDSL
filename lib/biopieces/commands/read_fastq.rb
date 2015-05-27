@@ -1,269 +1,446 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  module Commands
+  # == Read FASTQ entries from one or more files.
+  #
+  # +read_fastq+ read in sequence entries from FASTQ files. Each sequence entry
+  # consists of a sequence name prefixed by a '>' followed by the sequence name
+  # on a line of its own, followed by one or my lines of sequence until the next
+  # entry or the end of the file. The resulting Biopiece record consists of the
+  # following record type:
+  #
+  #     {:SEQ_NAME=>"test",
+  #      :SEQ=>"AGCATCGACTAGCAGCATTT",
+  #      :SEQ_LEN=>20}
+  #
+  # It is possible to read in pair-end data interleaved by using the +input2+
+  # option. Thus a read is in turn from input and input2. If the
+  # +reverse_complement+ option is used, then the input2 reads will be
+  # reverse-complemented.
+  #
+  # Input files may be compressed with gzip og bzip2.
+  #
+  # For more about the FASTQ format:
+  #
+  # http://en.wikipedia.org/wiki/Fasta_format
+  #
+  # == Usage
+  #    read_fastq(input: <glob>[, input2: <glob>[, first: <uint>|last: <uint>
+  #               [, reverse_complement: <bool>]]])
+  #
+  # === Options
+  # * input <glob>               - Input file or file glob expression.
+  # * input2 <glob>              - Input file or file glob expression.
+  # * first <uint>               - Only read in the _first_ number of entries.
+  # * last <uint>                - Only read in the _last_ number of entries.
+  # * reverse_complement: <bool> - Reverse-complements input2 reads.
+  #
+  # == Examples
+  #
+  # To read all FASTQ entries from a file:
+  #
+  #    BP.new.read_fastq(input: "test.fq").dump.run
+  #
+  # To read all FASTQ entries from a gzipped file:
+  #
+  #    BP.new.read_fastq(input: "test.fq.gz").dump.run
+  #
+  # To read in only 10 records from a FASTQ file:
+  #
+  #    BP.new.read_fastq(input: "test.fq", first: 10).dump.run
+  #
+  # To read in the last 10 records from a FASTQ file:
+  #
+  #    BP.new.read_fastq(input: "test.fq", last: 10).dump.run
+  #
+  # To read all FASTQ entries from multiple files:
+  #
+  #    BP.new.read_fastq(input: "test1.fq,test2.fq").dump.run
+  #
+  # To read FASTQ entries from multiple files using a glob expression:
+  #
+  #    BP.new.read_fastq(input: "*.fq").dump.run
+  #
+  # To read FASTQ entries from pair-end data:
+  #
+  #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
+  #
+  # To read FASTQ entries from pair-end data:
+  #
+  #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
+  #
+  # To read FASTQ entries from pair-end data and reverse-complement read2:
+  #
+  #    BP.new.
+  #    read_fastq(input: "file1.fq", input2: "file2.fq",
+  #               reverse_complement: true)
+  #    .dump.run
+  #
+  # rubocop: disable ClassLength
+  # rubocop: disable Metrics/AbcSize
+  # rubocop: disable Metrics/CyclomaticComplexity
+  # rubocop: disable Metrics/PerceivedComplexity
+  class ReadFastq
+    require 'biopieces/helpers/options_helper'
+
+    extend OptionsHelper
+    include OptionsHelper
+
     MAX_TEST = 1_000
 
-    # == Read FASTQ entries from one or more files.
+    # Check options and return command lambda for read_fastq.
     #
-    # +read_fastq+ read in sequence entries from FASTQ files. Each sequence
-    # entry consists of a sequence name prefixed by a '>' followed by the sequence
-    # name on a line of its own, followed by one or my lines of sequence until the
-    # next entry or the end of the file. The resulting Biopiece record consists of
-    # the following record type:
+    # @param options [Hash] Options hash.
+    # @option options [Symbol,String] :encoding
+    # @option options [String]        :input
+    # @option options [String]        :input2
+    # @option options [Integer]       :first
+    # @option options [Integer]       :last
+    # @option options [Boolean]       :reverse_complement
     #
-    #     {:SEQ_NAME=>"test",
-    #      :SEQ=>"AGCATCGACTAGCAGCATTT",
-    #      :SEQ_LEN=>20}
-    #
-    # It is possible to read in pair-end data interleaved by using the +input2+
-    # option. Thus a read is in turn from input and input2. If the
-    # +reverse_complement+ option is used, then the input2 reads will be
-    # reverse-complemented.
-    #
-    # Input files may be compressed with gzip og bzip2.
-    #
-    # For more about the FASTQ format:
-    #
-    # http://en.wikipedia.org/wiki/Fasta_format
-    # 
-    # == Usage
-    #    read_fastq(input: <glob>[, input2: <glob>[, first: <uint>|last: <uint>
-    #               [, reverse_complement: <bool>]]])
-    #
-    # === Options
-    # * input <glob>               - Input file or file glob expression.
-    # * input2 <glob>              - Input file or file glob expression.
-    # * first <uint>               - Only read in the _first_ number of entries.
-    # * last <uint>                - Only read in the _last_ number of entries.
-    # * reverse_complement: <bool> - Reverse-complements input2 reads.
-    #
-    # == Examples
-    #
-    # To read all FASTQ entries from a file:
-    #
-    #    BP.new.read_fastq(input: "test.fq").dump.run
-    #
-    # To read all FASTQ entries from a gzipped file:
-    #
-    #    BP.new.read_fastq(input: "test.fq.gz").dump.run
-    #
-    # To read in only 10 records from a FASTQ file:
-    #
-    #    BP.new.read_fastq(input: "test.fq", first: 10).dump.run
-    #
-    # To read in the last 10 records from a FASTQ file:
-    #
-    #    BP.new.read_fastq(input: "test.fq", last: 10).dump.run
-    #
-    # To read all FASTQ entries from multiple files:
-    #
-    #    BP.new.read_fastq(input: "test1.fq,test2.fq").dump.run
-    #
-    # To read FASTQ entries from multiple files using a glob expression:
-    #
-    #    BP.new.read_fastq(input: "*.fq").dump.run
-    #
-    # To read FASTQ entries from pair-end data:
-    #
-    #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
-    #
-    # To read FASTQ entries from pair-end data:
-    #
-    #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
-    #
-    # To read FASTQ entries from pair-end data and reverse-complement read2:
-    #
-    #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq", reverse_complement: true).dump.run
-    def read_fastq(options = {})
-      options_orig = options.dup
+    # @return [Proc] Command lambda.
+    def self.lmb(options)
       options_load_rc(options, __method__)
-      options[:encoding] ||= :auto
-      options_allowed(options, :encoding, :input, :input2, :first, :last, :reverse_complement)
+      options_allowed(options, :encoding, :input, :input2, :first, :last,
+                      :reverse_complement)
       options_allowed_values(options, encoding: [:auto, :base_33, :base_64])
       options_allowed_values(options, reverse_complement: [nil, true, false])
       options_tie(options, reverse_complement: :input2)
       options_required(options, :input)
-      options_glob(options, :input, :input2)
       options_files_exist(options, :input, :input2)
       options_unique(options, :first, :last)
-      options_assert(options, ":first >= 0")
-      options_assert(options, ":last >= 0")
+      options_assert(options, ':first >= 0')
+      options_assert(options, ':last >= 0')
 
-      encoding = options[:encoding].to_sym
+      new(options).lmb
+    end
 
-      lmb = lambda do |input, output, status|
-        status_track(status) do
-          if input
-            input.each do |record|
-              output << record
-              status[:records_in]  += 1
-              status[:records_out] += 1
+    # Constructor for ReadFastq.
+    #
+    # @param options [Hash] Options hash.
+    # @option options [Symbol,String] :encoding
+    # @option options [String]        :input
+    # @option options [String]        :input2
+    # @option options [Integer]       :first
+    # @option options [Integer]       :last
+    # @option options [Boolean]       :reverse_complement
+    #
+    # @return [ReadFastq] Class instance.
+    def initialize(options)
+      @options       = options
+      @records_in    = 0
+      @records_out   = 0
+      @sequences_in  = 0
+      @sequences_out = 0
+      @residues_in   = 0
+      @residues_out  = 0
+      @encoding      = options[:encoding] ? options[:encoding].to_sym : :auto
+      @pair          = options[:input2]
+      @buffer        = []
+      @type          = nil
+    end
+
+    # Return command lambda for ReadFastq.
+    #
+    # @return [Proc] Command lambda.
+    def lmb
+      lambda do |input, output, status|
+        process_input(input, output)
+
+        case
+        when @options[:first] && @pair then read_first_pair(output)
+        when @options[:first]          then read_first_single(output)
+        when @options[:last]  && @pair then read_last_pair(output)
+        when @options[:last]           then read_last_single(output)
+        when @pair                     then read_all_pair(output)
+        else
+          read_all_single(output)
+        end
+
+        assign_status(status)
+      end
+    end
+
+    private
+
+    # Emit all records from the input stream to the output stream.
+    #
+    # @param input [Enumerator] Input stream.
+    # @param output [Enumerator::Yielder] Output stream.
+    def process_input(input, output)
+      return unless input
+
+      input.each do |record|
+        @records_in  += 1
+        @records_out += 1
+
+        if (seq = record[:SEQ])
+          @sequences_in += 1
+          @residues_in  += seq.length
+        end
+
+        output << record
+      end
+    end
+
+    # Read :first FASTQ entries from single files.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    def read_first_single(output)
+      fastq_files.each do |file|
+        BioPieces::Fastq.open(file) do |ios|
+          ios.each do |entry|
+            check_entry(entry)
+            output << entry.to_bp
+            @records_out   += 1
+            @sequences_out += 1
+            @residues_out  += entry.length
+            return if @sequences_out >= @options[:first]
+          end
+        end
+      end
+    end
+
+    # Read :first FASTQ entries from paired files interleaved.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    #
+    # rubocop: disable MethodLength
+    def read_first_pair(output)
+      fastq_files.each_slice(2) do |file1, file2|
+        BioPieces::Fastq.open(file1) do |ios1|
+          BioPieces::Fastq.open(file2) do |ios2|
+            while (entry1 = ios1.next_entry) && (entry2 = ios2.next_entry)
+              check_entry(entry1, entry2)
+              reverse_complement(entry2) if @options[:reverse_complement]
+              output << entry1.to_bp
+              output << entry2.to_bp
+              @records_out   += 2
+              @sequences_out += 2
+              @residues_out  += entry1.length + entry2.length
+              return if @sequences_out >= @options[:first]
             end
           end
+        end
+      end
+    end
 
-          status[:sequences_in] = 0
-          status[:residues_in]  = 0
+    # Read :last FASTQ entries from single files.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    #
+    # rubocop: enable MethodLength
+    def read_last_single(output)
+      fastq_files.each do |file|
+        BioPieces::Fastq.open(file) do |ios|
+          ios.each do |entry|
+            check_entry(entry)
+            @buffer << entry
+            @buffer.shift if @buffer.size > @options[:last]
+          end
+        end
+      end
 
-          count  = 0
-          buffer = []
-          type   = nil
+      output_buffer(output)
+    end
 
-          catch :break do
-            if options[:input] and options[:input2]
-              if options[:input].size != options[:input2].size
-                raise BioPieces::OptionError, "input and input2 file count don't match: #{options[:input].size} != #{options[:input2].size}" 
-              end
-
-              (0 ... options[:input].size).each do |i|
-                file1 = options[:input][i]
-                file2 = options[:input2][i]
-
-                io1 = Fastq.open(file1, 'r')
-                io2 = Fastq.open(file2, 'r')
-
-                while entry1 = io1.next_entry and entry2 = io2.next_entry
-                  if encoding == :auto
-                    if entry1.qual_base33? or entry2.qual_base33?
-                      encoding = :base_33
-                    elsif entry1.qual_base64? or entry2.qual_base64?
-                      encoding = :base_64
-                    else
-                      raise BioPieces::SeqError, "Could not auto-detect quality score encoding"
-                    end
-                  end
-
-                  if options[:reverse_complement]
-                    type = entry2.type_guess unless type
-                    entry2.type = type
-                    entry2.reverse!.complement!
-                  end
-
-                  entry1.qual_convert!(encoding, :base_33)
-                  entry2.qual_convert!(encoding, :base_33)
-                  entry1.qual_coerce!(:base_33)
-                  entry2.qual_coerce!(:base_33)
-
-                  if count < MAX_TEST
-                    raise BioPieces::SeqError, "Quality score outside valid range" unless entry1.qual_valid?(:base_33)
-                    raise BioPieces::SeqError, "Quality score outside valid range" unless entry2.qual_valid?(:base_33)
-                  end
-
-                  if options[:first]
-                    throw :break if options[:first] == count
-
-                    output << entry1.to_bp
-                    output << entry2.to_bp
-
-                    status[:records_out]  += 2
-                    status[:sequences_in] += 2
-                    status[:residues_in]  += entry1.length + entry2.length
-
-                    count += 2
-                  elsif options[:last]
-                      buffer << entry1
-                      buffer.shift if buffer.size > options[:last]
-                      buffer << entry2
-                      buffer.shift if buffer.size > options[:last]
-                  else
-                    output << entry1.to_bp
-                    output << entry2.to_bp
-
-                    status[:records_out]  += 2
-                    status[:sequences_in] += 2
-                    status[:residues_in]  += entry1.length + entry2.length
-                  end
-                end
-
-                io1.close
-                io2.close
-              end
-            else
-              options[:input].each do |file|
-                BioPieces::Fastq.open(file) do |ios|
-                  ios.each do |entry|
-                    if encoding == :auto
-                      if entry.qual_base33?
-                        encoding = :base_33
-                      elsif entry.qual_base64?
-                        encoding = :base_64
-                      else
-                        raise BioPieces::SeqError, "Could not auto-detect quality score encoding"
-                      end
-                    end
-
-                    entry.qual_convert!(encoding, :base_33)
-                    entry.qual_coerce!(:base_33)
-
-                    if count < MAX_TEST
-                      raise BioPieces::SeqError, "Quality score outside valid range" unless entry.qual_valid?(:base_33)
-                    end
-
-                    if options[:first]
-                      throw :break if options[:first] == count
-
-                      output << entry.to_bp
-
-                      status[:records_out]  += 1
-                      status[:sequences_in] += 1
-                      status[:residues_in] += entry.length
-
-                      count += 1
-                    elsif options[:last]
-                      buffer << entry
-                      buffer.shift if buffer.size > options[:last]
-                    else
-                      output << entry.to_bp
-
-                      status[:records_out]  += 1
-                      status[:sequences_in] += 1
-                      status[:residues_in] += entry.length
-                    end
-                  end
-                end
-              end
-            end
-
-            if options[:last]
-              buffer.each do |entry|
-                output << entry.to_bp
-
-                status[:records_out] += 1
-                status[:residues_in] += entry.length
-              end
+    # Read :last FASTQ entries from paired files interleaved.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    def read_last_pair(output)
+      fastq_files.each_slice(2) do |file1, file2|
+        BioPieces::Fastq.open(file1) do |ios1|
+          BioPieces::Fastq.open(file2) do |ios2|
+            while (entry1 = ios1.next_entry) && (entry2 = ios2.next_entry)
+              check_entry(entry1, entry2)
+              reverse_complement(entry2) if @options[:reverse_complement]
+              @buffer << entry1
+              @buffer << entry2
+              @buffer.shift(@buffer.size - @options[:last])
             end
           end
         end
       end
 
-      @commands << BioPieces::Pipeline::Command.new(__method__, options, options_orig, lmb)
+      output_buffer(output)
+    end
 
-      self
+    # Read all FASTQ entries from single files.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    def read_all_single(output)
+      fastq_files.each do |file|
+        BioPieces::Fastq.open(file) do |ios|
+          ios.each do |entry|
+            check_entry(entry)
+            output << entry.to_bp
+            @records_out   += 1
+            @sequences_out += 1
+            @residues_out  += entry.length
+          end
+        end
+      end
+    end
+
+    # Read all FASTQ entries from paired files interleaved.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    def read_all_pair(output)
+      fastq_files.each_slice(2) do |file1, file2|
+        BioPieces::Fastq.open(file1) do |ios1|
+          BioPieces::Fastq.open(file2) do |ios2|
+            while (entry1 = ios1.next_entry) && (entry2 = ios2.next_entry)
+              check_entry(entry1, entry2)
+              reverse_complement(entry2) if @options[:reverse_complement]
+              output << entry1.to_bp
+              output << entry2.to_bp
+              @records_out   += 2
+              @sequences_out += 2
+              @residues_out  += entry1.length + entry2.length
+            end
+          end
+        end
+      end
+    end
+
+    # Return a list of input files or an interleaved list of input files if
+    # :input2 is specified.
+    #
+    # @return [Array] List of FASTQ files.
+    def fastq_files
+      if @options[:input2]
+        files1 = options_glob(@options[:input])
+        files2 = options_glob(@options[:input2])
+
+        check_input_files(files1, files2)
+
+        files1.zip(files2).flatten
+      else
+        options_glob(@options[:input])
+      end
+    end
+
+    # Do the following for the given entry:
+    #
+    # * determine encoding.
+    # * reverse complement if indicated.
+    # * convert encoding
+    # * coerce encoding
+    # * check score range
+    #
+    # @param entries [Array] Sequence entries.
+    def check_entry(*entries)
+      entries.each do |entry|
+        determine_encoding(entry)
+
+        entry.qual_convert!(@encoding, :base_33)
+        entry.qual_coerce!(:base_33)
+
+        check_score_range(entry)
+      end
+    end
+
+    # Reverse complement sequence.
+    #
+    # @param entry [BioPieces::Seq] Sequence entry.
+    def reverse_complement(entry)
+      @type = entry.type_guess unless @type
+      entry.type = @type
+      entry.reverse!.complement!
+    end
+
+    # Check that files1 and files2 are equal.
+    #
+    # @param files1 [Array] List of files.
+    # @param files2 [Array] List of files.
+    #
+    # @raise [BioPieces::OptionError] If not equal.
+    def check_input_files(files1, files2)
+      size1 = files1.size
+      size2 = files2.size
+      return if size1 == size2
+
+      msg = "input and input2 file count don't match: #{size1} != #{size2}"
+      fail BioPieces::OptionError, msg
+    end
+
+    # Check the score range for a given entry.
+    #
+    # @param entry [BioPieces::Seq] Sequence entry.
+    #
+    # @raise [BioPieces::SeqError] If quality score is outside range.
+    def check_score_range(entry)
+      return if @sequences_out >= MAX_TEST
+      return if entry.qual_valid?(:base_33)
+      fail BioPieces::SeqError, 'Quality score outside valid range'
+    end
+
+    # Determine the quality score encoding.
+    #
+    # @raise [BioPieces::SeqError] If encoding wasn't determined.
+    def determine_encoding(entry)
+      return unless @encoding == :auto
+
+      @encoding = if entry.qual_base33?
+                    :base_33
+                  elsif entry.qual_base64?
+                    :base_64
+                  else
+                    msg = 'Could not auto-detect quality score encoding'
+                    fail BioPieces::SeqError, msg
+                  end
+    end
+
+    # Emit all records in the buffer to the output stream.
+    #
+    # @param output [Enumerator::Yielder] Output stream.
+    def output_buffer(output)
+      return unless @options[:last]
+
+      @buffer.each do |entry|
+        output << entry.to_bp
+
+        @records_out   += 1
+        @sequences_out += 1
+        @residues_out  += entry.length
+      end
+    end
+
+    # Assign values to status hash
+    #
+    # @param status [Hash] Status hash.
+    def assign_status(status)
+      status[:records_in]    = @records_in
+      status[:records_out]   = @records_out
+      status[:sequences_in]  = @sequences_in
+      status[:sequences_out] = @sequences_out
+      status[:residues_in]   = @residues_in
+      status[:residues_out]  = @residues_out
     end
   end
 end
-
