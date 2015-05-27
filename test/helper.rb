@@ -26,11 +26,13 @@
 
 require 'simplecov'
 
-SimpleCov.start do
-  add_filter "/test/"
-end
+if ENV['SIMPLECOV']
+  SimpleCov.start do
+    add_filter "/test/"
+  end
 
-SimpleCov.command_name 'test:units'
+  SimpleCov.command_name 'test:units'
+end
 
 require 'tempfile'
 require 'fileutils'
