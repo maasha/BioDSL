@@ -52,9 +52,7 @@ module BioPieces
       thread.terminate
     end
 
-    # @return [Hash] the status hash.
-    # @todo remove this and rely on proper methods.
-    attr_accessor :status
+    attr_accessor :name, :options, :status
 
     # Constructor method for Status objects.
     #

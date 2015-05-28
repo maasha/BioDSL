@@ -104,6 +104,13 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(BioPieces::Pipeline.new.dump.to_s, @p.pop.to_s)
     assert_equal(BioPieces::Pipeline.new.to_s, @p.to_s)
   end
+
+  test 'BioPieces::Pipeline#status without .run() returns correctly' do
+    status = @p.read_fasta(input: __FILE__).status
+
+    assert_equal(:read_fasta, status.first.name)
+    assert_equal({}, status.first.status)
+  end
 end
 
 __END__
@@ -128,10 +135,6 @@ class PipelineTest < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
 
     Mail::TestMailer.deliveries.clear
-  end
-
-  test 'BioPieces::Pipeline#status without .run() returns correctly' do
-    assert_equal({}, @p.read_fasta(input: @fasta_file).status)
   end
 
   test 'BioPieces::Pipeline#status with .run() returns correctly' do
