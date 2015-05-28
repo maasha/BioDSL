@@ -95,7 +95,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :quality_min, :mask)
       options_allowed_values(options, mask: [:soft, :hard, 'soft', 'hard'])
       options_assert(options, ':quality_min >= 0')

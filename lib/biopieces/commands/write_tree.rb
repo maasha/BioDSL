@@ -64,7 +64,6 @@ module BioPieces
     include OptionsHelper
 
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :force, :output, :type)
       options_allowed_values(options, type: [:dna, :rna, :protein])
       options_files_exist_force(options, :output)

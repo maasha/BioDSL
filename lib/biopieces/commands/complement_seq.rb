@@ -66,7 +66,6 @@ module BioPieces
     #
     # @param options [Hash] Options hash.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, nil)
 
       new(options).lmb

@@ -114,7 +114,6 @@ module BioPieces
     include OptionsHelper
 
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :count, :output, :force, :terminal, :title,
                       :xlabel, :ylabel, :ylogscale, :test)
       options_allowed_values(options, count: [true, false])

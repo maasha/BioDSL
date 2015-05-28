@@ -175,6 +175,7 @@ module BioPieces
 
       if BioPieces.const_defined? const
         options = args.first || {}
+        options_load_rc(options, method)
 
         lmb = BioPieces.const_get(const).send(:lmb, options)
 

@@ -64,7 +64,6 @@ module BioPieces
     #
     # @return [Proc] Returns the dump command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :first, :last)
       options_unique(options, :first, :last)
       options_assert(options, ':first > 0')

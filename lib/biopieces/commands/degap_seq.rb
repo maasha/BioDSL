@@ -85,7 +85,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :columns_only)
       options_allowed_values(options, columns_only: [true, false, nil])
 

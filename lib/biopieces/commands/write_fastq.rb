@@ -93,7 +93,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :encoding, :force, :output, :gzip, :bzip2)
       options_allowed_values(options, encoding: [:base_33, :base_64, 'base_33',
                                                  'base_64'])

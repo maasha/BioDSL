@@ -79,7 +79,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :output, :force)
       options_allowed_values(options, force: [true, false, nil])
       options_files_exist_force(options, :output)

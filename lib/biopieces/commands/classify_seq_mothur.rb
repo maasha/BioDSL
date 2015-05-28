@@ -86,7 +86,6 @@ module BioPieces
     #
     # @return [Proc] command lambda
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :database, :taxonomy, :confidence, :cpus)
       options_required(options, :database, :taxonomy)
       options_files_exist(options, :database, :taxonomy)

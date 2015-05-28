@@ -134,7 +134,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :output_dir, :kmer_size, :step_size, :prefix,
                       :force)
       options_required(options, :output_dir)

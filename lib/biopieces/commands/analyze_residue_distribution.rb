@@ -122,8 +122,6 @@ module BioPieces
     #
     # @return [Proc] Returns the command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
-
       options_allowed(options, :percent)
       options_allowed_values(options, percent: [nil, true, false])
 

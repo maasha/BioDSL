@@ -132,7 +132,6 @@ module BioPieces
     #
     # @return [Proc] Command labda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :primer, :direction, :overlap_min,
                       :reverse_complement, :mismatch_percent,
                       :insertion_percent, :deletion_percent)

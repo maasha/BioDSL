@@ -92,7 +92,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :count, :output, :force, :terminal, :title,
                       :xlabel, :ylabel, :test)
       options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11,

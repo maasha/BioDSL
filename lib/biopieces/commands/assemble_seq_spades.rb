@@ -85,7 +85,6 @@ module BioPieces
     #
     # @return [Proc] Returns the command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :careful, :cpus, :kmers)
       options_allowed_values(options, careful: [true, false, nil])
       options_assert(options, ':cpus >= 1')

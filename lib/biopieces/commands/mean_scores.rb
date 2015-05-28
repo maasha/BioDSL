@@ -93,7 +93,6 @@ module BioPieces
     include OptionsHelper
 
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :local, :window_size)
       options_tie(options, window_size: :local)
       options_allowed_values(options, local: [true, false])

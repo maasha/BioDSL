@@ -111,7 +111,6 @@ module BioPieces
     #
     # @return [Proc] Returns the command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :mismatch_percent, :overlap_min, :overlap_max,
                       :reverse_complement, :merge_unassembled,
                       :allow_unassembled)

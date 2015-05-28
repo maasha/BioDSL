@@ -68,7 +68,6 @@ module BioPieces
     #
     # @return [Proc] Returns the command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :key, :value, :prefix)
       options_required(options, :key)
       options_required_unique(options, :value, :prefix)

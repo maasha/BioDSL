@@ -71,7 +71,6 @@ module BioPieces
     #
     # @return [Proc] Lambda for the command.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :ignore_case)
       options_allowed_values(options, ignore_case: [nil, true, false])
 

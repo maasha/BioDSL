@@ -129,7 +129,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :direction, :output, :force, :terminal, :title,
                       :xlabel, :ylabel, :test)
       options_allowed_values(options, direction: [:forward, :reverse, :both])

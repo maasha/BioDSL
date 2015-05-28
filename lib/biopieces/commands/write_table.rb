@@ -172,7 +172,6 @@ module BioPieces
     # rubocop: disable MethodLength
 
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :keys, :skip, :output, :force, :header, :pretty,
                       :commify, :delimiter, :first, :last, :gzip, :bzip2)
       options_unique(options, :keys, :skip)

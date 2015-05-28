@@ -75,7 +75,6 @@ module BioPieces
     #
     # @return [Proc] Command lambda.
     def self.lmb(options)
-      options_load_rc(options, __method__)
       options_allowed(options, :identity)
       options_assert(options, ':identity >= 0.0')
       options_assert(options, ':identity <= 1.0')
