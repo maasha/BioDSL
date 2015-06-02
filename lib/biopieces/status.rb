@@ -101,6 +101,9 @@ module BioPieces
     # Add a key with time_elapsed to the status.
     def calc_time_elapsed
       @status[:time_elapsed] = @status[:time_stop] - @status[:time_start]
+    rescue
+      pp @status
+      exit
     end
 
     # Locate all status key pairs <foo>_in and <foo>_out and add a new status

@@ -108,7 +108,7 @@ module BioPieces
       check_options
       command_runner
       print_status
-      send_email
+      send_email(status)
       save_report
       log_ok
 
@@ -133,7 +133,7 @@ module BioPieces
       end
     end
 
-    # format a Pipeline to a pretty string which is returned.
+    # Format a Pipeline to a pretty string which is returned.
     def to_s
       command_strings = %w(BP new)
 

@@ -29,28 +29,60 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
 require 'test/helper'
 
+# rubocop: disable ClassLength
+
 # Test class for Pipeline.
 class PipelineTest < Test::Unit::TestCase
+  require 'yaml'
+
   def setup
+    @tmpdir = Dir.mktmpdir('BioPieces')
+
+    setup_fasta_files
+
+    Mail.defaults do
+      delivery_method :test
+    end
+
     @p = BP.new
+  end
+
+  def setup_fasta_files
+    @fasta_file  = File.join(@tmpdir, 'test.fna')
+    @fasta_file2 = File.join(@tmpdir, 'test2.fna')
+
+    File.open(@fasta_file, 'w') do |ios|
+      ios.puts <<-DATA.gsub(/^\s+\|/, '')
+        |>test1
+        |atcg
+        |>test2
+        |tgac
+      DATA
+    end
+  end
+
+  def teardown
+    FileUtils.rm_r @tmpdir
+
+    Mail::TestMailer.deliveries.clear
   end
 
   test 'BioPieces::Pipeline#to_s w/o options and w/o .run() returns OK' do
     @p.commands << BioPieces::Command.new('dump', nil, {})
-    expected = %{BP.new.dump}
+    expected = %(BP.new.dump)
     assert_equal(expected, @p.to_s)
   end
 
   test 'BioPieces::Pipeline#to_s with options and w/o .run() returns OK' do
     @p.commands << BioPieces::Command.new('read_fasta', nil, input: 'test.fna')
-    expected = %{BP.new.read_fasta(input: "test.fna")}
+    expected = %(BP.new.read_fasta(input: "test.fna"))
     assert_equal(expected, @p.to_s)
   end
 
   test 'BioPieces::Pipeline#to_s w/o options and .run() returns OK' do
     @p.commands << BioPieces::Command.new('dump', nil, {})
     @p.complete = true
-    expected = %{BP.new.dump.run}
+    expected = %(BP.new.dump.run)
     assert_equal(expected, @p.run.to_s)
   end
 
@@ -111,31 +143,6 @@ class PipelineTest < Test::Unit::TestCase
     assert_equal(:read_fasta, status.first.name)
     assert_equal({}, status.first.status)
   end
-end
-
-__END__
-
-class PipelineTest < Test::Unit::TestCase
-  def setup
-    @tmpdir = Dir.mktmpdir("BioPieces")
-    @p = BioPieces::Pipeline.new
-    @fasta_file  = File.join(@tmpdir, "test.fna")
-    @fasta_file2 = File.join(@tmpdir, "test2.fna")
-
-    File.open(@fasta_file, 'w') do |ios|
-      ios.puts ">test1\natcg\n>test2\ntgac"
-    end
-
-    Mail.defaults do
-      delivery_method :test
-    end
-  end
-
-  def teardown
-    FileUtils.rm_r @tmpdir
-
-    Mail::TestMailer.deliveries.clear
-  end
 
   test 'BioPieces::Pipeline#status with .run() returns correctly' do
     expected = %{BioPieces::Pipeline.new.read_fasta(input: "#{@fasta_file}")}
@@ -144,41 +151,46 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test 'BioPieces::Pipeline#run with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_fasta(input: @fasta_file).run(foo: "bar") }
+    assert_raise(BioPieces::OptionError) do
+      @p.read_fasta(input: @fasta_file).run(foo: 'bar')
+    end
   end
 
   test 'BioPieces::Pipeline#run with verbose returns correctly' do
-    stdout   = capture_stdout { @p.read_fasta(input: @fasta_file).run(verbose: true) }
-    expected = capture_stdout { pp @p.status }
+    stdout = capture_stdout do
+      @p.read_fasta(input: @fasta_file).run(verbose: true)
+    end
+
+    expected = capture_stdout { puts @p.status }
     assert_equal(expected, stdout)
   end
 
   test 'BioPieces::Pipeline#run returns correctly' do
-    @p.read_fasta(input: @fasta_file).write_fasta(output: @fasta_file2).run 
+    @p.read_fasta(input: @fasta_file).write_fasta(output: @fasta_file2).run
 
-    result = nil
+    expected = File.read(@fasta_file)
+    result   = File.read(@fasta_file2)
 
-    File.open(@fasta_file2) do |ios|
-      result = ios.read
-    end
-
-    assert_equal(">test1\natcg\n>test2\ntgac\n", result)
+    assert_equal(expected, result)
   end
 
   test 'BioPieces::Pipeline#run with subject but no email raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_fasta(input: @fasta_file).run(subject: "foobar") }
+    assert_raise(BioPieces::OptionError) do
+      @p.read_fasta(input: @fasta_file).run(subject: 'foobar')
+    end
   end
 
   test 'BioPieces::Pipeline#run with email sends mail correctly' do
-    @p.read_fasta(input: @fasta_file).run(email: "test@foobar.com")
+    @p.read_fasta(input: @fasta_file).run(email: 'test@foobar.com')
     assert_equal(1, Mail::TestMailer.deliveries.length)
     assert_equal(@p.to_s, Mail::TestMailer.deliveries.first.subject)
   end
 
   test 'BioPieces::Pipeline#run with email and subject sends correctly' do
-    @p.read_fasta(input: @fasta_file).run(email: "test@foobar.com", subject: "foobar")
+    @p.read_fasta(input: @fasta_file).
+      run(email: 'test@foobar.com', subject: 'foobar')
+
     assert_equal(1, Mail::TestMailer.deliveries.length)
-    assert_equal("foobar", Mail::TestMailer.deliveries.first.subject)
+    assert_equal('foobar', Mail::TestMailer.deliveries.first.subject)
   end
 end
-

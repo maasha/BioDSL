@@ -30,33 +30,42 @@ module BioPieces
   module EmailHelper
     # Send email notification to email address specfied in @options[:email],
     # including a optional subject specified in @options[:subject], that will
-    # otherwise default to self.to_s. The body of the email will be the Pipeline
-    # status.
-    def send_email
+    # otherwise default to self.to_s. The body of the email will be an HTML
+    # report.
+    def send_email(status)
       return unless @options[:email]
-
-      unless @options[:email] == 'test@foobar.com'
-        Mail.defaults do
-          delivery_method :smtp, {
-            address: 'localhost',
-            port: 25,
-            enable_starttls_auto: false
-          }
-        end
-      end
+      test_defaults if BioPieces.test
 
       html_part = Mail::Part.new do
         content_type 'text/html; charset=UTF-8'
-        body BioPieces::Render.html(self)
+        body BioPieces::Render.html(status)
       end
 
-      mail = Mail.new
-      mail[:from]      = "do-not-reply@#{`hostname -f`.strip}"
-      mail[:to]        = @options[:email]
-      mail[:subject]   = @options[:subject] || self.to_s
-      mail.html_part = html_part
+      compose_mail.deliver!(html_part)
+    end
 
-      mail.deliver!
+    # Compose an email.
+    #
+    # @param html_part [Mail::Part] The email body.
+    #
+    # @return [Mail] Mail to be sent.
+    def compose_mail(html_part)
+      mail = Mail.new
+      mail[:from]    = "do-not-reply@#{`hostname -f`.strip}"
+      mail[:to]      = @options[:email]
+      mail[:subject] = @options[:subject] || to_s.first(30)
+      mail.html_part = html_part
+      mail
+    end
+
+    # Set mail defaults to test values.
+    def test_defaults
+      Mail.defaults do
+        delivery_method :smtp,
+                        address: 'localhost',
+                        port: 25,
+                        enable_starttls_auto: false
+      end
     end
   end
 end

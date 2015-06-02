@@ -34,6 +34,7 @@ if ENV['SIMPLECOV']
   SimpleCov.command_name 'test:units'
 end
 
+require 'pp'
 require 'tempfile'
 require 'fileutils'
 require 'biopieces'

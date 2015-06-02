@@ -29,17 +29,21 @@ module BioPieces
     require 'tilt/haml'
     require 'base64'
 
-    def self.html(pipeline)
+    def self.html(status)
       renderer = self.new
 
-      commands = Marshal.load(Marshal.dump(pipeline.status[:status]))
-      
-      commands.each_with_index do |command, i|
+      status = Marshal.load(Marshal.dump(status))
+
+      status.each_with_index do |command, i|
+        pp "HER"
+        pp command
+        exit
         command[:time_elapsed] = (Time.mktime(0) + (command[:time_stop] - command[:time_start])).strftime("%H:%M:%S")
         command[:command] = pipeline.commands[i].to_s
       end
 
       renderer.render("layout.html.haml", renderer, pipeline: pipeline.to_s, commands: commands)
+
     end
 
     def render(template, scope, args = {})
