@@ -62,7 +62,7 @@ module BioPieces
   require 'biopieces/filesys'
   require 'biopieces/csv'
   require 'biopieces/fork'
-  require 'biopieces/render'
+  require 'biopieces/html_report'
   require 'biopieces/pipeline'
   require 'biopieces/fasta'
   require 'biopieces/fastq'

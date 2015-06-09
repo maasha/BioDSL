@@ -139,8 +139,6 @@ class PipelineTest < Test::Unit::TestCase
 
   test 'BioPieces::Pipeline#status without .run() returns correctly' do
     status = @p.read_fasta(input: __FILE__).status
-
-    assert_equal(:read_fasta, status.first.name)
     assert_equal({}, status.first.status)
   end
 

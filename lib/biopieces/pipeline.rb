@@ -108,7 +108,7 @@ module BioPieces
       check_options
       command_runner
       print_status
-      send_email(status)
+      send_email(self)
       save_report
       log_ok
 
@@ -286,7 +286,7 @@ module BioPieces
              end
 
       File.open(file, 'w') do |ios|
-        ios.puts BioPieces::Render.html(self)
+        ios.puts BioPieces::HtmlReport.new(self).to_html
       end
     end
 

@@ -1,19 +1,14 @@
 .section
-  %a{:name => anchor}
+  %a{:name => "#{command.name}#{index}"}
   %h2
-    Command: #{name}
-    %a{:href => help_url(name), :title => "Click for help on #{name}", :target => "_blank"} ?
-  %p.command #{command}
-  = render_status stats
-  = render_time time_start, time_stop, time_elapsed
-  - if has_input? options
-    %h3 Input
-    - options[:input].each do |input|
-      %p #{input}
-  - if has_output? options
-    %h3 Output
-    %p
-      %a{:href => options[:output].split('/').last} #{options[:output].split('/').last}
-    
-  - if has_png? options
-    = render_png options
+    Command: #{command.name}
+    %a{:href => help_url(command.name), :title => "Click for help on #{command.name}", :target => "_blank"} ?
+  %p.command #{command.to_s}
+  = render_status command.status
+  = render_time command.status
+  - if input? command.options
+    = render_input_files command.options
+  - if output? command.options
+    = render_output_files command.options
+  - if png? command.options
+    = render_png command.options

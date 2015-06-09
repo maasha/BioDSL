@@ -52,15 +52,13 @@ module BioPieces
       thread.terminate
     end
 
-    attr_accessor :name, :options, :status
+    attr_accessor :name, :options, :status   # FIXME: remove name and options
 
     # Constructor method for Status objects.
     #
     # @param name    [Symbol] Command name.
     # @param options [Hash]   Options hash.
     def initialize(name, options)
-      @name    = name
-      @options = options
       @status  = {}   # Status hash.
     end
 
@@ -99,8 +97,12 @@ module BioPieces
     end
 
     # Add a key with time_elapsed to the status.
+    #
+    # @return [BioPieces::Status] returns self.
     def calc_time_elapsed
       @status[:time_elapsed] = @status[:time_stop] - @status[:time_start]
+
+      self
     rescue
       pp @status
       exit
@@ -108,6 +110,8 @@ module BioPieces
 
     # Locate all status key pairs <foo>_in and <foo>_out and add a new status
     # key <foo>_delta with the numerical difference.
+    #
+    # @return [BioPieces::Status] returns self.
     def calc_delta
       in_keys = @status.keys.select { |s| s[-3..-1] == '_in' }
 
@@ -120,6 +124,8 @@ module BioPieces
           @status[delta_key] = @status[out_key] - @status[in_key]
         end
       end
+
+      self
     end
   end
 end

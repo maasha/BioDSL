@@ -32,16 +32,18 @@ module BioPieces
     # including a optional subject specified in @options[:subject], that will
     # otherwise default to self.to_s. The body of the email will be an HTML
     # report.
-    def send_email(status)
+    #
+    # @param pipeline [BioPieces::Pipeline] Pipeline object
+    def send_email(pipeline)
       return unless @options[:email]
       test_defaults if BioPieces.test
 
       html_part = Mail::Part.new do
         content_type 'text/html; charset=UTF-8'
-        body BioPieces::Render.html(status)
+        body BioPieces::HtmlReport.new(pipeline).to_html
       end
 
-      compose_mail.deliver!(html_part)
+      compose_mail(html_part).deliver!
     end
 
     # Compose an email.

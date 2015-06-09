@@ -26,7 +26,7 @@
 module BioPieces
   # Command class for initiating and calling commands.
   class Command
-    attr_reader :name, :status
+    attr_reader :name, :status, :options
 
     # Constructor for Command objects.
     #
