@@ -115,7 +115,7 @@ module BioPieces
     #
     # @param options [Hash] Command options hash.
     def render_output_files(options)
-      render('output_files.html.haml', self, options)
+      render('output_files.html.haml', self, options: options)
     end
 
     # Render PNG data.
