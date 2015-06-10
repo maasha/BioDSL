@@ -29,21 +29,29 @@ module BioPieces
     require 'tempfile'
     require 'terminal-table'
 
-    def status_init
-      @commands.map do |command|
-        command.status = {
-          __status_file__: Tempfile.new(command.name.to_s),
-          name:            command.name,
-          options:         command.options,
-          records_in:      0,
-          records_out:     0
-        }
+    # Given a list of symbols initialize an initialize all as instance variables
+    # with the value 0.
+    #
+    # @param args [Array] List of symbols.
+    def status_init(*args)
+      args.each do |arg|
+        instance_variable_set("@#{arg}".to_sym, 0)
       end
+    end
 
-      @commands.first.status[:__last__] = true
+    # Assign values to status hash from instance variables specified by a list
+    # of given symbols.
+    #
+    # @param status [Hash]  Status hash.
+    # @param args   [Array] List of symbols.
+    def assign_status(status, *args)
+      args.each do |arg|
+        status[arg] = instance_variable_get("@#{arg}".to_sym)
+      end
     end
 
     def status_track(status, &block)
+      raise
       if @options[:progress]
         thr = Thread.new do
           loop do
@@ -62,7 +70,7 @@ module BioPieces
     end
 
     def status_progress(&block)
-
+      raise
       thr = Thread.new do
         print "\e[H\e[2J"   # Console code to clear screen
 
@@ -97,6 +105,7 @@ module BioPieces
     end
 
     def status_tabulate(status)
+      raise
       rows = []
       rows <<  %w{name records_in records_out time_elapsed status}
 
@@ -121,6 +130,7 @@ module BioPieces
     end
 
     def status_load
+      raise
       status = []
 
       @commands.each do |command|
@@ -135,6 +145,7 @@ module BioPieces
     end
 
     def status_save(status)
+      raise
       data = {}
 
       status.each do |key, value|
@@ -157,6 +168,7 @@ module BioPieces
     end
 
     def status_dump(path)
+      raise
       File.open(path, 'w') { |file| file.write @status.to_yaml }
     end
   end

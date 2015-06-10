@@ -67,9 +67,11 @@ module BioPieces
   #    count  3
   class Count
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for count.
     #
@@ -95,8 +97,8 @@ module BioPieces
     # @return [Count] Instance of class Count.
     def initialize(options)
       @options     = options
-      @records_in  = 0
-      @records_out = 0
+
+      status_init(:records_in, :records_out)
     end
 
     # Return the command lambda for count.
@@ -116,7 +118,7 @@ module BioPieces
 
         write_output if @options[:output]
 
-        assign_status(status)
+        assign_status(status, :records_in, :records_out)
       end
     end
 
@@ -141,14 +143,6 @@ module BioPieces
         ios.puts "#RECORD_TYPE\tCOUNT"
         ios.puts "count\t#{@records_in}"
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end
