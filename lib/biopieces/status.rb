@@ -100,12 +100,10 @@ module BioPieces
     #
     # @return [BioPieces::Status] returns self.
     def calc_time_elapsed
-      @status[:time_elapsed] = @status[:time_stop] - @status[:time_start]
+      delta = @status[:time_stop] - @status[:time_start]
+      @status[:time_elapsed] = (Time.mktime(0) + delta).strftime("%H:%M:%S")
 
       self
-    rescue
-      pp @status
-      exit
     end
 
     # Locate all status key pairs <foo>_in and <foo>_out and add a new status
