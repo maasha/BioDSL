@@ -82,6 +82,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check options and return command lambda for unique_values.
     #
     # @param options [Hash] Options hash.
@@ -110,7 +112,7 @@ module BioPieces
       @key         = options[:key].to_sym
       @invert      = options[:invert]
 
-      status_init(:records_in, :records_out)
+      status_init(STATS)
     end
 
     # Return command lambda for unique_values
@@ -127,7 +129,7 @@ module BioPieces
           end
         end
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

@@ -113,6 +113,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check options and return command lambda for plot_histogram.
     #
     # @param options [Hash] Options hash.
@@ -176,7 +178,7 @@ module BioPieces
       @count_hash  = Hash.new(0)
       @gp          = nil
 
-      status_init(:records_in, :records_out)
+      status_init(STATS)
     end
 
     # Return the command lambda for plot_histogram
@@ -187,7 +189,8 @@ module BioPieces
         process_input(input, output)
         plot_create
         plot_output
-        status_assign(status, :records_in, :records_out)
+
+        status_assign(status, STATS)
       end
     end
 

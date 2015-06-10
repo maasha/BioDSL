@@ -65,10 +65,14 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
+
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
     include StatusHelper
+
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
 
     # Check options and return command lambda for the filter_rrna command.
     #
@@ -96,8 +100,7 @@ module BioPieces
       @options = options
       @filter  = Set.new
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+      status_init(STATS)
     end
 
     # Return the command lambda for filter_rrnas.
@@ -113,8 +116,7 @@ module BioPieces
           process_output(output, tmp_file)
         end
 
-      status_assign(status, :records_in, :records_out, :sequences_in,
-                            :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

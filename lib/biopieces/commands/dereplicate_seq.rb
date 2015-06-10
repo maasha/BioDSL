@@ -66,6 +66,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
+
     # Check options and return command lambda for dereplicate_seq.
     #
     # @param options [Hash] Options hash.
@@ -88,8 +91,8 @@ module BioPieces
     def initialize(options)
       @options       = options
       @lookup        = GoogleHashDenseLongToInt.new
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+
+      status_init(STATS)
     end
 
     # Return the command lambda for DereplicateSeq.
@@ -102,8 +105,7 @@ module BioPieces
           process_output(output, tmp_file)
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

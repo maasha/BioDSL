@@ -50,6 +50,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out hits_in hits_out)
+
     # Check options and return command lambda for CollectOtus.
     #
     # @param options [Hash] Options hash.
@@ -67,7 +69,7 @@ module BioPieces
     def initialize(options)
       @options = options
 
-      status_init(:records_in, :records_out, :hits_in, :hits_out)
+      status_init(STATS)
     end
 
     # Return lambda for CollectOtus command.
@@ -78,7 +80,8 @@ module BioPieces
         count_hash = process_input(input, output)
         samples    = collect_samples(count_hash)
         process_output(count_hash, samples, output)
-        status_assign(status, :records_in, :records_out, :hits_in, :hits_out)
+
+        status_assign(status, STATS)
       end
     end
 

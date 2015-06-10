@@ -89,6 +89,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(overlap_sum hamming_sum records_in records_out sequences_in
+               sequences_out residues_in residues_out assembled unassembled)
+
     # Check the options and return a lambda for the command.
     #
     # @param [Hash] options Options hash.
@@ -155,9 +158,8 @@ module BioPieces
     # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
       @options       = options
-      status_init(:overlap_sum, :hamming_sum, :records_in, :records_out,
-                  :sequences_in, :sequences_out, :residues_in, :residues_out,
-                  :assembled, :unassembled)
+
+      status_init(STATS)
     end
 
     # Return a lambda for the read_fasta command.
@@ -176,9 +178,7 @@ module BioPieces
           end
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out,
-                              :assembled)
+        status_assign(status, STATS)
         calc_status(status)
       end
     end

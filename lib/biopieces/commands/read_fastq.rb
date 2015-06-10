@@ -114,6 +114,8 @@ module BioPieces
     include StatusHelper
 
     MAX_TEST = 1_000
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
 
     # Check options and return command lambda for read_fastq.
     #
@@ -159,8 +161,7 @@ module BioPieces
       @buffer   = []
       @type     = nil
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+      status_init(STATS)
     end
 
     # Return command lambda for ReadFastq.
@@ -180,8 +181,7 @@ module BioPieces
           read_all_single(output)
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

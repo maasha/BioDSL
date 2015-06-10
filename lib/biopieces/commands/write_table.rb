@@ -171,6 +171,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # rubocop: disable MethodLength
 
     def self.lmb(options)
@@ -204,7 +206,7 @@ module BioPieces
       @last                  = []
       @rows                  = []
 
-      status_init(:records_in, :records_out)
+      status_init(STATS)
     end
 
     # Return command lambda for write_table.
@@ -220,7 +222,7 @@ module BioPieces
           write_table(input, output, $stdout)
         end
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

@@ -73,6 +73,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               records_out assembled)
+
     # Check the options and return a lambda for the command.
     #
     # @param [Hash] options Options hash.
@@ -118,8 +121,7 @@ module BioPieces
       @lengths = []
       @type    = nil
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :records_out, :assembled)
+      status_init(STATS)
     end
 
     # Return a lambda for the AssembleSeqSpades command.
@@ -134,8 +136,7 @@ module BioPieces
           process_output(output, File.join(tmp_dir, 'scaffolds.fasta'))
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :records_out, :assembled)
+        status_assign(status, STATS)
         calc_n50(status)
       end
     end

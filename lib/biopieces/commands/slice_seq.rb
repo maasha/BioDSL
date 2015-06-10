@@ -96,6 +96,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
+
     # Check options and return lambda for command.
     #
     # @param options [Hash] Options hash.
@@ -118,8 +121,7 @@ module BioPieces
     def initialize(options)
       @options = options
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+      status_init(STATS)
     end
 
     # Return lambda for command.
@@ -137,8 +139,7 @@ module BioPieces
           @records_out += 1
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

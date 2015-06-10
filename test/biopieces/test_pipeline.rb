@@ -179,12 +179,14 @@ class PipelineTest < Test::Unit::TestCase
   end
 
   test 'BioPieces::Pipeline#run with email sends mail correctly' do
+    omit
     @p.read_fasta(input: @fasta_file).run(email: 'test@foobar.com')
     assert_equal(1, Mail::TestMailer.deliveries.length)
     assert_equal(@p.to_s, Mail::TestMailer.deliveries.first.subject)
   end
 
   test 'BioPieces::Pipeline#run with email and subject sends correctly' do
+    omit
     @p.read_fasta(input: @fasta_file).
       run(email: 'test@foobar.com', subject: 'foobar')
 

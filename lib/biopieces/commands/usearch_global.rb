@@ -66,6 +66,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in hits_out)
+
     # Check options and return command lambda for usearch_global.
     #
     # @param  options [Hash] Options hash.
@@ -105,6 +107,8 @@ module BioPieces
       @records_out    = 0
       @sequences_in   = 0
       @hits_out       = 0
+
+      status_init(STATS)
     end
 
     # Return command lambda for usearch_global.
@@ -118,7 +122,7 @@ module BioPieces
           process_output(output, tmp_out)
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in, :hits_out)
+        status_assign(status, STATS)
       end
     end
 

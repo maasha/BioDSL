@@ -64,6 +64,9 @@ module BioPieces
     extend OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
+
     # Constructor for ComplementSeq.
     #
     # @param options [Hash] Options hash.
@@ -80,8 +83,7 @@ module BioPieces
       @options = options
       @type    = nil
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+      status_init(STATS)
     end
 
     # Return the command lambda for ComplementSeq.
@@ -99,8 +101,7 @@ module BioPieces
           @records_out += 1
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

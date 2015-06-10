@@ -68,6 +68,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out clusters_out)
+
     # Check options and return command lambda for uclust.
     #
     # @param options [Hash] Options hash.
@@ -104,8 +107,7 @@ module BioPieces
       @options = options
       @options[:cpus] ||= 1
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out, :clusters_out)
+      status_init(STATS)
     end
 
     # Return command lambda for uclust.
@@ -125,9 +127,7 @@ module BioPieces
           end
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out,
-                              :clusters_out)
+        status_assign(status, STATS)
       end
     end
 

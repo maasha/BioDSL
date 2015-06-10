@@ -113,6 +113,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out
+               residues_in residues_out pattern_hits pattern_misses)
+
     # Check options and return command lambda.
     #
     # @param options [Hash] Options hash.
@@ -172,8 +175,7 @@ module BioPieces
       @ins     = calc_ins
       @del     = calc_del
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out, :pattern_hits, :pattern_misses)
+      status_init(STATS)
     end
 
     # Lambda for ClipPrimer command.
@@ -190,9 +192,7 @@ module BioPieces
           @records_out += 1
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out,
-                              :pattern_hits, :pattern_misses)
+        status_assign(status, STATS)
       end
     end
 

@@ -80,6 +80,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
+
     # Check options and return command lambda for plot_residue_distribution.
     #
     # @param options [Hash] Options hash.
@@ -132,8 +135,7 @@ module BioPieces
       @gp       = nil
       @offset   = Set.new # Hackery thing to offset datasets 1 postion.
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+      status_init(STATS)
     end
 
     # Return command lambda for PlotResidueDistribution.
@@ -154,8 +156,7 @@ module BioPieces
         plot_create
         plot_output
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

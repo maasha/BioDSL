@@ -115,6 +115,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               records_out)
+
     def self.lmb(options)
       options_allowed(options, :count, :output, :force, :terminal, :title,
                       :xlabel, :ylabel, :ylogscale, :test)
@@ -139,8 +142,7 @@ module BioPieces
       @count_vec  = NArray.int(Config::SCORES_MAX)
       @max        = 0
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :records_out)
+      status_init(STATS)
     end
 
     def lmb
@@ -160,8 +162,7 @@ module BioPieces
         plot_count
         plot_output
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

@@ -65,6 +65,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in residues_in)
+
     def self.lmb(options)
       options_allowed(options, :force, :output, :type)
       options_allowed_values(options, type: [:dna, :rna, :protein])
@@ -78,7 +80,7 @@ module BioPieces
       @options = options
       @cmd     = compile_command
 
-      status_init(:records_in, :records_out, :sequences_in, :residues_in)
+      status_init(STATS)
     end
 
     # rubocop: disable Metrics/AbcSize
@@ -105,8 +107,7 @@ module BioPieces
           write_tree(tree_data)
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :residues_in)
+        status_assign(status, STATS)
       end
     end
 

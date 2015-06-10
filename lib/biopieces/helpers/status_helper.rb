@@ -33,7 +33,7 @@ module BioPieces
     # with the value 0.
     #
     # @param args [Array] List of symbols.
-    def status_init(*args)
+    def status_init(args)
       args.each do |arg|
         instance_variable_set("@#{arg}".to_sym, 0)
       end
@@ -44,7 +44,7 @@ module BioPieces
     #
     # @param status [Hash]  Status hash.
     # @param args   [Array] List of symbols.
-    def status_assign(status, *args)
+    def status_assign(status, args)
       args.each do |arg|
         status[arg] = instance_variable_get("@#{arg}".to_sym)
       end

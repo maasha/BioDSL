@@ -79,6 +79,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check options and return command lambda for plot_heatmap
     #
     # @param options [Hash] Options hash.
@@ -136,7 +138,7 @@ module BioPieces
       @headings    = nil
       @skip_keys   = determine_skip_keys
 
-      status_init(:records_in, :records_out)
+      status_init(STATS)
     end
 
     # Return command lambda for plot_histogram.
@@ -150,7 +152,7 @@ module BioPieces
         plot_dataset(gp, input, output)
         plot_output(gp)
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

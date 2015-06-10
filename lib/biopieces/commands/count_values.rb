@@ -72,6 +72,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check options and return command lambda for CountValues.
     #
     # @param options [Hash] Options hash.
@@ -95,7 +97,8 @@ module BioPieces
       @options     = options
       @keys       = @options[:keys].map(&:to_sym)
       @count_hash = Hash.new { |h, k| h[k] = Hash.new(0) }
-      status_init(:records_in, :records_out)
+
+      status_init(STATS)
     end
 
     # Return the command lambda for the count_values command.
@@ -108,7 +111,7 @@ module BioPieces
           process_output(output, tmp_file)
         end
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

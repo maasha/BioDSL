@@ -101,6 +101,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out otus_in otus_out)
+
     # Check options and return lambda for collapse_otus command.
     #
     # @param options [Hash] Options hash.
@@ -116,7 +118,7 @@ module BioPieces
     def initialize(options)
       @options = options
 
-      status_init(:records_in, :records_out, :otus_in, :otus_out)
+      status_init(STATS)
     end
 
     # Return the CollapseOtus command lambda.
@@ -140,7 +142,8 @@ module BioPieces
         end
 
         write_tax(hash, output)
-        status_assign(status, :records_in, :records_out, :otus_in, :otus_out)
+
+        status_assign(status, STATS)
       end
     end
 

@@ -148,6 +148,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check the options and return a lambda for the command.
     #
     # @param [Hash] options Options hash.
@@ -243,7 +245,8 @@ module BioPieces
       @exact     = compile_exact
       @regex     = compile_regexes
       @eval      = @options[:evaluate]
-      status_init(:records_in, :records_out)
+
+      status_init(STATS)
     end
 
     # Return a lambda for the grab command.
@@ -263,7 +266,7 @@ module BioPieces
           emit_match(output, record, match)
         end
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

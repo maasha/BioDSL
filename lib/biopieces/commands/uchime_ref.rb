@@ -62,6 +62,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
+
     # Check options and return command lambda for uchime_ref.
     #
     # @param options [Hash] Options hash.
@@ -92,8 +95,7 @@ module BioPieces
       @options[:cpus]   ||= 1
       @options[:strand] ||= 'plus'  # This option cant be changed in usearch7.0
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+      status_init(STATS)
     end
 
     # Return command lambda for uchime_ref.
@@ -108,8 +110,7 @@ module BioPieces
           process_output(output, tmp_out)
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

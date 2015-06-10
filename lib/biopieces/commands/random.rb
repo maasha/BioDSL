@@ -60,6 +60,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     def self.lmb(options)
       options_allowed(options, :number, :pairs)
       options_required(options, :number)
@@ -73,7 +75,7 @@ module BioPieces
       @options = options
       @wanted  = nil
 
-      status_init(:records_in, :records_out)
+      status_init(STATS)
     end
 
     def lmb
@@ -84,7 +86,7 @@ module BioPieces
           process_output(output, file)
         end
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

@@ -99,6 +99,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check options and return command lambda.
     #
     # @param options [Hash] Options hash.
@@ -136,7 +138,7 @@ module BioPieces
       @pqueue       = pqueue_init
       @fds         = nil
 
-      status_init(:records_in, :records_out)
+      status_init(STATS)
     end
 
     # Return command lambda for Sort.
@@ -155,7 +157,8 @@ module BioPieces
         open_block_files
         fill_pqueue
         output_pqueue(output)
-        status_assign(status, :records_in, :records_out)
+
+        status_assign(status, STATS)
       end
     end
 

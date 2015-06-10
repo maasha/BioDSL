@@ -58,6 +58,8 @@ module BioPieces
     extend OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check the options and return a lambda for the command.
     #
     # @param [Hash] options Options hash.
@@ -83,7 +85,8 @@ module BioPieces
     # @return [Dump] Returns an instance of the Dump class.
     def initialize(options)
       @options     = options
-      status_init(:records_in, :records_out)
+
+      status_init(STATS)
     end
 
     # Return a lambda for the dump command.
@@ -99,7 +102,7 @@ module BioPieces
           dump_all(input, output)
         end
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
 

@@ -89,6 +89,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out masked)
+
     # Check options and return command lambda for mask_seq.
     #
     # @param options [Hash] Options hash.
@@ -119,8 +122,7 @@ module BioPieces
       @options = options
       @mask    = options[:mask].to_sym
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out, :masked)
+      status_init(STATS)
     end
 
     # Return command lambda for mask_seq.
@@ -138,10 +140,9 @@ module BioPieces
           @records_out += 1
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out,
-                              :masked)
         status[:masked_percent] = (100 * @masked.to_f / @residues_in).round(2)
+
+        status_assign(status, STATS)
       end
     end
 

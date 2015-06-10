@@ -78,6 +78,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
+
     # Check options and return lambda for degap_seq command.
     #
     # @param options [Hash] Options Hash.
@@ -108,9 +111,7 @@ module BioPieces
       @max_len = nil
       @count   = 0
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
-      status_init(:columns_removed) if @options[:columns_only]
+      status_init(STATS)
     end
 
     # Return the command lambda for DegapSeq.
@@ -120,15 +121,12 @@ module BioPieces
       lambda do |input, output, status|
         if @options[:columns_only]
           degap_columns(input, output)
+          status[:columns_removed] = @na_mask.count_false
         else
           degap_all(input, output)
         end
 
-        @columns_removed = @na_mask.count_false if @options[:columns_only]
-
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
-        status_assign(status, :columns_removed) if @options[:columns_only]
+        status_assign(status, STATS)
       end
     end
 

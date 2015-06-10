@@ -125,6 +125,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out)
+
     # Check options and return command lambda for index_taxonomy.
     #
     # @param options [Hash] Options hash.
@@ -166,8 +169,8 @@ module BioPieces
       set_defaults
       create_output_dir
       check_output_files
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+
+      status_init(STATS)
     end
 
     # Return command lambda for index_taxonomy.
@@ -185,8 +188,8 @@ module BioPieces
         end
 
         @index.save
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out)
+
+        status_assign(status, STATS)
       end
     end
 

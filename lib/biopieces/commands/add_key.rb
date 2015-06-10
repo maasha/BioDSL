@@ -61,6 +61,8 @@ module BioPieces
     extend OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out)
+
     # Check the options and return a lambda for the command.
     #
     # @param [Hash] options Options hash.
@@ -80,7 +82,7 @@ module BioPieces
     def initialize(options)
       @options = options
 
-      status_init(:records_in, :records_out)
+      status_init(STATS)
     end
 
     # Add a key or replace a key for all records with a specified value or a
@@ -106,7 +108,7 @@ module BioPieces
           @records_out += 1
         end
 
-        status_assign(status, :records_in, :records_out)
+        status_assign(status, STATS)
       end
     end
   end

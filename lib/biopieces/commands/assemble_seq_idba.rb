@@ -73,6 +73,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out assembled)
+
     # Check the options and return a lambda for the command.
     #
     # @param [Hash] options Options hash.
@@ -120,8 +123,7 @@ module BioPieces
       @options = options
       @lengths = []
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out, :assembled)
+      status_init(STATS)
     end
 
     # Return a lambda for the AssembleSeqIdba command.
@@ -136,9 +138,7 @@ module BioPieces
           status_term(lengths)
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :sequences_out, :residues_in, :residues_out,
-                              :assembled)
+        status_assign(status, STATS)
         calc_n50(status)
       end
     end

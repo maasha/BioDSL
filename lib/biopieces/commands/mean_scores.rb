@@ -94,6 +94,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out residues_in
+               residues_out min_mean max_mean)
+
     def self.lmb(options)
       options_allowed(options, :local, :window_size)
       options_tie(options, window_size: :local)
@@ -112,8 +115,7 @@ module BioPieces
       @sum     = 0
       @count   = 0
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out, :min_mean, :max_mean)
+      status_init(STATS)
     end
 
     def lmb
@@ -128,11 +130,9 @@ module BioPieces
           @records_out += 1
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in, 
-                              :sequences_out, :residues_in, :residues_out,
-                              :min_mean, :max_mean)
-
         status[:mean_mean]     = (@sum.to_f / @count).round(2)
+
+        status_assign(status, STATS)
       end
     end
 

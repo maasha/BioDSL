@@ -66,6 +66,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in hits_out)
+
     # Check options and return command lambda for usearch_local.
     #
     # @param  options [Hash] Options hash.
@@ -102,7 +104,7 @@ module BioPieces
       @options        = options
       @options[:cpus] ||= 1
 
-      status_init(:records_in, :records_out, :sequences_in, :hits_out)
+      status_init(STATS)
     end
 
     # Return command lambda for usearch_local.
@@ -116,8 +118,7 @@ module BioPieces
           process_output(output, tmp_out)
         end
 
-        status_assign(status, :records_in, :records_out, :sequences_in,
-                              :hits_out)
+        status_assign(status, STATS)
       end
     end
 

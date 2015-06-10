@@ -117,6 +117,8 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out matches_in)
+
     # Check options and return command lambda for PlotMatches.
     #
     # @param options [Hash] Options hash.
@@ -171,7 +173,7 @@ module BioPieces
       @style1   = {using: '1:2:3:4', with: 'vectors nohead ls 1'}
       @style2   = {using: '1:2:3:4', with: 'vectors nohead ls 2'}
 
-      status_init(:records_in, :records_out, :matches_in)
+      status_init(STATS)
     end
 
     # Return lambda for command plot_matches.
@@ -196,7 +198,7 @@ module BioPieces
 
         plot_output
 
-        status_assign(status, :records_in, :records_out, :matches_in)
+        status_assign(status, STATS)
       end
     end
 

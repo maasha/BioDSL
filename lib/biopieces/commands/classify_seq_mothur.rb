@@ -79,6 +79,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out sequences_in sequences_out
+               residues_in residues_out)
+
     # Check options for command and return a lambda.
     #
     # @param options [Hash] Options hash.
@@ -120,8 +123,7 @@ module BioPieces
     def initialize(options)
       @options = options
 
-      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
-                  :residues_in, :residues_out)
+      status_init(STATS)
     end
 
     # Command lambda for ClassifySeqMothur.
@@ -136,8 +138,7 @@ module BioPieces
           process_output(output, tmp_out)
         end
 
-      status_assign(status, :records_in, :records_out, :sequences_in,
-                            :sequences_out, :residues_in, :residues_out)
+        status_assign(status, STATS)
       end
     end
 

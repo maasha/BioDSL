@@ -94,6 +94,9 @@ module BioPieces
     include OptionsHelper
     include StatusHelper
 
+    STATS = %i(records_in records_out rows_total rows_matched rows_unmatched
+               merged non_merged)
+
     # Check options and return command lambda for merge_table.
     #
     # @param options [Hash]
@@ -160,8 +163,7 @@ module BioPieces
       @key     = @options[:key].to_sym
       @keys    = options[:keys] ? @options[:keys].map(&:to_sym) : nil
 
-      status_init(:records_in, :records_out, :rows_total, :rows_matched,
-                  :rows_unmatched, :merged, :non_merged)
+      status_init(STATS)
     end
 
     # Return command lambda for merge_table.
@@ -185,9 +187,7 @@ module BioPieces
           @records_out += 1
         end
 
-        status_assign(status, :records_in, :records_out, :rows_total,
-                              :rows_matched, :rows_unmatched, :merged,
-                              :non_merged)
+        status_assign(status, STATS)
       end
     end
 
