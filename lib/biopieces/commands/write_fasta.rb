@@ -146,7 +146,7 @@ module BioPieces
 
     # Write all sequence entries to stdout.
     #
-    # @param input  [Enumerator::Yielder] The input stream.
+    # @param input  [Enumerator]          The input stream.
     # @param output [Enumerator::Yielder] The output stream.
     def write_stdout(input, output)
       wrap = @options[:wrap]
@@ -166,7 +166,7 @@ module BioPieces
 
     # Write all sequence entries to a specified file.
     #
-    # @param input  [Enumerator::Yielder] The input stream.
+    # @param input  [Enumerator]          The input stream.
     # @param output [Enumerator::Yielder] The output stream.
     def write_file(input, output)
       Fasta.open(@options[:output], 'w', compress: compress) do |ios|
