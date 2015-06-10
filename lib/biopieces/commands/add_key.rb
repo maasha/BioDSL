@@ -99,9 +99,8 @@ module BioPieces
         input.each_with_index do |record, i|
           @records_in += 1
 
-          value = @options[:value] ? @options[:value] : "#{@options[:prefix]}#{i}"
-
-          record[@options[:key].to_sym] = value
+          record[@options[:key].to_sym] = @options[:value] ||
+                                          "#{@options[:prefix]}#{i}"
 
           output << record
 

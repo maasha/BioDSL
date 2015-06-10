@@ -142,7 +142,7 @@ module BioPieces
       options_dirs_exist(options, :dir)
       options_allowed_values(options, best_only: [nil, true, false])
 
-      options[:prefix]    ||= "taxonomy"
+      options[:prefix]    ||= 'taxonomy'
       options[:kmer_size] ||= 8
       options[:step_size] ||= 1
       options[:hits_max]  ||= 50
