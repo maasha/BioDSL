@@ -113,19 +113,42 @@ module BioPieces
     #
     # @return [BioPieces::Status] returns self.
     def calc_delta
-      in_keys = @status.keys.select { |s| s[-3..-1] == '_in' }
-
-      in_keys.each do |in_key|
+      @status.keys.select { |s| s[-3..-1] == '_in' }.each do |in_key|
         base    = in_key[0...-3]
         out_key = "#{base}_out".to_sym
 
-        if @status.key? out_key
-          delta_key = "#{base}_delta".to_sym
-          @status[delta_key] = @status[out_key] - @status[in_key]
-        end
+        next unless @status.key? out_key
+
+        @status["#{base}_delta".to_sym]         = delta(in_key, out_key)
+        @status["#{base}_delta_percent".to_sym] = delta_percent(in_key, out_key)
       end
 
       self
+    end
+
+    # Calculate the difference between status values given two status keys.
+    #
+    # @param in_key  [Symbol] Status hash key.
+    # @param out_key [Symbol] Status hash key.
+    #
+    # @return [Fixnum] Difference.
+    def delta(in_key, out_key)
+      @status[out_key] - @status[in_key]
+    end
+
+    # Calculate the percent difference between status values given two status
+    # keys.
+    #
+    # @param in_key  [Symbol] Status hash key.
+    # @param out_key [Symbol] Status hash key.
+    #
+    # @return [Float] Percentage rounded to 2 decimals.
+    def delta_percent(in_key, out_key)
+      d = @status[out_key] - @status[in_key]
+
+      return 0.0 if d == 0
+
+      (100 * d.to_f / [@status[out_key] - @status[in_key]].max).round(2)
     end
   end
 end
