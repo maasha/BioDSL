@@ -88,9 +88,11 @@ module BioPieces
   #    {:ID=>4, :ORGANISM=>"beetle", :COUNT=>234}
   class MergeTable
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for merge_table.
     #
@@ -153,16 +155,13 @@ module BioPieces
     #
     # @return [MergeTable] Class instance.
     def initialize(options)
-      @options        = options
-      @records_in     = 0
-      @records_out    = 0
-      @rows_matched   = 0
-      @rows_unmatched = 0
-      @merged         = 0
-      @non_merged     = 0
-      @table          = {}
-      @key            = @options[:key].to_sym
-      @keys           = options[:keys] ? @options[:keys].map(&:to_sym) : nil
+      @options = options
+      @table   = {}
+      @key     = @options[:key].to_sym
+      @keys    = options[:keys] ? @options[:keys].map(&:to_sym) : nil
+
+      status_init(:records_in, :records_out, :rows_total, :rows_matched,
+                  :rows_unmatched, :merged, :non_merged)
     end
 
     # Return command lambda for merge_table.
@@ -186,7 +185,9 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :rows_total,
+                              :rows_matched, :rows_unmatched, :merged,
+                              :non_merged)
       end
     end
 
@@ -243,19 +244,6 @@ module BioPieces
     def check_duplicate(record)
       return unless @table[record[@key]]
       fail "Duplicate values found for key: #{@key} value: #{record[@key]}"
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]     = @records_in
-      status[:records_out]    = @records_out
-      status[:rows_total]     = @rows_matched + @rows_unmatched
-      status[:rows_matched]   = @rows_matched
-      status[:rows_unmatched] = @rows_unmatched
-      status[:merged]         = @merged
-      status[:non_merged]     = @non_merged
     end
   end
 end

@@ -59,10 +59,12 @@ module BioPieces
   class UsearchLocal
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for usearch_local.
     #
@@ -99,10 +101,8 @@ module BioPieces
     def initialize(options)
       @options        = options
       @options[:cpus] ||= 1
-      @records_in     = 0
-      @records_out    = 0
-      @sequences_in   = 0
-      @hits_out       = 0
+
+      status_init(:records_in, :records_out, :sequences_in, :hits_out)
     end
 
     # Return command lambda for usearch_local.
@@ -116,7 +116,8 @@ module BioPieces
           process_output(output, tmp_out)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :hits_out)
       end
     end
 
@@ -179,16 +180,6 @@ module BioPieces
           @records_out += 1
         end
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]   = @records_in
-      status[:records_out]  = @records_out
-      status[:sequences_in] = @sequences_in
-      status[:hits_out]     = @hits_out
     end
   end
 end

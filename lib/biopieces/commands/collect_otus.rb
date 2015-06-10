@@ -42,11 +42,13 @@ module BioPieces
   # == Examples
   #
   class CollectOtus
-    require 'biopieces/helpers/options_helper'
     require 'set'
+    require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for CollectOtus.
     #
@@ -63,11 +65,9 @@ module BioPieces
     #
     # @param options [Hash] Options hash.
     def initialize(options)
-      @options     = options
-      @records_in  = 0
-      @records_out = 0
-      @hits_in     = 0
-      @hits_out    = 0
+      @options = options
+
+      status_init(:records_in, :records_out, :hits_in, :hits_out)
     end
 
     # Return lambda for CollectOtus command.
@@ -78,7 +78,7 @@ module BioPieces
         count_hash = process_input(input, output)
         samples    = collect_samples(count_hash)
         process_output(count_hash, samples, output)
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :hits_in, :hits_out)
       end
     end
 
@@ -152,16 +152,6 @@ module BioPieces
         output << record
         @records_out += 1
       end
-    end
-
-    # Assign status values to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_in
-      status[:hits_in]     = @hits_in
-      status[:hits_out]    = @hits_out
     end
   end
 end

@@ -113,8 +113,11 @@ module BioPieces
   #    OTU_4  2 K#Bacteria(100);P#Fusobacteria(100);C#Fusobacteriia(100);O#...
   class ClassifySeq
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
+
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -186,11 +189,10 @@ module BioPieces
     #
     # @return [ClassifySeq] Returns an instance of the class.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
+      @options = options
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
 
       defaults
     end
@@ -213,7 +215,8 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -222,6 +225,8 @@ module BioPieces
     def classify_seq(record, i, search)
       @sequences_in  += 1
       @sequences_out += 1
+      @residues_in   += record[:SEQ].length
+      @residues_out  += record[:SEQ].length
       seq_name = record[:SEQ_NAME] || i.to_s
 
       result = search.execute(BioPieces::Seq.new(seq_name: seq_name,
@@ -241,16 +246,6 @@ module BioPieces
       @options[:consensus] ||= 0.51
       @options[:coverage]  ||= 0.9
       @options[:best_only] ||= true
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
     end
   end
 end

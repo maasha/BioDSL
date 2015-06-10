@@ -142,8 +142,11 @@ module BioPieces
   # rubocop:disable ClassLength
   class Grab
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
+
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -231,17 +234,16 @@ module BioPieces
     #
     # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
-      @options     = options
-      @records_in  = 0
-      @records_out = 0
-      @keys_only   = @options[:keys_only]
-      @vals_only   = @options[:values_only]
-      @invert      = @options[:reject] || @options[:reject_file]
-      @patterns    = compile_patterns
-      @keys        = compile_keys
-      @exact       = compile_exact
-      @regex       = compile_regexes
-      @eval        = @options[:evaluate]
+      @options   = options
+      @keys_only = @options[:keys_only]
+      @vals_only = @options[:values_only]
+      @invert    = @options[:reject] || @options[:reject_file]
+      @patterns  = compile_patterns
+      @keys      = compile_keys
+      @exact     = compile_exact
+      @regex     = compile_regexes
+      @eval      = @options[:evaluate]
+      status_init(:records_in, :records_out)
     end
 
     # Return a lambda for the grab command.
@@ -261,7 +263,7 @@ module BioPieces
           emit_match(output, record, match)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -557,14 +559,6 @@ module BioPieces
       end
 
       eval expr.join(' ')
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
     end
   end
 end

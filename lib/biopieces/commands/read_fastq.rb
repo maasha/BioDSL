@@ -107,9 +107,11 @@ module BioPieces
   # rubocop: disable Metrics/PerceivedComplexity
   class ReadFastq
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     MAX_TEST = 1_000
 
@@ -151,17 +153,14 @@ module BioPieces
     #
     # @return [ReadFastq] Class instance.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @encoding      = options[:encoding] ? options[:encoding].to_sym : :auto
-      @pair          = options[:input2]
-      @buffer        = []
-      @type          = nil
+      @options  = options
+      @encoding = options[:encoding] ? options[:encoding].to_sym : :auto
+      @pair     = options[:input2]
+      @buffer   = []
+      @type     = nil
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return command lambda for ReadFastq.
@@ -181,7 +180,8 @@ module BioPieces
           read_all_single(output)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -428,18 +428,6 @@ module BioPieces
         @sequences_out += 1
         @residues_out  += entry.length
       end
-    end
-
-    # Assign values to status hash
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

@@ -72,10 +72,12 @@ module BioPieces
     require 'set'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for plot_heatmap
     #
@@ -131,10 +133,10 @@ module BioPieces
     # @return [PlotHeatmap] Class instance.
     def initialize(options)
       @options     = options
-      @records_in  = 0
-      @records_out = 0
       @headings    = nil
       @skip_keys   = determine_skip_keys
+
+      status_init(:records_in, :records_out)
     end
 
     # Return command lambda for plot_histogram.
@@ -148,7 +150,7 @@ module BioPieces
         plot_dataset(gp, input, output)
         plot_output(gp)
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -244,14 +246,6 @@ module BioPieces
       else
         gp.splot
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

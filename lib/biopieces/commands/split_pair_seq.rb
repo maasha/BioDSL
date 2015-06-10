@@ -98,9 +98,11 @@ module BioPieces
   #     :SCORES=>"??,<??B?BB?BBBBBFF?F"}
   class SplitPairSeq
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for split_pair_seq.
     #
@@ -119,13 +121,10 @@ module BioPieces
     #
     # @return [SplitPairSeq] Class instance.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
+      @options = options
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return command lambda for split_pair_seq.
@@ -146,7 +145,8 @@ module BioPieces
           end
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -227,18 +227,6 @@ module BioPieces
       else
         fail "Could not match sequence name: #{entry1.seq_name}"
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

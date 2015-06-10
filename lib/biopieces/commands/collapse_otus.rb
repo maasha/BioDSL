@@ -95,9 +95,11 @@ module BioPieces
   #      Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100)"}
   class CollapseOtus
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return lambda for collapse_otus command.
     #
@@ -112,11 +114,9 @@ module BioPieces
     #
     # @param options [Hash] Options Hash.
     def initialize(options)
-      @options     = options
-      @records_in  = 0
-      @records_out = 0
-      @otus_in     = 0
-      @otus_out    = 0
+      @options = options
+
+      status_init(:records_in, :records_out, :otus_in, :otus_out)
     end
 
     # Return the CollapseOtus command lambda.
@@ -140,7 +140,7 @@ module BioPieces
         end
 
         write_tax(hash, output)
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :otus_in, :otus_out)
       end
     end
 
@@ -173,16 +173,6 @@ module BioPieces
         @otus_out    += 1
         @records_out += 1
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
-      status[:otus_in]     = @otus_in
-      status[:otus_out]    = @otus_out
     end
   end
 end

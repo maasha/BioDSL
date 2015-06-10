@@ -54,9 +54,11 @@ module BioPieces
   #    run
   class Random
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     def self.lmb(options)
       options_allowed(options, :number, :pairs)
@@ -68,10 +70,10 @@ module BioPieces
     end
 
     def initialize(options)
-      @options     = options
-      @records_in  = 0
-      @records_out = 0
-      @wanted      = nil
+      @options = options
+      @wanted  = nil
+
+      status_init(:records_in, :records_out)
     end
 
     def lmb
@@ -82,7 +84,7 @@ module BioPieces
           process_output(output, file)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -139,14 +141,6 @@ module BioPieces
           end
         end
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

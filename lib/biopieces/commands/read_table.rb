@@ -176,9 +176,11 @@ module BioPieces
   # rubocop: disable ClassLength
   class ReadTable
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for ReadTable.
     #
@@ -222,12 +224,12 @@ module BioPieces
     #
     # @return [ReadTable] Class instance.
     def initialize(options)
-      @options     = options
-      @records_in  = 0
-      @records_out = 0
-      @keys        = options[:keys] ? options[:keys].map(&:to_sym) : nil
-      @skip        = options[:skip] || 0
-      @buffer      = []
+      @options = options
+      @keys    = options[:keys] ? options[:keys].map(&:to_sym) : nil
+      @skip    = options[:skip] || 0
+      @buffer  = []
+
+      status_init(:records_in, :records_out)
     end
 
     # Return command lambda for ReadTable
@@ -243,7 +245,7 @@ module BioPieces
         else read_all(output)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -341,14 +343,6 @@ module BioPieces
         @records_in  += 1
         @records_out += 1
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

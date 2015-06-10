@@ -79,8 +79,11 @@ module BioPieces
   #    read_fasta(input: "*.fna")
   class ReadFasta
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
+
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -112,15 +115,12 @@ module BioPieces
     #
     # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @count         = 0
-      @buffer        = []
+      @options = options
+      @count   = 0
+      @buffer  = []
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return a lambda for the read_fasta command.
@@ -142,7 +142,8 @@ module BioPieces
 
         write_buffer(output) if @options[:last]
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -220,18 +221,6 @@ module BioPieces
         @sequences_in += 1
         @residues_in  += entry.length
       end
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

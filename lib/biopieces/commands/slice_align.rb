@@ -163,9 +163,11 @@ module BioPieces
   # rubocop: disable ClassLength
   class SliceAlign
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for slice_align.
     #
@@ -212,18 +214,15 @@ module BioPieces
     #
     # @return [SliceAlign] Class instance.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @forward       = forward
-      @reverse       = reverse
-      @indels        = BioPieces::Seq::INDELS.sort.join
-      @template      = nil
-      @slice         = options[:slice]
+      @options  = options
+      @forward  = forward
+      @reverse  = reverse
+      @indels   = BioPieces::Seq::INDELS.sort.join
+      @template = nil
+      @slice    = options[:slice]
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
       defaults
     end
 
@@ -249,7 +248,8 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -375,18 +375,6 @@ module BioPieces
       return match unless match.nil?
 
       fail BioPieces::SeqError, "pattern not found: #{pattern}"
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
 
     # Class for indexing gapped sequence positions to non-gapped sequence

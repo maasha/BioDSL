@@ -72,9 +72,11 @@ module BioPieces
   class DegapSeq
     require 'narray'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return lambda for degap_seq command.
     #
@@ -100,17 +102,15 @@ module BioPieces
     #
     # @return [DegapSeq] Instance of DegapSeq.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @indels        = BioPieces::Seq::INDELS.sort.join('')
-      @na_mask       = nil
-      @max_len       = nil
-      @count         = 0
+      @options = options
+      @indels  = BioPieces::Seq::INDELS.sort.join('')
+      @na_mask = nil
+      @max_len = nil
+      @count   = 0
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
+      status_init(:columns_removed) if @options[:columns_only]
     end
 
     # Return the command lambda for DegapSeq.
@@ -124,7 +124,11 @@ module BioPieces
           degap_all(input, output)
         end
 
-        assign_status(status)
+        @columns_removed = @na_mask.count_false if @options[:columns_only]
+
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
+        status_assign(status, :columns_removed) if @options[:columns_only]
       end
     end
 
@@ -261,19 +265,6 @@ module BioPieces
       @residues_out  += entry.length
 
       record.merge! entry.to_bp
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]      = @records_in
-      status[:records_out]     = @records_out
-      status[:sequences_in]    = @sequences_in
-      status[:sequences_out]   = @sequences_out
-      status[:residues_in]     = @residues_in
-      status[:residues_out]    = @residues_out
-      status[:columns_removed] = @na_mask.count_false if @options[:columns_only]
     end
   end
 end

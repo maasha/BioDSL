@@ -62,10 +62,12 @@ module BioPieces
   class ClusterOtus
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
-    include OptionsHelper
     extend AuxHelper
+    include OptionsHelper
+    include StatusHelper
 
     # Return command lambda for cluster_otus after
     # checking options.
@@ -92,11 +94,10 @@ module BioPieces
     #
     # @return [ClusterOtu] Instance of ClusterOtu.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
+      @options = options
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     def lmb
@@ -111,7 +112,8 @@ module BioPieces
           process_output(output, tmp_out)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -130,6 +132,7 @@ module BioPieces
 
           if record.key? :SEQ
             @sequences_in += 1
+            @residues_in += record[:SEQ].length
             ios.puts record2entry(record, i).to_fasta
           else
             output << record
@@ -177,19 +180,10 @@ module BioPieces
 
           output << record
           @sequences_out += 1
+          @residues_out  += record[:SEQ].length
           @records_out   += 1
         end
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
     end
   end
 end

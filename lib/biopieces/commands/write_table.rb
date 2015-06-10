@@ -165,9 +165,11 @@ module BioPieces
     require 'set'
     require 'terminal-table'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # rubocop: disable MethodLength
 
@@ -196,13 +198,13 @@ module BioPieces
     def initialize(options)
       @options               = options
       @options[:delimiter] ||= "\t"
-      @records_in            = 0
-      @records_out           = 0
       @compress              = choose_compression
       @headings              = nil
       @header                = @options[:header] ? true : false
       @last                  = []
       @rows                  = []
+
+      status_init(:records_in, :records_out)
     end
 
     # Return command lambda for write_table.
@@ -218,7 +220,7 @@ module BioPieces
           write_table(input, output, $stdout)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -392,14 +394,6 @@ module BioPieces
     # @param tab_out [IO,STDOUT] Table output IO.
     def output_last(tab_out)
       @last.each { |row| tab_out.puts(row.join(@options[:delimiter])) }
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

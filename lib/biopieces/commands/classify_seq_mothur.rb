@@ -72,9 +72,12 @@ module BioPieces
     require 'English'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
+
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options for command and return a lambda.
     #
@@ -115,11 +118,10 @@ module BioPieces
     #
     # @return [ClassifySeqMothur] Instance of class.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
+      @options = options
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Command lambda for ClassifySeqMothur.
@@ -134,7 +136,8 @@ module BioPieces
           process_output(output, tmp_out)
         end
 
-        assign_status(status)
+      status_assign(status, :records_in, :records_out, :sequences_in,
+                            :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -152,6 +155,8 @@ module BioPieces
           if record[:SEQ]
             @sequences_in  += 1
             @sequences_out += 1
+            @residues_in   += record[:SEQ].length
+            @records_out   += record[:SEQ].length
             seq_name = record[:SEQ_NAME] || i.to_s
 
             entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])

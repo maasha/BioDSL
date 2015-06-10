@@ -60,9 +60,11 @@ module BioPieces
   class DereplicateSeq
     require 'google_hash'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for dereplicate_seq.
     #
@@ -85,11 +87,9 @@ module BioPieces
     # @return [DereplicateSeq] Class intance.
     def initialize(options)
       @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
       @lookup        = GoogleHashDenseLongToInt.new
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return the command lambda for DereplicateSeq.
@@ -102,7 +102,8 @@ module BioPieces
           process_output(output, tmp_file)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -141,6 +142,7 @@ module BioPieces
       @sequences_in += 1
 
       seq = record[:SEQ].dup
+      @residues_in += seq.length
       seq.downcase! if @options[:ignore_case]
       key = seq.hash
 
@@ -163,6 +165,7 @@ module BioPieces
         BioPieces::Serializer.new(ios) do |s|
           s.each do |record|
             seq = record[:SEQ].dup
+            @residues_out += seq.length
             seq.downcase! if @options[:ignore_case]
             record[:SEQ_COUNT] = @lookup[seq.hash]
 
@@ -173,16 +176,6 @@ module BioPieces
           end
         end
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
     end
   end
 end

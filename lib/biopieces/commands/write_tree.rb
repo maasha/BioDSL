@@ -57,11 +57,13 @@ module BioPieces
   class WriteTree
     require 'open3'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
 
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     def self.lmb(options)
       options_allowed(options, :force, :output, :type)
@@ -73,12 +75,10 @@ module BioPieces
     end
 
     def initialize(options)
-      @options      = options
-      @records_in   = 0
-      @sequences_in = 0
-      @residues_in  = 0
-      @records_out  = 0
-      @cmd          = compile_command
+      @options = options
+      @cmd     = compile_command
+
+      status_init(:records_in, :records_out, :sequences_in, :residues_in)
     end
 
     # rubocop: disable Metrics/AbcSize
@@ -105,7 +105,8 @@ module BioPieces
           write_tree(tree_data)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :residues_in)
       end
     end
 
@@ -150,16 +151,6 @@ module BioPieces
       else
         puts tree_data
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]   = @records_in
-      status[:records_out]  = @records_out
-      status[:sequences_in] = @sequences_in
-      status[:residues_in]  = @residues_in
     end
   end
 end

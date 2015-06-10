@@ -60,12 +60,14 @@ module BioPieces
   class AlignSeqMothur
     require 'English'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
 
     extend OptionsHelper
     include OptionsHelper
     extend AuxHelper
     include AuxHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -105,6 +107,9 @@ module BioPieces
       @tmp_dir       = File.join(Dir.tmpdir, "#{Time.now.to_i}#{$PID}")
       @tmp_in        = File.join(@tmp_dir, 'input.fasta')
       @tmp_out       = File.join(@tmp_dir, 'input.align')
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return a lambda for the align_seq_mothur command.
@@ -122,7 +127,8 @@ module BioPieces
           File.unlink('8mer') if File.exist? '8mer'
           FileUtils.rm_rf(@tmp_dir)
 
-          assign_status(status)
+          status_assign(status, :records_in, :records_out, :sequences_in,
+                                :sequences_out, :residues_in, :residues_out)
         end
       end
     end
@@ -202,18 +208,6 @@ module BioPieces
       end
 
       fail 'Mothur failed' unless $CHILD_STATUS.success?
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

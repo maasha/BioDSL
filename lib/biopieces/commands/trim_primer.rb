@@ -115,9 +115,11 @@ module BioPieces
   # rubocop: disable ClassLength
   class TrimPrimer
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for trim_primer.
     #
@@ -164,16 +166,11 @@ module BioPieces
       @options[:mismatch_percent]  ||= 0
       @options[:insertion_percent] ||= 0
       @options[:deletion_percent]  ||= 0
-      @records_in      = 0
-      @records_out     = 0
-      @sequences_in    = 0
-      @sequences_out   = 0
-      @pattern_hits    = 0
-      @pattern_misses  = 0
-      @residues_in     = 0
-      @residues_out    = 0
-      @pattern         = pattern
-      @hit             = false
+      @pattern = pattern
+      @hit     = false
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :pattern_hits, :pattern_misses, :residues_in, :residues_out)
     end
 
     # Return command lambda for trim_primer.
@@ -198,7 +195,9 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :pattern_hits, :pattern_misses,
+                              :residues_in, :residues_out)
       end
     end
 
@@ -330,20 +329,6 @@ module BioPieces
       {max_mismatches: mis,
        max_insertions: ins,
        max_deletions:  del}
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]     = @records_in
-      status[:record_out]     = @records_out
-      status[:sequences_in]   = @sequences_in
-      status[:sequences_out]  = @sequences_out
-      status[:pattern_hits]   = @pattern_hits
-      status[:pattern_misses] = @pattern_misses
-      status[:residues_in]    = @residues_in
-      status[:residues_out]   = @residues_out
     end
   end
 end

@@ -66,9 +66,12 @@ module BioPieces
     require 'English'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
+
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -114,14 +117,11 @@ module BioPieces
     #
     # @return [AssembleSeqIdba] Returns an instance of the class.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @lengths       = []
+      @options = options
+      @lengths = []
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out, :assembled)
     end
 
     # Return a lambda for the AssembleSeqIdba command.
@@ -136,7 +136,10 @@ module BioPieces
           status_term(lengths)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out,
+                              :assembled)
+        calc_n50(status)
       end
     end
 
@@ -216,20 +219,6 @@ module BioPieces
           @lengths << entry.length
         end
       end
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
-      status[:assembled]     = @assembled
-      calc_n50(status)
     end
 
     # Calculate the n50 and add to the status.

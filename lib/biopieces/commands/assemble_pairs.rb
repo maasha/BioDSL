@@ -84,8 +84,10 @@ module BioPieces
   # rubocop:disable ClassLength
   class AssemblePairs
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -153,16 +155,9 @@ module BioPieces
     # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
       @options       = options
-      @overlap_sum   = 0
-      @hamming_sum   = 0
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @assembled     = 0
-      @unassembled   = 0
+      status_init(:overlap_sum, :hamming_sum, :records_in, :records_out,
+                  :sequences_in, :sequences_out, :residues_in, :residues_out,
+                  :assembled, :unassembled)
     end
 
     # Return a lambda for the read_fasta command.
@@ -181,7 +176,10 @@ module BioPieces
           end
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out,
+                              :assembled)
+        calc_status(status)
       end
     end
 
@@ -341,20 +339,6 @@ module BioPieces
       record[:OVERLAP_LEN]  = 0
       record[:HAMMING_DIST] = entry.length
       record
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
-      status[:assembled]     = @assembled
-      calc_status(status)
     end
 
     # Calculate additional status values.

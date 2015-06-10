@@ -63,10 +63,12 @@ module BioPieces
     require 'English'
     require 'set'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for the filter_rrna command.
     #
@@ -91,14 +93,11 @@ module BioPieces
     #
     # @return [FilterRrnas] Class instance of FilterRrnas.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @filter        = Set.new
+      @options = options
+      @filter  = Set.new
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return the command lambda for filter_rrnas.
@@ -114,7 +113,8 @@ module BioPieces
           process_output(output, tmp_file)
         end
 
-        status_assign(status)
+      status_assign(status, :records_in, :records_out, :sequences_in,
+                            :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -245,18 +245,6 @@ module BioPieces
         output << record
         @records_out += 1
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def status_assign(status)
-      status[:records_in]   = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

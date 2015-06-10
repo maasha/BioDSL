@@ -81,8 +81,11 @@ module BioPieces
   #    write_fasta(output: "test.fna.bz2", bzip2: true)
   class WriteFasta
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
+
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -116,15 +119,12 @@ module BioPieces
     #
     # @return [WriteFasta] Returns an instance of the class.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
+      @options = options
 
       @options[:output] ||= $stdout
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return a lambda for the write_fasta command.
@@ -138,7 +138,8 @@ module BioPieces
           write_file(input, output)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -213,18 +214,6 @@ module BioPieces
     def compress
       return :gzip  if @options[:gzip]
       return :bzip2 if @options[:bzip2]
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

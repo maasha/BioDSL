@@ -118,7 +118,7 @@ module BioPieces
 
         write_output if @options[:output]
 
-        assign_status(status, :records_in, :records_out)
+        status_assign(status, :records_in, :records_out)
       end
     end
 

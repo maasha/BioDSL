@@ -112,8 +112,10 @@ module BioPieces
   #    ~ 0 0 25  0
   class AnalyzeResidueDistribution
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -136,15 +138,11 @@ module BioPieces
     # @return [AnalyzeResidueDistribution] Returns an instance of the class.
     def initialize(options)
       @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
       @counts        = Hash.new { |h, k| h[k] = Hash.new(0) }
       @total         = Hash.new(0)
       @residues      = Set.new
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return a lambda for the read_fasta command.
@@ -167,7 +165,8 @@ module BioPieces
 
         calc_dist(output)
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -228,18 +227,6 @@ module BioPieces
       @counts.each do |pos, dist|
         record["V#{pos + 1}".to_sym] = dist[res]
       end
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

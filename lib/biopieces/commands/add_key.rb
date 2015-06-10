@@ -55,9 +55,11 @@ module BioPieces
   # Finally, to add a forth running number with a prefix do:
   #
   #    add_key(key: :ID, prefix: "ID_")
-  module AddKey
+  class AddKey
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     extend OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -72,7 +74,13 @@ module BioPieces
       options_required(options, :key)
       options_required_unique(options, :value, :prefix)
 
-      add_key(options)
+      new(options).lmb
+    end
+
+    def initialize(options)
+      @options = options
+
+      status_init(:records_in, :records_out)
     end
 
     # Add a key or replace a key for all records with a specified value or a
@@ -84,25 +92,21 @@ module BioPieces
     # @option options [String] :prefix Prefix to use with :key.
     #
     # @return [Proc] Returns the command lambda.
-    def self.add_key(options)
-      records_in  = 0
-      records_out = 0
-
+    def lmb
       lambda do |input, output, status|
         input.each_with_index do |record, i|
-          records_in += 1
+          @records_in += 1
 
-          value = options[:value] ? options[:value] : "#{options[:prefix]}#{i}"
+          value = @options[:value] ? @options[:value] : "#{@options[:prefix]}#{i}"
 
-          record[options[:key].to_sym] = value
+          record[@options[:key].to_sym] = value
 
           output << record
 
-          records_out += 1
+          @records_out += 1
         end
 
-        status[:records_in]  = records_in
-        status[:records_out] = records_out
+        status_assign(status, :records_in, :records_out)
       end
     end
   end

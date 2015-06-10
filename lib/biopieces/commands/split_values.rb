@@ -72,9 +72,11 @@ module BioPieces
   #    {:ID=>"FOO_10_20", :SEQ=>"gataag"}
   class SplitValues
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for split_values.
     #
@@ -106,8 +108,8 @@ module BioPieces
       @keys        = options[:keys]
       @key         = options[:key].to_sym
       @delimiter   = options[:delimiter] || '_'
-      @records_in  = 0
-      @records_out = 0
+
+      status_init(:records_in, :records_out)
     end
 
     # Return command lambda for split_values.
@@ -133,7 +135,7 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -171,14 +173,6 @@ module BioPieces
           record["#{@key}_#{i}".to_sym] = val
         end
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

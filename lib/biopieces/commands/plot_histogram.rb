@@ -106,10 +106,12 @@ module BioPieces
     require 'gnuplotter'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for plot_histogram.
     #
@@ -169,12 +171,12 @@ module BioPieces
     # @return [PlotHistogram] class instance.
     def initialize(options)
       @options     = options
-      @records_in  = 0
-      @records_out = 0
       @key         = options[:key]
       @value       = options[:value]
       @count_hash  = Hash.new(0)
       @gp          = nil
+
+      status_init(:records_in, :records_out)
     end
 
     # Return the command lambda for plot_histogram
@@ -185,7 +187,7 @@ module BioPieces
         process_input(input, output)
         plot_create
         plot_output
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -317,14 +319,6 @@ module BioPieces
       else
         @gp.plot
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

@@ -66,9 +66,11 @@ module BioPieces
   #    {:V0=>"Mouse", :V1=>"M1", :V0_COUNT=>1, :V1_COUNT=>1}
   class CountValues
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for CountValues.
     #
@@ -91,10 +93,9 @@ module BioPieces
     # @return [CountValues] Instance of class.
     def initialize(options)
       @options     = options
-      @records_in  = 0
-      @records_out = 0
       @keys       = @options[:keys].map(&:to_sym)
       @count_hash = Hash.new { |h, k| h[k] = Hash.new(0) }
+      status_init(:records_in, :records_out)
     end
 
     # Return the command lambda for the count_values command.
@@ -107,7 +108,7 @@ module BioPieces
           process_output(output, tmp_file)
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -153,14 +154,6 @@ module BioPieces
           end
         end
       end
-    end
-
-    # Assign status values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

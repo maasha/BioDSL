@@ -54,7 +54,9 @@ module BioPieces
   #    dump(last: 10)
   class Dump
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     extend OptionsHelper
+    include StatusHelper
 
     # Check the options and return a lambda for the command.
     #
@@ -81,8 +83,7 @@ module BioPieces
     # @return [Dump] Returns an instance of the Dump class.
     def initialize(options)
       @options     = options
-      @records_in  = 0
-      @records_out = 0
+      status_init(:records_in, :records_out)
     end
 
     # Return a lambda for the dump command.
@@ -98,8 +99,7 @@ module BioPieces
           dump_all(input, output)
         end
 
-        status[:records_in]  = @records_in
-        status[:records_out] = @records_out
+        status_assign(status, :records_in, :records_out)
       end
     end
 

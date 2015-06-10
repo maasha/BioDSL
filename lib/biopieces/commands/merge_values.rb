@@ -59,9 +59,11 @@ module BioPieces
   #    {:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}
   class MergeValues
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for merge_values.
     #
@@ -87,9 +89,10 @@ module BioPieces
     #
     # @return [MergeValues] Class instance of MergeValues.
     def initialize(options)
-      @records_in = 0
       @keys       = options[:keys]
       @delimiter  = options[:delimiter]
+
+      status_init(:records_in, :records_out)
     end
 
     # Return command lambda for merge_values.
@@ -106,20 +109,11 @@ module BioPieces
           end
 
           output << record
+          @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
-    end
-
-    private
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_in
     end
   end
 end

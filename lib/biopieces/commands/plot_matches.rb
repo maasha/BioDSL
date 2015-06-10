@@ -110,10 +110,12 @@ module BioPieces
     require 'gnuplotter'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for PlotMatches.
     #
@@ -164,13 +166,12 @@ module BioPieces
     #
     # @return [PlotMatches] Class instance.
     def initialize(options)
-      @options     = options
-      @records_in  = 0
-      @records_out = 0
-      @matches_in  = 0
-      @gp          = nil
-      @style1      = {using: '1:2:3:4', with: 'vectors nohead ls 1'}
-      @style2      = {using: '1:2:3:4', with: 'vectors nohead ls 2'}
+      @options  = options
+      @gp       = nil
+      @style1   = {using: '1:2:3:4', with: 'vectors nohead ls 1'}
+      @style2   = {using: '1:2:3:4', with: 'vectors nohead ls 2'}
+
+      status_init(:records_in, :records_out, :matches_in)
     end
 
     # Return lambda for command plot_matches.
@@ -194,7 +195,8 @@ module BioPieces
         end
 
         plot_output
-        assign_status(status)
+
+        status_assign(status, :records_in, :records_out, :matches_in)
       end
     end
 
@@ -291,15 +293,6 @@ module BioPieces
       return unless output
       output << record
       @records_out += 1
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
-      status[:matches_in]  = @matches_in
     end
   end
 end

@@ -73,10 +73,12 @@ module BioPieces
     require 'set'
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/aux_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend AuxHelper
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for plot_residue_distribution.
     #
@@ -123,18 +125,15 @@ module BioPieces
     #
     # @return [PlotResidueDistribution] Class instance.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @counts        = Hash.new { |h, k| h[k] = Hash.new(0) }
-      @total         = Hash.new(0)
-      @residues      = Set.new
-      @gp            = nil
-      @offset        = Set.new # Hackery thing to offset datasets 1 postion.
+      @options  = options
+      @counts   = Hash.new { |h, k| h[k] = Hash.new(0) }
+      @total    = Hash.new(0)
+      @residues = Set.new
+      @gp       = nil
+      @offset   = Set.new # Hackery thing to offset datasets 1 postion.
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return command lambda for PlotResidueDistribution.
@@ -155,7 +154,8 @@ module BioPieces
         plot_create
         plot_output
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -279,18 +279,6 @@ module BioPieces
       else
         @gp.plot
       end
-    end
-
-    # Assign values to status hash
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end

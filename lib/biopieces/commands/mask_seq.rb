@@ -83,9 +83,11 @@ module BioPieces
   #     :SCORES=>"!\"\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI"}
   class MaskSeq
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for mask_seq.
     #
@@ -114,15 +116,11 @@ module BioPieces
     #
     # @return [MaskSeq] Instance of MaskSeq.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @masked        = 0
-      @mask          = options[:mask].to_sym
+      @options = options
+      @mask    = options[:mask].to_sym
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out, :masked)
     end
 
     # Return command lambda for mask_seq.
@@ -140,7 +138,10 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out,
+                              :masked)
+        status[:masked_percent] = (100 * @masked.to_f / @residues_in).round(2)
       end
     end
 
@@ -177,20 +178,6 @@ module BioPieces
     def mask_seq_hard(entry)
       entry.mask_seq_hard!(@options[:quality_min])
       @masked += entry.seq.count('N')
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]     = @records_in
-      status[:records_out]    = @records_out
-      status[:sequences_in]   = @sequences_in
-      status[:sequences_out]  = @sequences_out
-      status[:residues_in]    = @residues_in
-      status[:residues_out]   = @residues_out
-      status[:masked]         = @masked
-      status[:masked_percent] = (100 * @masked.to_f / @residues_in).round(2)
     end
   end
 end

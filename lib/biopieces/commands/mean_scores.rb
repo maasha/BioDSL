@@ -88,9 +88,11 @@ module BioPieces
   # 11+11+11+11+11 / 5 = 11.0
   class MeanScores
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     def self.lmb(options)
       options_allowed(options, :local, :window_size)
@@ -104,17 +106,14 @@ module BioPieces
     end
 
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @min           = Float::INFINITY
-      @max           = 0
-      @sum           = 0
-      @count         = 0
+      @options = options
+      @min     = Float::INFINITY
+      @max     = 0
+      @sum     = 0
+      @count   = 0
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out, :min_mean, :max_mean)
     end
 
     def lmb
@@ -129,7 +128,11 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in, 
+                              :sequences_out, :residues_in, :residues_out,
+                              :min_mean, :max_mean)
+
+        status[:mean_mean]     = (@sum.to_f / @count).round(2)
       end
     end
 
@@ -150,21 +153,6 @@ module BioPieces
       @min    = mean if mean < @min
       @max    = mean if mean > @max
       @count += 1
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
-      status[:min_mean]      = @min
-      status[:max_mean]      = @max
-      status[:mean_mean]     = (@sum.to_f / @count).round(2)
     end
   end
 end

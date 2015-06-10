@@ -107,9 +107,11 @@ module BioPieces
   # rubocop:disable ClassLength
   class ClipPrimer
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda.
     #
@@ -164,19 +166,14 @@ module BioPieces
     #
     # @return [ClipPrimer] Returns ClipPrimer instance.
     def initialize(options)
-      @options        = options
-      @records_in     = 0
-      @records_out    = 0
-      @sequences_in   = 0
-      @sequences_out  = 0
-      @pattern_hits   = 0
-      @pattern_misses = 0
-      @residues_in    = 0
-      @residues_out   = 0
-      @primer         = primer
-      @mis            = calc_mis
-      @ins            = calc_ins
-      @del            = calc_del
+      @options = options
+      @primer  = primer
+      @mis     = calc_mis
+      @ins     = calc_ins
+      @del     = calc_del
+
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out, :pattern_hits, :pattern_misses)
     end
 
     # Lambda for ClipPrimer command.
@@ -193,7 +190,9 @@ module BioPieces
           @records_out += 1
         end
 
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out,
+                              :pattern_hits, :pattern_misses)
       end
     end
 
@@ -341,20 +340,6 @@ module BioPieces
       else
         entry.length
       end
-    end
-
-    # Assign status values to the status hash.
-    #
-    # @param status [Hash] Status hash
-    def assign_status(status)
-      status[:records_in]     = @records_in
-      status[:records_out]    = @records_out
-      status[:sequences_in]   = @sequences_in
-      status[:sequences_out]  = @sequences_out
-      status[:pattern_hits]   = @pattern_hits
-      status[:pattern_misses] = @pattern_misses
-      status[:residues_in]    = @residues_in
-      status[:residues_out]   = @residues_out
     end
   end
 end

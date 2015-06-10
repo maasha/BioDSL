@@ -93,9 +93,11 @@ module BioPieces
   class Sort
     require 'pqueue'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda.
     #
@@ -126,8 +128,6 @@ module BioPieces
     # @return [Sort] Class instance.
     def initialize(options)
       @options     = options
-      @records_in  = 0
-      @records_out = 0
       @block_size  = options[:block_size] || BioPieces::Config::SORT_BLOCK_SIZE
       @key         = options[:key].to_sym
       @files       = []
@@ -135,6 +135,8 @@ module BioPieces
       @size        = 0
       @pqueue       = pqueue_init
       @fds         = nil
+
+      status_init(:records_in, :records_out)
     end
 
     # Return command lambda for Sort.
@@ -153,7 +155,7 @@ module BioPieces
         open_block_files
         fill_pqueue
         output_pqueue(output)
-        assign_status(status)
+        status_assign(status, :records_in, :records_out)
       end
     end
 
@@ -228,14 +230,6 @@ module BioPieces
           @pqueue << [serializer.next_entry, i] unless fd.eof?
         end
       end
-    end
-
-    # Assign values to status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]  = @records_in
-      status[:records_out] = @records_out
     end
   end
 end

@@ -119,9 +119,11 @@ module BioPieces
   #    run
   class IndexTaxonomy
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
 
     extend OptionsHelper
     include OptionsHelper
+    include StatusHelper
 
     # Check options and return command lambda for index_taxonomy.
     #
@@ -158,18 +160,14 @@ module BioPieces
     #
     # @return [IndexTaxonomy] Instance of class.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @index         = BioPieces::Taxonomy::Index.new(options)
+      @options = options
+      @index   = BioPieces::Taxonomy::Index.new(options)
 
       set_defaults
       create_output_dir
       check_output_files
+      status_init(:records_in, :records_out, :sequences_in, :sequences_out,
+                  :residues_in, :residues_out)
     end
 
     # Return command lambda for index_taxonomy.
@@ -187,7 +185,8 @@ module BioPieces
         end
 
         @index.save
-        assign_status(status)
+        status_assign(status, :records_in, :records_out, :sequences_in,
+                              :sequences_out, :residues_in, :residues_out)
       end
     end
 
@@ -237,18 +236,6 @@ module BioPieces
       _, seq_name = record[:SEQ_NAME].split(' ', 2)
 
       @index.add(BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
-    end
-
-    # Assign all stats to the status hash.
-    #
-    # @param status [Hash] Status hash.
-    def assign_status(status)
-      status[:records_in]    = @records_in
-      status[:records_out]   = @records_out
-      status[:sequences_in]  = @sequences_in
-      status[:sequences_out] = @sequences_out
-      status[:residues_in]   = @residues_in
-      status[:residues_out]  = @residues_out
     end
   end
 end
