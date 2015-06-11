@@ -165,42 +165,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for slice_align.
-    #
-    # @param options  [Hash]          Options hash.
-    # @option options [Range,Integer] :slice
-    # @option options [String]        :forward
-    # @option options [String]        :forward_rc
-    # @option options [String]        :reverse
-    # @option options [String]        :reverse_rc
-    # @option options [Integer]       :max_mismatches
-    # @option options [Integer]       :max_insertions
-    # @option options [Integer]       :max_deletions
-    # @option options [String]        :template_file
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :slice, :forward, :forward_rc, :reverse,
-                      :reverse_rc, :max_mismatches, :max_insertions,
-                      :max_deletions, :template_file)
-      options_conflict(options, slice: :forward)
-      options_files_exist(options, :template_file)
-      options_assert(options, ':max_mismatches >= 0')
-      options_assert(options, ':max_insertions >= 0')
-      options_assert(options, ':max_deletions >= 0')
-      options_assert(options, ':max_mismatches <= 5')
-      options_assert(options, ':max_insertions <= 5')
-      options_assert(options, ':max_deletions <= 5')
-
-      new(options).lmb
-    end
 
     # Constructor for SliceAlign.
     #
@@ -224,15 +193,9 @@ module BioPieces
       @template = nil
       @slice    = options[:slice]
 
+      check_options
       status_init(STATS)
       defaults
-    end
-
-    # Setup default primer matching attributes.
-    def defaults
-      @max_mis = @options[:max_mismatches] || 2
-      @max_ins = @options[:max_insertions] || 1
-      @max_del = @options[:max_deletions]  || 1
     end
 
     # Return the comman lamba for slice_align.
@@ -255,6 +218,28 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :slice, :forward, :forward_rc, :reverse,
+                      :reverse_rc, :max_mismatches, :max_insertions,
+                      :max_deletions, :template_file)
+      options_conflict(@options, slice: :forward)
+      options_files_exist(@options, :template_file)
+      options_assert(@options, ':max_mismatches >= 0')
+      options_assert(@options, ':max_insertions >= 0')
+      options_assert(@options, ':max_deletions >= 0')
+      options_assert(@options, ':max_mismatches <= 5')
+      options_assert(@options, ':max_insertions <= 5')
+      options_assert(@options, ':max_deletions <= 5')
+    end
+
+    # Setup default primer matching attributes.
+    def defaults
+      @max_mis = @options[:max_mismatches] || 2
+      @max_ins = @options[:max_insertions] || 1
+      @max_del = @options[:max_deletions]  || 1
+    end
 
     # Parse FASTA file with one gapped template sequence if specified.
     def parse_template_file

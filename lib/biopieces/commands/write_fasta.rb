@@ -83,32 +83,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [Bool] :force Flag allowing overwriting files.
-    # @option options [String] :output Output file path.
-    # @option options [Integer] :wrap Wrap sequences at this length (default no
-    #   wrap)
-    # @option options [Bool] :gzip Output will be gzip'ed.
-    # @option options [Bool] :bzip2 Output will be bzip2'ed.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :force, :output, :wrap, :gzip, :bzip2)
-      options_unique(options, :gzip, :bzip2)
-      options_tie(options, gzip: :output, bzip2: :output)
-      options_files_exist_force(options, :output)
-
-      new(options).lmb
-    end
 
     # Constructor for the WriteFasta class.
     #
@@ -123,9 +102,8 @@ module BioPieces
     # @return [WriteFasta] Returns an instance of the class.
     def initialize(options)
       @options = options
-
+      check_options
       @options[:output] ||= $stdout
-
       status_init(STATS)
     end
 
@@ -145,6 +123,14 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :force, :output, :wrap, :gzip, :bzip2)
+      options_unique(@options, :gzip, :bzip2)
+      options_tie(@options, gzip: :output, bzip2: :output)
+      options_files_exist_force(@options, :output)
+    end
 
     # Write all sequence entries to stdout.
     #

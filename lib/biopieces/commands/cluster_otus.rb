@@ -64,31 +64,12 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
-    extend AuxHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Return command lambda for cluster_otus after
-    # checking options.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Float] :identity Cluster identity.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :identity)
-      options_assert(options, ':identity >= 0.0')
-      options_assert(options, ':identity <= 1.0')
-      aux_exist('usearch')
-
-      options[:identity] ||= 0.97
-
-      new(options).lmb
-    end
 
     # Constructor for ClusterOtu.
     #
@@ -99,6 +80,9 @@ module BioPieces
     def initialize(options)
       @options = options
 
+      aux_exist('usearch')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -119,6 +103,18 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :identity)
+      options_assert(@options, ':identity >= 0.0')
+      options_assert(@options, ':identity <= 1.0')
+    end
+
+    # Set default options.
+    def defaults
+      @options[:identity] ||= 0.97
+    end
 
     # Process input records and save sequence data to a temporary FASTA file for
     # use with +usearch cluster_otus+.

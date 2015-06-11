@@ -85,53 +85,12 @@ module BioPieces
   class AssemblePairs
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
-    extend OptionsHelper
+
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(overlap_sum hamming_sum records_in records_out sequences_in
                sequences_out residues_in residues_out assembled unassembled)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    #
-    # @option options [Integer] :mismatch_percent
-    #   Maximum allowed overlap mismatches in percent.
-    #
-    # @option options [Integer] :overlap_min
-    #   Minimum length of overlap.
-    #
-    # @option options [Integer] :overlap_max
-    #   Maximum length of overlap.
-    #
-    # @option options [Boolean] :reverse_complement
-    #   Reverse-complment read2.
-    #
-    # @option options [Boolean] :merge_unassembled
-    #   Merge read pairs that couldn't be assembled.
-    #
-    # @option options [Boolean] :allow_unassembled
-    #   Output reads that couldn't be assembled.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :mismatch_percent, :overlap_min, :overlap_max,
-                      :reverse_complement, :merge_unassembled,
-                      :allow_unassembled)
-      options_allowed_values(options, reverse_complement: [true, false, nil])
-      options_allowed_values(options, merge_unassembled: [true, false, nil])
-      options_allowed_values(options, allow_unassembled: [true, false, nil])
-      options_conflict(options, allow_unassembled: :merge_unassembled)
-      options_assert(options, ':mismatch_percent >= 0')
-      options_assert(options, ':mismatch_percent <= 100')
-      options_assert(options, ':overlap_min > 0')
-
-      options[:mismatch_percent] ||= 20
-      options[:overlap_min]      ||= 1
-
-      new(options).lmb
-    end
 
     # Constructor for the AssemblePairs class.
     #
@@ -157,8 +116,10 @@ module BioPieces
     #
     # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
-      @options       = options
+      @options = options
 
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -184,6 +145,26 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :mismatch_percent, :overlap_min, :overlap_max,
+                      :reverse_complement, :merge_unassembled,
+                      :allow_unassembled)
+      options_allowed_values(@options, reverse_complement: [true, false, nil])
+      options_allowed_values(@options, merge_unassembled: [true, false, nil])
+      options_allowed_values(@options, allow_unassembled: [true, false, nil])
+      options_conflict(@options, allow_unassembled: :merge_unassembled)
+      options_assert(@options, ':mismatch_percent >= 0')
+      options_assert(@options, ':mismatch_percent <= 100')
+      options_assert(@options, ':overlap_min > 0')
+    end
+
+    # Set default options.
+    def defaults
+      @options[:mismatch_percent] ||= 20
+      @options[:overlap_min]      ||= 1
+    end
 
     # Output a record to the stream if a stram is provided.
     #

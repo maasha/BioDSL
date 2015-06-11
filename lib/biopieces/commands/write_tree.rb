@@ -60,31 +60,35 @@ module BioPieces
     require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in residues_in)
 
-    def self.lmb(options)
-      options_allowed(options, :force, :output, :type)
-      options_allowed_values(options, type: [:dna, :rna, :protein])
-      options_files_exist_force(options, :output)
-      aux_exist('FastTree')
-
-      new(options).lmb
-    end
-
+    # Constructor for WriteTree.
+    #
+    # @param options  [Hash]    Options hash.
+    # @option options [String]  :output
+    # @option options [Boolean] :force
+    # @option options [Symbol]  :type
+    #
+    # @return [WriteTree] Class instance.
     def initialize(options)
       @options = options
-      @cmd     = compile_command
 
+      aux_exist('FastTree')
+      check_options
       status_init(STATS)
+
+      @cmd = compile_command
     end
 
     # rubocop: disable Metrics/AbcSize
 
+    # Return command lambda for write_tree.
+    #
+    # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
         Open3.popen3(@cmd) do |stdin, stdout, stderr, wait_thr|
@@ -114,6 +118,13 @@ module BioPieces
     # rubocop: enable Metrics/AbcSize
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :force, :output, :type)
+      options_allowed_values(@options, type: [:dna, :rna, :protein])
+      options_files_exist_force(@options, :output)
+    end
 
     # Compile command for running FastTree.
     #

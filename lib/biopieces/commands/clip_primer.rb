@@ -109,54 +109,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out
                residues_in residues_out pattern_hits pattern_misses)
-
-    # Check options and return command lambda.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String] :primer Primer used for matching.
-    # @option options [Symbol] :direction Direction for clipping.
-    # @option options [Integer] :search_distance Search distance.
-    # @option options [Boolean] :reverse_complment
-    # @option options [Integer] :mismatch_percent
-    # @option options [Integer] :insertion_percent
-    # @option options [Integer] :deletion_percent
-    #   Flag indicating that primer should be reverse complemented.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :primer, :direction, :search_distance,
-                      :reverse_complement, :mismatch_percent,
-                      :insertion_percent, :deletion_percent)
-      options_required(options, :primer, :direction)
-      options_allowed_values(options, direction: [:forward, :reverse])
-      options_allowed_values(options, reverse_complement: [true, false])
-      options_assert(options, ':search_distance   >  0')
-      options_assert(options, ':mismatch_percent  >= 0')
-      options_assert(options, ':insertion_percent >= 0')
-      options_assert(options, ':deletion_percent  >= 0')
-
-      defaults(options)
-
-      new(options).lmb
-    end
-
-    # Set default option values.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Integer] :mismatch_percent
-    # @option options [Integer] :insertion_percent
-    # @option options [Integer] :deletion_percent
-    def self.defaults(options)
-      options[:mismatch_percent]  ||= 0
-      options[:insertion_percent] ||= 0
-      options[:deletion_percent]  ||= 0
-    end
 
     # Constructor for ClipPrimer.
     #
@@ -170,12 +127,14 @@ module BioPieces
     # @return [ClipPrimer] Returns ClipPrimer instance.
     def initialize(options)
       @options = options
+      defaults
+      check_options
+      status_init(STATS)
+
       @primer  = primer
       @mis     = calc_mis
       @ins     = calc_ins
       @del     = calc_del
-
-      status_init(STATS)
     end
 
     # Lambda for ClipPrimer command.
@@ -197,6 +156,27 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :primer, :direction, :search_distance,
+                      :reverse_complement, :mismatch_percent,
+                      :insertion_percent, :deletion_percent)
+      options_required(@options, :primer, :direction)
+      options_allowed_values(@options, direction: [:forward, :reverse])
+      options_allowed_values(@options, reverse_complement: [true, false])
+      options_assert(@options, ':search_distance   >  0')
+      options_assert(@options, ':mismatch_percent  >= 0')
+      options_assert(@options, ':insertion_percent >= 0')
+      options_assert(@options, ':deletion_percent  >= 0')
+    end
+
+    # Set default option values.
+    def defaults
+      @options[:mismatch_percent]  ||= 0
+      @options[:insertion_percent] ||= 0
+      @options[:deletion_percent]  ||= 0
+    end
 
     # Calculate the mismatch percentage.
     #

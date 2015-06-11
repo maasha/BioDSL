@@ -61,7 +61,7 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
+    include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
@@ -70,19 +70,11 @@ module BioPieces
     # Constructor for ComplementSeq.
     #
     # @param options [Hash] Options hash.
-    def self.lmb(options)
-      options_allowed(options, nil)
-
-      new(options).lmb
-    end
-
-    # Constructor for ComplementSeq.
-    #
-    # @param options [Hash] Options hash.
     def initialize(options)
       @options = options
       @type    = nil
 
+      check_options
       status_init(STATS)
     end
 
@@ -106,6 +98,11 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, nil)
+    end
 
     # Complements sequence in record.
     #

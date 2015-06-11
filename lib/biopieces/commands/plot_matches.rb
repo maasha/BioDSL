@@ -112,47 +112,11 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out matches_in)
-
-    # Check options and return command lambda for PlotMatches.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Symbol]  :direction
-    # @option options [String]  :output
-    # @option options [Boolean] :force
-    # @option options [Symbol]  :terminal
-    # @option options [String]  :title
-    # @option options [String]  :xlabel
-    # @option options [String]  :ylabel
-    # @option options [Boolean] :test
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :direction, :output, :force, :terminal, :title,
-                      :xlabel, :ylabel, :test)
-      options_allowed_values(options, direction: [:forward, :reverse, :both])
-      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
-      options_allowed_values(options, test: [nil, true, false])
-      options_files_exist_force(options, :output)
-      aux_exist('gnuplot')
-
-      defaults(options)
-      new(options).lmb
-    end
-
-    def self.defaults(options)
-      options[:direction] ||= :both
-      options[:terminal]  ||= :dumb
-      options[:title]     ||= 'Matches'
-      options[:xlabel]    ||= 'x'
-      options[:ylabel]    ||= 'y'
-    end
 
     # Constructor for PlotMatches.
     #
@@ -173,6 +137,9 @@ module BioPieces
       @style1   = {using: '1:2:3:4', with: 'vectors nohead ls 1'}
       @style2   = {using: '1:2:3:4', with: 'vectors nohead ls 2'}
 
+      aux_exist('gnuplot')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -203,6 +170,26 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :direction, :output, :force, :terminal, :title,
+                      :xlabel, :ylabel, :test)
+      options_allowed_values(@options, direction: [:forward, :reverse, :both])
+      options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
+                                                 :aqua, :png, :pdf])
+      options_allowed_values(@options, test: [nil, true, false])
+      options_files_exist_force(@options, :output)
+    end
+
+    # Set default options.
+    def defaults
+      @options[:direction] ||= :both
+      @options[:terminal]  ||= :dumb
+      @options[:title]     ||= 'Matches'
+      @options[:xlabel]    ||= 'x'
+      @options[:ylabel]    ||= 'y'
+    end
 
     # Set plot default attributes.
     def plot_defaults

@@ -178,39 +178,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for ReadTable.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String]  :input
-    # @option options [Integer] :first
-    # @option options [Integer] :last
-    # @option options [Array]   :keys
-    # @option options [Integer] :skip
-    # @option options [String]  :delimiter
-    # @option options [Boolean] :select
-    # @option options [Boolean] :reject
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :input, :first, :last, :keys, :skip, :delimiter,
-                      :select, :reject)
-      options_required(options, :input)
-      options_files_exist(options, :input)
-      options_unique(options, :first, :last)
-      options_unique(options, :select, :reject)
-      options_list_unique(options, :keys, :select, :reject)
-      options_assert(options, ':first >= 0')
-      options_assert(options, ':last >= 0')
-      options_assert(options, ':skip >= 0')
-
-      new(options).lmb
-    end
 
     # Constructor for ReadTable.
     #
@@ -231,6 +202,7 @@ module BioPieces
       @skip    = options[:skip] || 0
       @buffer  = []
 
+      check_options
       status_init(STATS)
     end
 
@@ -252,6 +224,20 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :input, :first, :last, :keys, :skip, :delimiter,
+                      :select, :reject)
+      options_required(@options, :input)
+      options_files_exist(@options, :input)
+      options_unique(@options, :first, :last)
+      options_unique(@options, :select, :reject)
+      options_list_unique(@options, :keys, :select, :reject)
+      options_assert(@options, ':first >= 0')
+      options_assert(@options, ':last >= 0')
+      options_assert(@options, ':skip >= 0')
+    end
 
     # Return a hash with options for CVS#each_hash.
     #

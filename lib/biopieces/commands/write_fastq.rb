@@ -80,33 +80,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for write_fastq.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String,Symbol] :encoding
-    # @option options [Boolean] :force
-    # @option options [String] :output
-    # @option options [Boolean] :gzip
-    # @option options [Boolean] :bzip2
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :encoding, :force, :output, :gzip, :bzip2)
-      options_allowed_values(options, encoding: [:base_33, :base_64, 'base_33',
-                                                 'base_64'])
-      options_unique(options, :gzip, :bzip2)
-      options_tie(options, gzip: :output, bzip2: :output)
-      options_files_exist_force(options, :output)
-
-      new(options).lmb
-    end
 
     # Constructor for WriteFastq.
     #
@@ -120,6 +98,7 @@ module BioPieces
     # @return [WriteFastq] Class instance.
     def initialize(options)
       @options            = options
+      check_options
       @options[:output] ||= $stdout
       @compress           = choose_compression
       @encoding           = choose_encoding
@@ -145,6 +124,16 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :encoding, :force, :output, :gzip, :bzip2)
+      options_allowed_values(@options, encoding: [:base_33, :base_64, 'base_33',
+                                                 'base_64'])
+      options_unique(@options, :gzip, :bzip2)
+      options_tie(@options, gzip: :output, bzip2: :output)
+      options_files_exist_force(@options, :output)
+    end
 
     # Process all records in the input stream and output FASTQ data to the given
     # ios, and finally emit all records to the output stream if specified.

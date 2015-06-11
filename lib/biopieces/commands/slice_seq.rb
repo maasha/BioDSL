@@ -92,25 +92,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return lambda for command.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Range,Integer] :slice
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :slice)
-      options_required(options, :slice)
-
-      new(options).lmb
-    end
 
     # Constructor for SliceSeq.
     #
@@ -121,6 +107,7 @@ module BioPieces
     def initialize(options)
       @options = options
 
+      check_options
       status_init(STATS)
     end
 
@@ -144,6 +131,12 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :slice)
+      options_required(@options, :slice)
+    end
 
     # Slice sequence in given record.
     #

@@ -121,36 +121,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for index_taxonomy.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String] :output_dir Path to output directory.
-    # @option options [String]  :prefix Database file name prefix.
-    # @option options [Integer] :kmer_size Kmer size to use for indexing.
-    # @option options [Integer] :step_size Step size to use for indexing.
-    # @option options [Boolean] :force Flag for force-overwriting output files.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :output_dir, :kmer_size, :step_size, :prefix,
-                      :force)
-      options_required(options, :output_dir)
-      options_allowed_values(options, force: [nil, true, false])
-      options_files_exist_force(options, :report)
-      options_assert(options, ':kmer_size > 0')
-      options_assert(options, ':kmer_size <= 12')
-      options_assert(options, ':step_size > 0')
-      options_assert(options, ':step_size <= 12')
-
-      new(options).lmb
-    end
 
     # Constructor for IndexTaxonomy.
     #
@@ -164,13 +139,14 @@ module BioPieces
     # @return [IndexTaxonomy] Instance of class.
     def initialize(options)
       @options = options
-      @index   = BioPieces::Taxonomy::Index.new(options)
 
-      set_defaults
+      defaults
+      check_options
       create_output_dir
       check_output_files
-
       status_init(STATS)
+
+      @index   = BioPieces::Taxonomy::Index.new(options)
     end
 
     # Return command lambda for index_taxonomy.
@@ -195,8 +171,21 @@ module BioPieces
 
     private
 
+    # Check options.
+    def check_options
+      options_allowed(@options, :output_dir, :kmer_size, :step_size, :prefix,
+                      :force)
+      options_required(@options, :output_dir)
+      options_allowed_values(@options, force: [nil, true, false])
+      options_files_exist_force(@options, :report)
+      options_assert(@options, ':kmer_size > 0')
+      options_assert(@options, ':kmer_size <= 12')
+      options_assert(@options, ':step_size > 0')
+      options_assert(@options, ':step_size <= 12')
+    end
+
     # Set the default options hash values.
-    def set_defaults
+    def defaults
       @options[:prefix]    ||= 'taxonomy'
       @options[:kmer_size] ||= 8
       @options[:step_size] ||= 1

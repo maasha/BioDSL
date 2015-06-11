@@ -46,28 +46,18 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out hits_in hits_out)
-
-    # Check options and return command lambda for CollectOtus.
-    #
-    # @param options [Hash] Options hash.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, nil)
-
-      new(options).lmb
-    end
 
     # Constructor for CollectOtus.
     #
     # @param options [Hash] Options hash.
     def initialize(options)
       @options = options
+
+      check_options
 
       status_init(STATS)
     end
@@ -86,6 +76,11 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, nil)
+    end
 
     # Read input stream and for all hit records add these to the count hash.
     #

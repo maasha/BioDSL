@@ -74,42 +74,12 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out
                residues_in residues_out)
-
-    # Check options for command and return a lambda.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String] :database Path to database file.
-    # @option options [String] :taxonomy Path to taxonomy file.
-    # @option options [Integer] :confidence Confidence cutoff.
-    # @option options [Integer] :cpus Number of CPUs to use.
-    #
-    # @return [Proc] command lambda
-    def self.lmb(options)
-      options_allowed(options, :database, :taxonomy, :confidence, :cpus)
-      options_required(options, :database, :taxonomy)
-      options_files_exist(options, :database, :taxonomy)
-      options_assert(options, ':confidence > 0')
-      options_assert(options, ':confidence <= 100')
-      options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
-      aux_exist('mothur')
-
-      defaults(options)
-
-      new(options).lmb
-    end
-
-    def self.defaults(options)
-      options[:confidence] ||= 80
-      options[:cpus]       ||= 1
-    end
 
     # Constructor for ClassifySeqMothur.
     #
@@ -123,6 +93,9 @@ module BioPieces
     def initialize(options)
       @options = options
 
+      aux_exist('mothur')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -140,6 +113,27 @@ module BioPieces
 
         status_assign(status, STATS)
       end
+    end
+
+    private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :database, :taxonomy, :confidence, :cpus)
+      options_required(@options, :database, :taxonomy)
+      options_files_exist(@options, :database, :taxonomy)
+      options_assert(@options, ':confidence > 0')
+      options_assert(@options, ':confidence <= 100')
+      options_assert(@options, ':cpus >= 1')
+      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+
+      defaults
+    end
+
+    # Set default options.
+    def defaults
+      @options[:confidence] ||= 80
+      @options[:cpus]       ||= 1
     end
 
     # Process input data and save sequences to a temporary file for

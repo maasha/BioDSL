@@ -63,34 +63,12 @@ module BioPieces
     require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
 
-    extend OptionsHelper
     include OptionsHelper
-    extend AuxHelper
     include AuxHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [String] :template_file Path to template file.
-    # @option options [Integer] :cpus         Number of CPUs to use.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :template_file, :cpus)
-      options_required(options, :template_file)
-      options_files_exist(options, :template_file)
-      options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
-      aux_exist('mothur')
-
-      options[:cpus] ||= 1
-
-      new(options).lmb
-    end
 
     # Constructor for the AlignSeqMothur class.
     #
@@ -100,17 +78,15 @@ module BioPieces
     #
     # @return [AlignSeqMothur] Returns an instance of the class.
     def initialize(options)
-      @options       = options
-      @records_in    = 0
-      @records_out   = 0
-      @sequences_in  = 0
-      @sequences_out = 0
-      @residues_in   = 0
-      @residues_out  = 0
-      @tmp_dir       = File.join(Dir.tmpdir, "#{Time.now.to_i}#{$PID}")
-      @tmp_in        = File.join(@tmp_dir, 'input.fasta')
-      @tmp_out       = File.join(@tmp_dir, 'input.align')
+      @options = options
+      # FIXME: use BioPieces.TmpDir instead.
+      @tmp_dir = File.join(Dir.tmpdir, "#{Time.now.to_i}#{$PID}")
+      @tmp_in  = File.join(@tmp_dir, 'input.fasta')
+      @tmp_out = File.join(@tmp_dir, 'input.align')
 
+      aux_exist('mothur')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -128,13 +104,27 @@ module BioPieces
         ensure
           File.unlink('8mer') if File.exist? '8mer'
           FileUtils.rm_rf(@tmp_dir)
-
-          status_assign(status, STATS)
         end
+
+        status_assign(status, STATS)
       end
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :template_file, :cpus)
+      options_required(@options, :template_file)
+      options_files_exist(@options, :template_file)
+      options_assert(@options, ':cpus >= 1')
+      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+    end
+
+    # Set default options.
+    def defaults
+      @options[:cpus] ||= 1
+    end
 
     # Process all records in the input stream and write those with sequences to
     # file and all other records to the output stream.

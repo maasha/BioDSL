@@ -113,25 +113,12 @@ module BioPieces
   class AnalyzeResidueDistribution
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
-    extend OptionsHelper
+
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [Boolean] :percent Output distribution in percent.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :percent)
-      options_allowed_values(options, percent: [nil, true, false])
-
-      new(options).lmb
-    end
 
     # Constructor for the AnalyzeResidueDistribution class.
     #
@@ -140,12 +127,14 @@ module BioPieces
     #
     # @return [AnalyzeResidueDistribution] Returns an instance of the class.
     def initialize(options)
-      @options       = options
+      @options = options
+
+      check_options
+      status_init(STATS)
+
       @counts        = Hash.new { |h, k| h[k] = Hash.new(0) }
       @total         = Hash.new(0)
       @residues      = Set.new
-
-      status_init(STATS)
     end
 
     # Return a lambda for the read_fasta command.
@@ -173,6 +162,12 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :percent)
+      options_allowed_values(@options, percent: [nil, true, false])
+    end
 
     # Analyze the sequence distribution of a given sequence.
     #

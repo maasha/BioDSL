@@ -85,31 +85,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out masked)
-
-    # Check options and return command lambda for mask_seq.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Integer] Minimum quality score.
-    # @option options [Symbol,String] Mask scheme.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :quality_min, :mask)
-      options_allowed_values(options, mask: [:soft, :hard, 'soft', 'hard'])
-      options_assert(options, ':quality_min >= 0')
-      options_assert(options, ':quality_min <= 40')
-
-      options[:quality_min] ||= 20
-      options[:mask]        ||= :soft
-
-      new(options).lmb
-    end
 
     # Constructor for MaskSeq.
     #
@@ -120,9 +100,12 @@ module BioPieces
     # @return [MaskSeq] Instance of MaskSeq.
     def initialize(options)
       @options = options
-      @mask    = options[:mask].to_sym
 
+      check_options
+      defaults
       status_init(STATS)
+
+      @mask = options[:mask].to_sym
     end
 
     # Return command lambda for mask_seq.
@@ -147,6 +130,20 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :quality_min, :mask)
+      options_allowed_values(@options, mask: [:soft, :hard, 'soft', 'hard'])
+      options_assert(@options, ':quality_min >= 0')
+      options_assert(@options, ':quality_min <= 40')
+    end
+
+    # Set default options.
+    def defaults
+      @options[:quality_min] ||= 20
+      @options[:mask]        ||= :soft
+    end
 
     # Mask sequence in given record.
     #

@@ -78,26 +78,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for unique_values.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String,Symbol] :key
-    # @option options [Boolean] :invert
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :key, :invert)
-      options_required(options, :key)
-      options_allowed_values(options, invert: [true, false, nil])
-
-      new(options).lmb
-    end
 
     # Constructor for UniqueValues.
     #
@@ -112,6 +96,7 @@ module BioPieces
       @key         = options[:key].to_sym
       @invert      = options[:invert]
 
+      check_options
       status_init(STATS)
     end
 
@@ -131,6 +116,15 @@ module BioPieces
 
         status_assign(status, STATS)
       end
+    end
+
+    private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :key, :invert)
+      options_required(@options, :key)
+      options_allowed_values(@options, invert: [true, false, nil])
     end
 
     # rubocop: disable Metrics/CyclomaticComplexity

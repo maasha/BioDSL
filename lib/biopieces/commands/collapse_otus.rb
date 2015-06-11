@@ -97,26 +97,18 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out otus_in otus_out)
-
-    # Check options and return lambda for collapse_otus command.
-    #
-    # @param options [Hash] Options hash.
-    def self.lmb(options)
-      options_allowed(options, nil)
-
-      new(options).lmb
-    end
 
     # Constructor for CollapseOtus.
     #
     # @param options [Hash] Options Hash.
     def initialize(options)
       @options = options
+
+      check_options
 
       status_init(STATS)
     end
@@ -148,6 +140,11 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, nil)
+    end
 
     # Collapse identical taxonomies by removing duplicates and adding their
     # counts.

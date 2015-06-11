@@ -110,41 +110,42 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                records_out)
 
-    def self.lmb(options)
-      options_allowed(options, :count, :output, :force, :terminal, :title,
-                      :xlabel, :ylabel, :ylogscale, :test)
-      options_allowed_values(options, count: [true, false])
-      options_allowed_values(options, test: [true, false])
-      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
-      options_files_exist_force(options, :output)
-      aux_exist('gnuplot')
-
-      options[:terminal] ||= :dumb
-      options[:title]    ||= 'Mean Quality Scores'
-      options[:xlabel]   ||= 'Sequence Position'
-      options[:ylabel]   ||= 'Mean Score'
-
-      new(options).lmb
-    end
-
+    # Constructor for PlotScores.
+    #
+    # @param options [Hash] Options hash.
+    # @option options [Boolean] :count
+    # @option options [String]  :output
+    # @option options [Boolean] :force
+    # @option options [Symbol]  :terminal
+    # @option options [String]  :title
+    # @option options [String]  :xlabel
+    # @option options [String]  :ylabel
+    # @option options [Boolean] :ylogscale
+    # @option options [Boolean] :test
+    #
+    # @return [PlotScores] Class instance.
     def initialize(options)
       @options    = options
       @scores_vec = NArray.int(Config::SCORES_MAX)
       @count_vec  = NArray.int(Config::SCORES_MAX)
       @max        = 0
 
+      aux_exist('gnuplot')
+      check_options
+      default
       status_init(STATS)
     end
 
+    # Return command lambda for plot_scores.
+    #
+    # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
         input.each do |record|
@@ -168,6 +169,28 @@ module BioPieces
 
     private
 
+    # Check options.
+    def check_options
+      options_allowed(@options, :count, :output, :force, :terminal, :title,
+                      :xlabel, :ylabel, :ylogscale, :test)
+      options_allowed_values(@options, count: [true, false])
+      options_allowed_values(@options, test: [true, false])
+      options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
+                                                 :aqua, :png, :pdf])
+      options_files_exist_force(@options, :output)
+    end
+
+    # Set default options.
+    def default
+      @options[:terminal] ||= :dumb
+      @options[:title]    ||= 'Mean Quality Scores'
+      @options[:xlabel]   ||= 'Sequence Position'
+      @options[:ylabel]   ||= 'Mean Score'
+    end
+
+    # Collect plot data from a given record.
+    #
+    # @param record [Hash] BioPieces record.
     def collect_plot_data(record)
       scores = record[:SCORES]
       return unless scores && scores.length > 0
@@ -181,12 +204,16 @@ module BioPieces
       @max = scores.length if scores.length > @max
     end
 
+    # Check if the scores string is longer than SCORES_MAX.
+    #
+    # @raise [BiopiecesError] if too long.
     def check_length(scores)
       return unless scores.length > Config::SCORES_MAX
       msg = "score string too long: #{scores.length} > #{SCORES_MAX}"
       fail BiopiecesError, msg
     end
 
+    # Prepare data to plot.
     def prepare_plot_data
       @max = 1 if @max == 0   # ugly fix to avaid index error
 
@@ -198,6 +225,9 @@ module BioPieces
       @y2 = count_vec.to_a
     end
 
+    # Calculate the mean scores vector.
+    #
+    # @return [NArray] NArray with mean scores.
     def mean_vec
       @scores_vec[0...@max].to_f / @count_vec[0...@max]
     end
@@ -248,6 +278,7 @@ module BioPieces
       end
     end
 
+    # Write record to output.
     def write_output(output, record)
       return unless output
       output << record

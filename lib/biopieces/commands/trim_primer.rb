@@ -117,39 +117,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out pattern_hits
                pattern_misses residues_in residues_out)
-
-    # Check options and return command lambda for trim_primer.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String]   :primer
-    # @option options [Symbol]   :direction
-    # @option options [Boolean]  :overlap_min
-    # @option options [Boolean]  :reverse_complement
-    # @option options [Integer]  :mismatch_percent
-    # @option options [Ingetger] :insertion_percent
-    # @option options [Integer]  :deletion_percent
-    #
-    # @return [Proc] Command labda.
-    def self.lmb(options)
-      options_allowed(options, :primer, :direction, :overlap_min,
-                      :reverse_complement, :mismatch_percent,
-                      :insertion_percent, :deletion_percent)
-      options_required(options, :primer, :direction)
-      options_allowed_values(options, direction: [:forward, :reverse])
-      options_allowed_values(options, reverse_complement: [true, false])
-      options_assert(options, ':overlap_min        >  0')
-      options_assert(options, ':mismatch_percent  >= 0')
-      options_assert(options, ':insertion_percent >= 0')
-      options_assert(options, ':deletion_percent  >= 0')
-
-      new(options).lmb
-    end
 
     # Constructor for TrimPrimer.
     #
@@ -172,6 +144,7 @@ module BioPieces
       @pattern = pattern
       @hit     = false
 
+      check_options
       status_init(STATS)
     end
 
@@ -202,6 +175,20 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :primer, :direction, :overlap_min,
+                      :reverse_complement, :mismatch_percent,
+                      :insertion_percent, :deletion_percent)
+      options_required(@options, :primer, :direction)
+      options_allowed_values(@options, direction: [:forward, :reverse])
+      options_allowed_values(@options, reverse_complement: [true, false])
+      options_assert(@options, ':overlap_min        >  0')
+      options_assert(@options, ':mismatch_percent  >= 0')
+      options_assert(@options, ':insertion_percent >= 0')
+      options_assert(@options, ':deletion_percent  >= 0')
+    end
 
     # Determine the pattern from the sequence and reverse complement if need be.
     def pattern

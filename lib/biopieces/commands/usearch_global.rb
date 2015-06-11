@@ -61,35 +61,11 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in hits_out)
-
-    # Check options and return command lambda for usearch_global.
-    #
-    # @param  options [Hash] Options hash.
-    # @option options [String]        :database
-    # @option options [Float]         :identity
-    # @option options [String,Symbol] :strand
-    # @option options [Integer]       :cpus
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :database, :identity, :strand, :cpus)
-      options_required(options, :database, :identity)
-      options_allowed_values(options, strand: ['plus', 'both', :plus, :both])
-      options_files_exist(options, :database)
-      options_assert(options, ':identity >  0.0')
-      options_assert(options, ':identity <= 1.0')
-      options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
-      aux_exist('usearch')
-
-      new(options).lmb
-    end
 
     # Constructor for UsearchGlobal.
     #
@@ -108,6 +84,8 @@ module BioPieces
       @sequences_in   = 0
       @hits_out       = 0
 
+      aux_exist('usearch')
+      check_options
       status_init(STATS)
     end
 
@@ -127,6 +105,18 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :database, :identity, :strand, :cpus)
+      options_required(@options, :database, :identity)
+      options_allowed_values(@options, strand: ['plus', 'both', :plus, :both])
+      options_files_exist(@options, :database)
+      options_assert(@options, ':identity >  0.0')
+      options_assert(@options, ':identity <= 1.0')
+      options_assert(@options, ':cpus >= 1')
+      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+    end
 
     # Process input and emit to the output stream while saving all records
     # containing sequences to a temporary FASTA file.

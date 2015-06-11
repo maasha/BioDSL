@@ -74,26 +74,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for split_values.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String,Symbol] :key
-    # @option options [Array]         :keys
-    # @option options [String]        :delimiter
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :key, :keys, :delimiter)
-      options_required(options, :key)
-
-      new(options).lmb
-    end
 
     # Constructor for SplitValues.
     #
@@ -105,11 +89,14 @@ module BioPieces
     # @return [SplitValues] Class instance.
     def initialize(options)
       @options     = options
+
+      check_options
+
       @first       = true
       @convert     = []
-      @keys        = options[:keys]
-      @key         = options[:key].to_sym
-      @delimiter   = options[:delimiter] || '_'
+      @keys        = @options[:keys]
+      @key         = @options[:key].to_sym
+      @delimiter   = @options[:delimiter] || '_'
 
       status_init(STATS)
     end
@@ -142,6 +129,12 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :key, :keys, :delimiter)
+      options_required(@options, :key)
+    end
 
     # Given an array of values determine the types that must be converted to
     # integers or floats and save the value index in a class variable.

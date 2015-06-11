@@ -61,27 +61,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for merge_values.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Array] :keys Keys whos values to merge.
-    # @option options [String] :delimiter Delimiter for joining.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :keys, :delimiter)
-      options_required(options, :keys)
-
-      options[:delimiter] ||= '_'
-
-      new(options).lmb
-    end
 
     # Constructor for MergeValues.
     #
@@ -91,8 +74,12 @@ module BioPieces
     #
     # @return [MergeValues] Class instance of MergeValues.
     def initialize(options)
-      @keys       = options[:keys]
-      @delimiter  = options[:delimiter]
+      @options = options
+      check_options
+      defaults
+
+      @keys      = options[:keys]
+      @delimiter = options[:delimiter]
 
       status_init(STATS)
     end
@@ -116,6 +103,19 @@ module BioPieces
 
         status_assign(status, STATS)
       end
+    end
+
+    private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :keys, :delimiter)
+      options_required(@options, :keys)
+    end
+
+    # Set default options.
+    def defaults
+      @options[:delimiter] ||= '_'
     end
   end
 end

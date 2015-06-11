@@ -74,27 +74,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return lambda for degap_seq command.
-    #
-    # @param options [Hash] Options Hash.
-    #
-    # @option options [Boolean] :columns_only
-    #   Flag indicating that only gap-columns only shoule be removed.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :columns_only)
-      options_allowed_values(options, columns_only: [true, false, nil])
-
-      new(options).lmb
-    end
 
     # Constructor for DegapSeq.
     #
@@ -111,6 +95,7 @@ module BioPieces
       @max_len = nil
       @count   = 0
 
+      check_options
       status_init(STATS)
     end
 
@@ -131,6 +116,12 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :columns_only)
+      options_allowed_values(@options, columns_only: [true, false, nil])
+    end
 
     # Remove all gap-only columns from all sequences in input stream and output
     # to output stream.

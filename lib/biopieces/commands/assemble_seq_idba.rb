@@ -68,48 +68,12 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out assembled)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [Integer] :kmer_min Minimum kmer value.
-    # @option options [Integer] :kmer_max Maximum kmer value.
-    # @option options [Integer] :cpus CPUs to use.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :kmer_min, :kmer_max, :cpus)
-      options_assert(options, ':kmer_min >= 16')
-      options_assert(options, ':kmer_min <= 256')
-      options_assert(options, ':kmer_max >= 16')
-      options_assert(options, ':kmer_max <= 512')
-      options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
-      aux_exist('idba_ud')
-
-      defaults(options)
-
-      new(options).lmb
-    end
-
-    # Set the default option values.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [Integer] :kmer_min Minimum kmer value.
-    # @option options [Integer] :kmer_max Maximum kmer value.
-    # @option options [Integer] :cpus CPUs to use.
-    def self.defaults(options)
-      options[:kmer_min] ||= 24
-      options[:kmer_max] ||= 48
-      options[:cpus]     ||= 1
-    end
 
     # Constructor for the AssembleSeqIdba class.
     #
@@ -123,6 +87,9 @@ module BioPieces
       @options = options
       @lengths = []
 
+      aux_exist('idba_ud')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -144,6 +111,24 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :kmer_min, :kmer_max, :cpus)
+      options_assert(@options, ':kmer_min >= 16')
+      options_assert(@options, ':kmer_min <= 256')
+      options_assert(@options, ':kmer_max >= 16')
+      options_assert(@options, ':kmer_max <= 512')
+      options_assert(@options, ':cpus >= 1')
+      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+    end
+
+    # Set the default option values.
+    def defaults
+      @options[:kmer_min] ||= 24
+      @options[:kmer_max] ||= 48
+      @options[:cpus]     ||= 1
+    end
 
     # Read all records from input and emit non-sequence records to the output
     # stream. Sequence records are saved to a temporary file.

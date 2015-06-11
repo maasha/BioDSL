@@ -75,44 +75,12 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for plot_residue_distribution.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Boolean] :count
-    # @option options [String]  :output
-    # @option options [Boolean] :force
-    # @option options [:Symbol] :terminal
-    # @option options [String]  :title
-    # @option options [String]  :xlabel
-    # @option options [String]  :ylabel
-    # @option options [Boolean] :test
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :count, :output, :force, :terminal, :title,
-                      :xlabel, :ylabel, :test)
-      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
-      options_allowed_values(options, count: [nil, true, false])
-      options_allowed_values(options, test: [nil, true, false])
-      options_files_exist_force(options, :output)
-      aux_exist('gnuplot')
-
-      options[:terminal] ||= :dumb
-      options[:title]    ||= 'Residue Distribution'
-      options[:xlabel]   ||= 'Sequence position'
-      options[:ylabel]   ||= '%'
-
-      new(options).lmb
-    end
 
     # Constructo for PlotResidueDistribution.
     #
@@ -135,6 +103,9 @@ module BioPieces
       @gp       = nil
       @offset   = Set.new # Hackery thing to offset datasets 1 postion.
 
+      aux_exist('gnuplot')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -158,6 +129,27 @@ module BioPieces
 
         status_assign(status, STATS)
       end
+    end
+
+    private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :count, :output, :force, :terminal, :title,
+                      :xlabel, :ylabel, :test)
+      options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
+                                                 :aqua, :png, :pdf])
+      options_allowed_values(@options, count: [nil, true, false])
+      options_allowed_values(@options, test: [nil, true, false])
+      options_files_exist_force(@options, :output)
+    end
+
+    # Set default options.
+    def defaults
+      @options[:terminal] ||= :dumb
+      @options[:title]    ||= 'Residue Distribution'
+      @options[:xlabel]   ||= 'Sequence position'
+      @options[:ylabel]   ||= '%'
     end
 
     # Given a record with a sequence count its residues.

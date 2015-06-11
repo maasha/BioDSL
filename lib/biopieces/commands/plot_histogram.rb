@@ -108,53 +108,11 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for plot_histogram.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String,:Symbol] :key
-    # @option options [String,:Symbol] :value
-    # @option options [String]         :output
-    # @option options [Booleon]        :force
-    # @option options [String,:Symbol] :terminal
-    # @option options [String]         :title
-    # @option options [String]         :xlabel
-    # @option options [String]         :ylabel
-    # @option options [Booleon]        :ylogscale
-    # @option options [Booleon]        :test
-    #
-    # @return [Proc] command lambda.
-    def self.lmb(options)
-      options_allowed(options, :key, :value, :output, :force, :terminal, :title,
-                      :xlabel, :ylabel, :ylogscale, :test)
-      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
-      options_allowed_values(options, force: [nil, true, false])
-      options_allowed_values(options, test: [nil, true, false])
-      options_required(options, :key)
-      options_files_exist_force(options, :output)
-      aux_exist('gnuplot')
-
-      defaults(options)
-      new(options).lmb
-    end
-
-    # Set default values for options hash.
-    #
-    # @param options [Hash] Options hash.
-    def self.defaults(options)
-      options[:terminal] ||= :dumb
-      options[:title]    ||= 'Histogram'
-      options[:xlabel]   ||= options[:key]
-      options[:ylabel]   ||= 'n'
-      options[:ylabel]   = "log10(#{options[:ylabel]})" if options[:ylogscale]
-    end
 
     # Constructor for PlotHistogram.
     #
@@ -178,6 +136,9 @@ module BioPieces
       @count_hash  = Hash.new(0)
       @gp          = nil
 
+      aux_exist('gnuplot')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -195,6 +156,30 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :key, :value, :output, :force, :terminal, :title,
+                      :xlabel, :ylabel, :ylogscale, :test)
+      options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
+                                                 :aqua, :png, :pdf])
+      options_allowed_values(@options, force: [nil, true, false])
+      options_allowed_values(@options, test: [nil, true, false])
+      options_required(@options, :key)
+      options_files_exist_force(@options, :output)
+    end
+
+    # Set default values for options hash.
+    def defaults
+      @options[:terminal] ||= :dumb
+      @options[:title]    ||= 'Histogram'
+      @options[:xlabel]   ||= @options[:key]
+      @options[:ylabel]   ||= 'n'
+
+      if @options[:ylogscale]
+        @options[:ylabel] = "log10(#{@options[:ylabel]})"
+      end
+    end
 
     # Process the input stream, collect all plot data, and output records.
     #

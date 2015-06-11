@@ -69,26 +69,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for count.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String] :output Path to output file.
-    # @option options [Boolean] :force Force overwrite of output file.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :output, :force)
-      options_allowed_values(options, force: [true, false, nil])
-      options_files_exist_force(options, :output)
-
-      new(options).lmb
-    end
 
     # Constructor for the count command.
     #
@@ -98,7 +82,9 @@ module BioPieces
     #
     # @return [Count] Instance of class Count.
     def initialize(options)
-      @options     = options
+      @options = options
+
+      check_options
 
       status_init(STATS)
     end
@@ -125,6 +111,13 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :output, :force)
+      options_allowed_values(@options, force: [true, false, nil])
+      options_files_exist_force(@options, :output)
+    end
 
     # Process the input stream and emit all recors to the output stream.
     #

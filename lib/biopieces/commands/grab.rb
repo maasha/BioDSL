@@ -144,61 +144,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    #
-    # @option options [String, Array] :select
-    #   Patterns or list of patterns to select records.
-    #
-    # @option options [String] :select_file
-    #   File path with patterns, one per line, to select records.
-    #
-    # @option options [String, Array] :reject
-    #   Patterns or list of patterns to reject records.
-    #
-    # @option options [String] :reject_file
-    #   File path with patterns, one per line, to reject records.
-    #
-    # @option options [String] :evaluate
-    #   Expression that is evaluated to select records.
-    #
-    # @option options [Boolean] :exact
-    #   Flag indicating that a given pattern must match over its entire length.
-    #
-    # @option options [Symbol, Array] :keys
-    #   Key or list of keys whos key/value pairs to grab for.
-    #
-    # @option options [Boolean] :keys_only
-    #   Flag indicating to grab for key only - not values.
-    #
-    # @option options [Boolean] :values_only
-    #   Flag indicating to grab for values only - not keys.
-    #
-    # @option options [Boolean] :ignore_case
-    #   Flag indicating that pattern matching should be case insensitive.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :select, :select_file, :reject, :reject_file,
-                      :evaluate, :exact, :keys, :keys_only, :values_only,
-                      :ignore_case)
-      options_required_unique(options, :select, :select_file, :reject,
-                              :reject_file, :evaluate)
-      options_conflict(options, keys: :evaluate, keys_only: :evaluate,
-                                values_only: :evaluate, ignore_case: :evaluate,
-                                exact: :evaluate)
-      options_unique(options, :keys_only, :values_only)
-      options_files_exist(options, :select_file, :reject_file)
-
-      new(options).lmb
-    end
 
     # Constructor for the ReadFasta class.
     #
@@ -237,6 +186,10 @@ module BioPieces
     # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
       @options   = options
+
+      check_options
+      status_init(STATS)
+
       @keys_only = @options[:keys_only]
       @vals_only = @options[:values_only]
       @invert    = @options[:reject] || @options[:reject_file]
@@ -245,8 +198,6 @@ module BioPieces
       @exact     = compile_exact
       @regex     = compile_regexes
       @eval      = @options[:evaluate]
-
-      status_init(STATS)
     end
 
     # Return a lambda for the grab command.
@@ -271,6 +222,20 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :select, :select_file, :reject, :reject_file,
+                      :evaluate, :exact, :keys, :keys_only, :values_only,
+                      :ignore_case)
+      options_required_unique(@options, :select, :select_file, :reject,
+                              :reject_file, :evaluate)
+      options_conflict(@options, keys: :evaluate, keys_only: :evaluate,
+                                values_only: :evaluate, ignore_case: :evaluate,
+                                exact: :evaluate)
+      options_unique(@options, :keys_only, :values_only)
+      options_files_exist(@options, :select_file, :reject_file)
+    end
 
     # Emit a record to the output stream if a match was found and w/o invert
     # matching, or if no match was found and with invert matching.

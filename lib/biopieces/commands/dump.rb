@@ -55,26 +55,11 @@ module BioPieces
   class Dump
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
-    extend OptionsHelper
+
+    include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [Integer] :first Dump first number of records.
-    # @option options [Integer] :last  Dump last number of records.
-    #
-    # @return [Proc] Returns the dump command lambda.
-    def self.lmb(options)
-      options_allowed(options, :first, :last)
-      options_unique(options, :first, :last)
-      options_assert(options, ':first > 0')
-      options_assert(options, ':last > 0')
-
-      new(options).lmb
-    end
 
     # Constructor for the Dump class.
     #
@@ -86,6 +71,7 @@ module BioPieces
     def initialize(options)
       @options     = options
 
+      check_options
       status_init(STATS)
     end
 
@@ -107,6 +93,14 @@ module BioPieces
     end
 
     private
+
+    # Check the options and return a lambda for the command.
+    def check_options
+      options_allowed(@options, :first, :last)
+      options_unique(@options, :first, :last)
+      options_assert(@options, ':first > 0')
+      options_assert(@options, ':last > 0')
+    end
 
     # Dump the first number of records.
     #

@@ -74,49 +74,11 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for plot_heatmap
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Array]   :keys List of keys to plot as column.
-    # @option options [Array]   :skip List of keys to skip as column.
-    # @option options [String]  :output Path to output file.
-    # @option options [Boolean] :forcea Flag to force overwrite output file.
-    # @option options [Symbol]  :terminal Set plot terminal type.
-    # @option options [String]  :title Set plot title.
-    # @option options [String]  :xlabel Set plot xlabel.
-    # @option options [String]  :ylabel Set plot ylabel
-    # @option options [Boolean] :logscale Logscale Z-axis.
-    # @option options [Boolean] :test Output gnuplot script.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :keys, :skip, :output, :force, :terminal, :title,
-                      :xlabel, :ylabel, :logscale, :test)
-      options_unique(options, :keys, :skip)
-      options_allowed_values(options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
-      options_allowed_values(options, test: [nil, true, false])
-      options_allowed_values(options, logscale: [nil, true, false])
-      options_files_exist_force(options, :output)
-      aux_exist('gnuplot')
-
-      defaults(options)
-      new(options).lmb
-    end
-
-    def self.defaults(options)
-      options[:terminal] ||= :dumb
-      options[:title]    ||= 'Heatmap'
-      options[:xlabel]   ||= 'x'
-      options[:ylabel]   ||= 'y'
-    end
 
     # Constructor for PlotHeatmap.
     #
@@ -134,10 +96,13 @@ module BioPieces
     #
     # @return [PlotHeatmap] Class instance.
     def initialize(options)
-      @options     = options
-      @headings    = nil
-      @skip_keys   = determine_skip_keys
+      @options   = options
+      @headings  = nil
+      @skip_keys = determine_skip_keys
 
+      aux_exist('gnuplot')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -157,6 +122,26 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :keys, :skip, :output, :force, :terminal, :title,
+                      :xlabel, :ylabel, :logscale, :test)
+      options_unique(@options, :keys, :skip)
+      options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
+                                                 :aqua, :png, :pdf])
+      options_allowed_values(@options, test: [nil, true, false])
+      options_allowed_values(@options, logscale: [nil, true, false])
+      options_files_exist_force(@options, :output)
+    end
+
+    # Set default options.
+    def defaults
+      @options[:terminal] ||= :dumb
+      @options[:title]    ||= 'Heatmap'
+      @options[:xlabel]   ||= 'x'
+      @options[:ylabel]   ||= 'y'
+    end
 
     # Compile a set of keys to skip.
     #

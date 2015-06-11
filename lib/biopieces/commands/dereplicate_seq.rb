@@ -62,25 +62,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for dereplicate_seq.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Boolean] :ignore_case Ignore sequence case.
-    #
-    # @return [Proc] Lambda for the command.
-    def self.lmb(options)
-      options_allowed(options, :ignore_case)
-      options_allowed_values(options, ignore_case: [nil, true, false])
-
-      new(options).lmb
-    end
 
     # Constructor for the DereplicateSeq class.
     #
@@ -92,6 +78,7 @@ module BioPieces
       @options       = options
       @lookup        = GoogleHashDenseLongToInt.new
 
+      check_options
       status_init(STATS)
     end
 
@@ -110,6 +97,12 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :ignore_case)
+      options_allowed_values(@options, ignore_case: [nil, true, false])
+    end
 
     # Process input stream and serialize all records with sequence information.
     # All other records are emitted to the output stream.

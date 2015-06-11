@@ -68,39 +68,12 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                records_out assembled)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    #
-    # @option options [Boolean] :careful
-    #   Flag indicating use of careful assembly.
-    #
-    # @option options [Array] :kmers
-    #   List of kmers to use.
-    #
-    # @option options [Integer] :cpus
-    #   CPUs to use.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :careful, :cpus, :kmers)
-      options_allowed_values(options, careful: [true, false, nil])
-      options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
-      aux_exist('spades.py')
-
-      options[:cpus] ||= 1
-
-      new(options).lmb
-    end
 
     # Constructor for the AssembleSeqSpades class.
     #
@@ -121,6 +94,9 @@ module BioPieces
       @lengths = []
       @type    = nil
 
+      aux_exist('spades.py')
+      check_options
+      defaults
       status_init(STATS)
     end
 
@@ -142,6 +118,19 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :careful, :cpus, :kmers)
+      options_allowed_values(@options, careful: [true, false, nil])
+      options_assert(@options, ':cpus >= 1')
+      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+    end
+
+    # Set default options.
+    def defaults
+      @options[:cpus] ||= 1
+    end
 
     # Process input stream and write all sequence records to a temporary file.
     #

@@ -104,39 +104,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
+    include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    #
-    # @option options [Integer] :quality_min
-    #   TrimSeq minimum quality (default=20).
-    #
-    # @option options [Symbol] :mode
-    #   TrimSeq mode (default=:both).
-    #
-    # @option options [Integer] :length_min
-    #   TrimSeq stretch length triggering trim (default=3).
-    #
-    # @return [Proc] Returns the trim_seq command lambda.
-    def self.lmb(options = {})
-      options_allowed(options, :quality_min, :length_min, :mode)
-      options_allowed_values(options, mode: [:left, :right, :both])
-      options_assert(options, ':quality_min >= 0')
-      options_assert(options, ':quality_min <= 40')
-      options_assert(options, ':length_min > 0')
-
-      options[:quality_min] ||= 20
-      options[:mode]        ||= :both
-      options[:length_min]  ||= 3
-
-      new(options).lmb
-    end
 
     # Constructor for the TrimSeq class.
     #
@@ -156,11 +128,14 @@ module BioPieces
     # @return [TrimSeq] Returns an instance of the TrimSeq class.
     def initialize(options)
       @options = options
-      @mode    = options[:mode].to_sym
-      @min     = options[:quality_min]
-      @len     = options[:length_min]
 
+      check_options
+      defaults
       status_init(STATS)
+
+      @mode = @options[:mode].to_sym
+      @min  = @options[:quality_min]
+      @len  = @options[:length_min]
     end
 
     # Return a lambda for the trim_seq command.
@@ -183,6 +158,22 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :quality_min, :length_min, :mode)
+      options_allowed_values(@options, mode: [:left, :right, :both])
+      options_assert(@options, ':quality_min >= 0')
+      options_assert(@options, ':quality_min <= 40')
+      options_assert(@options, ':length_min > 0')
+    end
+
+    # Set defaul options.
+    def defaults
+      @options[:quality_min] ||= 20
+      @options[:mode]        ||= :both
+      @options[:length_min]  ||= 3
+    end
 
     # Trim sequence in a given record with sequence info.
     #

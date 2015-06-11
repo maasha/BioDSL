@@ -95,29 +95,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda.
-    #
-    # @param options [Hash] Options hash.
-    #
-    # @option options [String,Symbol] :key
-    # @option options [Boolean]       :reverse
-    # @option options [Integer]       :block_size
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :key, :reverse, :block_size)
-      options_required(options, :key)
-      options_allowed_values(options, reverse: [nil, true, false])
-      options_assert(options, ':block_size >  0')
-
-      new(options).lmb
-    end
 
     # Constructor for Sort.
     #
@@ -129,15 +110,16 @@ module BioPieces
     #
     # @return [Sort] Class instance.
     def initialize(options)
-      @options     = options
-      @block_size  = options[:block_size] || BioPieces::Config::SORT_BLOCK_SIZE
-      @key         = options[:key].to_sym
-      @files       = []
-      @records     = []
-      @size        = 0
-      @pqueue       = pqueue_init
-      @fds         = nil
+      @options    = options
+      @block_size = options[:block_size] || BioPieces::Config::SORT_BLOCK_SIZE
+      @key        = options[:key].to_sym
+      @files      = []
+      @records    = []
+      @size       = 0
+      @pqueue     = pqueue_init
+      @fds        = nil
 
+      check_options
       status_init(STATS)
     end
 
@@ -163,6 +145,14 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :key, :reverse, :block_size)
+      options_required(@options, :key)
+      options_allowed_values(@options, reverse: [nil, true, false])
+      options_assert(@options, ':block_size >  0')
+    end
 
     # Initialize pqueue
     def pqueue_init

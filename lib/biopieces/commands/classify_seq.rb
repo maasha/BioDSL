@@ -115,68 +115,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [String]  :dir       Directory path with indexes.
-    # @option options [String]  :prefix    Index prefix.
-    # @option options [Integer] :kmer_size Kmer size.
-    # @option options [Integer] :step_size Step size.
-    # @option options [Integer] :hits_max  Max hits to report per sequence.
-    # @option options [Float]   :consensus Taxonomy string consensus percent.
-    # @option options [Float]   :coverage  Kmer coverage filter percent.
-    # @option options [Boolean] :best_only Flag to report best hit only.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :dir, :prefix, :kmer_size, :step_size, :hits_max,
-                      :consensus, :coverage, :best_only)
-      options_required(options, :dir)
-      options_dirs_exist(options, :dir)
-      options_allowed_values(options, best_only: [nil, true, false])
-
-      options[:prefix]    ||= 'taxonomy'
-      options[:kmer_size] ||= 8
-      options[:step_size] ||= 1
-      options[:hits_max]  ||= 50
-      options[:consensus] ||= 0.51
-      options[:coverage]  ||= 0.9
-      options[:best_only] = true if options[:best_only].nil?
-
-      run_assertions(options)
-
-      new(options).lmb
-    end
-
-    # Check the assertions for numerical options.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [String]  :dir       Directory path with indexes.
-    # @option options [String]  :prefix    Index prefix.
-    # @option options [Integer] :kmer_size Kmer size.
-    # @option options [Integer] :step_size Step size.
-    # @option options [Integer] :hits_max  Max hits to report per sequence.
-    # @option options [Float]   :consensus Taxonomy string consensus percent.
-    # @option options [Float]   :coverage  Kmer coverage filter percent.
-    # @option options [Boolean] :best_only Flag to report best hit only.
-    def self.run_assertions(options)
-      options_assert(options, ':kmer_size > 0')
-      options_assert(options, ':kmer_size <= 12')
-      options_assert(options, ':step_size > 0')
-      options_assert(options, ':step_size <= 12')
-      options_assert(options, ':hits_max > 0')
-      options_assert(options, ':consensus > 0')
-      options_assert(options, ':consensus <= 1')
-      options_assert(options, ':coverage > 0')
-      options_assert(options, ':coverage <= 1')
-    end
 
     # Constructor for the ClassifySeq class.
     #
@@ -194,9 +137,9 @@ module BioPieces
     def initialize(options)
       @options = options
 
-      status_init(STATS)
-
+      check_options
       defaults
+      status_init(STATS)
     end
 
     # Return a lambda for the ClassifySeq command.
@@ -223,6 +166,46 @@ module BioPieces
 
     private
 
+    # Check options.
+    def check_options
+      options_allowed(@options, :dir, :prefix, :kmer_size, :step_size, :hits_max,
+                      :consensus, :coverage, :best_only)
+      options_required(@options, :dir)
+      options_dirs_exist(@options, :dir)
+      options_allowed_values(@options, best_only: [nil, true, false])
+
+      run_assertions
+    end
+
+    # Run assertions.
+    def run_assertions
+      options_assert(@options, ':kmer_size > 0')
+      options_assert(@options, ':kmer_size <= 12')
+      options_assert(@options, ':step_size > 0')
+      options_assert(@options, ':step_size <= 12')
+      options_assert(@options, ':hits_max > 0')
+      options_assert(@options, ':consensus > 0')
+      options_assert(@options, ':consensus <= 1')
+      options_assert(@options, ':coverage > 0')
+      options_assert(@options, ':coverage <= 1')
+    end
+
+    # Set default options.
+    def defaults
+      @options[:prefix]    ||= 'taxonomy'
+      @options[:kmer_size] ||= 8
+      @options[:step_size] ||= 1
+      @options[:hits_max]  ||= 50
+      @options[:consensus] ||= 0.51
+      @options[:coverage]  ||= 0.9
+      @options[:best_only] = true if @options[:best_only].nil?
+    end
+
+    # Execute classfication of a sequence containing record.
+    #
+    # @param record [Hash]                        BioPieces record.
+    # @param i      [Fixnum]                      Record number,
+    # @param search [BioPieces::Taxonomy::Search] Search object.
     def classify_seq(record, i, search)
       @sequences_in  += 1
       @sequences_out += 1

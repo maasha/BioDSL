@@ -66,28 +66,12 @@ module BioPieces
     require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for the filter_rrna command.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String,Array] Path(s) to reference FASTA files.
-    # @option options [String,Array] Path(s) to reference index files.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :ref_fasta, :ref_index)
-      options_files_exist(options, :ref_fasta, :ref_index)
-      aux_exist('sortmerna')
-
-      new(options).lmb
-    end
 
     # Constructor the FilterRrna class.
     #
@@ -100,6 +84,8 @@ module BioPieces
       @options = options
       @filter  = Set.new
 
+      aux_exist('sortmerna')
+      check_options
       status_init(STATS)
     end
 
@@ -121,6 +107,12 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :ref_fasta, :ref_index)
+      options_files_exist(@options, :ref_fasta, :ref_index)
+    end
 
     # Given reference index and fasta files in the options hash, process these
     # into a string of the format read by 'sortmerna': fasta1,id1:fasta2,id2:...

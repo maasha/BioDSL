@@ -57,31 +57,12 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for uchime_ref.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [String] :database
-    # @option options [Integer] :cpus
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :database, :cpus)
-      options_required(options, :database)
-      options_files_exist(options, :database)
-      options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
-      aux_exist('usearch')
-
-      new(options).lmb
-    end
 
     # Constructor for UchimeRef.
     #
@@ -92,6 +73,8 @@ module BioPieces
     # @return [UchimeRef] Class instance.
     def initialize(options)
       @options = options
+      aux_exist('usearch')
+      check_options
       @options[:cpus]   ||= 1
       @options[:strand] ||= 'plus'  # This option cant be changed in usearch7.0
 
@@ -115,6 +98,15 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :database, :cpus)
+      options_required(@options, :database)
+      options_files_exist(@options, :database)
+      options_assert(@options, ':cpus >= 1')
+      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+    end
 
     # Process input stream and save records with sequences to a temporary FASTA
     # file or emit non-sequence containing records to the output stream.

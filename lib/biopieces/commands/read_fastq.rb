@@ -109,39 +109,12 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     MAX_TEST = 1_000
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for read_fastq.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Symbol,String] :encoding
-    # @option options [String]        :input
-    # @option options [String]        :input2
-    # @option options [Integer]       :first
-    # @option options [Integer]       :last
-    # @option options [Boolean]       :reverse_complement
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :encoding, :input, :input2, :first, :last,
-                      :reverse_complement)
-      options_allowed_values(options, encoding: [:auto, :base_33, :base_64])
-      options_allowed_values(options, reverse_complement: [nil, true, false])
-      options_tie(options, reverse_complement: :input2)
-      options_required(options, :input)
-      options_files_exist(options, :input, :input2)
-      options_unique(options, :first, :last)
-      options_assert(options, ':first >= 0')
-      options_assert(options, ':last >= 0')
-
-      new(options).lmb
-    end
 
     # Constructor for ReadFastq.
     #
@@ -161,6 +134,7 @@ module BioPieces
       @buffer   = []
       @type     = nil
 
+      check_options
       status_init(STATS)
     end
 
@@ -186,6 +160,20 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :encoding, :input, :input2, :first, :last,
+                      :reverse_complement)
+      options_allowed_values(@options, encoding: [:auto, :base_33, :base_64])
+      options_allowed_values(@options, reverse_complement: [nil, true, false])
+      options_tie(@options, reverse_complement: :input2)
+      options_required(@options, :input)
+      options_files_exist(@options, :input, :input2)
+      options_unique(@options, :first, :last)
+      options_assert(@options, ':first >= 0')
+      options_assert(@options, ':last >= 0')
+    end
 
     # Emit all records from the input stream to the output stream.
     #

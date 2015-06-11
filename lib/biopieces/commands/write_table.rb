@@ -167,38 +167,31 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
 
-    # rubocop: disable MethodLength
-
-    def self.lmb(options)
-      options_allowed(options, :keys, :skip, :output, :force, :header, :pretty,
-                      :commify, :delimiter, :first, :last, :gzip, :bzip2)
-      options_unique(options, :keys, :skip)
-      options_unique(options, :first, :last)
-      options_unique(options, :gzip, :bzip2)
-      options_allowed_values(options, force: [nil, true, false])
-      options_allowed_values(options, header: [nil, true, false])
-      options_tie(options, commify: :pretty)
-      options_conflict(options, delimiter: :pretty)
-      options_allowed_values(options, pretty: [nil, true, false],
-                                      commify: [nil, true, false],
-                                      gzip: [nil, true, false],
-                                      bzip2: [nil, true, false])
-      options_tie(options, gzip: :output, bzip2: :output)
-      options_files_exist_force(options, :output)
-
-      new(options).lmb
-    end
-
-    # rubocop: enable MethodLength
-
+    # Constructor for WriteTable.
+    #
+    # @param options [Hash] Options hash.
+    # @option options [Array]   :keys
+    # @option options [Array]   :skip
+    # @option options [String]  :output
+    # @option options [Boolean] :force
+    # @option options [Boolean] :header
+    # @option options [Boolean] :pretty
+    # @option options [Boolean] :commify
+    # @option options [String]  :delimiter
+    # @option options [Fixnum]  :first
+    # @option options [Fixnum]  :last
+    # @option options [Boolean] :gzip
+    # @option options [Boolean] :bzip2
+    #
+    # @return [WriteTable] Class instance.
     def initialize(options)
       @options               = options
+      check_options
       @options[:delimiter] ||= "\t"
       @compress              = choose_compression
       @headings              = nil
@@ -226,6 +219,27 @@ module BioPieces
       end
     end
 
+    private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :keys, :skip, :output, :force, :header, :pretty,
+                      :commify, :delimiter, :first, :last, :gzip, :bzip2)
+      options_unique(@options, :keys, :skip)
+      options_unique(@options, :first, :last)
+      options_unique(@options, :gzip, :bzip2)
+      options_allowed_values(@options, force: [nil, true, false])
+      options_allowed_values(@options, header: [nil, true, false])
+      options_tie(@options, commify: :pretty)
+      options_conflict(@options, delimiter: :pretty)
+      options_allowed_values(@options, pretty: [nil, true, false],
+                                      commify: [nil, true, false],
+                                      gzip: [nil, true, false],
+                                      bzip2: [nil, true, false])
+      options_tie(@options, gzip: :output, bzip2: :output)
+      options_files_exist_force(@options, :output)
+    end
+
     # Choose compression to use which can either be gzip or bzip2 or no
     # compression.
     #
@@ -238,6 +252,12 @@ module BioPieces
       end
     end
 
+    # Write table from records read from the input stream and emit records
+    # to the output stream and table rows to the tab_out IO.
+    #
+    # @param input   [Enumerator]          Input stream.
+    # @param output  [Enumerator::Yielder] Output stream.
+    # @param tab_out [IO,STDOUT]           Output to file or stdout.
     def write_table(input, output, tab_out)
       input.each_with_index do |record, i|
         @records_in += 1
@@ -283,6 +303,11 @@ module BioPieces
       end
     end
 
+    # Output row.
+    #
+    # @param tab_out [Enumerator::Yielder,STDOUT]
+    # @param row     [Array]  Row to output
+    # @param i       [Fixnum] Row number
     def output_row(tab_out, row, i)
       output_header(tab_out) if @header
 

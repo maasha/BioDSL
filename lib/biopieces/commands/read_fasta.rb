@@ -88,26 +88,6 @@ module BioPieces
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 
-    # Check the options and return a lambda for the command.
-    #
-    # @param [Hash] options Options hash.
-    # @option options [String, Array] :input String or Array with glob
-    #   expressions.
-    # @option options [Integer] :first Dump first number of records.
-    # @option options [Integer] :last  Dump last number of records.
-    #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :input, :first, :last)
-      options_required(options, :input)
-      options_files_exist(options, :input)
-      options_unique(options, :first, :last)
-      options_assert(options, ':first >= 0')
-      options_assert(options, ':last >= 0')
-
-      new(options).lmb
-    end
-
     # Constructor for the ReadFasta class.
     #
     # @param [Hash] options Options hash.
@@ -122,6 +102,7 @@ module BioPieces
       @count   = 0
       @buffer  = []
 
+      check_options
       status_init(STATS)
     end
 
@@ -149,6 +130,16 @@ module BioPieces
     end
 
     private
+
+    # Check the options.
+    def check_options
+      options_allowed(@options, :input, :first, :last)
+      options_required(@options, :input)
+      options_files_exist(@options, :input)
+      options_unique(@options, :first, :last)
+      options_assert(@options, ':first >= 0')
+      options_assert(@options, ':last >= 0')
+    end
 
     # Read and emit records from the input to the output stream.
     #

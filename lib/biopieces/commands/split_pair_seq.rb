@@ -100,23 +100,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
-
-    # Check options and return command lambda for split_pair_seq.
-    #
-    # @param options [Hash] Options hash.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, nil)
-
-      new(options).lmb
-    end
 
     # Constructor for SplitPairSeq.
     #
@@ -126,6 +114,7 @@ module BioPieces
     def initialize(options)
       @options = options
 
+      check_options
       status_init(STATS)
     end
 
@@ -152,6 +141,11 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, nil)
+    end
 
     # Output two sequence entries from a sequence in the given record that has
     # been split at a position defined by the SEQ_LEN_LEFT key in the record.

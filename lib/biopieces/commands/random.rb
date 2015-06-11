@@ -26,7 +26,7 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  # == Pick number of random records from the stream.
+  # == Pick number of rand om records from the stream.
   #
   # +random+ can be used to pick a random number of records from the stream.
   # Note that the order of records is preserved.
@@ -56,28 +56,30 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
 
-    def self.lmb(options)
-      options_allowed(options, :number, :pairs)
-      options_required(options, :number)
-      options_allowed_values(options, pairs: [nil, true, false])
-      options_assert(options, ':number > 0')
-
-      new(options).lmb
-    end
-
+    # Constructor for Randowm.
+    #
+    # @param options [Hash] Options hash.
+    #
+    # @option options [Fixnum]  :number
+    # @option options [Boolean] :pairs
+    #
+    # @return [Random] Class instance.
     def initialize(options)
       @options = options
       @wanted  = nil
 
+      check_options
       status_init(STATS)
     end
 
+    # Return command lambda for random.
+    #
+    # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
         TmpDir.create('random') do |file, _|
@@ -91,6 +93,14 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :number, :pairs)
+      options_required(@options, :number)
+      options_allowed_values(@options, pairs: [nil, true, false])
+      options_assert(@options, ':number > 0')
+    end
 
     # Serialize records from input
     #

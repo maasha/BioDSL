@@ -63,36 +63,12 @@ module BioPieces
     require 'biopieces/helpers/aux_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend AuxHelper
-    extend OptionsHelper
+    include AuxHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out clusters_out)
-
-    # Check options and return command lambda for uclust.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Float] :identity
-    # @option options [String,Symbol] :strand
-    # @option options [Boolean] :align
-    # @option options [Integer] :cpus
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :identity, :strand, :align, :cpus)
-      options_required(options, :identity, :strand)
-      options_allowed_values(options, strand: ['plus', 'both', :plus, :both])
-      options_allowed_values(options, align:  [nil, false, true])
-      options_assert(options, ':identity >  0.0')
-      options_assert(options, ':identity <= 1.0')
-      options_assert(options, ':cpus >= 1')
-      options_assert(options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
-      aux_exist('usearch')
-
-      new(options).lmb
-    end
 
     # Constructor for Uclust.
     #
@@ -107,6 +83,8 @@ module BioPieces
       @options = options
       @options[:cpus] ||= 1
 
+      aux_exist('usearch')
+      check_options
       status_init(STATS)
     end
 
@@ -132,6 +110,18 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :identity, :strand, :align, :cpus)
+      options_required(@options, :identity, :strand)
+      options_allowed_values(@options, strand: ['plus', 'both', :plus, :both])
+      options_allowed_values(@options, align:  [nil, false, true])
+      options_assert(@options, ':identity >  0.0')
+      options_assert(@options, ':identity <= 1.0')
+      options_assert(@options, ':cpus >= 1')
+      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+    end
 
     # Process input data and serialize all records into a temporary file and all
     # records containing sequence to a temporary FASTA file.

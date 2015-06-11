@@ -90,24 +90,19 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out min_mean max_mean)
 
-    def self.lmb(options)
-      options_allowed(options, :local, :window_size)
-      options_tie(options, window_size: :local)
-      options_allowed_values(options, local: [true, false])
-      options_assert(options, ':window_size > 1')
-
-      options[:window_size] ||= 5
-
-      new(options).lmb
-    end
-
+    # Constructor for MeanScores.
+    #
+    # @param options  [Hash]    Options hash.
+    # @option options [Boolean] :local
+    # @option options [Fixnum]  :window_size
+    #
+    # @return [MeanScores] Class instance.
     def initialize(options)
       @options = options
       @min     = Float::INFINITY
@@ -115,9 +110,14 @@ module BioPieces
       @sum     = 0
       @count   = 0
 
+      check_options
+      defaults
       status_init(STATS)
     end
 
+    # Return command lambda for mean_scores.
+    #
+    # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
         input.each do |record|
@@ -138,6 +138,23 @@ module BioPieces
 
     private
 
+    # Check options
+    def check_options
+      options_allowed(@options, :local, :window_size)
+      options_tie(@options, window_size: :local)
+      options_allowed_values(@options, local: [true, false])
+      options_assert(@options, ':window_size > 1')
+    end
+
+    # Set default options.
+    def defaults
+      @options[:window_size] ||= 5
+    end
+
+    # Calculate the mean score for a given record and record
+    # count, sum, min and max.
+    #
+    # @param record [Hash] BioPieces record.
     def calc_mean(record)
       entry = BioPieces::Seq.new_bp(record)
 

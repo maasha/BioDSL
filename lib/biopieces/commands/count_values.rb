@@ -68,24 +68,10 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
-
-    # Check options and return command lambda for CountValues.
-    #
-    # @param options [Hash] Options hash.
-    # @option options [Array] List of keys whos values to count.
-    #
-    # @return [Proc] Lambda for command.
-    def self.lmb(options)
-      options_allowed(options, :keys)
-      options_required(options, :keys)
-
-      new(options).lmb
-    end
 
     # Constructor for CountValues.
     #
@@ -94,11 +80,13 @@ module BioPieces
     #
     # @return [CountValues] Instance of class.
     def initialize(options)
-      @options     = options
+      @options    = options
+
+      check_options
+      status_init(STATS)
+
       @keys       = @options[:keys].map(&:to_sym)
       @count_hash = Hash.new { |h, k| h[k] = Hash.new(0) }
-
-      status_init(STATS)
     end
 
     # Return the command lambda for the count_values command.
@@ -116,6 +104,12 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :keys)
+      options_required(@options, :keys)
+    end
 
     # Save serialized stream to a temporary file and counting the requested
     # values.

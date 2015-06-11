@@ -90,48 +90,11 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
 
-    extend OptionsHelper
     include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out rows_total rows_matched rows_unmatched
                merged non_merged)
-
-    # Check options and return command lambda for merge_table.
-    #
-    # @param options [Hash]
-    #   Options hash.
-    #
-    # @option options [String] :input
-    #   Input glob expression.
-    #
-    # @option options [String, Symbol] :key
-    #   Key used to merge.
-    #
-    # @option options [Array] :keys
-    #   List of key identifiers to use for each column.
-    #
-    # @option options [Array] :columns
-    #   List of columns to read in that order.
-    #
-    # @option options [Integer] :skip
-    #   Number of initial lines to skip.
-    #
-    # @option options [String] :delimiter
-    #   Delimter to use for separating columns.
-    #
-    # @return [Proc] Command lambda.
-    def self.lmb(options)
-      options_allowed(options, :input, :key, :keys, :columns, :skip, :delimiter)
-      options_required(options, :input, :key)
-      options_files_exist(options, :input)
-      options_list_unique(options, :keys, :columns)
-      options_assert(options, ':skip >= 0')
-
-      options[:skip] ||= 0
-
-      new(options).lmb
-    end
 
     # Constructor for MergeTable.
     #
@@ -159,6 +122,10 @@ module BioPieces
     # @return [MergeTable] Class instance.
     def initialize(options)
       @options = options
+
+      check_options
+      defaults
+
       @table   = {}
       @key     = @options[:key].to_sym
       @keys    = options[:keys] ? @options[:keys].map(&:to_sym) : nil
@@ -192,6 +159,20 @@ module BioPieces
     end
 
     private
+
+    # Check options.
+    def check_options
+      options_allowed(@options, :input, :key, :keys, :columns, :skip, :delimiter)
+      options_required(@options, :input, :key)
+      options_files_exist(@options, :input)
+      options_list_unique(@options, :keys, :columns)
+      options_assert(@options, ':skip >= 0')
+    end
+
+    # Set default options.
+    def defaults
+      @options[:skip] ||= 0
+    end
 
     # Parse input table files and add each row to a table hash.
     def parse_input_tables

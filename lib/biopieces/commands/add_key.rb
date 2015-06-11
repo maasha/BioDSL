@@ -58,30 +58,24 @@ module BioPieces
   class AddKey
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
-    extend OptionsHelper
+
+    include OptionsHelper
     include StatusHelper
 
     STATS = %i(records_in records_out)
 
-    # Check the options and return a lambda for the command.
+    # Constructor for AddKey.
     #
     # @param [Hash] options Options hash.
     # @option options [Symbol] :key    Key to add or replace.
     # @option options [String] :value  Value to use with :key.
     # @option options [String] :prefix Prefix to use with :key.
     #
-    # @return [Proc] Returns the command lambda.
-    def self.lmb(options)
-      options_allowed(options, :key, :value, :prefix)
-      options_required(options, :key)
-      options_required_unique(options, :value, :prefix)
-
-      new(options).lmb
-    end
-
+    # @return [Proc] Returns class instance.
     def initialize(options)
       @options = options
 
+      check_options
       status_init(STATS)
     end
 
@@ -109,6 +103,15 @@ module BioPieces
 
         status_assign(status, STATS)
       end
+    end
+
+    private
+
+    # Check all options.
+    def check_options
+      options_allowed(@options, :key, :value, :prefix)
+      options_required(@options, :key)
+      options_required_unique(@options, :value, :prefix)
     end
   end
 end
