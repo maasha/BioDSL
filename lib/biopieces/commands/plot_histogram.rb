@@ -155,10 +155,10 @@ module BioPieces
 
     # Check options.
     def check_options
-      options_allowed(@options, :key, :value, :output, :force, :terminal, :title,
-                      :xlabel, :ylabel, :ylogscale, :test)
+      options_allowed(@options, :key, :value, :output, :force, :terminal,
+                      :title, :xlabel, :ylabel, :ylogscale, :test)
       options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
+                                                  :aqua, :png, :pdf])
       options_allowed_values(@options, force: [nil, true, false])
       options_allowed_values(@options, test: [nil, true, false])
       options_required(@options, :key)
@@ -172,9 +172,8 @@ module BioPieces
       @options[:xlabel]   ||= @options[:key]
       @options[:ylabel]   ||= 'n'
 
-      if @options[:ylogscale]
+      @options[:ylogscale] &&
         @options[:ylabel] = "log10(#{@options[:ylabel]})"
-      end
     end
 
     # Process the input stream, collect all plot data, and output records.

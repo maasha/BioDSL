@@ -225,8 +225,8 @@ module BioPieces
       options_required_unique(@options, :select, :select_file, :reject,
                               :reject_file, :evaluate)
       options_conflict(@options, keys: :evaluate, keys_only: :evaluate,
-                                values_only: :evaluate, ignore_case: :evaluate,
-                                exact: :evaluate)
+                                 values_only: :evaluate, ignore_case: :evaluate,
+                                 exact: :evaluate)
       options_unique(@options, :keys_only, :values_only)
       options_files_exist(@options, :select_file, :reject_file)
     end

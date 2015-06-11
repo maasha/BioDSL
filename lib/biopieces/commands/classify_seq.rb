@@ -162,8 +162,8 @@ module BioPieces
 
     # Check options.
     def check_options
-      options_allowed(@options, :dir, :prefix, :kmer_size, :step_size, :hits_max,
-                      :consensus, :coverage, :best_only)
+      options_allowed(@options, :dir, :prefix, :kmer_size, :step_size,
+                      :hits_max, :consensus, :coverage, :best_only)
       options_required(@options, :dir)
       options_dirs_exist(@options, :dir)
       options_allowed_values(@options, best_only: [nil, true, false])
@@ -213,17 +213,6 @@ module BioPieces
       record[:TAXONOMY]      = result.taxonomy
       record[:TAXONOMY_HITS] = result.hits
       record[:RECORD_TYPE]   = 'taxonomy'
-    end
-
-    # Set default options.
-    def defaults
-      @options[:prefix]    ||= 'taxonomy'
-      @options[:kmer_size] ||= 8
-      @options[:step_size] ||= 1
-      @options[:hits_max]  ||= 50
-      @options[:consensus] ||= 0.51
-      @options[:coverage]  ||= 0.9
-      @options[:best_only] ||= true
     end
   end
 end

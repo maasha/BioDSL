@@ -228,9 +228,9 @@ module BioPieces
       options_tie(@options, commify: :pretty)
       options_conflict(@options, delimiter: :pretty)
       options_allowed_values(@options, pretty: [nil, true, false],
-                                      commify: [nil, true, false],
-                                      gzip: [nil, true, false],
-                                      bzip2: [nil, true, false])
+                                       commify: [nil, true, false],
+                                       gzip: [nil, true, false],
+                                       bzip2: [nil, true, false])
       options_tie(@options, gzip: :output, bzip2: :output)
       options_files_exist_force(@options, :output)
     end

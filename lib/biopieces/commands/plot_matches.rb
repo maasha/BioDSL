@@ -173,7 +173,7 @@ module BioPieces
                       :xlabel, :ylabel, :test)
       options_allowed_values(@options, direction: [:forward, :reverse, :both])
       options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
+                                                  :aqua, :png, :pdf])
       options_allowed_values(@options, test: [nil, true, false])
       options_files_exist_force(@options, :output)
     end

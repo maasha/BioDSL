@@ -134,7 +134,7 @@ module BioPieces
       options_allowed(@options, :count, :output, :force, :terminal, :title,
                       :xlabel, :ylabel, :test)
       options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
+                                                  :aqua, :png, :pdf])
       options_allowed_values(@options, count: [nil, true, false])
       options_allowed_values(@options, test: [nil, true, false])
       options_files_exist_force(@options, :output)

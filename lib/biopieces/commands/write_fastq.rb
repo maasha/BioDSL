@@ -123,7 +123,7 @@ module BioPieces
     def check_options
       options_allowed(@options, :encoding, :force, :output, :gzip, :bzip2)
       options_allowed_values(@options, encoding: [:base_33, :base_64, 'base_33',
-                                                 'base_64'])
+                                                  'base_64'])
       options_unique(@options, :gzip, :bzip2)
       options_tie(@options, gzip: :output, bzip2: :output)
       options_files_exist_force(@options, :output)

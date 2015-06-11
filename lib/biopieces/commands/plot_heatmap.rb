@@ -121,11 +121,11 @@ module BioPieces
 
     # Check options.
     def check_options
-      options_allowed(@options, :keys, :skip, :output, :force, :terminal, :title,
-                      :xlabel, :ylabel, :logscale, :test)
+      options_allowed(@options, :keys, :skip, :output, :force, :terminal,
+                      :title, :xlabel, :ylabel, :logscale, :test)
       options_unique(@options, :keys, :skip)
       options_allowed_values(@options, terminal: [:dumb, :post, :svg, :x11,
-                                                 :aqua, :png, :pdf])
+                                                  :aqua, :png, :pdf])
       options_allowed_values(@options, test: [nil, true, false])
       options_allowed_values(@options, logscale: [nil, true, false])
       options_files_exist_force(@options, :output)

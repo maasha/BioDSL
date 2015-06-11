@@ -156,7 +156,8 @@ module BioPieces
 
     # Check options.
     def check_options
-      options_allowed(@options, :input, :key, :keys, :columns, :skip, :delimiter)
+      options_allowed(@options, :input, :key, :keys, :columns, :skip,
+                      :delimiter)
       options_required(@options, :input, :key)
       options_files_exist(@options, :input)
       options_list_unique(@options, :keys, :columns)
