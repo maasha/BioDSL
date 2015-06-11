@@ -112,12 +112,6 @@ module BioPieces
   #    OTU_3  1 K#Bacteria(100);P#Proteobacteria(100);C#Gammaproteobacteria...
   #    OTU_4  2 K#Bacteria(100);P#Fusobacteria(100);C#Fusobacteriia(100);O#...
   class ClassifySeq
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 

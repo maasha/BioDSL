@@ -59,13 +59,9 @@ module BioPieces
   #    run
   class AlignSeqMothur
     require 'English'
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
 
-    include OptionsHelper
     include AuxHelper
-    include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)

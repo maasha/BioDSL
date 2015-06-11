@@ -59,11 +59,6 @@ module BioPieces
   #    {:SEQ_NAME=>"test3", :SEQ=>"GCAT", :SEQ_LEN=>4, :SEQ_COUNT=>1}
   class DereplicateSeq
     require 'google_hash'
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)

@@ -162,12 +162,6 @@ module BioPieces
   # rubocop: enable LineLength
   # rubocop: disable ClassLength
   class SliceAlign
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 

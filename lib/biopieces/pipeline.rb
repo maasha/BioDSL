@@ -177,7 +177,10 @@ module BioPieces
         options = args.first || {}
         options_load_rc(options, method)
 
-        lmb = BioPieces.const_get(const).send(:new, options).lmb
+        klass = BioPieces.const_get(const)
+        klass.send(:include, OptionsHelper)
+        klass.send(:include, StatusHelper)
+        lmb = klass.send(:new, options).lmb
 
         @commands << Command.new(method, lmb, options)
       else

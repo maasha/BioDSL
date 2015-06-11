@@ -56,12 +56,6 @@ module BioPieces
   #
   #    add_key(key: :ID, prefix: "ID_")
   class AddKey
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out)
 
     # Constructor for AddKey.

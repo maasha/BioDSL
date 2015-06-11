@@ -75,11 +75,6 @@ module BioPieces
   #    {:V0=>"Dog", :V1=>"D2"}
   class UniqueValues
     require 'set'
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
 
     STATS = %i(records_in records_out)
 

@@ -87,12 +87,6 @@ module BioPieces
   #    {:ID=>3, :ORGANISM=>"platypus", :COUNT=>2423}
   #    {:ID=>4, :ORGANISM=>"beetle", :COUNT=>234}
   class MergeTable
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out rows_total rows_matched rows_unmatched
                merged non_merged)
 

@@ -43,11 +43,6 @@ module BioPieces
   #
   class CollectOtus
     require 'set'
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
 
     STATS = %i(records_in records_out hits_in hits_out)
 

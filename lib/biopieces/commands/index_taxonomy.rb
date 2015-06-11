@@ -118,12 +118,6 @@ module BioPieces
   #    index_taxonomy(output_dir: "RDP_11").
   #    run
   class IndexTaxonomy
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 

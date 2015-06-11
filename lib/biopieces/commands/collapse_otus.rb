@@ -94,12 +94,6 @@ module BioPieces
   #      "Bacteria(100);Proteobacteria(100);Gammaproteobacteria(100); \
   #      Pseudomonadales(100);Pseudomonadaceae(100);Pseudomonas(100)"}
   class CollapseOtus
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out otus_in otus_out)
 
     # Constructor for CollapseOtus.

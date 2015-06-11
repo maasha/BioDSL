@@ -83,12 +83,6 @@ module BioPieces
   #    run
   # rubocop:disable ClassLength
   class AssemblePairs
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(overlap_sum hamming_sum records_in records_out sequences_in
                sequences_out residues_in residues_out assembled unassembled)
 

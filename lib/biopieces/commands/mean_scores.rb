@@ -87,12 +87,6 @@ module BioPieces
   # Which indicates a local minimum was located at the stretch of ,,,,, =
   # 11+11+11+11+11 / 5 = 11.0
   class MeanScores
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out min_mean max_mean)
 

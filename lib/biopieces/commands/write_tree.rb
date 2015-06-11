@@ -56,13 +56,9 @@ module BioPieces
   #    run
   class WriteTree
     require 'open3'
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
     require 'biopieces/helpers/aux_helper'
 
     include AuxHelper
-    include OptionsHelper
-    include StatusHelper
 
     STATS = %i(records_in records_out sequences_in residues_in)
 

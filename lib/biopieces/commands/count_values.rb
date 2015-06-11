@@ -65,12 +65,6 @@ module BioPieces
   #    {:V0=>"Dog", :V1=>"D2", :V0_COUNT=>2, :V1_COUNT=>1}
   #    {:V0=>"Mouse", :V1=>"M1", :V0_COUNT=>1, :V1_COUNT=>1}
   class CountValues
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out)
 
     # Constructor for CountValues.

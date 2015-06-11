@@ -106,12 +106,6 @@ module BioPieces
   #     :CLIP_PRIMER_PAT=>"TGACTACGACTACGACTACT"}
   # rubocop:disable ClassLength
   class ClipPrimer
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out sequences_in sequences_out
                residues_in residues_out pattern_hits pattern_misses)
 

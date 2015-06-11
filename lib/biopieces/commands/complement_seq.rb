@@ -58,12 +58,6 @@ module BioPieces
   #     :SEQ_LEN=>20,
   #     :SCORES=>">>>>>FFFFD@A?A0AE0FG"}
   class ComplementSeq
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
-
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 

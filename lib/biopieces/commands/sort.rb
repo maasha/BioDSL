@@ -92,11 +92,6 @@ module BioPieces
   #    {:COUNT=>3, :ORGANISM=>"Cat"}
   class Sort
     require 'pqueue'
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
-
-    include OptionsHelper
-    include StatusHelper
 
     STATS = %i(records_in records_out)
 
