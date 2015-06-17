@@ -113,4 +113,16 @@ class TestFilterRrna < Test::Unit::TestCase
 
     assert_equal(expected, collect_result.chomp)
   end
+
+  test 'BioPieces::Pipeline::FilterRrna status returns correctly' do
+    @p.filter_rrna(ref_fasta: @ref_fasta, ref_index: "#{@ref_index}*").
+      run(input: @input, output: @output2)
+
+    assert_equal(2,   @p.status.first[:records_in])
+    assert_equal(1,   @p.status.first[:records_out])
+    assert_equal(2,   @p.status.first[:sequences_in])
+    assert_equal(1,   @p.status.first[:sequences_out])
+    assert_equal(120, @p.status.first[:residues_in])
+    assert_equal(60,  @p.status.first[:residues_out])
+  end
 end

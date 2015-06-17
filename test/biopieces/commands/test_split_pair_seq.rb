@@ -150,4 +150,15 @@ class TestSplitPairSeq < Test::Unit::TestCase
 
     assert_equal(@expected.delete("\n"), collect_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline::SplitPairSeq status returns correctly' do
+    @p.split_pair_seq.run(input: @input, output: @output2)
+
+    assert_equal(3,   @p.status.first[:records_in])
+    assert_equal(6,   @p.status.first[:records_out])
+    assert_equal(3,   @p.status.first[:sequences_in])
+    assert_equal(6,   @p.status.first[:sequences_out])
+    assert_equal(120, @p.status.first[:residues_in])
+    assert_equal(120, @p.status.first[:residues_out])
+  end
 end

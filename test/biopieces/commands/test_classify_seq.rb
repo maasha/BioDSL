@@ -46,7 +46,5 @@ class TestClassifySeq < Test::Unit::TestCase
     assert_nothing_raised { @p.classify_seq(dir: Dir.pwd) }
   end
 
-  # test 'BioPieces::Pipeline#classify_seq outputs correctly' do
-  #   TODO: mock this sucker.
-  # end
+  # TODO: write tests!
 end

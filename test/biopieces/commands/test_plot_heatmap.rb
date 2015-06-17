@@ -174,4 +174,12 @@ class TestPlotHeatmap < Test::Unit::TestCase
 
     assert_equal(stream_expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline::PlotHeatmap status outputs correctly' do
+    @p.plot_heatmap(output: @file, force: true).
+      run(input: @input, output: @output2)
+
+    assert_equal(3, @p.status.first[:records_in])
+    assert_equal(3, @p.status.first[:records_out])
+  end
 end

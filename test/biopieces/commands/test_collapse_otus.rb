@@ -69,4 +69,13 @@ class TestCollapseOtus < Test::Unit::TestCase
     EXP
     assert_equal(expected, collect_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline::Count status outputs correctly' do
+    @p.collapse_otus.run(input: @input, output: @output2)
+
+    assert_equal(4, @p.status.first[:records_in])
+    assert_equal(3, @p.status.first[:records_out])
+    assert_equal(4, @p.status.first[:otus_in])
+    assert_equal(3, @p.status.first[:otus_out])
+  end
 end

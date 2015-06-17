@@ -62,4 +62,17 @@ class TestComplementSeq < Test::Unit::TestCase
 
     assert_equal(expected, collect_result.chomp)
   end
+
+  test 'BioPieces::Pipeline::ComplementSeq status returns correctly' do
+    @output.write(SEQ: 'gaucGAUCGU')
+    @output.close
+    @p.complement_seq.run(input: @input, output: @output2)
+
+    assert_equal(1, @p.status.first[:records_in])
+    assert_equal(1, @p.status.first[:records_out])
+    assert_equal(1, @p.status.first[:sequences_in])
+    assert_equal(1, @p.status.first[:sequences_out])
+    assert_equal(10, @p.status.first[:residues_in])
+    assert_equal(10, @p.status.first[:residues_out])
+  end
 end

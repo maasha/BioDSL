@@ -70,4 +70,13 @@ class TestCollectOtus < Test::Unit::TestCase
 
     assert_equal(expected, collect_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline#collect_otus status outputs correctly' do
+    @p.collect_otus.run(input: @input, output: @output2)
+
+    assert_equal(7, @p.status.first[:records_in])
+    assert_equal(9, @p.status.first[:records_out])
+    assert_equal(6, @p.status.first[:hits_in])
+    assert_equal(0, @p.status.first[:hits_out])
+  end
 end

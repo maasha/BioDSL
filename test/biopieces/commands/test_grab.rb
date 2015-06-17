@@ -128,6 +128,13 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline::Grab status returns correctly' do
+    @p.grab(select: 'SEQ_NAME').run(input: @input, output: @output2)
+
+    assert_equal(3, @p.status.first[:records_in])
+    assert_equal(2, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline::Grab with multiple select patterns return OK' do
     @p.grab(select: %w(est1 QM)).run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '')

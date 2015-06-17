@@ -62,6 +62,13 @@ class TestMergeValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline::MergeValues status returns correctly' do
+    @p.merge_values(keys: [:COUNT, :ID]).run(input: @input, output: @output2)
+
+    assert_equal(2, @p.status.first[:records_in])
+    assert_equal(2, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline::MergeValues with :delimiter returns correctly' do
     @p.merge_values(keys: [:ID, :COUNT], delimiter: ':count=').
       run(input: @input, output: @output2)

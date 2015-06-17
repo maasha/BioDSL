@@ -69,6 +69,20 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
+  test 'BioPieces::Pipeline::ClipPrimer status returns correctly' do
+    @output.write(SEQ: 'TCGTATGCCGTCTTCTGCTT')
+    @output.close
+    @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :forward).
+      run(input: @input, output: @output2)
+
+    assert_equal(1, @p.status.first[:records_in])
+    assert_equal(1, @p.status.first[:records_out])
+    assert_equal(1, @p.status.first[:sequences_in])
+    assert_equal(1, @p.status.first[:sequences_out])
+    assert_equal(20, @p.status.first[:residues_in])
+    assert_equal(20, @p.status.first[:residues_out])
+  end
+
   test 'BioPieces::Pipeline::ClipPrimer with reverse full length match ' \
     'returns correctly' do
     @output.write(SEQ: 'TCGTATGCCGTCTTCTGCTT')

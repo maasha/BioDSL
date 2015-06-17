@@ -57,6 +57,19 @@ class TestDegapSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
+  test 'BioPieces::Pipeline::DegapSeq status returns correctly' do
+    @output.write(SEQ: 'AT--C.G~')
+    @output.close
+    @p.degap_seq.run(input: @input, output: @output2)
+
+    assert_equal(1, @p.status.first[:records_in])
+    assert_equal(1, @p.status.first[:records_out])
+    assert_equal(1, @p.status.first[:sequences_in])
+    assert_equal(1, @p.status.first[:sequences_out])
+    assert_equal(8, @p.status.first[:residues_in])
+    assert_equal(4, @p.status.first[:residues_out])
+  end
+
   test 'BioPieces::Pipeline::DegapSeq with :columns_only and uneven seq ' \
     'lengths raises' do
     @output.write(SEQ: 'AT--C.G~')

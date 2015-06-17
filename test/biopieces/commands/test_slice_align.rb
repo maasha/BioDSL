@@ -99,6 +99,17 @@ class TestSliceAlign < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline::SliceAlign status returns correctly' do
+    @p.slice_align(slice: 14..27).run(input: @input, output: @output2)
+
+    assert_equal(7,   @p.status.first[:records_in])
+    assert_equal(7,   @p.status.first[:records_out])
+    assert_equal(6,   @p.status.first[:sequences_in])
+    assert_equal(6,   @p.status.first[:sequences_out])
+    assert_equal(180, @p.status.first[:residues_in])
+    assert_equal(84,  @p.status.first[:residues_out])
+  end
+
   test 'BioPieces::Pipeline::SliceAlign with forward primer miss raises' do
     assert_raise(BioPieces::SeqError) do
       @p.slice_align(forward: 'AAAAAAA', reverse: 'GAGGGG').

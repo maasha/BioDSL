@@ -294,4 +294,16 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
     expected = '{:SEQ=>"AN"}{:SEQ=>"T"}{:SEQ=>"C"}{:SEQ=>"G"}{:FOO=>"BAR"}'
     assert_equal(expected, collect_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline::PlotResidueDistribution status outputs OK' do
+    @p.plot_residue_distribution(output: @file, force: true).
+      run(input: @input, output: @output2)
+
+    assert_equal(5, @p.status.first[:records_in])
+    assert_equal(5, @p.status.first[:records_out])
+    assert_equal(4, @p.status.first[:sequences_in])
+    assert_equal(4, @p.status.first[:sequences_out])
+    assert_equal(5, @p.status.first[:residues_in])
+    assert_equal(5, @p.status.first[:residues_out])
+  end
 end

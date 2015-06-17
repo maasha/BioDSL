@@ -89,6 +89,8 @@ module BioPieces
       lambda do |input, output, status|
         Open3.popen3(@cmd) do |stdin, stdout, stderr, wait_thr|
           input.each_with_index do |record, i|
+            @records_in += 1
+
             write_seq(stdin, record, i) if record[:SEQ]
 
             output << record && @records_out += 1 if output

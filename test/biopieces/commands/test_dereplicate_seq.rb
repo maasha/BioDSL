@@ -67,6 +67,17 @@ class TestDereplicateSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline::DereplicateSeq status returns correctly' do
+    @p.dereplicate_seq.run(input: @input, output: @output2)
+
+    assert_equal(5,  @p.status.first[:records_in])
+    assert_equal(4,  @p.status.first[:records_out])
+    assert_equal(4,  @p.status.first[:sequences_in])
+    assert_equal(3,  @p.status.first[:sequences_out])
+    assert_equal(16, @p.status.first[:residues_in])
+    assert_equal(12, @p.status.first[:residues_out])
+  end
+
   test 'BioPieces::Pipeline::DereplicateSeq with ignore_case returns OK' do
     @p.dereplicate_seq(ignore_case: true).run(input: @input, output: @output2)
 

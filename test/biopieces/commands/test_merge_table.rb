@@ -116,4 +116,16 @@ class TestMergeTable < Test::Unit::TestCase
 
     assert_equal(expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline::MergeTable status returns correctly' do
+    @p.merge_table(input: @file, key: :ID).run(input: @input, output: @output2)
+
+    assert_equal(5, @p.status.first[:records_in])
+    assert_equal(5, @p.status.first[:records_out])
+    assert_equal(4, @p.status.first[:merged])
+    assert_equal(1, @p.status.first[:non_merged])
+    assert_equal(4, @p.status.first[:rows_matched])
+    assert_equal(0, @p.status.first[:rows_unmatched])
+    assert_equal(4, @p.status.first[:rows_total])
+  end
 end

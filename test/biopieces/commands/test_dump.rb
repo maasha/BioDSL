@@ -74,6 +74,13 @@ class TestDump < Test::Unit::TestCase
     assert_equal(expected, result2)
   end
 
+  test 'BioPieces::Pipeline#dump status returns correctly' do
+    capture_stdout { @p.dump.run(input: @input, output: @output2) }
+
+    assert_equal(3, @p.status.first[:records_in])
+    assert_equal(3, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline#dump with options[first: 1] returns correctly' do
     result1 = capture_stdout do
       @p.dump(first: 1).run(input: @input, output: @output2)

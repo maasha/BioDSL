@@ -183,4 +183,12 @@ class TestPlotHistogram < Test::Unit::TestCase
 
     assert_equal(expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline::PlotHistogram status outputs correctly' do
+    @p.plot_histogram(key: :LEN, output: @file, force: true).
+      run(input: @input, output: @output2)
+
+    assert_equal(6, @p.status.first[:records_in])
+    assert_equal(6, @p.status.first[:records_out])
+  end
 end

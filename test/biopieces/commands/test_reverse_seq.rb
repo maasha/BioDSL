@@ -65,4 +65,15 @@ class TestReverseSeq < Test::Unit::TestCase
 
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline::ReverseSeq status returns correctly' do
+    @p.reverse_seq.run(input: @input, output: @output2)
+
+    assert_equal(1, @p.status.first[:records_in])
+    assert_equal(1, @p.status.first[:records_out])
+    assert_equal(1, @p.status.first[:sequences_in])
+    assert_equal(1, @p.status.first[:sequences_out])
+    assert_equal(10, @p.status.first[:residues_in])
+    assert_equal(10, @p.status.first[:residues_out])
+  end
 end

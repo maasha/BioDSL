@@ -69,6 +69,20 @@ class TestMeanScores < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline::MeanScores status returns correctly' do
+    @p.mean_scores.run(input: @input, output: @output2)
+
+    assert_equal(3,     @p.status.first[:records_in])
+    assert_equal(3,     @p.status.first[:records_out])
+    assert_equal(0,     @p.status.first[:sequences_in])
+    assert_equal(0,     @p.status.first[:sequences_out])
+    assert_equal(0,     @p.status.first[:residues_in])
+    assert_equal(0,     @p.status.first[:residues_out])
+    assert_equal(0,     @p.status.first[:min_mean])
+    assert_equal(40,    @p.status.first[:max_mean])
+    assert_equal(33.33, @p.status.first[:mean_mean])
+  end
+
   test 'BioPieces::Pipeline::MeanScores with local: true returns correctly' do
     @p.mean_scores(local: true).run(input: @input, output: @output2)
 

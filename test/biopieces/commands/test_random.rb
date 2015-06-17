@@ -66,6 +66,13 @@ class TestRandom < Test::Unit::TestCase
     assert_equal(3, size)
   end
 
+  test 'BioPieces::Pipeline#random status returns correctly' do
+    @p.random(number: 3).run(input: @input, output: @output2)
+
+    assert_equal(6, @p.status.first[:records_in])
+    assert_equal(3, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline#random with pairs: true returns correctly' do
     @p.random(number: 4, pairs: true).run(input: @input, output: @output2)
 

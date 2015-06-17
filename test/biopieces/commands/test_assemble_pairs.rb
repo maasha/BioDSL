@@ -103,6 +103,17 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
+  test 'BioPieces::Pipeline::AssemblePairs status returns correctly' do
+    @p.assemble_pairs.run(input: @input, output: @output2)
+
+    assert_equal(10,  @p.status.first[:records_in])
+    assert_equal(4,   @p.status.first[:records_out])
+    assert_equal(8,   @p.status.first[:sequences_in])
+    assert_equal(8,   @p.status.first[:sequences_in])
+    assert_equal(120, @p.status.first[:residues_in])
+    assert_equal(120, @p.status.first[:residues_in])
+  end
+
   test 'BioPieces::Pipeline::AssemblePairs with merge_unassembled: true ' \
     'returns correctly' do
     @p.assemble_pairs(merge_unassembled: true).

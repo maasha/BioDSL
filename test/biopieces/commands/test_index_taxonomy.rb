@@ -57,4 +57,6 @@ class TestIndexTaxonomy < Test::Unit::TestCase
                         prefix: 'foo')
     end
   end
+
+  # TODO: write some tests!
 end

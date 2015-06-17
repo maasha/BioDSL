@@ -74,4 +74,12 @@ class TestCountValues < Test::Unit::TestCase
 
     assert_equal(expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline#count_values status returns correctly' do
+    @p.count_values(keys: ['V0', :V1, :FOO]).
+      run(input: @input, output: @output2)
+
+    assert_equal(6, @p.status.first[:records_in])
+    assert_equal(6, @p.status.first[:records_out])
+  end
 end

@@ -83,6 +83,13 @@ class TestWriteTable < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
+  test 'BioPieces::Pipeline::WriteTable status outputs correctly' do
+    @p.write_table.run(input: @input)
+
+    assert_equal(4, @p.status.first[:records_in])
+    assert_equal(4, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline::WriteTable with :keys outputs correctly' do
     result = capture_stdout do
       @p.write_table(keys: [:SEQ, 'COUNT']).run(input: @input)

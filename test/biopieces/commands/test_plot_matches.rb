@@ -145,4 +145,13 @@ class TestPlotMatches < Test::Unit::TestCase
     EXP
     assert_equal(expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline::PlotMatches status outputs correctly' do
+    @p.plot_matches(output: @file, force: true).
+      run(input: @input, output: @output2)
+
+    assert_equal(4, @p.status.first[:records_in])
+    assert_equal(4, @p.status.first[:records_out])
+    assert_equal(4, @p.status.first[:matches_in])
+  end
 end

@@ -84,4 +84,15 @@ class TestMaskSeq < Test::Unit::TestCase
 
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline::MaskSeq status returns correctly' do
+    @p.mask_seq(mask: 'hard').run(input: @input, output: @output2)
+
+    assert_equal(1, @p.status.first[:records_in])
+    assert_equal(1, @p.status.first[:records_out])
+    assert_equal(1, @p.status.first[:sequences_in])
+    assert_equal(1, @p.status.first[:sequences_out])
+    assert_equal(64, @p.status.first[:residues_in])
+    assert_equal(64, @p.status.first[:residues_out])
+  end
 end

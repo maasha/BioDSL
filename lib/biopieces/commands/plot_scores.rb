@@ -111,7 +111,7 @@ module BioPieces
     include AuxHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
-               records_out)
+               residues_out)
 
     # Constructor for PlotScores.
     #

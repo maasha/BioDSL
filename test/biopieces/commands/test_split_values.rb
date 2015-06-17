@@ -62,6 +62,13 @@ class TestSplitValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline::SplitValues status returns correctly' do
+    @p.split_values(key: :ID).run(input: @input, output: @output2)
+
+    assert_equal(2, @p.status.first[:records_in])
+    assert_equal(2, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline::SplitValues with :delimiter returns correctly' do
     @p.split_values(key: 'ID', delimiter: ':count=').
       run(input: @input, output: @output2)

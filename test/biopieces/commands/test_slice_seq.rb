@@ -117,4 +117,15 @@ class TestSliceSeq < Test::Unit::TestCase
 
     assert_equal(expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline::SliceSeq status returns OK' do
+    @p.slice_seq(slice: 1..10).run(input: @input, output: @output2)
+
+    assert_equal(2, @p.status.first[:records_in])
+    assert_equal(2, @p.status.first[:records_out])
+    assert_equal(2, @p.status.first[:sequences_in])
+    assert_equal(2, @p.status.first[:sequences_out])
+    assert_equal(8, @p.status.first[:residues_in])
+    assert_equal(6, @p.status.first[:residues_out])
+  end
 end

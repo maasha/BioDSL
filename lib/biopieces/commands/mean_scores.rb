@@ -88,7 +88,7 @@ module BioPieces
   # 11+11+11+11+11 / 5 = 11.0
   class MeanScores
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
-               residues_out min_mean max_mean)
+               residues_out min_mean max_mean mean_mean)
 
     # Constructor for MeanScores.
     #
@@ -124,7 +124,7 @@ module BioPieces
           @records_out += 1
         end
 
-        status[:mean_mean]     = (@sum.to_f / @count).round(2)
+        @mean_mean = (@sum.to_f / @count).round(2)
 
         status_assign(status, STATS)
       end
@@ -161,8 +161,8 @@ module BioPieces
       end
 
       @sum   += mean
-      @min    = mean if mean < @min
-      @max    = mean if mean > @max
+      @min_mean    = mean if mean < @min_mean
+      @max_mean    = mean if mean > @max_mean
       @count += 1
     end
   end

@@ -118,4 +118,11 @@ class TestSort < Test::Unit::TestCase
 
     assert_equal(expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline::Sort status returns OK' do
+    @p.sort(key: :COUNT).run(input: @input, output: @output2)
+
+    assert_equal(4, @p.status.first[:records_in])
+    assert_equal(4, @p.status.first[:records_out])
+  end
 end

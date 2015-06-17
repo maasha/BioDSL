@@ -69,6 +69,7 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
   end
 
   # rubocop:disable Metrics/LineLength
+
   test 'BioPieces::Pipeline#analyze_residue_distribution returns correctly' do
     @p.analyze_residue_distribution.run(input: @input, output: @output2)
     expected = <<-EOD.gsub(/^\s*\|/, '')
@@ -115,5 +116,19 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
       |{:RECORD_TYPE=>"residue distribution", :V0=>"~", :V1=>0,  :V2=>0,  :V3=>25, :V4=>0}
     EOD
     assert_equal(expected.gsub(/  /, ' '), collect_result)
+  end
+
+  # rubocop:enable Metrics/LineLength
+
+  test 'BioPieces::Pipeline#analyze_residue_distribution status returns OK' do
+    @p.analyze_residue_distribution(percent: true).
+      run(input: @input, output: @output2)
+
+    assert_equal(5, @p.status.first[:records_in])
+    assert_equal(5, @p.status.first[:records_out])
+    assert_equal(4, @p.status.first[:sequences_in])
+    assert_equal(4, @p.status.first[:sequences_in])
+    assert_equal(15, @p.status.first[:residues_in])
+    assert_equal(15, @p.status.first[:residues_in])
   end
 end

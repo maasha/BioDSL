@@ -92,8 +92,7 @@ class TestClusterOtus < Test::Unit::TestCase
     output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
-    p.cluster_otus.run(input: input, output: output2)
+    p = BioPieces::Pipeline.new.cluster_otus.run(input: input, output: output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').delete("\n")
       |{:one=>1,
@@ -106,5 +105,24 @@ class TestClusterOtus < Test::Unit::TestCase
     EXP
 
     assert_equal(expected, collect_result.delete("\n"))
+  end
+
+  test 'BioPieces::Pipeline#cluster_otus status outputs correctly' do
+    input, output   = BioPieces::Stream.pipe
+    input2, output2 = BioPieces::Stream.pipe
+
+    output.write(one: 1, two: 2, three: 3)
+    output.write(SEQ_COUNT: 5, SEQ: 'atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct')
+    output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
+    output.close
+
+    p = BioPieces::Pipeline.new.cluster_otus.run(input: input, output: output2)
+
+    assert_equal(3,  p.status.first[:records_in])
+    assert_equal(2,  p.status.first[:records_out])
+    assert_equal(2,  p.status.first[:sequences_in])
+    assert_equal(1,  p.status.first[:sequences_out])
+    assert_equal(80, p.status.first[:residues_in])
+    assert_equal(40, p.status.first[:residues_out])
   end
 end

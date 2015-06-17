@@ -111,4 +111,12 @@ class TestWriteTree < Test::Unit::TestCase
 
     assert_equal(expected, collect_result)
   end
+
+  test 'BioPieces::Pipeline::WriteTree status outputs correctly' do
+    @p.write_tree(output: @file).run(input: @input, output: @output2)
+    assert_equal(6,  @p.status.first[:records_in])
+    assert_equal(6,  @p.status.first[:records_out])
+    assert_equal(5,  @p.status.first[:sequences_in])
+    assert_equal(65, @p.status.first[:residues_in])
+  end
 end
