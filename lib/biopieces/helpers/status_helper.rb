@@ -50,23 +50,27 @@ module BioPieces
       end
     end
 
-    def status_track(status, &block)
-      raise
-      if @options[:progress]
-        thr = Thread.new do
-          loop do
-            status_save(status)
+    # Track the status of a running command in a seperate thread and output
+    # the status at speficied intervals.
+    #
+    # @param commands [Array] List of commands whos status should be output.
+    # @param block    [Proc]  Track the command in the given block.
+    #
+    # @raise [RunTimeError] If no block is given.
+    def status_track(commands, &block)
+      fail 'No block given' unless block
 
-            sleep BioPieces::Config::STATUS_SAVE_INTERVAL
-          end
+      thread = Thread.new do
+        loop do
+          commands.map(&:status) # FIXME
+
+          sleep BioPieces::Config::STATUS_SAVE_INTERVAL
         end
       end
 
       block.call
 
-      thr.terminate if @options[:progress]
-
-      status_save(status)
+      thread.terminate
     end
 
     def status_progress(&block)

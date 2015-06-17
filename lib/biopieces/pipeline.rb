@@ -32,17 +32,18 @@ module BioPieces
   # Pipeline class
   class Pipeline
     require 'biopieces/command'
-    require 'biopieces/status'
     require 'biopieces/helpers/email_helper'
     require 'biopieces/helpers/history_helper'
     require 'biopieces/helpers/log_helper'
     require 'biopieces/helpers/options_helper'
+    require 'biopieces/helpers/status_helper'
     require 'mail'
 
     include EmailHelper
     include LogHelper
     include HistoryHelper
     include OptionsHelper
+    include StatusHelper
 
     attr_accessor :commands, :complete
 
@@ -125,8 +126,8 @@ module BioPieces
     def status
       @commands.each_with_object([]) do |e, a|
         if @complete
-          e.status.calc_time_elapsed
-          e.status.calc_delta
+          e.calc_time_elapsed
+          e.calc_delta
         end
 
         a << e.status
@@ -297,7 +298,8 @@ module BioPieces
     def command_runner
       return if @complete
 
-      Status.track(@commands) { run_commands }
+      status_track(@commands) { run_commands }
+
       @complete = true
     end
 

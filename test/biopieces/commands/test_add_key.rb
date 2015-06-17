@@ -58,6 +58,14 @@ class TestAddKey < Test::Unit::TestCase
     assert_nothing_raised { @p.add_key(key: 'SEQ_NAME', value: 'fobar') }
   end
 
+  test 'BioPieces::Pipeline#add_key status returns correctly' do
+    @p.add_key(key: 'SEQ_NAME', value: 'fobar').
+      run(input: @input, output: @output2)
+
+    assert_equal(3, @p.status.last[:records_in])
+    assert_equal(3, @p.status.last[:records_out])
+  end
+
   test 'BioPieces::Pipeline#add_key with value returns correctly' do
     @p.add_key(key: 'SEQ_NAME', value: 'fobar').
       run(input: @input, output: @output2)
@@ -67,6 +75,7 @@ class TestAddKey < Test::Unit::TestCase
       |{:SEQ_NAME=>"fobar", :SEQ=>"atcg", :SEQ_LEN=>4}
       |{:SEQ_NAME=>"fobar", :SEQ=>"gtac", :SEQ_LEN=>4}
     EXP
+
     assert_equal(expected, collect_result)
   end
 
@@ -77,6 +86,7 @@ class TestAddKey < Test::Unit::TestCase
       |{:SEQ_NAME=>"1", :SEQ=>"atcg", :SEQ_LEN=>4}
       |{:SEQ_NAME=>"2", :SEQ=>"gtac", :SEQ_LEN=>4}
     EXP
+
     assert_equal(expected, collect_result)
   end
 
@@ -89,6 +99,7 @@ class TestAddKey < Test::Unit::TestCase
       |{:SEQ_NAME=>"ID_1", :SEQ=>"atcg", :SEQ_LEN=>4}
       |{:SEQ_NAME=>"ID_2", :SEQ=>"gtac", :SEQ_LEN=>4}
     EXP
+
     assert_equal(expected, collect_result)
   end
 end
