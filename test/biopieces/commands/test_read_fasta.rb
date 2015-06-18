@@ -122,8 +122,12 @@ class TestReadFasta < Test::Unit::TestCase
   test 'BioPieces::Pipeline::ReadFasta status returns correctly' do
     @p.read_fasta(input: @file).run(output: @output2)
 
-    assert_equal(2, @p.status.first[:sequences_in])
-    assert_equal(19, @p.status.first[:residues_in])
+    assert_equal(0, @p.status.first[:records_in])
+    assert_equal(2, @p.status.first[:records_out])
+    assert_equal(0, @p.status.first[:sequences_in])
+    assert_equal(2, @p.status.first[:sequences_out])
+    assert_equal(0, @p.status.first[:residues_in])
+    assert_equal(19, @p.status.first[:residues_out])
   end
 
   test 'BioPieces::Pipeline::ReadFasta with gzipped data returns correctly' do

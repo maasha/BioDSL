@@ -249,7 +249,11 @@ class TestReadFastq < Test::Unit::TestCase
   test 'BioPieces::Pipeline::ReadFastq status returns correctly' do
     @p.read_fastq(input: @file).run(output: @output2)
 
+    assert_equal(0,   @p.status.first[:records_in])
+    assert_equal(2,   @p.status.first[:records_out])
+    assert_equal(0,   @p.status.first[:sequences_in])
     assert_equal(2,   @p.status.first[:sequences_out])
+    assert_equal(0,   @p.status.first[:residues_in])
     assert_equal(162, @p.status.first[:residues_out])
   end
 

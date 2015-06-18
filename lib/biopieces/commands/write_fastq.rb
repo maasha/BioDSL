@@ -139,8 +139,11 @@ module BioPieces
       input.each do |record|
         @records_in += 1
 
-        if record[:SEQ_NAME] && record[:SEQ] && record[:SCORES]
-          write_fastq(record, ios)
+        if record[:SEQ]
+          @sequences_in += 1
+          @residues_in  += record[:SEQ].length
+          
+          write_fastq(record, ios) if record[:SEQ_NAME] && record[:SCORES]
         end
 
         if output

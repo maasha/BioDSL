@@ -80,7 +80,11 @@ class TestWriteFasta < Test::Unit::TestCase
 
   test 'BioPieces::Pipeline::WriteFasta status outputs correctly' do
     capture_stdout { @p.write_fasta.run(input: @input) }
+    assert_equal(2, @p.status.first[:records_in])
+    assert_equal(2, @p.status.first[:records_out])
+    assert_equal(2, @p.status.first[:sequences_in])
     assert_equal(2, @p.status.first[:sequences_out])
+    assert_equal(8, @p.status.first[:residues_in])
     assert_equal(8, @p.status.first[:residues_out])
   end
 

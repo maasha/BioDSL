@@ -142,6 +142,13 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline::ReadTable status returns correctly' do
+    @p.read_table(input: @file).run(output: @output2)
+
+    assert_equal(0, @p.status.first[:records_in])
+    assert_equal(3, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline::ReadTable with :skip returns correctly' do
     @p.read_table(input: @file, skip: 2).run(output: @output2)
 

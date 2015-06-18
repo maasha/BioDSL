@@ -144,7 +144,11 @@ module BioPieces
       input.each do |record|
         output << record
         @records_in  += 1
-        @records_out += 1
+
+        if record[:SEQ]
+          @sequences_in += 1
+          @residues_in  += record[:SEQ].length
+        end
       end
     end
 
@@ -160,9 +164,9 @@ module BioPieces
         break if @count == first
         output << entry.to_bp
 
-        @records_out  += 1
-        @sequences_in += 1
-        @residues_in  += entry.length
+        @records_out   += 1
+        @sequences_out += 1
+        @residues_out  += entry.length
 
         @count += 1
       end
@@ -189,9 +193,9 @@ module BioPieces
       input.each do |entry|
         output << entry.to_bp
 
-        @records_out  += 1
-        @sequences_in += 1
-        @residues_in  += entry.length
+        @records_out   += 1
+        @sequences_out += 1
+        @residues_out  += entry.length
       end
     end
 
@@ -202,9 +206,9 @@ module BioPieces
       @buffer.each do |entry|
         output << entry.to_bp
 
-        @records_out  += 1
-        @sequences_in += 1
-        @residues_in  += entry.length
+        @records_out   += 1
+        @sequences_out += 1
+        @residues_out  += entry.length
       end
     end
   end

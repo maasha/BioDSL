@@ -138,7 +138,9 @@ module BioPieces
 
         if (entry = record2entry(record))
           $stdout.puts entry.to_fasta(wrap)
+          @sequences_in  += 1
           @sequences_out += 1
+          @residues_in   += entry.length
           @residues_out  += entry.length
         end
 
@@ -157,7 +159,9 @@ module BioPieces
 
           if (entry = record2entry(record))
             ios.puts entry.to_fasta(@options[:wrap])
+            @sequences_in  += 1
             @sequences_out += 1
+            @residues_in   += entry.length
             @residues_out  += entry.length
           end
 
