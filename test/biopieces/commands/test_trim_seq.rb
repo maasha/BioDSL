@@ -71,6 +71,17 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
+  test 'BioPieces::Pipeline::TrimSeq status returns correctly' do
+    @p.trim_seq.run(input: @input, output: @output2)
+
+    assert_equal(1,  @p.status.first[:records_in])
+    assert_equal(1,  @p.status.first[:records_out])
+    assert_equal(1,  @p.status.first[:sequences_in])
+    assert_equal(1,  @p.status.first[:sequences_out])
+    assert_equal(62, @p.status.first[:residues_in])
+    assert_equal(42, @p.status.first[:residues_out])
+  end
+
   test 'BioPieces::Pipeline::TrimSeq with :quality_min returns correctly' do
     @p.trim_seq(quality_min: 25).run(input: @input, output: @output2)
 

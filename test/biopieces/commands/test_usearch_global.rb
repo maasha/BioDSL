@@ -101,4 +101,23 @@ class TestUsearchGlobal < Test::Unit::TestCase
 
     assert_equal(expected.delete("\n"), collect_sorted_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline#usearch_global status outputs correctly' do
+    input, output    = BioPieces::Stream.pipe
+    @input2, output2 = BioPieces::Stream.pipe
+
+    output.write(one: 1, two: 2, three: 3)
+    output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
+    output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
+    output.close
+
+    p = BioPieces::Pipeline.new
+    p.usearch_global(database: @db.path, identity: 0.97, strand: 'plus').
+      run(input: input, output: output2)
+
+    assert_equal(3, p.status.first[:records_in])
+    assert_equal(5, p.status.first[:records_out])
+    assert_equal(2, p.status.first[:sequences_in])
+    assert_equal(2, p.status.first[:hits_out])
+  end
 end

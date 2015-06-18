@@ -90,4 +90,24 @@ class TestUchimeRef < Test::Unit::TestCase
 
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
+
+  test 'BioPieces::Pipeline#uchime_ref status outputs correctly' do
+    input, output   = BioPieces::Stream.pipe
+    @input2, output2 = BioPieces::Stream.pipe
+
+    output.write(one: 1, two: 2, three: 3)
+    output.write(SEQ_COUNT: 5, SEQ: 'atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct')
+    output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
+    output.close
+
+    p = BioPieces::Pipeline.new
+    p.uchime_ref(database: @db.path).run(input: input, output: output2)
+
+    assert_equal(3,  p.status.first[:records_in])
+    assert_equal(3,  p.status.first[:records_out])
+    assert_equal(2,  p.status.first[:sequences_in])
+    assert_equal(2,  p.status.first[:sequences_out])
+    assert_equal(80, p.status.first[:residues_in])
+    assert_equal(80, p.status.first[:residues_out])
+  end
 end

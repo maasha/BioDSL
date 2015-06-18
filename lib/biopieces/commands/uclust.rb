@@ -171,6 +171,8 @@ module BioPieces
 
       entry = BioPieces::Seq.new(seq_name: record[:SEQ_NAME], seq: record[:SEQ])
 
+      @residues_in += entry.length
+
       ios.puts entry.to_fasta
     end
 

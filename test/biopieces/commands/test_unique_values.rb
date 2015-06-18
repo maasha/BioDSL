@@ -75,6 +75,13 @@ class TestUniqueValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
+  test 'BioPieces::Pipeline#unique_values status returns correctly' do
+    @p.unique_values(key: 'V0').run(input: @input, output: @output2)
+
+    assert_equal(7, @p.status.first[:records_in])
+    assert_equal(4, @p.status.first[:records_out])
+  end
+
   test 'BioPieces::Pipeline#unique_values with :invert returns correctly' do
     @p.unique_values(key: 'V0', invert: true).
       run(input: @input, output: @output2)

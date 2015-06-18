@@ -117,6 +117,7 @@ module BioPieces
 
           if record[:SEQ]
             @sequences_in += 1
+            @residues_in  += record[:SEQ].length
             seq_name = record[:SEQ_NAME] || i.to_s
 
             entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
@@ -162,6 +163,7 @@ module BioPieces
 
           output << record
           @sequences_out += 1
+          @residues_out  += entry.length
           @records_out   += 1
         end
       end
