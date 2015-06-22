@@ -91,7 +91,7 @@ module BioPieces
     #
     # @param status [BioPieces::Status] Status object.
     def render_status(status)
-      stats = status.calc_delta.status.reject { |k, _| k.to_s[0..3] == 'time' }
+      stats = status.reject { |k, _| k.to_s[0..3] == 'time' }
       # FIXME: exit_status
       render('status.html.haml', self, exit_status: 'done', statsus: stats)
     end
@@ -100,7 +100,7 @@ module BioPieces
     #
     # @param status [BioPieces::Status] Status object.
     def render_time(status)
-      render('time.html.haml', self, status: status.calc_time_elapsed.status)
+      render('time.html.haml', self, status: status)
     end
 
     # Render HTML input files section.
