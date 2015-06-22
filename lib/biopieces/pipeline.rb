@@ -298,7 +298,11 @@ module BioPieces
     def command_runner
       return if @complete
 
-      status_track(@commands) { run_commands }
+      if @options[:progress]
+        status_progress(@commands) { run_commands }
+      else
+        run_commands
+      end
 
       @complete = true
     end

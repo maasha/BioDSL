@@ -51,6 +51,7 @@ class String
 end
 
 module BioPieces
+  require 'pp'
   require 'biopieces/cary'
   require 'biopieces/commands'
   require 'biopieces/debug'

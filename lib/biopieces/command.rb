@@ -26,7 +26,7 @@
 module BioPieces
   # Command class for initiating and calling commands.
   class Command
-    attr_reader :name, :status, :options
+    attr_reader :name, :status, :run_status, :options
 
     # Constructor for Command objects.
     #
@@ -34,10 +34,11 @@ module BioPieces
     # @param lmb     [Proc]   Lambda for command callback execution.
     # @param options [Hash]   Options hash.
     def initialize(name, lmb, options)
-      @name    = name
-      @lmb     = lmb
-      @options = options
-      @status  = {}
+      @name       = name
+      @lmb        = lmb
+      @run_status = 'running'
+      @options    = options
+      @status     = {}
     end
 
     # Callback method for executing a Command lambda.
@@ -50,6 +51,7 @@ module BioPieces
     # Terminate the status.
     def terminate
       @status[:time_stop] = Time.now
+      @run_status         = 'OK'
     end
 
     # Return string representation of a Command object.
