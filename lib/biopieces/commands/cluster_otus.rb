@@ -121,15 +121,15 @@ module BioPieces
     def process_input(input, output, tmp_in)
       BioPieces::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if record.key? :SEQ
-            @sequences_in += 1
-            @residues_in += record[:SEQ].length
+            @status[:sequences_in] += 1
+            @status[:residues_in] += record[:SEQ].length
             ios.puts record2entry(record, i).to_fasta
           else
             output << record
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
       end
@@ -172,9 +172,9 @@ module BioPieces
           end
 
           output << record
-          @sequences_out += 1
-          @residues_out  += record[:SEQ].length
-          @records_out   += 1
+          @status[:sequences_out] += 1
+          @status[:residues_out]  += record[:SEQ].length
+          @status[:records_out]   += 1
         end
       end
     end

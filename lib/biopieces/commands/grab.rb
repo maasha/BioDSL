@@ -200,7 +200,7 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           match = case
                   when @exact then exact_match? record
@@ -240,10 +240,10 @@ module BioPieces
     def emit_match(output, record, match)
       if match && !@invert
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
       elsif !match && @invert
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
       end
     end
 

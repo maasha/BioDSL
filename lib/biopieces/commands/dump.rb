@@ -102,13 +102,13 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     def dump_first(input, output)
       input.first(@options[:first]).each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         puts record
 
         if output
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end
@@ -122,7 +122,7 @@ module BioPieces
       last   = @options[:last]
 
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         buffer << record
         buffer.shift if buffer.size > last
@@ -133,7 +133,7 @@ module BioPieces
 
         if output
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end
@@ -144,13 +144,13 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     def dump_all(input, output)
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         puts record
 
         if output
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end

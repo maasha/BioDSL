@@ -146,12 +146,12 @@ module BioPieces
     # @param serializer [BioPieces::Serializer] Serializer IO.
     def process_input_records(input, output, ios, serializer)
       input.each_with_index do |record, i|
-        @records_in += 1
+        @status[:records_in] += 1
 
         if record[:SEQ]
           output_entry(ios, record, i)
         else
-          @records_out += 1
+          @status[:records_out] += 1
           output << record
         end
 
@@ -165,13 +165,13 @@ module BioPieces
     # @param record [Hash] BioPieces record.
     # @param i [Integer] Record index.
     def output_entry(ios, record, i)
-      @sequences_in += 1
+      @status[:sequences_in] += 1
 
       record[:SEQ_NAME] ||= i.to_s
 
       entry = BioPieces::Seq.new(seq_name: record[:SEQ_NAME], seq: record[:SEQ])
 
-      @residues_in += entry.length
+      @status[:residues_in] += entry.length
 
       ios.puts entry.to_fasta
     end
@@ -233,9 +233,9 @@ module BioPieces
             record.merge!(entry.to_bp)
 
             output << record
-            @records_out   += 1
-            @sequences_out += 1
-            @residues_out  += entry.length
+            @status[:records_out]   += 1
+            @status[:sequences_out] += 1
+            @status[:residues_out]  += entry.length
           end
         end
       end
@@ -274,9 +274,9 @@ module BioPieces
 
         if (r = results[record[:SEQ_NAME]])
           output << record.merge(r)
-          @records_out   += 1
-          @sequences_out += 1
-          @residues_out  += record[:SEQ].length
+          @status[:records_out]   += 1
+          @status[:sequences_out] += 1
+          @status[:residues_out]  += record[:SEQ].length
         else
           fail BioPieces::UsearchError, 'Sequence name: ' \
             "#{record[:SEQ_NAME]} not found in uclust results"

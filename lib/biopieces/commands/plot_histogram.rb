@@ -182,7 +182,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     def process_input(input, output)
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         if (k = record[@key])
           if @value
@@ -207,7 +207,7 @@ module BioPieces
     def process_output(output, record)
       return unless output
       output << record
-      @records_out += 1
+      @status[:records_out] += 1
     end
 
     # Create a Gnuplot using the collected data from the input stream.

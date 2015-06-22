@@ -138,12 +138,12 @@ module BioPieces
       BioPieces::Fastq.open(in_fq, 'w') do |io_fq|
         BioPieces::Fasta.open(in_fa, 'w') do |io_fa|
           input.each do |record|
-            @records_in += 1
+            @status[:records_in] += 1
 
             if record.key? :SEQ
               write_sequence(io_fq, io_fa, record)
             else
-              @records_out += 1
+              @status[:records_out] += 1
               output.puts record
             end
           end
@@ -159,8 +159,8 @@ module BioPieces
     def write_sequence(io_fq, io_fa, record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       if entry.qual
         @type = :fastq
@@ -216,9 +216,9 @@ module BioPieces
       BioPieces::Fasta.open(output_file) do |ios|
         ios.each do |entry|
           output << entry.to_bp
-          @records_out   += 1
-          @sequences_out += 1
-          @residues_out  += entry.length
+          @status[:records_out]   += 1
+          @status[:sequences_out] += 1
+          @status[:residues_out]  += entry.length
 
           @lengths << entry.length
         end

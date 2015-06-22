@@ -118,7 +118,7 @@ module BioPieces
               @count_hash[key][record[key]] += 1 if record.key? key
             end
 
-            @records_in += 1
+            @status[:records_in] += 1
 
             s << record
           end
@@ -141,7 +141,7 @@ module BioPieces
             end
 
             output << record
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
       end

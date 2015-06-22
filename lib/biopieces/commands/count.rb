@@ -92,11 +92,11 @@ module BioPieces
 
         new_record = {
           RECORD_TYPE: 'count',
-          COUNT: @records_in
+          COUNT: @status[:records_in]
         }
 
         output << new_record
-        @records_out += 1
+        @status[:records_out] += 1
 
         write_output if @options[:output]
 
@@ -119,10 +119,10 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream
     def process_input(input, output)
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
       end
     end
 
@@ -130,7 +130,7 @@ module BioPieces
     def write_output
       Filesys.open(@options[:output], 'w') do |ios|
         ios.puts "#RECORD_TYPE\tCOUNT"
-        ios.puts "count\t#{@records_in}"
+        ios.puts "count\t#{@status[:records_in]}"
       end
     end
   end

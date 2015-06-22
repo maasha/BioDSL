@@ -109,14 +109,14 @@ module BioPieces
       File.open(tmp_file, 'wb') do |ios|
         BioPieces::Serializer.new(ios) do |s|
           input.each do |record|
-            @records_in += 1
+            @status[:records_in] += 1
 
             if record.key? :SEQ
               serialize(record, s)
             else
               output << record
 
-              @records_out += 1
+              @status[:records_out] += 1
             end
           end
         end
@@ -129,10 +129,10 @@ module BioPieces
     # @param record [Hash] BioPieces record.
     # @param s [BioPieces::Serializer] Serializer.
     def serialize(record, s)
-      @sequences_in += 1
+      @status[:sequences_in] += 1
 
       seq = record[:SEQ].dup
-      @residues_in += seq.length
+      @status[:residues_in] += seq.length
       seq.downcase! if @options[:ignore_case]
       key = seq.hash
 
@@ -155,14 +155,14 @@ module BioPieces
         BioPieces::Serializer.new(ios) do |s|
           s.each do |record|
             seq = record[:SEQ].dup
-            @residues_out += seq.length
+            @status[:residues_out] += seq.length
             seq.downcase! if @options[:ignore_case]
             record[:SEQ_COUNT] = @lookup[seq.hash]
 
             output << record
 
-            @records_out += 1
-            @sequences_out += 1
+            @status[:records_out] += 1
+            @status[:sequences_out] += 1
           end
         end
       end

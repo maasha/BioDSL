@@ -115,7 +115,7 @@ module BioPieces
         hash = {}
 
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if record[:TAXONOMY]
             @otus_in += 1
@@ -123,7 +123,7 @@ module BioPieces
             collapse_tax(hash, record)
           else
             output << record
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
 
@@ -165,7 +165,7 @@ module BioPieces
       hash.each_value do |record|
         output << record
         @otus_out    += 1
-        @records_out += 1
+        @status[:records_out] += 1
       end
     end
   end

@@ -85,14 +85,14 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each_with_index do |record, i|
-          @records_in += 1
+          @status[:records_in] += 1
 
           record[@options[:key].to_sym] = @options[:value] ||
                                           "#{@options[:prefix]}#{i}"
 
           output << record
 
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)

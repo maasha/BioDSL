@@ -137,12 +137,12 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           clip_primer(record) if record[:SEQ] && record[:SEQ].length > 0
 
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)
@@ -207,8 +207,8 @@ module BioPieces
       reset(record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       case @options[:direction]
       when :forward then clip_primer_forward(record, entry)
@@ -217,8 +217,8 @@ module BioPieces
         fail RunTimeError, 'This should never happen'
       end
 
-      @sequences_out += 1
-      @residues_out  += entry.length
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += entry.length
     end
 
     # Clip forward primer from entry and save clip information

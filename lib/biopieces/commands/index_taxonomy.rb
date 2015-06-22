@@ -149,12 +149,12 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           add_to_index(record) if record[:SEQ_NAME] && record[:SEQ]
 
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         @index.save
@@ -217,7 +217,7 @@ module BioPieces
     #
     # @param record [Hash] BioPieces record with sequence info.
     def add_to_index(record)
-      @sequences_in += 1
+      @status[:sequences_in] += 1
 
       _, seq_name = record[:SEQ_NAME].split(' ', 2)
 

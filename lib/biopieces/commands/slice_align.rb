@@ -201,10 +201,10 @@ module BioPieces
         setup_template_slice
 
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
           slice_align(record) if record.key? :SEQ
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)
@@ -312,8 +312,8 @@ module BioPieces
     def slice_align(record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       setup_slice(entry) unless @slice
 
@@ -321,8 +321,8 @@ module BioPieces
 
       record.merge! entry.to_bp
 
-      @sequences_out += 1
-      @residues_out  += entry.length
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += entry.length
     end
 
     # Usings primers to locate slice positions in entry.

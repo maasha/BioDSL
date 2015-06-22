@@ -141,13 +141,13 @@ module BioPieces
     def process_input(input, output, tmp_in)
       BioPieces::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if record[:SEQ]
-            @sequences_in  += 1
-            @sequences_out += 1
-            @residues_in   += record[:SEQ].length
-            @records_out   += record[:SEQ].length
+            @status[:sequences_in]  += 1
+            @status[:sequences_out] += 1
+            @status[:residues_in]   += record[:SEQ].length
+            @status[:records_out]   += record[:SEQ].length
             seq_name = record[:SEQ_NAME] || i.to_s
 
             entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
@@ -156,7 +156,7 @@ module BioPieces
           end
 
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end
@@ -198,7 +198,7 @@ module BioPieces
           new_record[:TAXONOMY]    = confidence_filter(new_record)
           new_record[:RECORD_TYPE] = 'taxonomy'
           output << new_record
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end

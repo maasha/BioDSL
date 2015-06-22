@@ -111,17 +111,17 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           count_residues(record) if record.key? :SEQ
 
           next unless output
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
 
           if record.key? :SEQ
-            @sequences_out += 1
-            @residues_out += record[:SEQ].length
+            @status[:sequences_out] += 1
+            @status[:residues_out] += record[:SEQ].length
           end
         end
 
@@ -157,8 +157,8 @@ module BioPieces
     #
     # @param record [Hash] BioPieces record
     def count_residues(record)
-      @sequences_in += 1
-      @residues_in  += record[:SEQ].length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += record[:SEQ].length
 
       record[:SEQ].upcase.chars.each_with_index do |char, i|
         c = char.to_sym

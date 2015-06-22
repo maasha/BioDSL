@@ -101,7 +101,7 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if (value = record[@key])
             values = value.split(@delimiter)
@@ -115,7 +115,7 @@ module BioPieces
 
           output << record
 
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)

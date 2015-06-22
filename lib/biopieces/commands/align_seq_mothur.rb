@@ -130,13 +130,13 @@ module BioPieces
     def process_input(input, output)
       BioPieces::Fasta.open(@tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if record[:SEQ]
             write_entry(ios, record, i)
           else
             output << record
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
       end
@@ -153,8 +153,8 @@ module BioPieces
       seq_name = record[:SEQ_NAME] || i.to_s
       entry    = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       ios.puts entry.to_fasta
     end
@@ -166,9 +166,9 @@ module BioPieces
       BioPieces::Fasta.open(@tmp_out) do |ios|
         ios.each do |entry|
           output << entry.to_bp
-          @records_out   += 1
-          @sequences_out += 1
-          @residues_out  += entry.length
+          @status[:records_out]   += 1
+          @status[:sequences_out] += 1
+          @status[:residues_out]  += entry.length
         end
       end
     end

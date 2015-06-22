@@ -89,11 +89,11 @@ module BioPieces
       lambda do |input, output, status|
         Open3.popen3(@cmd) do |stdin, stdout, stderr, wait_thr|
           input.each_with_index do |record, i|
-            @records_in += 1
+            @status[:records_in] += 1
 
             write_seq(stdin, record, i) if record[:SEQ]
 
-            output << record && @records_out += 1 if output
+            output << record && @status[:records_out] += 1 if output
           end
 
           stdin.close
@@ -144,8 +144,8 @@ module BioPieces
       entry = BioPieces::Seq.new_bp(record)
       entry.seq_name ||= i
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       stdin.puts entry.to_fasta
     end

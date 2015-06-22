@@ -104,7 +104,7 @@ module BioPieces
       File.open(file, 'wb') do |ios|
         BioPieces::Serializer.new(ios) do |s|
           input.each do |record|
-            @records_in += 1
+            @status[:records_in] += 1
 
             s << record
           end
@@ -117,7 +117,7 @@ module BioPieces
       if @options[:pairs]
         decide_wanted_pairs
       else
-        @wanted = (0...@records_in).to_a.shuffle[0...@options[:number]].to_set
+        @wanted = (0...@status[:records_in]).to_a.shuffle[0...@options[:number]].to_set
       end
     end
 
@@ -126,7 +126,7 @@ module BioPieces
       @wanted = Set.new
       num     = @options[:number] / 2
 
-      (0...@records_in).to_a.shuffle.select(&:even?)[0...num].each do |i|
+      (0...@status[:records_in]).to_a.shuffle.select(&:even?)[0...num].each do |i|
         @wanted.merge([i, i + 1])
       end
     end
@@ -142,7 +142,7 @@ module BioPieces
           s.each_with_index do |record, i|
             if @wanted.include? i
               output << record
-              @records_out += 1
+              @status[:records_out] += 1
             end
           end
         end

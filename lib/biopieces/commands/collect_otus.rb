@@ -87,14 +87,14 @@ module BioPieces
       count_hash = Hash.new { |h, k| h[k] = Hash.new(0) }
 
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         if record[:TYPE] && record[:TYPE] == 'H'
           add_to_count_hash(count_hash, record)
         end
 
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
       end
 
       count_hash
@@ -143,7 +143,7 @@ module BioPieces
         end
 
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
       end
     end
   end

@@ -115,13 +115,13 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           calc_mean(record) if record[:SCORES] && record[:SCORES].length > 0
 
           output << record
 
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         @mean_mean = (@sum.to_f / @count).round(2)

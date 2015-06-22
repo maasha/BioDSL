@@ -123,7 +123,7 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each_slice(2) do |record1, record2|
-          @records_in += 2
+          @status[:records_in] += 2
 
           if record2 && record1[:SEQ] && record2[:SEQ]
             assemble_pairs(record1, record2, output)
@@ -167,7 +167,7 @@ module BioPieces
     def output_record(record, output)
       return unless output
       output << record
-      @records_out += 1
+      @status[:records_out] += 1
     end
 
     # Assemble records with sequences and output to the stream
@@ -204,8 +204,8 @@ module BioPieces
       entry2.type = :dna
       entry2.reverse!.complement! if @options[:reverse_complement]
 
-      @sequences_in += 2
-      @residues_in  += entry1.length + entry2.length
+      @status[:sequences_in] += 2
+      @status[:residues_in]  += entry1.length + entry2.length
 
       [entry1, entry2]
     end
@@ -247,9 +247,9 @@ module BioPieces
       output << assembled2record(assembled)
 
       @assembled     += 1
-      @records_out   += 1
-      @sequences_out += 1
-      @residues_out  += assembled.length
+      @status[:records_out]   += 1
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += assembled.length
     end
 
     # Convert a sequence entry to a BioPiece record with hamming distance and
@@ -284,9 +284,9 @@ module BioPieces
       output << entry2record(entry1)
 
       @unassembled   += 1
-      @sequences_out += 1
-      @residues_out  += entry1.length
-      @records_out   += 1
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += entry1.length
+      @status[:records_out]   += 1
     end
 
     # Output unassembled entries to the stream.
@@ -299,9 +299,9 @@ module BioPieces
       output << entry2record(entry2)
 
       @unassembled   += 2
-      @sequences_out += 2
-      @residues_out  += entry1.length + entry2.length
-      @records_out   += 2
+      @status[:sequences_out] += 2
+      @status[:residues_out]  += entry1.length + entry2.length
+      @status[:records_out]   += 2
     end
 
     # Converts a sequence entry to a BioPeice record.
@@ -320,10 +320,10 @@ module BioPieces
     #
     # @param status [Hash] Status hash.
     def calc_status(status)
-      assembled_percent = (100 * 2 * @assembled.to_f / @sequences_in).round(2)
+      assembled_percent = (100 * 2 * @assembled.to_f / @status[:sequences_in]).round(2)
       status[:assembled_percent] = assembled_percent
-      status[:overlap_mean]      = (@overlap_sum.to_f / @records_out).round(2)
-      status[:hamming_dist_mean] = (@hamming_sum.to_f / @records_out).round(2)
+      status[:overlap_mean]      = (@overlap_sum.to_f / @status[:records_out]).round(2)
+      status[:hamming_dist_mean] = (@hamming_sum.to_f / @status[:records_out]).round(2)
     end
   end
 end

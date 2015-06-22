@@ -134,14 +134,14 @@ module BioPieces
       wrap = @options[:wrap]
 
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         if (entry = record2entry(record))
           $stdout.puts entry.to_fasta(wrap)
-          @sequences_in  += 1
-          @sequences_out += 1
-          @residues_in   += entry.length
-          @residues_out  += entry.length
+          @status[:sequences_in]  += 1
+          @status[:sequences_out] += 1
+          @status[:residues_in]   += entry.length
+          @status[:residues_out]  += entry.length
         end
 
         write_output(output, record)
@@ -155,14 +155,14 @@ module BioPieces
     def write_file(input, output)
       Fasta.open(@options[:output], 'w', compress: compress) do |ios|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if (entry = record2entry(record))
             ios.puts entry.to_fasta(@options[:wrap])
-            @sequences_in  += 1
-            @sequences_out += 1
-            @residues_in   += entry.length
-            @residues_out  += entry.length
+            @status[:sequences_in]  += 1
+            @status[:sequences_out] += 1
+            @status[:residues_in]   += entry.length
+            @status[:residues_out]  += entry.length
           end
 
           write_output(output, record)
@@ -178,7 +178,7 @@ module BioPieces
       return unless output
 
       output << record
-      @records_out += 1
+      @status[:records_out] += 1
     end
 
     # Creates a Seq object from a given record if SEQ_NAME and SEQ is present.

@@ -150,7 +150,7 @@ module BioPieces
         @gp.add_dataset(@style1) do |forward|
           @gp.add_dataset(@style2) do |reverse|
             input.each do |record|
-              @records_in += 1
+              @status[:records_in] += 1
 
               plot_match(forward, reverse, record)
 
@@ -277,7 +277,7 @@ module BioPieces
     def process_output(output, record)
       return unless output
       output << record
-      @records_out += 1
+      @status[:records_out] += 1
     end
   end
 end

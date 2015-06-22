@@ -137,18 +137,18 @@ module BioPieces
     # @param ios    [BioPieces::Fastq::IO,STDOUT] Output IO.
     def process_input(input, output, ios)
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         if record[:SEQ]
-          @sequences_in += 1
-          @residues_in  += record[:SEQ].length
+          @status[:sequences_in] += 1
+          @status[:residues_in]  += record[:SEQ].length
           
           write_fastq(record, ios) if record[:SEQ_NAME] && record[:SCORES]
         end
 
         if output
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end
@@ -163,8 +163,8 @@ module BioPieces
       entry.qual_convert!(:base_33, @encoding)
 
       ios.puts entry.to_fastq
-      @sequences_out += 1
-      @residues_out  += entry.length
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += entry.length
     end
 
     # Choose compression to use which can either be gzip or bzip2 or no

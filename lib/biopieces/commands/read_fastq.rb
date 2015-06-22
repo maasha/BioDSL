@@ -177,12 +177,12 @@ module BioPieces
       return unless input
 
       input.each do |record|
-        @records_in  += 1
-        @records_out += 1
+        @status[:records_in]  += 1
+        @status[:records_out] += 1
 
         if (seq = record[:SEQ])
-          @sequences_in += 1
-          @residues_in  += seq.length
+          @status[:sequences_in] += 1
+          @status[:residues_in]  += seq.length
         end
 
         output << record
@@ -198,10 +198,10 @@ module BioPieces
           ios.each do |entry|
             check_entry(entry)
             output << entry.to_bp
-            @records_out   += 1
-            @sequences_out += 1
-            @residues_out  += entry.length
-            return if @sequences_out >= @options[:first]
+            @status[:records_out]   += 1
+            @status[:sequences_out] += 1
+            @status[:residues_out]  += entry.length
+            return if @status[:sequences_out] >= @options[:first]
           end
         end
       end
@@ -221,10 +221,10 @@ module BioPieces
               reverse_complement(entry2) if @options[:reverse_complement]
               output << entry1.to_bp
               output << entry2.to_bp
-              @records_out   += 2
-              @sequences_out += 2
-              @residues_out  += entry1.length + entry2.length
-              return if @sequences_out >= @options[:first]
+              @status[:records_out]   += 2
+              @status[:sequences_out] += 2
+              @status[:residues_out]  += entry1.length + entry2.length
+              return if @status[:sequences_out] >= @options[:first]
             end
           end
         end
@@ -280,9 +280,9 @@ module BioPieces
           ios.each do |entry|
             check_entry(entry)
             output << entry.to_bp
-            @records_out   += 1
-            @sequences_out += 1
-            @residues_out  += entry.length
+            @status[:records_out]   += 1
+            @status[:sequences_out] += 1
+            @status[:residues_out]  += entry.length
           end
         end
       end
@@ -300,9 +300,9 @@ module BioPieces
               reverse_complement(entry2) if @options[:reverse_complement]
               output << entry1.to_bp
               output << entry2.to_bp
-              @records_out   += 2
-              @sequences_out += 2
-              @residues_out  += entry1.length + entry2.length
+              @status[:records_out]   += 2
+              @status[:sequences_out] += 2
+              @status[:residues_out]  += entry1.length + entry2.length
             end
           end
         end
@@ -376,7 +376,7 @@ module BioPieces
     #
     # @raise [BioPieces::SeqError] If quality score is outside range.
     def check_score_range(entry)
-      return if @sequences_out >= MAX_TEST
+      return if @status[:sequences_out] >= MAX_TEST
       return if entry.qual_valid?(:base_33)
       fail BioPieces::SeqError, 'Quality score outside valid range'
     end
@@ -406,9 +406,9 @@ module BioPieces
       @buffer.each do |entry|
         output << entry.to_bp
 
-        @records_out   += 1
-        @sequences_out += 1
-        @residues_out  += entry.length
+        @status[:records_out]   += 1
+        @status[:sequences_out] += 1
+        @status[:residues_out]  += entry.length
       end
     end
   end

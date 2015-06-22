@@ -84,7 +84,7 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if @keys.all? { |key| record.key? key }
             values = @keys.inject([]) { |a, e| a << record[e.to_sym] }
@@ -92,7 +92,7 @@ module BioPieces
           end
 
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)

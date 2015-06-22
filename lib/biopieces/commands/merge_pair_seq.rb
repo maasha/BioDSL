@@ -116,18 +116,18 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each_slice(2) do |record1, record2|
-          @records_in += record2 ? 2 : 1
+          @status[:records_in] += record2 ? 2 : 1
 
           if record1[:SEQ] && record2[:SEQ]
             output << merge_pair_seq(record1, record2)
 
-            @sequences_in  += 2
-            @sequences_out += 1
-            @records_out   += 1
+            @status[:sequences_in]  += 2
+            @status[:sequences_out] += 1
+            @status[:records_out]   += 1
           else
             output.puts record1, record2
 
-            @records_out += 2
+            @status[:records_out] += 2
           end
         end
 
@@ -154,14 +154,14 @@ module BioPieces
 
       BioPieces::Seq.check_name_pair(entry1, entry2)
 
-      @residues_in += entry1.length + entry2.length
+      @status[:residues_in] += entry1.length + entry2.length
 
       length1 = entry1.length
       length2 = entry2.length
 
       entry1 << entry2
 
-      @residues_out += entry1.length
+      @status[:residues_out] += entry1.length
 
       new_record(entry1, length1, length2)
     end

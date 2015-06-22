@@ -255,7 +255,7 @@ module BioPieces
     # @param tab_out [IO,STDOUT]           Output to file or stdout.
     def write_table(input, output, tab_out)
       input.each_with_index do |record, i|
-        @records_in += 1
+        @status[:records_in] += 1
 
         compile_headings(record) unless @headings
 
@@ -269,7 +269,7 @@ module BioPieces
 
         if output
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
 

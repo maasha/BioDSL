@@ -111,13 +111,13 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           slice_seq(record) if record.key? :SEQ
 
           output << record
 
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)
@@ -138,13 +138,13 @@ module BioPieces
     def slice_seq(record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       entry = entry[@options[:slice]]
 
-      @sequences_out += 1
-      @residues_out  += entry.length
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += entry.length
 
       record.merge! entry.to_bp
     end

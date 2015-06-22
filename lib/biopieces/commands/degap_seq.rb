@@ -140,7 +140,7 @@ module BioPieces
       File.open(tmp_file, 'wb') do |ios|
         BioPieces::Serializer.new(ios) do |s|
           input.each do |record|
-            @records_in += 1
+            @status[:records_in] += 1
 
             if (seq = record[:SEQ])
               mask_add(seq)
@@ -157,8 +157,8 @@ module BioPieces
     #
     # @param seq [String] Sequences.
     def mask_add(seq)
-      @sequences_in += 1
-      @residues_in  += seq.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += seq.length
 
       @max_len ||= seq.length
 
@@ -197,7 +197,7 @@ module BioPieces
             remove_residues(record) if record[:SEQ]
 
             output << record
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
       end
@@ -212,8 +212,8 @@ module BioPieces
       record[:SEQ]     = na_seq[@na_mask].to_s
       record[:SEQ_LEN] = record[:SEQ].length
 
-      @sequences_out += 1
-      @residues_out  += record[:SEQ].length
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += record[:SEQ].length
     end
 
     # Remove all gaps from all sequences in input stream and output to output
@@ -223,13 +223,13 @@ module BioPieces
     # @param output [Enumerator::Yeilder] Output stream.
     def degap_all(input, output)
       input.each do |record|
-        @records_in += 1
+        @status[:records_in] += 1
 
         degap_seq(record) if record.key? :SEQ
 
         output << record
 
-        @records_out += 1
+        @status[:records_out] += 1
       end
     end
 
@@ -240,13 +240,13 @@ module BioPieces
     def degap_seq(record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       entry.seq.delete!(@indels)
 
-      @sequences_out += 1
-      @residues_out  += entry.length
+      @status[:sequences_out] += 1
+      @status[:residues_out]  += entry.length
 
       record.merge! entry.to_bp
     end

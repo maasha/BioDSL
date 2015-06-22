@@ -135,7 +135,7 @@ module BioPieces
         parse_input_tables
 
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if record[@key] && @table[record[@key]]
             @merged += 1
@@ -145,7 +145,7 @@ module BioPieces
           end
 
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         @rows_total = @rows_matched + @rows_unmatched

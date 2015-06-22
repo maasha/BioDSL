@@ -145,7 +145,7 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           collect_plot_data(record)
 
@@ -278,7 +278,7 @@ module BioPieces
     def write_output(output, record)
       return unless output
       output << record
-      @records_out += 1
+      @status[:records_out] += 1
     end
   end
 end

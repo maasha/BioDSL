@@ -148,10 +148,10 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if record[:SEQ] && record[:SEQ].length > 0
-            @sequences_in += 1
+            @status[:sequences_in] += 1
 
             case @options[:direction]
             when :forward then trim_forward(record)
@@ -161,7 +161,7 @@ module BioPieces
 
           output << record
 
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)
@@ -199,7 +199,7 @@ module BioPieces
     def trim_forward(record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @residues_in  += entry.length
+      @status[:residues_in]  += entry.length
 
       while @pattern.length >= @options[:overlap_min]
         if (match = match_forward(entry))
@@ -249,7 +249,7 @@ module BioPieces
     def trim_reverse(record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @residues_in  += entry.length
+      @status[:residues_in]  += entry.length
 
       while @pattern.length >= @options[:overlap_min]
         if (match = match_reverse(entry))

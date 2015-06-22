@@ -118,7 +118,7 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           if record[:SEQ_NAME] && record[:SEQ] && record[:SEQ_LEN_LEFT] &&
              record[:SEQ_LEN_RIGHT]
@@ -126,7 +126,7 @@ module BioPieces
           else
             output << record
 
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
 
@@ -151,8 +151,8 @@ module BioPieces
     def split_pair_seq(output, record)
       entry = BioPieces::Seq.new_bp(record)
 
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
 
       pos = get_split_pos(record, entry)
 
@@ -161,9 +161,9 @@ module BioPieces
       output << entry1.to_bp
       output << entry2.to_bp
 
-      @sequences_out += 2
-      @residues_out  += entry1.length + entry2.length
-      @records_out   += 2
+      @status[:sequences_out] += 2
+      @status[:residues_out]  += entry1.length + entry2.length
+      @status[:records_out]   += 2
     end
 
     # Given a record locate the sequence split position.

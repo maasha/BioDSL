@@ -177,7 +177,7 @@ module BioPieces
         File.open(tmp_file, 'wb') do |tmp_ios|
           BioPieces::Serializer.new(tmp_ios) do |s|
             input.each_with_index do |record, i|
-              @records_in += 1
+              @status[:records_in] += 1
 
               s << record
               # FIXME: need << method
@@ -197,8 +197,8 @@ module BioPieces
     # @return [BioPieces::Seq] Sequence entry.
     def record2entry(record, i)
       entry = BioPieces::Seq.new(seq_name: i, seq: record[:SEQ])
-      @sequences_in += 1
-      @residues_in  += entry.length
+      @status[:sequences_in] += 1
+      @status[:residues_in]  += entry.length
       entry
     end
 
@@ -227,13 +227,13 @@ module BioPieces
       if record.key? :SEQ
         unless @filter.include? i
           output << record
-          @records_out   += 1
-          @sequences_out += 1
-          @residues_out  += record[:SEQ].length
+          @status[:records_out]   += 1
+          @status[:sequences_out] += 1
+          @status[:residues_out]  += record[:SEQ].length
         end
       else
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
       end
     end
   end

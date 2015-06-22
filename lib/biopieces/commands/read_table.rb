@@ -252,8 +252,8 @@ module BioPieces
 
           ios.each_hash(read_options) do |record|
             output << record
-            @records_out += 1
-            return if @records_out >= @options[:first]
+            @status[:records_out] += 1
+            return if @status[:records_out] >= @options[:first]
           end
         end
       end
@@ -288,7 +288,7 @@ module BioPieces
           ios.each_hash(read_options) do |record|
             replace_keys(record) if @keys
             output << record
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
       end
@@ -310,7 +310,7 @@ module BioPieces
     def output_buffer(output)
       @buffer.each do |record|
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
       end
     end
 
@@ -322,8 +322,8 @@ module BioPieces
       return unless output
       input.each do |record|
         output << record
-        @records_in  += 1
-        @records_out += 1
+        @status[:records_in]  += 1
+        @status[:records_out] += 1
       end
     end
   end

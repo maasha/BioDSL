@@ -79,10 +79,10 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
           reverse(record) if record[:SEQ]
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)
@@ -103,10 +103,10 @@ module BioPieces
       entry = BioPieces::Seq.new_bp(record)
       entry.reverse!
 
-      @sequences_in  += 1
-      @sequences_out += 1
-      @residues_in   += entry.length
-      @residues_out  += entry.length
+      @status[:sequences_in]  += 1
+      @status[:sequences_out] += 1
+      @status[:residues_in]   += entry.length
+      @status[:residues_out]  += entry.length
 
       record.merge! entry.to_bp
     end

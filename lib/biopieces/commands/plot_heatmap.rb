@@ -203,7 +203,7 @@ module BioPieces
     def plot_dataset(gp, input, output)
       gp.add_dataset(matrix: :true, with: 'image') do |plotter|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           determine_headings(record) unless @headings
 
@@ -213,7 +213,7 @@ module BioPieces
 
           output << record
 
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end

@@ -75,9 +75,9 @@ module BioPieces
     def initialize(options)
       @options        = options
       @options[:cpus] ||= 1
-      @records_in     = 0
-      @records_out    = 0
-      @sequences_in   = 0
+      @status[:records_in]     = 0
+      @status[:records_out]    = 0
+      @status[:sequences_in]   = 0
       @hits_out       = 0
 
       aux_exist('usearch')
@@ -123,15 +123,15 @@ module BioPieces
     def process_input(input, output, tmp_in)
       BioPieces::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
-          @records_in += 1
+          @status[:records_in] += 1
 
           output << record
 
-          @records_out += 1
+          @status[:records_out] += 1
 
           next unless record[:SEQ]
 
-          @sequences_in += 1
+          @status[:sequences_in] += 1
           seq_name = record[:SEQ_NAME] || i.to_s
 
           entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
@@ -168,7 +168,7 @@ module BioPieces
           record[:RECORD_TYPE] = 'usearch'
           output << record
           @hits_out    += 1
-          @records_out += 1
+          @status[:records_out] += 1
         end
       end
     end

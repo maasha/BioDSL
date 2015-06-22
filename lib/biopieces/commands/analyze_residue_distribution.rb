@@ -139,13 +139,13 @@ module BioPieces
 
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
 
           analyze_residues(record[:SEQ]) if record[:SEQ]
 
           if output
             output << record
-            @records_out += 1
+            @status[:records_out] += 1
           end
         end
 
@@ -167,10 +167,10 @@ module BioPieces
     #
     # @param seq [String] - Sequence to analyze.
     def analyze_residues(seq)
-      @sequences_in  += 1
-      @sequences_out += 1
-      @residues_in   += seq.length
-      @residues_out  += seq.length
+      @status[:sequences_in]  += 1
+      @status[:sequences_out] += 1
+      @status[:residues_in]   += seq.length
+      @status[:residues_out]  += seq.length
 
       seq.upcase.chars.each_with_index do |char, i|
         c = char.to_sym

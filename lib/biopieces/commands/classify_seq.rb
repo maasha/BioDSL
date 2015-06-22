@@ -141,17 +141,17 @@ module BioPieces
     # @return [Proc] Returns the command lambda.
     def lmb
       lambda do |input, output, status|
-        @sequences_in = 0
+        @status[:sequences_in] = 0
 
         search = BioPieces::Taxonomy::Search.new(@options)
 
         input.each_with_index do |record, i|
-          @records_in += 1
+          @status[:records_in] += 1
 
           classify_seq(record, i, search) if record.key? :SEQ
 
           output << record
-          @records_out += 1
+          @status[:records_out] += 1
         end
 
         status_assign(status, STATS)
@@ -201,10 +201,10 @@ module BioPieces
     # @param i      [Fixnum]                      Record number,
     # @param search [BioPieces::Taxonomy::Search] Search object.
     def classify_seq(record, i, search)
-      @sequences_in  += 1
-      @sequences_out += 1
-      @residues_in   += record[:SEQ].length
-      @residues_out  += record[:SEQ].length
+      @status[:sequences_in]  += 1
+      @status[:sequences_out] += 1
+      @status[:residues_in]   += record[:SEQ].length
+      @status[:residues_out]  += record[:SEQ].length
       seq_name = record[:SEQ_NAME] || i.to_s
 
       result = search.execute(BioPieces::Seq.new(seq_name: seq_name,

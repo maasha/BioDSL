@@ -124,7 +124,7 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         input.each do |record|
-          @records_in += 1
+          @status[:records_in] += 1
           @records << record
           @size += record.to_s.size
           save_block if @size > @block_size
@@ -210,7 +210,7 @@ module BioPieces
         record, i = @pqueue.pop
 
         output << record
-        @records_out += 1
+        @status[:records_out] += 1
 
         fd = @fds[i]
 
