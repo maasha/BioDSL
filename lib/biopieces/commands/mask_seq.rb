@@ -118,8 +118,6 @@ module BioPieces
         end
 
         status[:masked_percent] = (100 * @masked.to_f / @status[:residues_in]).round(2)
-
-        status_assign(status, STATS)
       end
     end
 

@@ -134,8 +134,6 @@ module BioPieces
         open_block_files
         fill_pqueue
         output_pqueue(output)
-
-        status_assign(status, STATS)
       end
     end
 

@@ -112,8 +112,6 @@ module BioPieces
         plot_options(gp)
         plot_dataset(gp, input, output)
         plot_output(gp)
-
-        status_assign(status, STATS)
       end
     end
 

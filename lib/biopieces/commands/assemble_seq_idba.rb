@@ -101,7 +101,6 @@ module BioPieces
           status_term(lengths)
         end
 
-        status_assign(status, STATS)
         calc_n50(status)
       end
     end

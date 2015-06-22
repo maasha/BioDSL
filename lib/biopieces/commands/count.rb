@@ -99,8 +99,6 @@ module BioPieces
         @status[:records_out] += 1
 
         write_output if @options[:output]
-
-        status_assign(status, STATS)
       end
     end
 

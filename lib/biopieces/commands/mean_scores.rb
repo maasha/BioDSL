@@ -125,8 +125,6 @@ module BioPieces
         end
 
         @mean_mean = (@sum.to_f / @count).round(2)
-
-        status_assign(status, STATS)
       end
     end
 

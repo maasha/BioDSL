@@ -158,8 +158,6 @@ module BioPieces
         end
 
         @index.save
-
-        status_assign(status, STATS)
       end
     end
 

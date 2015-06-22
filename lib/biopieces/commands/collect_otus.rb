@@ -65,8 +65,6 @@ module BioPieces
         count_hash = process_input(input, output)
         samples    = collect_samples(count_hash)
         process_output(count_hash, samples, output)
-
-        status_assign(status, STATS)
       end
     end
 

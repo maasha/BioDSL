@@ -93,8 +93,6 @@ module BioPieces
 
           process_output(output, tmp_out)
         end
-
-        status_assign(status, STATS)
       end
     end
 

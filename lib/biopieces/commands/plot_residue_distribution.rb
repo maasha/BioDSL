@@ -127,8 +127,6 @@ module BioPieces
 
         plot_create
         plot_output
-
-        status_assign(status, STATS)
       end
     end
 

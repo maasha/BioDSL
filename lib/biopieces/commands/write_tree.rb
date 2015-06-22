@@ -108,8 +108,6 @@ module BioPieces
 
           write_tree(tree_data)
         end
-
-        status_assign(status, STATS)
       end
     end
 

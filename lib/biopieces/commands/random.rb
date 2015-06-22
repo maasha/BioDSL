@@ -81,8 +81,6 @@ module BioPieces
           decide_wanted
           process_output(output, file)
         end
-
-        status_assign(status, STATS)
       end
     end
 

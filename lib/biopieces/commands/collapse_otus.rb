@@ -128,8 +128,6 @@ module BioPieces
         end
 
         write_tax(hash, output)
-
-        status_assign(status, STATS)
       end
     end
 

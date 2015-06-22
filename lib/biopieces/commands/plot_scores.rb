@@ -158,8 +158,6 @@ module BioPieces
         plot_scores
         plot_count
         plot_output
-
-        status_assign(status, STATS)
       end
     end
 

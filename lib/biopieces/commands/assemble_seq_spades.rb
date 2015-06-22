@@ -108,7 +108,6 @@ module BioPieces
           process_output(output, File.join(tmp_dir, 'scaffolds.fasta'))
         end
 
-        status_assign(status, STATS)
         calc_n50(status)
       end
     end

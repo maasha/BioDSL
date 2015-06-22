@@ -212,8 +212,6 @@ module BioPieces
         when @options[:last]  then read_last(output)
         else read_all(output)
         end
-
-        status_assign(status, STATS)
       end
     end
 

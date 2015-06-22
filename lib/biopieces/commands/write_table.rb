@@ -209,8 +209,6 @@ module BioPieces
         else
           write_table(input, output, $stdout)
         end
-
-        status_assign(status, STATS)
       end
     end
 

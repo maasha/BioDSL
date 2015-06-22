@@ -149,8 +149,6 @@ module BioPieces
         end
 
         @rows_total = @rows_matched + @rows_unmatched
-
-        status_assign(status, STATS)
       end
     end
 

@@ -97,8 +97,6 @@ module BioPieces
           parse_sortme_output(out_file)
           process_output(output, tmp_file)
         end
-
-        status_assign(status, STATS)
       end
     end
 

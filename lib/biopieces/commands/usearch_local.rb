@@ -91,8 +91,6 @@ module BioPieces
           run_usearch_local(tmp_in, tmp_out)
           process_output(output, tmp_out)
         end
-
-        status_assign(status, STATS)
       end
     end
 

@@ -150,8 +150,6 @@ module BioPieces
         end
 
         calc_dist(output)
-
-        status_assign(status, STATS)
       end
     end
 

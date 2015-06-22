@@ -112,8 +112,6 @@ module BioPieces
             process_input(input, output, ios)
           end
         end
-
-        status_assign(status, STATS)
       end
     end
 

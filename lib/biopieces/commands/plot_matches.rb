@@ -160,8 +160,6 @@ module BioPieces
         end
 
         plot_output
-
-        status_assign(status, STATS)
       end
     end
 

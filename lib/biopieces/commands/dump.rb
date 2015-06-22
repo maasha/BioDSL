@@ -81,8 +81,6 @@ module BioPieces
         else
           dump_all(input, output)
         end
-
-        status_assign(status, STATS)
       end
     end
 

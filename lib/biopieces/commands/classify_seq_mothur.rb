@@ -106,8 +106,6 @@ module BioPieces
           tmp_out = Dir.glob("#{tmp_dir}/input.*.taxonomy").first
           process_output(output, tmp_out)
         end
-
-        status_assign(status, STATS)
       end
     end
 

@@ -210,8 +210,6 @@ module BioPieces
 
           emit_match(output, record, match)
         end
-
-        status_assign(status, STATS)
       end
     end
 

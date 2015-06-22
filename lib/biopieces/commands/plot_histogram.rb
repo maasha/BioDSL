@@ -146,8 +146,6 @@ module BioPieces
         process_input(input, output)
         plot_create
         plot_output
-
-        status_assign(status, STATS)
       end
     end
 

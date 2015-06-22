@@ -105,8 +105,6 @@ module BioPieces
         else
           degap_all(input, output)
         end
-
-        status_assign(status, STATS)
       end
     end
 

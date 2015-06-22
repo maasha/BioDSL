@@ -101,8 +101,6 @@ module BioPieces
           File.unlink('8mer') if File.exist? '8mer'
           FileUtils.rm_rf(@tmp_dir)
         end
-
-        status_assign(status, STATS)
       end
     end
 

@@ -130,8 +130,6 @@ module BioPieces
             @status[:records_out] += 2
           end
         end
-
-        status_assign(status, STATS)
       end
     end
 

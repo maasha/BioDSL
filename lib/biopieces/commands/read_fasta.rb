@@ -117,8 +117,6 @@ module BioPieces
         end
 
         write_buffer(output) if @options[:last]
-
-        status_assign(status, STATS)
       end
     end
 

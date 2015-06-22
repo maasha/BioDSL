@@ -133,7 +133,6 @@ module BioPieces
           end
         end
 
-        status_assign(status, STATS)
         calc_status(status)
       end
     end

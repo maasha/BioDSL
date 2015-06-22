@@ -148,8 +148,6 @@ module BioPieces
         else
           read_all_single(output)
         end
-
-        status_assign(status, STATS)
       end
     end
 

@@ -111,8 +111,6 @@ module BioPieces
         else
           write_file(input, output)
         end
-
-        status_assign(status, STATS)
       end
     end
 
