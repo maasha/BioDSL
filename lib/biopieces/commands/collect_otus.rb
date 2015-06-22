@@ -62,6 +62,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         count_hash = process_input(input, output)
         samples    = collect_samples(count_hash)
         process_output(count_hash, samples, output)

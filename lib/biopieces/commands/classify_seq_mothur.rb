@@ -100,6 +100,8 @@ module BioPieces
     # @return [Proc] Lambda for the command.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('input.fasta') do |tmp_in, tmp_dir|
           process_input(input, output, tmp_in)
           run_mothur(tmp_dir, tmp_in)

@@ -143,6 +143,8 @@ module BioPieces
     # @return [Proc] command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         process_input(input, output)
         plot_create
         plot_output

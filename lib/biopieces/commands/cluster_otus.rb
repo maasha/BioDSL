@@ -84,6 +84,8 @@ module BioPieces
 
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('tmp.fa', 'tmp.uc') do |tmp_in, tmp_out|
           process_input(input, output, tmp_in)
 

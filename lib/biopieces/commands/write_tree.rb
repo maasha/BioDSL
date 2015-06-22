@@ -87,6 +87,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         Open3.popen3(@cmd) do |stdin, stdout, stderr, wait_thr|
           input.each_with_index do |record, i|
             @status[:records_in] += 1

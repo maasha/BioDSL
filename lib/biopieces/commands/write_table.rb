@@ -202,6 +202,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         if @options[:output]
           Filesys.open(@options[:output], 'w', compress: @compress) do |tab_out|
             write_table(input, output, tab_out)

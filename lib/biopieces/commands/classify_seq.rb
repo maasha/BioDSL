@@ -141,6 +141,8 @@ module BioPieces
     # @return [Proc] Returns the command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         @status[:sequences_in] = 0
 
         search = BioPieces::Taxonomy::Search.new(@options)

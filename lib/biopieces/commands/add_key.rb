@@ -70,7 +70,6 @@ module BioPieces
       @options = options
 
       check_options
-      status_init(STATS)
     end
 
     # Add a key or replace a key for all records with a specified value or a
@@ -84,6 +83,8 @@ module BioPieces
     # @return [Proc] Returns the command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 

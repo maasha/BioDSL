@@ -112,6 +112,8 @@ module BioPieces
     # @return [Proc] Lambda for the command.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         hash = {}
 
         input.each do |record|

@@ -101,6 +101,8 @@ module BioPieces
     # @return [Proc] Returns the command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('reads.fq', 'reads.fa') do |in_fq, in_fa, tmp_dir|
           process_input(in_fq, in_fa, input, output)
           input_file = (@type == :fastq) ? in_fq : in_fa

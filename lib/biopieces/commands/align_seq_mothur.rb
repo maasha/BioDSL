@@ -91,6 +91,8 @@ module BioPieces
     # @return [Proc] Returns the align_seq_mothur command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         begin
           Dir.mkdir(@tmp_dir)
 

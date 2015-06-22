@@ -74,6 +74,8 @@ module BioPieces
     # @return [Proc] Returns the dump command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         if @options[:first]
           dump_first(input, output)
         elsif @options[:last]

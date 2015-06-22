@@ -148,6 +148,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         input.each do |record|
           @status[:records_in] += 1
 

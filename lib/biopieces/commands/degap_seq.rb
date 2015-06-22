@@ -99,6 +99,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         if @options[:columns_only]
           degap_columns(input, output)
           status[:columns_removed] = @na_mask.count_false

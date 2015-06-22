@@ -90,6 +90,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('tmp', 'seq', 'out') do |tmp_file, seq_file, out_file|
           ref_files = process_ref_files
           process_input(input, tmp_file, seq_file)

@@ -94,6 +94,8 @@ module BioPieces
     # @return [Proc] Returns the command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('reads.fna', 'contig.fa') do |fa_in, fa_out, tmp_dir|
           process_input(input, output, fa_in)
           execute_idba(fa_in, tmp_dir)

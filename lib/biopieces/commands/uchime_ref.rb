@@ -82,6 +82,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('input', 'output') do |tmp_in, tmp_out|
           process_input(input, output, tmp_in)
           run_uchime_ref(tmp_in, tmp_out)

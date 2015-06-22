@@ -105,6 +105,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         if @options[:output] == $stdout
           process_input(input, output, $stdout)
         else

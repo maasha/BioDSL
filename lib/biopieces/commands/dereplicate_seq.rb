@@ -82,6 +82,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('dereplicate_seq') do |tmp_file, _|
           process_input(input, output, tmp_file)
           process_output(output, tmp_file)

@@ -107,6 +107,8 @@ module BioPieces
     # @return [Proc] Command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         gp = GnuPlotter.new
 
         plot_options(gp)

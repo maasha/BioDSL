@@ -106,6 +106,8 @@ module BioPieces
     # @return [Proc] Returns the write_fasta command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         if @options[:output] == $stdout
           write_stdout(input, output)
         else

@@ -104,6 +104,8 @@ module BioPieces
     # @return [Proc] Returns the read_fasta command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         read_input(input, output)
 
         options_glob(@options[:input]).each do |file|

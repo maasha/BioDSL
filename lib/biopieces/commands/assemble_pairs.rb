@@ -122,6 +122,8 @@ module BioPieces
     # @return [Proc] Returns the read_fasta command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         input.each_slice(2) do |record1, record2|
           @status[:records_in] += 2
 

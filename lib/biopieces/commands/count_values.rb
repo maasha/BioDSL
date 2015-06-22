@@ -88,6 +88,8 @@ module BioPieces
     # @return [Proc] Return command lambda.
     def lmb
       lambda do |input, output, status|
+        status_init(status, STATS)
+
         TmpDir.create('count_values') do |tmp_file, _|
           process_input(input, tmp_file)
           process_output(output, tmp_file)
