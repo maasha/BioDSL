@@ -210,7 +210,7 @@ module BioPieces
         @pattern = @pattern[1...@pattern.length]
       end
 
-      @hit ? @pattern_hits += 1 : @pattern_misses += 1
+      @hit ? @status[:pattern_hits] += 1 : @status[:pattern_misses] += 1
     end
 
     # Search a given entry and return match data.
@@ -260,7 +260,7 @@ module BioPieces
         @pattern = @pattern[0...@pattern.length - 1]
       end
 
-      @hit ? @pattern_hits += 1 : @pattern_misses += 1
+      @hit ? @status[:pattern_hits] += 1 : @status[:pattern_misses] += 1
     end
 
     # Search a given entry and return match data.

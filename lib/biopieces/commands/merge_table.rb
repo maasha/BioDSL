@@ -138,17 +138,17 @@ module BioPieces
           @status[:records_in] += 1
 
           if record[@key] && @table[record[@key]]
-            @merged += 1
+            @status[:merged] += 1
             record = record.merge(@table[record[@key]])
           else
-            @non_merged += 1
+            @status[:non_merged] += 1
           end
 
           output << record
           @status[:records_out] += 1
         end
 
-        @rows_total = @rows_matched + @rows_unmatched
+        @status[:rows_total] = @status[:rows_matched] + @status[:rows_unmatched]
       end
     end
 
@@ -204,11 +204,11 @@ module BioPieces
       if record[@key]
         check_duplicate(record)
 
-        @rows_matched += 1
+        @status[:rows_matched] += 1
 
         @table[record[@key]] = record
       else
-        @rows_unmatched += 1
+        @status[:rows_unmatched] += 1
       end
     end
 

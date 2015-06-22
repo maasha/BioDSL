@@ -118,7 +118,7 @@ module BioPieces
           @status[:records_out] += 1
         end
 
-        status[:masked_percent] = (100 * @masked.to_f / @status[:residues_in]).round(2)
+        @status[:masked_percent] = (100 * @status[:masked].to_f / @status[:residues_in]).round(2)
       end
     end
 
@@ -160,7 +160,7 @@ module BioPieces
     # @param entry [biopieces::seq] sequences entry.
     def mask_seq_soft(entry)
       entry.mask_seq_soft!(@options[:quality_min])
-      @masked += entry.seq.count('a-z')
+      @status[:masked] += entry.seq.count('a-z')
     end
 
     # Hard mask sequences in given entry.
@@ -168,7 +168,7 @@ module BioPieces
     # @param entry [biopieces::seq] sequences entry.
     def mask_seq_hard(entry)
       entry.mask_seq_hard!(@options[:quality_min])
-      @masked += entry.seq.count('N')
+      @status[:masked] += entry.seq.count('N')
     end
   end
 end

@@ -112,6 +112,9 @@ module BioPieces
     def initialize(options)
       @options = options
 
+      @overlap_sum = 0
+      @hamming_sum = 0
+
       check_options
       defaults
     end
@@ -134,7 +137,7 @@ module BioPieces
           end
         end
 
-        calc_status(status)
+        calc_status
       end
     end
 
@@ -186,7 +189,7 @@ module BioPieces
       elsif @options[:allow_unassembled]
         output_entries(entry1, entry2, output)
       else
-        @unassembled += 1
+        @status[:unassembled] += 1
       end
     end
 
@@ -246,7 +249,7 @@ module BioPieces
     def output_assembled(assembled, output)
       output << assembled2record(assembled)
 
-      @assembled     += 1
+      @status[:assembled]     += 1
       @status[:records_out]   += 1
       @status[:sequences_out] += 1
       @status[:residues_out]  += assembled.length
@@ -283,7 +286,7 @@ module BioPieces
 
       output << entry2record(entry1)
 
-      @unassembled   += 1
+      @status[:unassembled]   += 1
       @status[:sequences_out] += 1
       @status[:residues_out]  += entry1.length
       @status[:records_out]   += 1
@@ -298,7 +301,7 @@ module BioPieces
       output << entry2record(entry1)
       output << entry2record(entry2)
 
-      @unassembled   += 2
+      @status[:unassembled]   += 2
       @status[:sequences_out] += 2
       @status[:residues_out]  += entry1.length + entry2.length
       @status[:records_out]   += 2
@@ -317,13 +320,11 @@ module BioPieces
     end
 
     # Calculate additional status values.
-    #
-    # @param status [Hash] Status hash.
-    def calc_status(status)
-      assembled_percent = (100 * 2 * @assembled.to_f / @status[:sequences_in]).round(2)
-      status[:assembled_percent] = assembled_percent
-      status[:overlap_mean]      = (@overlap_sum.to_f / @status[:records_out]).round(2)
-      status[:hamming_dist_mean] = (@hamming_sum.to_f / @status[:records_out]).round(2)
+    def calc_status
+      assembled_percent = (100 * 2 * @status[:assembled].to_f / @status[:sequences_in]).round(2)
+      @status[:assembled_percent] = assembled_percent
+      @status[:overlap_mean]      = (@overlap_sum.to_f / @status[:records_out]).round(2)
+      @status[:hamming_dist_mean] = (@hamming_sum.to_f / @status[:records_out]).round(2)
     end
   end
 end

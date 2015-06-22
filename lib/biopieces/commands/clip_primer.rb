@@ -230,7 +230,7 @@ module BioPieces
                                           max_mismatches: @mis,
                                           max_insertions: @ins,
                                           max_deletions:  @del))
-        @pattern_hits += 1
+        @status[:pattern_hits] += 1
 
         if match.pos + match.length <= entry.length
           entry = entry[match.pos + match.length..-1]
@@ -238,7 +238,7 @@ module BioPieces
           merge_record_entry(record, entry, match, 'FORWARD')
         end
       else
-        @pattern_misses += 1
+        @status[:pattern_misses] += 1
       end
     end
 
@@ -266,13 +266,13 @@ module BioPieces
                                           max_mismatches: @mis,
                                           max_insertions: @ins,
                                           max_deletions:  @del))
-        @pattern_hits += 1
+        @status[:pattern_hits] += 1
 
         entry = entry[0...match.pos]
 
         merge_record_entry(record, entry, match, 'REVERSE')
       else
-        @pattern_misses += 1
+        @status[:pattern_misses] += 1
       end
     end
 

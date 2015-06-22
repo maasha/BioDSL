@@ -125,7 +125,7 @@ module BioPieces
           @status[:records_out] += 1
         end
 
-        @mean_mean = (@sum.to_f / @count).round(2)
+        @status[:mean_mean] = (@sum.to_f / @count).round(2)
       end
     end
 
@@ -160,8 +160,8 @@ module BioPieces
       end
 
       @sum   += mean
-      @min_mean    = mean if mean < @min_mean
-      @max_mean    = mean if mean > @max_mean
+      @status[:min_mean] = mean if mean < @status[:min_mean]
+      @status[:max_mean] = mean if mean > @status[:max_mean]
       @count += 1
     end
   end

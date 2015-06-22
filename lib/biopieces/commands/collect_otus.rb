@@ -106,7 +106,7 @@ module BioPieces
       id     = record[:S_ID].to_sym
       sample = record[:SAMPLE].upcase.to_sym
       count_hash[id][sample] += (record[:SEQ_COUNT] || 1)
-      @hits_in += 1
+      @status[:hits_in] += 1
     end
 
     # Collect all samples in the count_hash into a sorted set.
@@ -141,6 +141,8 @@ module BioPieces
         end
 
         output << record
+
+        @status[:hits_out]    += 1
         @status[:records_out] += 1
       end
     end

@@ -75,10 +75,6 @@ module BioPieces
     def initialize(options)
       @options        = options
       @options[:cpus] ||= 1
-      @status[:records_in]     = 0
-      @status[:records_out]    = 0
-      @status[:sequences_in]   = 0
-      @hits_out       = 0
 
       aux_exist('usearch')
       check_options
@@ -166,7 +162,7 @@ module BioPieces
         ios.each(:uc) do |record|
           record[:RECORD_TYPE] = 'usearch'
           output << record
-          @hits_out    += 1
+          @status[:hits_out]    += 1
           @status[:records_out] += 1
         end
       end

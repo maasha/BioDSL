@@ -226,9 +226,9 @@ module BioPieces
       BioPieces::Fasta.open(tmp_out) do |ios|
         ios.each do |entry|
           if entry.seq_name == 'consensus'
-            @clusters_out += 1
+            @status[:clusters_out] += 1
           else
-            record = {RECORD_TYPE: 'uclust', CLUSTER: @clusters_out}
+            record = {RECORD_TYPE: 'uclust', CLUSTER: @status[:clusters_out]}
             record.merge!(entry.to_bp)
 
             output << record

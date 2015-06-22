@@ -29,14 +29,13 @@ module BioPieces
     require 'tempfile'
     require 'terminal-table'
 
-    # Given a list of symbols initialize an initialize all as instance variables
-    # with the value 0.
+    # Given a list of symbols initialize all as status hash keys with the value 0.
     #
-    # @param args [Array] List of symbols.
-    def status_init(args)
-      args.each do |arg|
-        instance_variable_set("@#{arg}".to_sym, 0)
-      end
+    # @param status [Hash]  Status hash.
+    # @param args   [Array] List of symbols.
+    def status_init(status, args)
+      args.each { |arg| status[arg] = 0 }
+      @status = status
     end
 
     # Assign values to status hash from instance variables specified by a list

@@ -118,7 +118,7 @@ module BioPieces
           @status[:records_in] += 1
 
           if record[:TAXONOMY]
-            @otus_in += 1
+            @status[:otus_in] += 1
 
             collapse_tax(hash, record)
           else
@@ -162,7 +162,7 @@ module BioPieces
     def write_tax(hash, output)
       hash.each_value do |record|
         output << record
-        @otus_out    += 1
+        @status[:otus_out]    += 1
         @status[:records_out] += 1
       end
     end

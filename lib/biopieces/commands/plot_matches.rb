@@ -213,7 +213,7 @@ module BioPieces
     def plot_match(forward, reverse, record)
       return unless record[:Q_BEG] && record[:Q_END] &&
                     record[:S_BEG] && record[:S_END]
-      @matches_in += 1
+      @status[:matches_in] += 1
 
       q_len = record[:Q_END] - record[:Q_BEG]
       s_len = record[:S_END] - record[:S_BEG]
