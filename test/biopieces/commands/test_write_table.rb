@@ -84,7 +84,7 @@ class TestWriteTable < Test::Unit::TestCase
   end
 
   test 'BioPieces::Pipeline::WriteTable status outputs correctly' do
-    @p.write_table.run(input: @input)
+    capture_stdout { @p.write_table.run(input: @input) }
 
     assert_equal(4, @p.status.first[:records_in])
     assert_equal(4, @p.status.first[:records_out])
