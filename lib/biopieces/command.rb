@@ -26,7 +26,8 @@
 module BioPieces
   # Command class for initiating and calling commands.
   class Command
-    attr_reader :name, :status, :run_status, :options
+    attr_reader :name, :status, :options
+    attr_accessor :run_status
 
     # Constructor for Command objects.
     #
@@ -46,12 +47,10 @@ module BioPieces
     # @param args [Array] List of arguments used in the callback.
     def call(*args)
       @lmb.call(*args, @status)
-    end
 
-    # Terminate the status.
-    def terminate
-      @status[:time_stop] = Time.now
       @run_status         = 'OK'
+      @status[:time_stop] = Time.now
+      calc_time_elapsed
     end
 
     # Return string representation of a Command object.

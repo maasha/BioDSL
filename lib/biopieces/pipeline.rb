@@ -249,7 +249,6 @@ module BioPieces
       @commands.each do |command|
         input  = @options[:input] || @enums.last
         @enums << Enumerator.new { |output| command.call(input, output) }
-        command.terminate
       end
     end
 

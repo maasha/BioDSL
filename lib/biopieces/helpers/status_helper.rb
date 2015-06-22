@@ -78,13 +78,14 @@ module BioPieces
       rows <<  %w{name records_in records_out time_elapsed status}
 
       commands.each do |command|
-        elapsed = command.status[:time_stop] - command.status[:time_start]
+        command.status[:time_stop] = Time.now unless command.run_status == 'OK'
+        command.calc_time_elapsed
 
         row = []
         row << command.name
         row << command.status[:records_in].commify
         row << command.status[:records_out].commify
-        row << (Time.mktime(0) + elapsed).strftime("%H:%M:%S")
+        row << command.status[:time_elapsed]
         row << command.run_status
         rows << row
       end
