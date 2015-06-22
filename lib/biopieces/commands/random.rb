@@ -116,16 +116,18 @@ module BioPieces
       if @options[:pairs]
         decide_wanted_pairs
       else
-        @wanted = (0...@status[:records_in]).to_a.shuffle[0...@options[:number]].to_set
+        @wanted =
+          (0...@status[:records_in]).to_a.shuffle[0...@options[:number]].to_set
       end
     end
 
     # Compile a random set of number pairs.
     def decide_wanted_pairs
       @wanted = Set.new
+      range   = (0...@status[:records_in])
       num     = @options[:number] / 2
 
-      (0...@status[:records_in]).to_a.shuffle.select(&:even?)[0...num].each do |i|
+      range.to_a.shuffle.select(&:even?)[0...num].each do |i|
         @wanted.merge([i, i + 1])
       end
     end

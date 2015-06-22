@@ -147,6 +147,8 @@ module BioPieces
       end
     end
 
+    # rubocop: disable Metrics/AbcSize
+
     # Write all sequence entries to a specified file.
     #
     # @param input  [Enumerator]          The input stream.
@@ -168,6 +170,8 @@ module BioPieces
         end
       end
     end
+
+    # rubocop: enable Metrics/AbcSize
 
     # Write a given record to the output stream if this exist.
     #

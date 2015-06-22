@@ -140,7 +140,7 @@ module BioPieces
         if record[:SEQ]
           @status[:sequences_in] += 1
           @status[:residues_in]  += record[:SEQ].length
-          
+
           write_fastq(record, ios) if record[:SEQ_NAME] && record[:SCORES]
         end
 

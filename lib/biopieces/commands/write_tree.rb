@@ -80,6 +80,7 @@ module BioPieces
     end
 
     # rubocop: disable Metrics/AbcSize
+    # rubocop: disable MethodLength
 
     # Return command lambda for write_tree.
     #
@@ -113,6 +114,7 @@ module BioPieces
     end
 
     # rubocop: enable Metrics/AbcSize
+    # rubocop: enable MethodLength
 
     private
 
