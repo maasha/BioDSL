@@ -84,10 +84,10 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
       |set style data histograms
       |set boxwidth 0.75 absolute
       |set linetype 1 lc rgb \"#FF0010\"
-      |set linetype 2 lc rgb \"#0075DC\"
-      |set linetype 3 lc rgb \"#2BCE48\"
-      |set linetype 4 lc rgb \"#FFFF00\"
-      |set linetype 5 lc rgb \"#191919\"
+      |set linetype 2 lc rgb \"#191919\"
+      |set linetype 3 lc rgb \"#0075DC\"
+      |set linetype 4 lc rgb \"#2BCE48\"
+      |set linetype 5 lc rgb \"#FFFF00\"
       |set linetype 6 lc rgb \"#4C005C\"
       |set linetype 7 lc rgb \"#993F00\"
       |set linetype 8 lc rgb \"#FFCC99\"
@@ -159,10 +159,10 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
       |set style data histograms
       |set boxwidth 0.75 absolute
       |set linetype 1 lc rgb \"#FF0010\"
-      |set linetype 2 lc rgb \"#0075DC\"
-      |set linetype 3 lc rgb \"#2BCE48\"
-      |set linetype 4 lc rgb \"#FFFF00\"
-      |set linetype 5 lc rgb \"#191919\"
+      |set linetype 2 lc rgb \"#191919\"
+      |set linetype 3 lc rgb \"#0075DC\"
+      |set linetype 4 lc rgb \"#2BCE48\"
+      |set linetype 5 lc rgb \"#FFFF00\"
       |set linetype 6 lc rgb \"#4C005C\"
       |set linetype 7 lc rgb \"#993F00\"
       |set linetype 8 lc rgb \"#FFCC99\"

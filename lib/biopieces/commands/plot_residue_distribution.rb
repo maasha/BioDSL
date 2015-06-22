@@ -236,10 +236,10 @@ module BioPieces
     # color scheme: http://en.wikipedia.org/wiki/Help:Distinguishable_colors
     def plot_colors
       @gp.set linetype: '1 lc rgb "#FF0010"'  # Red
-      @gp.set linetype: '2 lc rgb "#0075DC"'  # Blue
-      @gp.set linetype: '3 lc rgb "#2BCE48"'  # Green
-      @gp.set linetype: '4 lc rgb "#FFFF00"'  # Yellow
-      @gp.set linetype: '5 lc rgb "#191919"'  # Ebony
+      @gp.set linetype: '2 lc rgb "#191919"'  # Ebony
+      @gp.set linetype: '3 lc rgb "#0075DC"'  # Blue
+      @gp.set linetype: '4 lc rgb "#2BCE48"'  # Green
+      @gp.set linetype: '5 lc rgb "#FFFF00"'  # Yellow
       @gp.set linetype: '6 lc rgb "#4C005C"'  # Damson
       @gp.set linetype: '7 lc rgb "#993F00"'  # Caramel
       @gp.set linetype: '8 lc rgb "#FFCC99"'  # Honeydew
