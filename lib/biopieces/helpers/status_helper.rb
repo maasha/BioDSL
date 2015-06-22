@@ -38,17 +38,6 @@ module BioPieces
       @status = status
     end
 
-    # Assign values to status hash from instance variables specified by a list
-    # of given symbols.
-    #
-    # @param status [Hash]  Status hash.
-    # @param args   [Array] List of symbols.
-    def status_assign(status, args)
-      args.each do |arg|
-        status[arg] = instance_variable_get("@#{arg}".to_sym)
-      end
-    end
-
     # Track the status of a running command in a seperate thread and output
     # the status at speficied intervals.
     #
