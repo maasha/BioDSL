@@ -133,7 +133,6 @@ module BioPieces
 
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Return a lambda for the ClassifySeq command.

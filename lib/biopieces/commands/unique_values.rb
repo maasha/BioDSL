@@ -92,7 +92,6 @@ module BioPieces
       @invert      = options[:invert]
 
       check_options
-      status_init(STATS)
     end
 
     # Return command lambda for unique_values

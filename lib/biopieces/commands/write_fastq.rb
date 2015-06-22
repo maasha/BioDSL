@@ -96,8 +96,6 @@ module BioPieces
       @options[:output] ||= $stdout
       @compress           = choose_compression
       @encoding           = choose_encoding
-
-      status_init(STATS)
     end
 
     # Return command lambda for write_fastq.

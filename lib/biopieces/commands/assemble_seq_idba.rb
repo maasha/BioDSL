@@ -86,7 +86,6 @@ module BioPieces
       aux_exist('idba_ud')
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Return a lambda for the AssembleSeqIdba command.

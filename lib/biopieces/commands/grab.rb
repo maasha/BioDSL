@@ -182,7 +182,6 @@ module BioPieces
       @options   = options
 
       check_options
-      status_init(STATS)
 
       @keys_only = @options[:keys_only]
       @vals_only = @options[:values_only]

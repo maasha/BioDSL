@@ -82,7 +82,6 @@ module BioPieces
 
       aux_exist('sortmerna')
       check_options
-      status_init(STATS)
     end
 
     # Return the command lambda for filter_rrnas.

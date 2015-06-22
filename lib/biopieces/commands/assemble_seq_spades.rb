@@ -93,7 +93,6 @@ module BioPieces
       aux_exist('spades.py')
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Return a lambda for the AssembleSeqSpades command.

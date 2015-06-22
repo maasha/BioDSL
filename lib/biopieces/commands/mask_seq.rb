@@ -97,7 +97,6 @@ module BioPieces
 
       check_options
       defaults
-      status_init(STATS)
 
       @mask = options[:mask].to_sym
     end

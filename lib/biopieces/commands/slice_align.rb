@@ -188,7 +188,6 @@ module BioPieces
       @slice    = options[:slice]
 
       check_options
-      status_init(STATS)
       defaults
     end
 

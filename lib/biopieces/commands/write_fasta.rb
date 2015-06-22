@@ -98,7 +98,6 @@ module BioPieces
       @options = options
       check_options
       @options[:output] ||= $stdout
-      status_init(STATS)
     end
 
     # Return a lambda for the write_fasta command.

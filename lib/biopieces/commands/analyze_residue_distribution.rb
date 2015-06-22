@@ -124,7 +124,6 @@ module BioPieces
       @options = options
 
       check_options
-      status_init(STATS)
 
       @counts        = Hash.new { |h, k| h[k] = Hash.new(0) }
       @total         = Hash.new(0)

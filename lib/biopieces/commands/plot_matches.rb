@@ -136,7 +136,6 @@ module BioPieces
       aux_exist('gnuplot')
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Return lambda for command plot_matches.

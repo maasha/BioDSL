@@ -79,7 +79,6 @@ module BioPieces
       aux_exist('usearch')
       check_options
       defaults
-      status_init(STATS)
     end
 
     def lmb

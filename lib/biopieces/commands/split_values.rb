@@ -91,8 +91,6 @@ module BioPieces
       @keys        = @options[:keys]
       @key         = @options[:key].to_sym
       @delimiter   = @options[:delimiter] || '_'
-
-      status_init(STATS)
     end
 
     # Return command lambda for split_values.

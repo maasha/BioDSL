@@ -83,7 +83,6 @@ module BioPieces
       aux_exist('mothur')
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Return a lambda for the align_seq_mothur command.

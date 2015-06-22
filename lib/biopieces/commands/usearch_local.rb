@@ -78,7 +78,6 @@ module BioPieces
 
       aux_exist('usearch')
       check_options
-      status_init(STATS)
     end
 
     # Return command lambda for usearch_local.

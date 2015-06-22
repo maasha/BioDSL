@@ -69,7 +69,6 @@ module BioPieces
       @type    = nil
 
       check_options
-      status_init(STATS)
     end
 
     # Return the command lambda for ComplementSeq.

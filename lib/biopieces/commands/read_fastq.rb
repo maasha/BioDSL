@@ -129,7 +129,6 @@ module BioPieces
       @type     = nil
 
       check_options
-      status_init(STATS)
     end
 
     # Return command lambda for ReadFastq.

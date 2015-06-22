@@ -115,7 +115,6 @@ module BioPieces
       @fds        = nil
 
       check_options
-      status_init(STATS)
     end
 
     # Return command lambda for Sort.

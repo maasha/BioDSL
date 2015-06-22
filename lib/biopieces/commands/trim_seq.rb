@@ -125,7 +125,6 @@ module BioPieces
 
       check_options
       defaults
-      status_init(STATS)
 
       @mode = @options[:mode].to_sym
       @min  = @options[:quality_min]

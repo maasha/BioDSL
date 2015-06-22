@@ -120,11 +120,9 @@ module BioPieces
       check_options
       defaults
 
-      @table   = {}
-      @key     = @options[:key].to_sym
-      @keys    = options[:keys] ? @options[:keys].map(&:to_sym) : nil
-
-      status_init(STATS)
+      @table = {}
+      @key   = @options[:key].to_sym
+      @keys  = options[:keys] ? @options[:keys].map(&:to_sym) : nil
     end
 
     # Return command lambda for merge_table.

@@ -77,7 +77,6 @@ module BioPieces
       @options    = options
 
       check_options
-      status_init(STATS)
 
       @keys       = @options[:keys].map(&:to_sym)
       @count_hash = Hash.new { |h, k| h[k] = Hash.new(0) }

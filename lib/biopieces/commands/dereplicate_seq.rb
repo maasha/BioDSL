@@ -74,7 +74,6 @@ module BioPieces
       @lookup        = GoogleHashDenseLongToInt.new
 
       check_options
-      status_init(STATS)
     end
 
     # Return the command lambda for DereplicateSeq.

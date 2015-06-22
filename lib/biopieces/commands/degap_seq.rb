@@ -91,7 +91,6 @@ module BioPieces
       @count   = 0
 
       check_options
-      status_init(STATS)
     end
 
     # Return the command lambda for DegapSeq.

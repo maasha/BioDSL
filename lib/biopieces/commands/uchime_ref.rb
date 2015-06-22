@@ -73,8 +73,6 @@ module BioPieces
       check_options
       @options[:cpus]   ||= 1
       @options[:strand] ||= 'plus'  # This option cant be changed in usearch7.0
-
-      status_init(STATS)
     end
 
     # Return command lambda for uchime_ref.

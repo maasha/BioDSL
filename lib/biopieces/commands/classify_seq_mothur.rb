@@ -92,7 +92,6 @@ module BioPieces
       aux_exist('mothur')
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Command lambda for ClassifySeqMothur.

@@ -96,7 +96,6 @@ module BioPieces
       @buffer  = []
 
       check_options
-      status_init(STATS)
     end
 
     # Return a lambda for the read_fasta command.

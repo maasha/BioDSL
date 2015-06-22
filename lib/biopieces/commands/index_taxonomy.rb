@@ -138,7 +138,6 @@ module BioPieces
       check_options
       create_output_dir
       check_output_files
-      status_init(STATS)
 
       @index   = BioPieces::Taxonomy::Index.new(options)
     end

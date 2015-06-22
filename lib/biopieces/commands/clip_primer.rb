@@ -123,7 +123,6 @@ module BioPieces
       @options = options
       defaults
       check_options
-      status_init(STATS)
 
       @primer  = primer
       @mis     = calc_mis

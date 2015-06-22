@@ -75,7 +75,6 @@ module BioPieces
 
       aux_exist('FastTree')
       check_options
-      status_init(STATS)
 
       @cmd = compile_command
     end

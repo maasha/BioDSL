@@ -99,7 +99,6 @@ module BioPieces
       aux_exist('gnuplot')
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Return command lambda for plot_histogram.

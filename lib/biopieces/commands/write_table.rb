@@ -193,8 +193,6 @@ module BioPieces
       @header                = @options[:header] ? true : false
       @last                  = []
       @rows                  = []
-
-      status_init(STATS)
     end
 
     # Return command lambda for write_table.

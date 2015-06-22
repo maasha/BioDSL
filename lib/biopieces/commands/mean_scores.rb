@@ -106,7 +106,6 @@ module BioPieces
 
       check_options
       defaults
-      status_init(STATS)
     end
 
     # Return command lambda for mean_scores.

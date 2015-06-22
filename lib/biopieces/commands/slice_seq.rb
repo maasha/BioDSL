@@ -102,7 +102,6 @@ module BioPieces
       @options = options
 
       check_options
-      status_init(STATS)
     end
 
     # Return lambda for command.

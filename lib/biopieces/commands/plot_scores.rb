@@ -136,7 +136,6 @@ module BioPieces
       aux_exist('gnuplot')
       check_options
       default
-      status_init(STATS)
     end
 
     # Return command lambda for plot_scores.

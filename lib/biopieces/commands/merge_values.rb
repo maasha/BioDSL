@@ -74,8 +74,6 @@ module BioPieces
 
       @keys      = options[:keys]
       @delimiter = options[:delimiter]
-
-      status_init(STATS)
     end
 
     # Return command lambda for merge_values.
