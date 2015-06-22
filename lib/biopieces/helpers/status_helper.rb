@@ -78,7 +78,7 @@ module BioPieces
       rows <<  %w{name records_in records_out time_elapsed status}
 
       commands.each do |command|
-        command.status[:time_stop] = Time.now unless command.run_status == 'OK'
+        command.status[:time_stop] = Time.now unless command.run_status == 'done'
         command.calc_time_elapsed
 
         row = []

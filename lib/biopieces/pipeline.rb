@@ -38,6 +38,7 @@ module BioPieces
     require 'biopieces/helpers/options_helper'
     require 'biopieces/helpers/status_helper'
     require 'mail'
+    require 'yaml'
 
     include EmailHelper
     include LogHelper
@@ -213,7 +214,13 @@ module BioPieces
     def print_status
       return unless @options[:verbose]
 
-      status.map { |s| puts s }
+      @commands.each do |command|
+        hash = {}
+        hash[:command] = command.name
+        hash[:options] = command.options
+        hash[:status]  = command.status
+        puts hash.to_yaml
+      end
     end
 
     # Check all run options.

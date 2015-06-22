@@ -89,11 +89,10 @@ module BioPieces
 
     # Render HTML status section.
     #
-    # @param status [BioPieces::Status] Status object.
-    def render_status(status)
-      stats = status.reject { |k, _| k.to_s[0..3] == 'time' }
-      # FIXME: exit_status
-      render('status.html.haml', self, exit_status: 'done', statsus: stats)
+    # @param command [BioPieces::Command] Command object.
+    def render_status(command)
+      stats = command.status.reject { |k, _| k.to_s[0..3] == 'time' }
+      render('status.html.haml', self, exit_status: command.run_status, statsus: stats)
     end
 
     # Render HTML time section.

@@ -4,7 +4,7 @@
     Command: #{command.name}
     %a{:href => help_url(command.name), :title => "Click for help on #{command.name}", :target => "_blank"} ?
   %p.command #{command.to_s}
-  = render_status command.status
+  = render_status command
   = render_time command.status
   - if input? command.options
     = render_input_files command.options

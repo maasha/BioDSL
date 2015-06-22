@@ -154,15 +154,6 @@ class PipelineTest < Test::Unit::TestCase
     end
   end
 
-  test 'BioPieces::Pipeline#run with verbose returns correctly' do
-    stdout = capture_stdout do
-      @p.read_fasta(input: @fasta_file).run(verbose: true)
-    end
-
-    expected = capture_stdout { puts @p.status }
-    assert_equal(expected, stdout)
-  end
-
   test 'BioPieces::Pipeline#run returns correctly' do
     @p.read_fasta(input: @fasta_file).write_fasta(output: @fasta_file2).run
 

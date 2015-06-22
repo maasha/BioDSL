@@ -48,9 +48,10 @@ module BioPieces
     def call(*args)
       @lmb.call(*args, @status)
 
-      @run_status         = 'OK'
+      @run_status         = 'done'
       @status[:time_stop] = Time.now
       calc_time_elapsed
+      calc_delta
     end
 
     # Return string representation of a Command object.
