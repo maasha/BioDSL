@@ -143,7 +143,7 @@ module BioPieces
     # @return [Set] Set of keys to skip.
     def determine_skip_keys
       return unless @options[:skip]
-      @options[:skip].each_with_object(Set.new) { |a, e| a << e.to_sym }
+      @options[:skip].each_with_object(Set.new) { |e, a| a << e.to_sym }
     end
 
     # Determine the headings.
@@ -159,7 +159,7 @@ module BioPieces
           record.keys
         end
 
-      @headings.reject! { |r| @skip_keys[r] } if @options[:skip]
+      @headings.reject! { |r| @skip_keys.include? r } if @options[:skip]
     end
 
     # Sort records keys numerically, when the keys are in the format Vn, where n
