@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
@@ -30,20 +30,29 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..', '..')
 
 require 'test/helper'
 
-class TestAssembleSeqIdba < Test::Unit::TestCase 
-  def setup
-    omit("idba_ud not found") unless BioPieces::Filesys.which("idba_ud")
+# Test class for TmpDir
+class TmpDirTest < Test::Unit::TestCase
+  test 'BioPieces::TmpDir#create with no files returns correctly' do
+    dir = ''
 
-    @p = BioPieces::Pipeline.new
+    BioPieces::TmpDir.create do |tmp_dir|
+      dir = tmp_dir
+      assert_true(File.directory? dir)
+    end
+
+    assert_false(File.directory? dir)
   end
 
-  test "BioPieces::Pipeline::AssembleSeqIdba with invalid options raises" do
-    assert_raise(BioPieces::OptionError) { @p.assemble_seq_idba(foo: "bar") }
-  end
+  test 'BioPieces::TmpDir#create with files returns correctly' do
+    dir = ''
 
-  test "BioPieces::Pipeline::AssembleSeqIdba with valid options don't raise" do
-    assert_nothing_raised { @p.assemble_seq_idba(cpus: 1) }
-  end
+    BioPieces::TmpDir.create('foo', 'bar') do |foo, bar, tmp_dir|
+      dir = tmp_dir
+      assert_true(File.directory? dir)
+      assert_equal(File.join(dir, 'foo'), foo)
+      assert_equal(File.join(dir, 'bar'), bar)
+    end
 
-  # FIXME: tests missing!
+    assert_false(File.directory? dir)
+  end
 end

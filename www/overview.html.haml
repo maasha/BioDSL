@@ -9,7 +9,7 @@
     - commands.each_with_index do |command, i|
       %tr
         %td
-          %a{:href => "##{command[:name]}#{i}"} #{command[:name]}
-        %td.right #{command[:records_in].commify}
-        %td.right #{command[:records_out].commify}
-        %td.right #{command[:time_elapsed]}
+          %a{:href => "##{command.name}#{i}"} #{command.name}
+        %td.right #{command.status[:records_in].commify}
+        %td.right #{command.status[:records_out].commify}
+        %td.right #{command.status[:time_elapsed]}

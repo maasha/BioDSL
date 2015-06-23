@@ -64,12 +64,16 @@ module BioPieces
     #   end
     # end
     def each
-      while not @io.eof?
-        size = @io.read(4)
-        raise EOFError unless size
-        data = @io.read(size.unpack("N").first)
-        yield Marshal.load(data)
+      until @io.eof? 
+        yield next_entry
       end
+    end
+
+    def next_entry
+      size = @io.read(4)
+      raise EOFError unless size
+      data = @io.read(size.unpack("N").first)
+      Marshal.load(data)
     end
   end
 end
