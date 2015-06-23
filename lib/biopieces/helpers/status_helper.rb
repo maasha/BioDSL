@@ -26,11 +26,13 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  # Namespace with methods to record and manipulate cammand status.
   module StatusHelper
     require 'tempfile'
     require 'terminal-table'
 
-    # Given a list of symbols initialize all as status hash keys with the value 0.
+    # Given a list of symbols initialize all as status hash keys with the value
+    # 0.
     #
     # @param status [Hash]  Status hash.
     # @param args   [Array] List of symbols.
@@ -53,10 +55,7 @@ module BioPieces
         print "\e[H\e[2J"   # Console code to clear screen
 
         loop do
-          print "\e[1;1H"    # Console code to move cursor to 1,1 coordinate.
-
-          puts "Started: #{commands.first.status[:time_start]}"
-          puts status_tabulate(commands)
+          progress_print(commands)
 
           sleep BioPieces::Config::STATUS_PROGRESS_INTERVAL
         end
@@ -66,20 +65,48 @@ module BioPieces
 
       thread.terminate
 
+      progress_print(commands)
+    end
+
+    private
+
+    # Print the progress table to terminal.
+    #
+    # @param commands [Array] List of commands whos status should be output.
+    def progress_print(commands)
       print "\e[1;1H"    # Console code to move cursor to 1,1 coordinate.
       puts "Started: #{commands.first.status[:time_start]}"
       puts status_tabulate(commands)
     end
 
+    # Create status table.
+    #
+    # @param commands [Array] List of commands whos status should be output.
+    #
+    # @return [String] Status table.
     def status_tabulate(commands)
       return unless commands.first.status[:records_in]
 
-      rows = []
-      rows <<  %w{name records_in records_out time_elapsed status}
+      table = Terminal::Table.new
+      table.style = {border_x: '', border_y: '', border_i: ''}
+      table.rows = status_rows(commands)
+
+      table.align_column(1, :right)
+      table.align_column(2, :right)
+
+      table.to_s
+    end
+
+    # Compile rows with table data.
+    #
+    # @param commands [Array] List of commands whos status should be output.
+    #
+    # @return [Array] List of rows.
+    def status_rows(commands)
+      rows = [%w(name records_in records_out time_elapsed status)]
 
       commands.each do |command|
-        command.status[:time_stop] = Time.now unless command.run_status == 'done'
-        command.calc_time_elapsed
+        update_time(command)
 
         row = []
         row << command.name
@@ -90,14 +117,16 @@ module BioPieces
         rows << row
       end
 
-      table = Terminal::Table.new
-      table.style = {border_x: '', border_y: '', border_i: ''}
-      table.rows = rows
+      rows
+    end
 
-      table.align_column(1, :right)
-      table.align_column(2, :right)
+    # Update the time_stop and time_elapsed for a given command.
+    #
+    # @param command [BioPieces::Command] Command object.
+    def update_time(command)
+      command.status[:time_stop] = Time.now unless command.run_status == 'done'
 
-      table.to_s
+      command.calc_time_elapsed
     end
   end
 end
