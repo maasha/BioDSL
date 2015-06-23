@@ -205,7 +205,10 @@ module BioPieces
       entry2 = BioPieces::Seq.new_bp(record2)
       entry1.type = :dna
       entry2.type = :dna
-      entry2.reverse!.complement! if @options[:reverse_complement]
+
+      if @options[:reverse_complement] && entry2.length > 0
+        entry2.reverse!.complement!
+      end
 
       @status[:sequences_in] += 2
       @status[:residues_in]  += entry1.length + entry2.length
