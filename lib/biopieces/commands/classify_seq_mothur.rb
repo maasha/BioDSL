@@ -174,7 +174,7 @@ module BioPieces
         |reference=#{@options[:database]},
         |taxonomy=#{@options[:taxonomy]},
         |method=wang,
-        |processors=#{cpus})"
+        |processors=#{@options[:cpus]})"
       CMD
 
       BioPieces.verbose ? system(cmd) : system("#{cmd} > /dev/null 2>&1")
