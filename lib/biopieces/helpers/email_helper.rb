@@ -57,17 +57,11 @@ module BioPieces
       mail[:to]      = @options[:email]
       mail[:subject] = @options[:subject] || to_s.first(30)
       mail.html_part = html_part
+      mail.delivery_method :smtp,
+                           address: 'localhost',
+                           port: 25,
+                           enable_starttls_auto: false
       mail
-    end
-
-    # Set mail defaults to test values.
-    def test_defaults
-      Mail.defaults do
-        delivery_method :smtp,
-                        address: 'localhost',
-                        port: 25,
-                        enable_starttls_auto: false
-      end
     end
   end
 end
