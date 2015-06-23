@@ -121,9 +121,9 @@ module BioPieces
       save_history
     end
 
-    # Return a list of all status Objects from the commands.
+    # Return a list of all status hashes from the commands.
     #
-    # @return [Array] List of status objects.
+    # @return [Array] List of status hashes.
     def status
       @commands.each_with_object([]) do |e, a|
         if @complete
