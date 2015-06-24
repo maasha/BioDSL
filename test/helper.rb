@@ -26,12 +26,15 @@
 
 require 'simplecov'
 
-SimpleCov.start do
-  add_filter "/test/"
+if ENV['SIMPLECOV']
+  SimpleCov.start do
+    add_filter "/test/"
+  end
+
+  SimpleCov.command_name 'test:units'
 end
 
-SimpleCov.command_name 'test:units'
-
+require 'pp'
 require 'tempfile'
 require 'fileutils'
 require 'biopieces'
@@ -66,5 +69,14 @@ class Test::Unit::TestCase
 
   def self.test(desc, &impl)
     define_method("test #{desc}", &impl)
+  end
+
+  def collect_result
+    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  end
+
+  def collect_sorted_result
+    @input2.sort_by { |a| a.to_s }.
+      each_with_object('') { |e, a| a << "#{e}#{$/}" }
   end
 end

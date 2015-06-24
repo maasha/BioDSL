@@ -26,10 +26,23 @@
 
 module BioPieces
   module Config
-    HISTORY_FILE         = File.join(ENV['HOME'], ".biopieces_history")
-    LOG_FILE             = File.join(ENV['HOME'], ".biopieces_log")
-    STATUS_SAVE_INTERVAL = 1           # save status every n second.
-    SCORES_MAX           = 100_000     # maximum score string length in plot_scores.
-    SORT_BLOCK_SIZE      = 250_000_000 # max bytes to hold in memory when sorting.
+    require 'parallel'
+    require 'biopieces/helpers/options_helper'
+
+    extend OptionsHelper
+
+
+    HISTORY_FILE             = File.join(ENV['HOME'], ".biopieces_history")
+    LOG_FILE                 = File.join(ENV['HOME'], ".biopieces_log")
+    RC_FILE                  = File.join(ENV['HOME'], '.biopiecesrc')
+    STATUS_PROGRESS_INTERVAL = 0.1   # update progress every n second.
+
+    options = options_load_rc({}, :pipeline)
+
+    CORES_MAX = if options[:processor_count] && options[:processor_count].first
+                  options[:processor_count].first.to_i
+                else
+                  Parallel.processor_count
+                end
   end
 end

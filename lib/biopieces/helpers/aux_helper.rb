@@ -26,12 +26,12 @@
 
 module BioPieces
   module AuxHelper
-    class BioPieces::OptionError < StandardError; end;
+    BioPieces::AuxiliaryError = Class.new(StandardError)
 
     # Method that raises if the given command is not found on the system.
     def aux_exist(command)
-      raise "command: #{command} not found" unless BioPieces::Filesys.which(command)
+      return if BioPieces::Filesys.which(command)
+      fail AuxiliaryError, "command: #{command} not found"
     end
   end
 end
-

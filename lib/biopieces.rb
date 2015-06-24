@@ -51,6 +51,7 @@ class String
 end
 
 module BioPieces
+  require 'pp'
   require 'biopieces/cary'
   require 'biopieces/commands'
   require 'biopieces/debug'
@@ -62,12 +63,13 @@ module BioPieces
   require 'biopieces/filesys'
   require 'biopieces/csv'
   require 'biopieces/fork'
-  require 'biopieces/render'
+  require 'biopieces/html_report'
   require 'biopieces/pipeline'
   require 'biopieces/fasta'
   require 'biopieces/fastq'
   require 'biopieces/math'
   require 'biopieces/taxonomy'
+  require 'biopieces/tmp_dir'
   require 'biopieces/serializer'
   require 'biopieces/stream'
   require 'biopieces/test'
