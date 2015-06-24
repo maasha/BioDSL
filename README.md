@@ -175,8 +175,14 @@ Lines starting with '#' are considered comments and are ignored.
 An example:
 
     maasha@mel:~$ cat ~/.biopiecesrc
-    uchime_ref	database	/home/maasha/Install/QIIME1.8/data/rdp_gold.fa
-    uchime_ref	cpus		20
+    uchime_ref   database   /home/maasha/Install/QIIME1.8/data/rdp_gold.fa
+    uchime_ref   cpus       20
+
+On compute clusters it is necessary to specify the max processor count, which
+is otherwise determined as the number of cores on the current node. To override
+this add the following line to the `.biopiecesrc` file:
+
+    pipeline   processor_count   1000
 
 Contributing
 ------------
