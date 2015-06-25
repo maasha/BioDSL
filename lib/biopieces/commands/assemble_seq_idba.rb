@@ -26,6 +26,8 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
+  # rubocop:disable ClassLength
+
   # == Assemble sequences the stream using IDBA_UD.
   #
   # +assemble_seq_idba+ is a wrapper around the prokaryotic metagenome
@@ -54,14 +56,13 @@ module BioPieces
   # == Examples
   #
   # If you have two pair-end sequence files with the Illumina data then you
-  # can assemble these using assemble_seq_idba like this:
+  # can assemble these using +assemble_seq_idba+ like this:
   #
   #    BP.new.
   #    read_fastq(input: "file1.fq", input2: "file2.fq).
   #    assemble_seq_idba.
   #    write_fasta(output: "contigs.fna").
   #    run
-  # rubocop:disable ClassLength
   class AssembleSeqIdba
     require 'English'
     require 'biopieces/helpers/aux_helper'
@@ -69,7 +70,7 @@ module BioPieces
     include AuxHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
-               residues_out assembled)
+               residues_out)
 
     # Constructor for the AssembleSeqIdba class.
     #
@@ -99,7 +100,6 @@ module BioPieces
           process_input(input, output, fa_in)
           execute_idba(fa_in, tmp_dir)
           lengths = process_output(output, fa_out)
-          status_term(lengths)
         end
 
         calc_n50(status)
