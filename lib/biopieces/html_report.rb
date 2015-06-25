@@ -190,8 +190,10 @@ module BioPieces
     #
     # @return [String] HTML link.
     def help_url(command)
+      camel = command.to_s.split('_').map(&:capitalize).join
+
       'http://www.rubydoc.info/gems/biopieces/' \
-      "#{BioPieces::VERSION}/BioPieces/Commands:#{command}"
+      "#{BioPieces::VERSION}/BioPieces/#{camel}"
     end
   end
 end
