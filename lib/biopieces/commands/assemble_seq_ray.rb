@@ -73,7 +73,7 @@ module BioPieces
     include AuxHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
-               residues_out)
+               residues_out n50 contig_min contig_max kmer)
 
     # Constructor for the AssembleSeqRay class.
     #
@@ -86,11 +86,12 @@ module BioPieces
     def initialize(options)
       @options = options
       @lengths = []
+      @paired  = nil
 
       aux_exist('Ray')
       aux_exist('mpiexec')
-      check_options
       defaults
+      check_options
     end
 
     # Return a lambda for the AssembleSeqRay command.
@@ -100,16 +101,11 @@ module BioPieces
       lambda do |input, output, status|
         status_init(status, STATS)
 
-        TmpDir.create('reads.fna') do |fa_in, tmp_dir|
+        TmpDir.create('reads.fa') do |fa_in, tmp_dir|
           process_input(input, output, fa_in)
+          @paired = paired?(fa_in)
 
-          n50s = []
-
-          (@options[:kmer_min]..@options[:kmer_max]).step(2).to_a.each do |kmer|
-            result_dir = File.join(tmp_dir, kmer)
-            execute_ray(fa_in, result_dir, kmer)
-            n50s << parse_result(result_dir, kmer)
-          end
+          n50s = run_assemblies(fa_in, tmp_dir)
 
           best_kmer = n50s.sort_by(&:n50).reverse.first.kmer
 
@@ -120,12 +116,28 @@ module BioPieces
 
     private
 
-    # Check the options.
+    # Run assemblies for all kmers and return a list of N50 objects which
+    # contain info about the resulting n50 for each kmer.
     #
-    # @raise [RunTimeError] if :kmer_min is even
-    # @raise [RunTimeError] if :kmer_max is even
+    # @param fa_in   [String] Path to input FASTA file.
+    # @param tmp_dir [String] Temporary directory path.
+    #
+    # @return [Array] List of N50 objects.
+    def run_assemblies(fa_in, tmp_dir)
+      n50s = []
+
+      (@options[:kmer_min]..@options[:kmer_max]).step(2).to_a.each do |kmer|
+        result_dir = File.join(tmp_dir, kmer.to_s)
+        execute_ray(fa_in, result_dir, kmer)
+        n50s << parse_result(result_dir, kmer)
+      end
+
+      n50s
+    end
+
+    # Check the options.
     def check_options
-      options_allowed(@options, :kmer_min, :kmer_max, :cpus)
+      options_allowed(@options, :kmer_min, :kmer_max, :contig_min, :cpus)
       options_assert(@options, ':kmer_min >= 21')
       options_assert(@options, ':kmer_min <= 255')
       options_assert(@options, ':kmer_max >= 21')
@@ -184,6 +196,28 @@ module BioPieces
       end
     end
 
+    # Check if the reads in a given FASTA file are
+    # paired by inspecting the sequence names of the first
+    # two entries.
+    #
+    # @param file [String] Path to FASTA file.
+    #
+    # @return [Booleon] True if paired else false.
+    def paired?(file)
+      BioPieces::Fasta.open(file, 'r') do |ios|
+        entry1 = ios.next_entry
+        entry2 = ios.next_entry
+
+        begin
+          BioPieces::Seq.check_name_pair(entry1, entry2)
+
+          return true
+        rescue SeqError
+          return false
+        end
+      end
+    end
+
     # Execute Ray.
     #
     # @param fa_in   [String] Path to input FASTA file.
@@ -215,10 +249,10 @@ module BioPieces
       cmd << 'Ray'
       cmd << "-k #{kmer}"
 
-      if @single
-        cmd << "-s #{fa_in}"
-      else
+      if @paired
         cmd << "-i #{fa_in}"
+      else
+        cmd << "-s #{fa_in}"
       end
 
       cmd << "-o #{out_dir}"
@@ -236,9 +270,9 @@ module BioPieces
     def parse_result(dir, kmer)
       lengths = []
 
-      BioPieces::Fasta.open(File.join(dir, 'Scaffolds.fasta', 'r')) do |ios|
+      BioPieces::Fasta.open(File.join(dir, 'Scaffolds.fasta')) do |ios|
         ios.each do |entry|
-          lengths << entry.length if entry_length >= @options[:contig_min]
+          lengths << entry.length if entry.length >= @options[:contig_min]
         end
       end
 
@@ -262,6 +296,8 @@ module BioPieces
 
         return length if count >= sum * 0.50
       end
+
+      nil
     end
 
     # Read the best contigs and emit to the output stream.
@@ -271,7 +307,7 @@ module BioPieces
     # @param kmer   [Fixnum]              Highest n50 scoring kmer.
     def process_output(output, dir, kmer)
       lengths = []
-      file    = File.join(dir, kmer, 'Scaffolds.fasta')
+      file    = File.join(dir, kmer.to_s, 'Scaffolds.fasta')
 
       BioPieces::Fasta.open(file, 'r') do |ios|
         ios.each do |entry|
@@ -286,7 +322,7 @@ module BioPieces
         end
       end
 
-      add_status(kmer, lengths)
+      add_stats(kmer, lengths)
     end
 
     # Add status values to status hash.
@@ -298,6 +334,7 @@ module BioPieces
       @status[:contig_min] = lengths.min
       @status[:contig_max] = lengths.max
       @status[:n50]        = calc_n50(lengths)
+      @status[:paired]     = @paired
     end
 
     N50 = Struct.new(:kmer, :n50)
