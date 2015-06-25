@@ -180,9 +180,14 @@ An example:
 
 On compute clusters it is necessary to specify the max processor count, which
 is otherwise determined as the number of cores on the current node. To override
-this add the following line to the `.biopiecesrc` file:
+this add the following line:
 
     pipeline   processor_count   1000
+
+It is also possible to change the temporary directory from the systems default
+by adding the following line:
+
+    pipeline   tmp_dir   /home/projects/ku_microbio/scratch/tmp
 
 Contributing
 ------------
