@@ -61,54 +61,54 @@ Then you can run the below from the command line:
 Available Biopieces
 -------------------
 
-  * [add_key]                          (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:add_key)                          
-  * [align_seq_mothur]                 (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:align_seq_mothur)                          
-  * [analyze_residue_distribution]     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:analyze_residue_distribution)
-  * [assemble_pairs]                   (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:assemble_pairs)
-  * [assemble_seq_idba]                (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:assemble_seq_idba)
-  * [assemble_seq_spades]              (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:assemble_seq_spades)
-  * [classify_seq]                     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:classify_seq)
-  * [classify_seq_mothur]              (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:classify_seq_mothur)
-  * [clip_primer]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:clip_primer)
-  * [cluster_otus]                     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:cluster_otus)
-  * [collapse_otus]                    (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:collapse_otus)
-  * [collect_otus]                     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:collect_otus)
-  * [complement_seq]                   (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:complement_seq)
-  * [count]                            (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:count)
-  * [degap_seq]                        (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:degap_seq)
-  * [dereplicate_seq]                  (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:dereplicate_seq)
-  * [dump]                             (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:dump)
-  * [filter_rrna]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:filter_rrna)
-  * [grab]                             (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:grab)
-  * [index_taxonomy]                   (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:index_taxonomy)
-  * [mean_scores]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:mean_scores)
-  * [merge_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:merge_pair_seq)
-  * [merge_table]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:merge_table)
-  * [merge_values]                     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:merge_values)
-  * [plot_heatmap]                     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:plot_heatmap)
-  * [plot_histogram]                   (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:plot_histogram)
-  * [plot_matches]                     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:plot_matches)
-  * [plot_residue_distribution]        (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:plot_residue_distribution)
-  * [plot_scores]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:plot_scores)
-  * [random]                           (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:random)
-  * [read_fasta]                       (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:read_fasta)
-  * [read_fastq]                       (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:read_fastq)
-  * [read_table]                       (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:read_table)
-  * [reverse_seq]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:reverse_seq)
-  * [slice_align]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:slice_align)
-  * [slice_seq]                        (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:slice_seq)
-  * [sort]                             (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:sort)
-  * [split_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:split_pair_seq)
-  * [split_values]                     (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:split_values)
-  * [trim_primer]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:trim_primer)
-  * [trim_seq]                         (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:trim_seq)
-  * [uchime_ref]                       (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:uchime_ref)
-  * [unique_values]                    (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:unique_values)
-  * [usearch_global]                   (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:usearch_global)
-  * [write_fasta]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:write_fasta)
-  * [write_fastq]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:write_fastq)
-  * [write_table]                      (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:write_table)
-  * [write_tree]                       (http://www.rubydoc.info/gems/biopieces/0.5.0/BioPieces/Commands:write_tree)
+  * [add_key]                          (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/AddKey)                          
+  * [align_seq_mothur]                 (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/AlignSeqMothur)                          
+  * [analyze_residue_distribution]     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/AnalyzeResidueDistribution)
+  * [assemble_pairs]                   (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/AssemblePairs)
+  * [assemble_seq_idba]                (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/AssembleSeqIdba)
+  * [assemble_seq_spades]              (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/AssembleSeqSpades)
+  * [classify_seq]                     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ClassifySeq)
+  * [classify_seq_mothur]              (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ClassifySeqMothur)
+  * [clip_primer]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ClipPrimer)
+  * [cluster_otus]                     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ClusterOtus)
+  * [collapse_otus]                    (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/CollapseOtus)
+  * [collect_otus]                     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/CollectOtus)
+  * [complement_seq]                   (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ComplementSeq)
+  * [count]                            (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/Count)
+  * [degap_seq]                        (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/DegapSeq)
+  * [dereplicate_seq]                  (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/DereplicateSeq)
+  * [dump]                             (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/Dump)
+  * [filter_rrna]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/FilterRrna)
+  * [grab]                             (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/Grab)
+  * [index_taxonomy]                   (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/IndexTaxonomy)
+  * [mean_scores]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/MeanScores)
+  * [merge_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/MergePairSeq)
+  * [merge_table]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/MergeTable)
+  * [merge_values]                     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/MergeValues)
+  * [plot_heatmap]                     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/PlotHeatmap)
+  * [plot_histogram]                   (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/PlotHistogram)
+  * [plot_matches]                     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/PlotMatches)
+  * [plot_residue_distribution]        (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/PlotResidueDistribution)
+  * [plot_scores]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/PlotScores)
+  * [random]                           (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/Random)
+  * [read_fasta]                       (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ReadFasta)
+  * [read_fastq]                       (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ReadFastq)
+  * [read_table]                       (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ReadTable)
+  * [reverse_seq]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/ReverseSeq)
+  * [slice_align]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/SliceAlign)
+  * [slice_seq]                        (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/SliceSeq)
+  * [sort]                             (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/Sort)
+  * [split_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/SplitPairSeq)
+  * [split_values]                     (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/SplitValues)
+  * [trim_primer]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/TrimPrimer)
+  * [trim_seq]                         (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/TrimSeq)
+  * [uchime_ref]                       (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/UchimeRef)
+  * [unique_values]                    (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/UniqueValues)
+  * [usearch_global]                   (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/UsearchGlobal)
+  * [write_fasta]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/WriteFasta)
+  * [write_fastq]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/WriteFastq)
+  * [write_table]                      (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/WriteTable)
+  * [write_tree]                       (http://www.rubydoc.info/gems/biopieces/0.5.1/BioPieces/WriteTree)
 
 Log and History
 ---------------
@@ -180,9 +180,14 @@ An example:
 
 On compute clusters it is necessary to specify the max processor count, which
 is otherwise determined as the number of cores on the current node. To override
-this add the following line to the `.biopiecesrc` file:
+this add the following line:
 
     pipeline   processor_count   1000
+
+It is also possible to change the temporary directory from the systems default
+by adding the following line:
+
+    pipeline   tmp_dir   /home/projects/ku_microbio/scratch/tmp
 
 Contributing
 ------------

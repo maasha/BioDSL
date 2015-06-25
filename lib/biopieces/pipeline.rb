@@ -29,6 +29,8 @@ module BioPieces
   # Error class for Pipeline errors.
   PipelineError = Class.new(StandardError)
 
+  # rubocop: disable ClassLength
+
   # Pipeline class
   class Pipeline
     require 'biopieces/command'
@@ -145,11 +147,7 @@ module BioPieces
         if @options.empty?
           command_strings << 'run'
         else
-          options = []
-
-          @options.each_pair { |key, value| options << "#{key}: #{value}" }
-
-          command_strings << "run(#{options.join(', ')})"
+          command_strings << "run(#{options_string})"
         end
       end
 
@@ -333,6 +331,24 @@ module BioPieces
       STDERR.puts exception.backtrace if BioPieces.verbose
       log_error(exception)
       exit 2
+    end
+
+    # Generate a comma separated string from the options ensuring that
+    # values are in "" if need be.
+    #
+    # Return [Array] List of options.
+    def options_string
+      options = []
+
+      @options.each_pair do |key, value|
+        if value.is_a? String
+          options << %(#{key}: "#{value}")
+        else
+          options << %(#{key}: #{value})
+        end
+      end
+
+      options.join(', ')
     end
   end
 end

@@ -54,7 +54,7 @@ module BioPieces
     def self.create(*files, &block)
       fail 'no block given' unless block
 
-      Dir.mktmpdir do |dir|
+      Dir.mktmpdir(nil, BioPieces::Config::TMP_DIR) do |dir|
         paths = files.each_with_object([]) { |e, a| a << File.join(dir, e) }
 
         if paths.empty?

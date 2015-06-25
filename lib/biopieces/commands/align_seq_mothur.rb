@@ -75,10 +75,6 @@ module BioPieces
     # @return [AlignSeqMothur] Returns an instance of the class.
     def initialize(options)
       @options = options
-      # FIXME: use BioPieces.TmpDir instead.
-      @tmp_dir = File.join(Dir.tmpdir, "#{Time.now.to_i}#{$PID}")
-      @tmp_in  = File.join(@tmp_dir, 'input.fasta')
-      @tmp_out = File.join(@tmp_dir, 'input.align')
 
       aux_exist('mothur')
       check_options
@@ -92,15 +88,10 @@ module BioPieces
       lambda do |input, output, status|
         status_init(status, STATS)
 
-        begin
-          Dir.mkdir(@tmp_dir)
-
-          process_input(input, output)
-          run_mothur(@options[:template_file], @options[:cpus])
-          process_output(output)
-        ensure
-          File.unlink('8mer') if File.exist? '8mer'
-          FileUtils.rm_rf(@tmp_dir)
+        TmpDir.create('input.fna', 'input.align') do |tmp_in, tmp_out, tmp_dir|
+          process_input(input, output, tmp_in)
+          run_mothur(@options[:template_file], @options[:cpus], tmp_dir, tmp_in)
+          process_output(output, tmp_out)
         end
       end
     end
@@ -126,8 +117,9 @@ module BioPieces
     #
     # @param input  [BioPieces::Stream] The input stream.
     # @param output [BioPieces::Stream] The output stream.
-    def process_input(input, output)
-      BioPieces::Fasta.open(@tmp_in, 'w') do |ios|
+    # @param tmp_in [String]            Path to temporary file.
+    def process_input(input, output, tmp_in)
+      BioPieces::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 
@@ -160,9 +152,10 @@ module BioPieces
 
     # Read all FASTA entries from output file and emit to the output stream.
     #
-    # @param output [BioPieces::Stream] The output stream.
-    def process_output(output)
-      BioPieces::Fasta.open(@tmp_out) do |ios|
+    # @param output  [BioPieces::Stream] The output stream.
+    # @param tmp_out [String]            Path to temporary file.
+    def process_output(output, tmp_out)
+      BioPieces::Fasta.open(tmp_out) do |ios|
         ios.each do |entry|
           output << entry.to_bp
           @status[:records_out]   += 1
@@ -174,15 +167,17 @@ module BioPieces
 
     # Run Mothur using a system call.
     #
-    # @param template_file [String] Path to template file.
+    # @param template_file [String]  Path to template file.
     # @param cpus          [Integer] Number of CPUs to use.
+    # @param tmp_dir       [String]  Path to temporary dir.
+    # @param tmp_in        [String]  Path to temporary file.
     #
     # @raise [RunTimeError] If system call fails.
-    def run_mothur(template_file, cpus)
+    def run_mothur(template_file, cpus, tmp_dir, tmp_in)
       cmd = <<-CMD.gsub(/^\s+\|/, '').delete("\n")
-        |mothur "#set.dir(input=#{@tmp_dir});
-        |set.dir(output=#{@tmp_dir});
-        |align.seqs(candidate=#{@tmp_in},
+        |mothur "#set.dir(input=#{tmp_dir});
+        |set.dir(output=#{tmp_dir});
+        |align.seqs(candidate=#{tmp_in},
         |template=#{template_file},
         |processors=#{cpus})"
       CMD
