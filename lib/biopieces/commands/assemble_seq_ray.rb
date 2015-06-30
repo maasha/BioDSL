@@ -330,11 +330,14 @@ module BioPieces
     # @param kmer    [Fixnum] Highest n50 scoring kmer.
     # @param lengths [Array]  List of contig lengths.
     def add_stats(kmer, lengths)
-      @status[:kmer]       = kmer
-      @status[:contig_min] = lengths.min
-      @status[:contig_max] = lengths.max
-      @status[:n50]        = calc_n50(lengths)
-      @status[:paired]     = @paired
+      @status[:kmer]   = kmer
+      @status[:paired] = @paired
+
+      unless lengths.empty?
+        @status[:contig_min] = lengths.min
+        @status[:contig_max] = lengths.max
+        @status[:n50]        = calc_n50(lengths)
+      end
     end
 
     N50 = Struct.new(:kmer, :n50)
