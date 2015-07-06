@@ -75,6 +75,7 @@ module BioPieces
     # @return [Genecall] Returns an instance of the class.
     def initialize(options)
       @options = options
+      @names   = {}
 
       aux_exist('prodigal')
       defaults
@@ -144,20 +145,23 @@ module BioPieces
     # @param fa_in [String] Path to temporary FASTA file.
     def process_input(input, output, fa_in)
       BioPieces::Fasta.open(fa_in, 'w') do |fasta_io|
-        input.each do |record|
+        input.each_with_index do |record, i|
           @status[:records_in] += 1
 
           if record.key? :SEQ
-            entry = BioPieces::Seq.new_bp(record)
+            entry = BioPieces::Seq.new(seq_name: i, seq: record[:SEQ])
+            @names[i] = record[:SEQ_NAME] || i
 
-            @status[:sequences_in] += 1
-            @status[:residues_in]  += entry.length
+            @status[:sequences_in]  += 1
+            @status[:sequences_out] += 1
+            @status[:residues_in]   += entry.length
+            @status[:residues_out]  += entry.length
 
             fasta_io.puts entry.to_fasta
-          else
-            @status[:records_out] += 1
-            output.puts record
           end
+
+          @status[:records_out] += 1
+          output << record
         end
       end
     end
@@ -173,11 +177,11 @@ module BioPieces
           fields = entry.seq_name.split(' # ')
 
           record[:RECORD_TYPE] = 'gene'
-          record[:S_ID]        = fields[0]
           record[:S_BEG]       = fields[1].to_i - 1
           record[:S_END]       = fields[2].to_i - 1
           record[:S_LEN]       = record[:S_END] - record[:S_BEG] + 1
           record[:STRAND]      = fields[3] == '1' ? '+' : '-'
+          record[:SEQ_NAME]    = @names[fields[0].split('_').first.to_i]
           record[:SEQ]         = entry.seq
           record[:SEQ_LEN]     = entry.length
 
