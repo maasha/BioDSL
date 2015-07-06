@@ -35,6 +35,16 @@ module BioPieces
   #
   # http://denovoassembler.sourceforge.net/
   #
+  # The records produced are of the type:
+  #
+  #     {:RECORD_TYPE=>"gene",
+  #      :S_BEG=>2, :S_END=>109,
+  #      :S_LEN=>108,
+  #      :STRAND=>"-",
+  #      :SEQ_NAME=>"contig1",
+  #      :SEQ=>"MGKVIGIDLGTTNSCVAVMDGKTAKVIENAEGMRTT",
+  #      :SEQ_LEN=>36}
+  #
   # == Usage
   #
   #    assemble_seq_ray([procedure: <string>[, closed_ends: <bool>
@@ -54,6 +64,16 @@ module BioPieces
   #    read_fasta(input: "contigs.fna").
   #    genecall.
   #    grab(select: "genecall", key: :type, exact: true).
+  #    write_fasta(output: "genes.faa").
+  #    run
+  #
+  # To add genecall data to the sequence name use +merge_values+:
+  #
+  #    BP.new.
+  #    read_fasta(input: "contigs.fna").
+  #    genecall.
+  #    grab(select: "genecall", key: :type, exact: true).
+  #    merge_values(keys: [:SEQ_NAME, :S_BEG, :S_END, :S_LEN, :STRAND]).
   #    write_fasta(output: "genes.faa").
   #    run
   class Genecall
@@ -173,25 +193,34 @@ module BioPieces
     def process_output(output, tmp_aa)
       BioPieces::Fasta.open(tmp_aa, 'r') do |ios|
         ios.each do |entry|
-          record = {}
-          fields = entry.seq_name.split(' # ')
-
-          record[:RECORD_TYPE] = 'gene'
-          record[:S_BEG]       = fields[1].to_i - 1
-          record[:S_END]       = fields[2].to_i - 1
-          record[:S_LEN]       = record[:S_END] - record[:S_BEG] + 1
-          record[:STRAND]      = fields[3] == '1' ? '+' : '-'
-          record[:SEQ_NAME]    = @names[fields[0].split('_').first.to_i]
-          record[:SEQ]         = entry.seq
-          record[:SEQ_LEN]     = entry.length
-
-          output << record
+          output << parse_entry(entry)
 
           @status[:records_out]   += 1
           @status[:sequences_out] += 1
           @status[:residues_out]  += entry.length
         end
       end
+    end
+
+    # Parse Prodigal genecall data from sequence name.
+    #
+    # @param entry [BioPieces::Seq] Sequence object.
+    #
+    # @return [Hash] BioPiece record.
+    def parse_entry(entry)
+      record = {}
+      fields = entry.seq_name.split(' # ')
+
+      record[:RECORD_TYPE] = 'genecall'
+      record[:S_BEG]       = fields[1].to_i - 1
+      record[:S_END]       = fields[2].to_i - 1
+      record[:S_LEN]       = record[:S_END] - record[:S_BEG] + 1
+      record[:STRAND]      = fields[3] == '1' ? '+' : '-'
+      record[:SEQ_NAME]    = @names[fields[0].split('_').first.to_i]
+      record[:SEQ]         = entry.seq
+      record[:SEQ_LEN]     = entry.length
+
+      record
     end
   end
 end
