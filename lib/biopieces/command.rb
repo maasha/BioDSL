@@ -127,7 +127,7 @@ module BioPieces
 
       return 0.0 if d == 0
 
-      (100 * d.to_f / [@status[out_key] - @status[in_key]].max).round(2)
+      (100 * d.to_f / [@status[out_key], @status[in_key]].max).round(2)
     end
   end
 end
