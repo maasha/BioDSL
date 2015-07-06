@@ -30,10 +30,10 @@ module BioPieces
 
   # == Genecall sequences in the stream.
   #
-  # +Genecall+ predict genes in prokaryotic single genomes or metagenoemes using
+  # +Genecall+ predict genes in prokaryotic single genomes or metagenomes using
   # Prodigal 2.6 which must be installed:
   #
-  # http://denovoassembler.sourceforge.net/
+  # http://prodigal.ornl.gov/
   #
   # The records produced are of the type:
   #
