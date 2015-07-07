@@ -26,14 +26,12 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
-  # rubocop:disable ClassLength
-
   # == Genecall sequences in the stream.
   #
-  # +Genecall+ predict genes in prokaryotic single genomes or metagenoemes using
+  # +Genecall+ predict genes in prokaryotic single genomes or metagenomes using
   # Prodigal 2.6 which must be installed:
   #
-  # http://denovoassembler.sourceforge.net/
+  # http://prodigal.ornl.gov/
   #
   # The records produced are of the type:
   #
@@ -47,11 +45,12 @@ module BioPieces
   #
   # == Usage
   #
-  #    assemble_seq_ray([procedure: <string>[, closed_ends: <bool>
-  #                     [, masked: <bool>]]])
+  #    genecall([type: <string>[, procedure: <string>[, closed_ends: <bool>
+  #             [, masked: <bool>]]]])
   #
   # === Options
   #
+  # * type:        <string> - Output dna or protein sequence (default: dna).
   # * procedure:   <string> - Single or meta (default: single).
   # * closed_ends: <bool>   - Don't allow truncated gene at ends.
   # * masked:      <bool>   - Ignore stretch of Ns.
@@ -64,14 +63,14 @@ module BioPieces
   #    read_fasta(input: "contigs.fna").
   #    genecall.
   #    grab(select: "genecall", key: :type, exact: true).
-  #    write_fasta(output: "genes.faa").
+  #    write_fasta(output: "genes.fna").
   #    run
   #
   # To add genecall data to the sequence name use +merge_values+:
   #
   #    BP.new.
   #    read_fasta(input: "contigs.fna").
-  #    genecall.
+  #    genecall(type: "protein").
   #    grab(select: "genecall", key: :type, exact: true).
   #    merge_values(keys: [:SEQ_NAME, :S_BEG, :S_END, :S_LEN, :STRAND]).
   #    write_fasta(output: "genes.faa").
@@ -88,6 +87,7 @@ module BioPieces
     # Constructor for the Genecall class.
     #
     # @param [Hash] options Options hash.
+    # @option options [Symbol]  :type of output.
     # @option options [Symbol]  :procedure used for genecalling.
     # @option options [Boolean] :closed_ends disallow truncated genes at ends.
     # @option options [Boolean] :masked ignore stretch of Ns.
@@ -100,6 +100,8 @@ module BioPieces
       aux_exist('prodigal')
       defaults
       check_options
+
+      @type = @options[:type].to_sym
     end
 
     # Return a lambda for the genecall command.
@@ -109,10 +111,10 @@ module BioPieces
       lambda do |input, output, status|
         status_init(status, STATS)
 
-        TmpDir.create('in.fa', 'out.fa') do |tmp_fa, tmp_aa|
-          process_input(input, output, tmp_fa)
-          run_prodigal(tmp_fa, tmp_aa)
-          process_output(output, tmp_aa)
+        TmpDir.create('i.fa', 'o.fna', 'o.faa') do |tmp_in, tmp_fna, tmp_faa|
+          process_input(input, output, tmp_in)
+          run_prodigal(tmp_in, tmp_fna, tmp_faa)
+          process_output(output, tmp_fna, tmp_faa)
         end
       end
     end
@@ -121,17 +123,19 @@ module BioPieces
 
     # Run Prodigal on the input file.
     #
-    # @param tmp_fa  [String] Path to input FASTA file.
-    # @param tmp_aa  [String] Path to output FASTA file.
-    def run_prodigal(tmp_fa, tmp_aa)
+    # @param tmp_in  [String] Path to input FASTA file.
+    # @param tmp_fna [String] Path to output FASTA DNA file.
+    # @param tmp_faa [String] Path to output FASTA Protein file.
+    def run_prodigal(tmp_in, tmp_fna, tmp_faa)
       cmd = []
       cmd << 'prodigal'
       cmd << '-f gff'
       cmd << '-c' if @options[:closed_ends]
       cmd << '-m' if @options[:masked]
       cmd << "-p #{@options[:procedure]}"
-      cmd << "-i #{tmp_fa}"
-      cmd << "-a #{tmp_aa}"
+      cmd << "-i #{tmp_in}"
+      cmd << "-d #{tmp_fna}"
+      cmd << "-a #{tmp_faa}"
       cmd << '-q'               unless BioPieces.verbose
       cmd << '> /dev/null 2>&1' unless BioPieces.verbose
 
@@ -145,7 +149,9 @@ module BioPieces
 
     # Check the options.
     def check_options
-      options_allowed(@options, :procedure, :closed_ends, :masked)
+      options_allowed(@options, :type, :procedure, :closed_ends, :masked)
+      options_allowed_values(@options, type: [:dna, :protein, 'dna',
+                                              'protein'])
       options_allowed_values(@options, procedure: ['single', 'meta', :single,
                                                    :meta])
       options_allowed_values(@options, closed_ends: [nil, true, false])
@@ -154,6 +160,7 @@ module BioPieces
 
     # Set the default option values.
     def defaults
+      @options[:type]      ||= :dna
       @options[:procedure] ||= :single
     end
 
@@ -189,9 +196,12 @@ module BioPieces
     # Read the output from file and emit to the output stream.
     #
     # @param output  [Enumerator::Yielder] Output stream.
-    # @param tmp_aa  [String]              Path to output FASTA file.
-    def process_output(output, tmp_aa)
-      BioPieces::Fasta.open(tmp_aa, 'r') do |ios|
+    # @param tmp_fna [String]              Path to output FASTA DNA file.
+    # @param tmp_faa [String]              Path to output FASTA Protein file.
+    def process_output(output, tmp_fna, tmp_faa)
+      file = (@type == :dna) ? tmp_fna : tmp_faa
+
+      BioPieces::Fasta.open(file, 'r') do |ios|
         ios.each do |entry|
           output << parse_entry(entry)
 
@@ -219,6 +229,7 @@ module BioPieces
       record[:SEQ_NAME]    = @names[fields[0].split('_').first.to_i]
       record[:SEQ]         = entry.seq
       record[:SEQ_LEN]     = entry.length
+      record[:SEQ_TYPE]    = @type.to_s
 
       record
     end
