@@ -113,6 +113,8 @@ module BioPieces
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 
+    SCORES_MAX = 100_000   # Maximum score string length.
+
     # Constructor for PlotScores.
     #
     # @param options [Hash] Options hash.
@@ -129,8 +131,8 @@ module BioPieces
     # @return [PlotScores] Class instance.
     def initialize(options)
       @options    = options
-      @scores_vec = NArray.int(Config::SCORES_MAX)
-      @count_vec  = NArray.int(Config::SCORES_MAX)
+      @scores_vec = NArray.int(SCORES_MAX)
+      @count_vec  = NArray.int(SCORES_MAX)
       @max        = 0
 
       aux_exist('gnuplot')
@@ -203,7 +205,7 @@ module BioPieces
     #
     # @raise [BiopiecesError] if too long.
     def check_length(scores)
-      return unless scores.length > Config::SCORES_MAX
+      return unless scores.length > SCORES_MAX
       msg = "score string too long: #{scores.length} > #{SCORES_MAX}"
       fail BiopiecesError, msg
     end

@@ -75,8 +75,6 @@ module BioPieces
       @io.puts(*args)
     end
 
-    private
-
     # Method to get the next FASTA entry form an ios and return this
     # as a Seq object. If no entry is found or eof then nil is returned.
     def next_entry

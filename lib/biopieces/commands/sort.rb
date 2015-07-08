@@ -93,7 +93,8 @@ module BioPieces
   class Sort
     require 'pqueue'
 
-    STATS = %i(records_in records_out)
+    STATS           = %i(records_in records_out)
+    SORT_BLOCK_SIZE = 250_000_000 # max bytes to hold in memory.
 
     # Constructor for Sort.
     #
@@ -106,7 +107,7 @@ module BioPieces
     # @return [Sort] Class instance.
     def initialize(options)
       @options    = options
-      @block_size = options[:block_size] || BioPieces::Config::SORT_BLOCK_SIZE
+      @block_size = options[:block_size] || SORT_BLOCK_SIZE
       @key        = options[:key].to_sym
       @files      = []
       @records    = []

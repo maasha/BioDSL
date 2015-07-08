@@ -3,4 +3,7 @@
   - statsus.each do |key, val|
     %tr
       %td.bold #{key}
-      %td.right #{val.commify}
+      - if val.is_a? Numeric
+        %td.right #{val.commify}
+      - else
+        %td.right #{val}

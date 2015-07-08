@@ -1,4 +1,8 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
@@ -23,46 +27,24 @@
 # This software is part of Biopieces (www.biopieces.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-module BioPieces
-  # Module to provide a temporary directory.
-  module TmpDir
-    require 'tempfile'
 
-    # Create a temporary directory in block context. The directory is deleted
-    # when the TmpDir object is garbage collected or the Ruby intepreter exits.
-    # If called with a list of filenames, these are provided as block arguments
-    # such that the files parent are the temporary directory. However, the last
-    # block argument is always the path to the temporary directory.
-    #
-    # @param files [Array] List of file names.
-    #
-    # @example
-    #   BioPieces::TmpDir.create do |dir|
-    #     puts dir
-    #       # => "<tmp_dir>"
-    #   end
-    #
-    # @example
-    #   BioPieces::TmpDir.create("foo", "bar") do |foo, bar, dir|
-    #     puts foo
-    #       # => "<tmp_dir>/foo"
-    #     puts bar
-    #       # => "<tmp_dir>/foo"
-    #     puts dir
-    #       # => "<tmp_dir>"
-    #   end
-    def self.create(*files, &block)
-      fail 'no block given' unless block
+require 'test/helper'
 
-      Dir.mktmpdir(nil, BioPieces::Config::TMP_DIR) do |dir|
-        paths = files.each_with_object([]) { |e, a| a << File.join(dir, e) }
+# Test class for Genecall.
+class TestGenecall < Test::Unit::TestCase
+  def setup
+    omit('prodigal not found')     unless BioPieces::Filesys.which('ray')
 
-        if paths.empty?
-          block.call(dir)
-        else
-          block.call(paths << dir)
-        end
-      end
-    end
+    @p = BioPieces::Pipeline.new
   end
+
+  test 'BioPieces::Pipeline::Genecall with invalid options raises' do
+    assert_raise(BioPieces::OptionError) { @p.assemble_seq_ray(foo: 'bar') }
+  end
+
+  test 'BioPieces::Pipeline::Genecall with valid options don\'t raise' do
+    assert_nothing_raised { @p.assemble_seq_ray(cpus: 1) }
+  end
+
+  # FIXME: tests missing!
 end

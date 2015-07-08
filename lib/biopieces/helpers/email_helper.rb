@@ -36,7 +36,6 @@ module BioPieces
     # @param pipeline [BioPieces::Pipeline] Pipeline object
     def send_email(pipeline)
       return unless @options[:email]
-      test_defaults if BioPieces.test
 
       html_part = Mail::Part.new do
         content_type 'text/html; charset=UTF-8'
