@@ -40,13 +40,13 @@ module BioPieces
 
     options = options_load_rc({}, :pipeline)
 
-    TMP_DIR = if options[:tmp_dir] && options[:tmp_dir].first
+    TMP_DIR = if options && !options[:tmp_dir].empty?
                 options[:tmp_dir].first
               else
                 Dir.tmpdir
               end
 
-    CORES_MAX = if options[:processor_count] && options[:processor_count].first
+    CORES_MAX = if options && options[:processor_count]
                   options[:processor_count].first.to_i
                 else
                   Parallel.processor_count
