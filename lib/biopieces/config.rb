@@ -46,7 +46,7 @@ module BioPieces
                 Dir.tmpdir
               end
 
-    CORES_MAX = if options && options[:processor_count]
+    CORES_MAX = if options && !options[:processor_count].empty?
                   options[:processor_count].first.to_i
                 else
                   Parallel.processor_count
