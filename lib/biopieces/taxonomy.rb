@@ -1,37 +1,41 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioPieces
   class TaxonomyError < StandardError; end
 
-  # Module containing classes for creating a taxonomic database and searching this.
+  # Module containing classes for creating a taxonomic database and searching
+  # this.
   module Taxonomy
     require 'narray'
 
     TAX_LEVELS = [:r, :k, :p, :c, :o, :f, :g, :s]
+
+    # rubocop: disable ClassLength
 
     # Class for creating and databasing an index of a taxonomic tree. This is
     # done in two steps. 1) A temporary tree is creating using the taxonomic
@@ -39,35 +43,35 @@ module BioPieces
     # is constructed from the temporary tree allowing this to be saved to files.
     # The resulting index consists of the following files:
     #  * taxonomy_tax_index.dat  - return node for a given node id.
-    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
+    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and
+    #                              kmer.
     class Index
       require 'set'
 
+      attr_reader :size, :node_id
+      alias_method :size, :node_id
+
       # Constructor Index object.
       def initialize(options)
-        @options   = options                                       # Option hash.
-        @seq_id    = 0                                             # Sequence id.
-        @node_id   = 0                                             # Node id.
-        @tree      = TaxNode.new(nil, :r, "root", nil, @node_id)   # Root level tree node.
+        @options   = options                                       # Option hash
+        @seq_id    = 0                                             # Sequence id
+        @node_id   = 0                                             # Node id
+        @tree      = TaxNode.new(nil, :r, 'root', nil, @node_id)   # Root node
         @node_id  += 1
 
-        raise TaxonomyError, "missing kmer_size option"  unless @options[:kmer_size]
-        raise TaxonomyError, "missing step_size option"  unless @options[:step_size]
-        raise TaxonomyError, "missing output_dir option" unless @options[:output_dir]
-        raise TaxonomyError, "missing prefix option"     unless @options[:prefix]
-      end
-
-      # Method to return the number of nodes in the index tree. 
-      def size
-        @node_id
+        %i(kmer_size step_size output_dir prefix).each do |option|
+          fail TaxonomyError, "missing #{option} option" unless @options[option]
+        end
       end
 
       # Method to add a Sequence entry to the taxonomic tree. The sequence name
       # contain a taxonomic string.
       #
       # Example entry:
-      # seq_name: K#Bacteria;P#Proteobacteria;C#Gammaproteobacteria;O#Vibrionales;F#Vibrionaceae;G#Vibrio;S#Vibrio
-      # seq:      UCCUACGGGAGGCAGCAGUGGGGAAUAUUGCACAAUGGGCGCAAGCCUGAUGCAGCCAUGCCGCGUGUAUGAAGGCCUUCGGGUUGUAACUC ...
+      # seq_name: K#Bacteria;P#Proteobacteria;C#Gammaproteobacteria; \
+      #           O#Vibrionales;F#Vibrionaceae;G#Vibrio;S#Vibrio
+      # seq:      UCCUACGGGAGGCAGCAGUGGGGAAUAUUGCACAAUGGGCGCAAGCCUGA \
+      #           UGCAGCCAUGCCGCGUGUAUGAAGGCCUUCGGGUUGUAACUC ...
       #
       # The sequence is reduced to a list of oligos of a given size and a given
       # step size, e.g. 8 and 1, respectively:
@@ -79,7 +83,8 @@ module BioPieces
       #     ACGGGAGG
       #      ...
       #
-      # Each oligo is encoded as an kmer (integer) by encoding two bits per nucleotide:
+      # Each oligo is encoded as an kmer (integer) by encoding two bits per
+      # nucleotide:
       #
       # A = 00
       # U = 01
@@ -89,31 +94,40 @@ module BioPieces
       # E.g. UCCUACGG = 0110100100101111 = 26927
       #
       # For each node in the tree a set is kept containing information of
-      # all observed oligos for that particular node. Thus all child nodes 
+      # all observed oligos for that particular node. Thus all child nodes
       # contain a subset of oligos compared to the parent node.
       def add(entry)
         node       = @tree
         old_name   = false
         tax_levels = entry.seq_name.split(';')
 
-        raise TaxonomyError, "Wrong number of tax levels in #{entry.seq_name}" unless tax_levels.size == TAX_LEVELS.size - 1
+        if tax_levels.size != TAX_LEVELS.size - 1
+          fail TaxonomyError, "Wrong number of tax levels in #{entry.seq_name}"
+        end
 
         tax_levels.each_with_index do |tax_level, i|
           level, name = tax_level.split('#')
 
-          raise TaxonomyError, "Unexpected tax id in #{entry.seq_name}" if level.downcase.to_sym != TAX_LEVELS[i + 1]
+          if level.downcase.to_sym != TAX_LEVELS[i + 1]
+            fail TaxonomyError, "Unexpected tax id in #{entry.seq_name}"
+          end
 
           if name
-            raise TaxonomyError, "Gapped tax level info in #{entry.seq_name}" if i > 0 and not old_name
+            if i > 0 && !old_name
+              fail TaxonomyError, "Gapped tax level info in #{entry.seq_name}"
+            end
 
-            if child = node[name]
+            if (child = node[name])
             else
-              child = TaxNode.new(node, level.downcase.to_sym, name, @seq_id, @node_id)
+              child = TaxNode.new(node, level.downcase.to_sym, name, @seq_id,
+                                  @node_id)
               @node_id += 1
             end
 
             if leaf?(tax_levels, i)
-              child.kmers |= Set.new(entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size]))
+              kmers = entry.to_kmers(kmer_size: @options[:kmer_size],
+                                     step_size: @options[:step_size])
+              child.kmers |= Set.new(kmers)
             end
 
             node[name] = child
@@ -136,11 +150,12 @@ module BioPieces
         save_tax_index
       end
 
-      # Testing method to get a node given an id. Returns nil if node wasn't found.
+      # Testing method to get a node given an id. Returns nil if node wasn't
+      # found.
       def get_node(id)
         queue = [@tree]
 
-        while !queue.empty?
+        until queue.empty?
           node = queue.shift
 
           return node if node.node_id == id
@@ -159,7 +174,7 @@ module BioPieces
         node.children.each_value { |child| tree_union(child) }
 
         node.children.each_value do |child|
-          if node.kmers.nil? and child.kmers.nil?
+          if node.kmers.nil? && child.kmers.nil?
           elsif node.kmers.nil?
             node.kmers = child.kmers
           else
@@ -172,23 +187,26 @@ module BioPieces
 
       # Method that determines if a node is a leaf or not.
       def leaf?(tax_levels, i)
-        if tax_levels[i + 1] and tax_levels[i + 1].split('#')[1]
-          leaf = false
+        if tax_levels[i + 1] && tax_levels[i + 1].split('#')[1]
+          false
         else
-          leaf = true
+          true
         end
       end
 
       # Save tax index to file.
       def save_tax_index
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"), 'wb') do |ios|
-          ios.puts ["#SEQ_ID", "NODE_ID", "LEVEL", "NAME", "PARENT_ID"].join("\t")
+        file = File.join(@options[:output_dir],
+                         "#{@options[:prefix]}_tax_index.dat")
+        File.open(file, 'wb') do |ios|
+          ios.puts %w(#SEQ_ID NODE_ID LEVEL NAME PARENT_ID).join("\t")
           queue = [@tree]
 
-          while !queue.empty?
+          until queue.empty?
             node = queue.shift
 
-            ios.puts [node.seq_id, node.node_id, node.level, node.name, node.parent_id ].join("\t")
+            ios.puts [node.seq_id, node.node_id, node.level, node.name,
+                      node.parent_id].join("\t")
 
             node.children.each_value do |child|
               queue.unshift(child) unless child.nil?
@@ -200,19 +218,21 @@ module BioPieces
       # Construct and save kmer index to file. This is done BFS style one
       # taxonomic level at a time to save memory.
       def save_kmer_index
-        File.open(File.join(@options[:output_dir], "#{@options[:prefix]}_kmer_index.dat"), 'wb') do |ios|
-          ios.puts ["#LEVEL", "KMER", "NODES"].join("\t")
+        file = File.join(@options[:output_dir],
+                         "#{@options[:prefix]}_kmer_index.dat")
+        File.open(file, 'wb') do |ios|
+          ios.puts %w(#LEVEL KMER NODES).join("\t")
 
           level = 0
           queue = [@tree]
 
-          while !queue.empty?
+          until queue.empty?
             kmer_index = Hash.new { |h, k| h[k] = [] }
             new_queue = []
 
             queue.each do |node|
               node.kmers.to_a.map { |kmer| kmer_index[kmer] << node.node_id }
-              node.children.each_value { |child| new_queue << child unless child.nil? }
+              node.children.each_value { |child| child && new_queue << child }
             end
 
             kmer_index.keys.sort.each do |kmer|
@@ -240,7 +260,7 @@ module BioPieces
           @level    = level    # Taxonomic level.
           @name     = name     # Taxonomic name.
           @kmers    = Set.new  # Kmer set.
-          @seq_id   = seq_id   # Sequence id (a representative seq for debugging).
+          @seq_id   = seq_id   # Sequ id (a representative seq for debugging).
           @node_id  = node_id  # Node id.
           @children = {}       # Child node hash.
         end
@@ -275,23 +295,23 @@ module BioPieces
     # consists a taxonomic tree index and indices for each taxonomic level
     # saved in the following files:
     #  * taxonomy_tax_index.dat  - return node for a given node id.
-    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and kmer.
+    #  * taxonomy_kmer_index.dat - return list of node ids for a given level and
+    #                              kmer.
     class Search
       MAX_COUNT    = 200_000
-      MAX_HITS     = 2_000    # Maximum number of shared oligos between two sequences.
+      MAX_HITS     = 2_000    # Max num of shared oligos between two sequences.
       BYTES_IN_INT = 4
       BYTES_IN_HIT = 2 * BYTES_IN_INT
 
       # Constructor for initializing a Search object.
       def initialize(options)
         @options    = options
-        raise TaxonomyError, "missing kmer_size option" unless @options[:kmer_size]
-        raise TaxonomyError, "missing step_size option" unless @options[:step_size]
-        raise TaxonomyError, "missing dir option"       unless @options[:dir]
-        raise TaxonomyError, "missing prefix option"    unless @options[:prefix]
-        raise TaxonomyError, "missing consensus option" unless @options[:consensus]
-        raise TaxonomyError, "missing coverage option"  unless @options[:coverage]
-        raise TaxonomyError, "missing hits_max option"  unless @options[:hits_max]
+
+        symbols = %i(kmer_size step_size dir prefix consensus coverage hits_max)
+
+        symbols.each do |opt|
+          fail TaxonomyError, "missing #{opt} option" unless @options[opt]
+        end
 
         @count_ary  = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
         @hit_ary    = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
@@ -319,40 +339,49 @@ module BioPieces
       #   * consensus - For a number of hits accept consensus at a given level
       #                 if within this percentage.
       def execute(entry)
-        kmers = entry.to_kmers(kmer_size: @options[:kmer_size], step_size: @options[:step_size])
+        kmers = entry.to_kmers(kmer_size: @options[:kmer_size],
+                               step_size: @options[:step_size])
 
-        puts "DEBUG Q: #{entry.seq_name}" if BioPieces::debug
+        puts "DEBUG Q: #{entry.seq_name}" if BioPieces.debug
 
         TAX_LEVELS.reverse.each do |level|
           kmers_lookup(kmers, level)
 
-          hit_count = hits_select_C(@count_ary.ary, @count_ary.count, @hit_ary.ary, kmers.size, (@options[:best_only] ? 1 : 0), @options[:coverage])
+          hit_count = hits_select_C(@count_ary.ary, @count_ary.count,
+                                    @hit_ary.ary, kmers.size,
+                                    (@options[:best_only] ? 1 : 0),
+                                    @options[:coverage])
           hit_count = @options[:hits_max] if @options[:hits_max] < hit_count
 
           if hit_count == 0
-            puts "DEBUG no hits @ #{level}" if BioPieces::debug
+            puts "DEBUG no hits @ #{level}" if BioPieces.debug
           else
-            puts "DEBUG hit(s) @ #{level}"  if BioPieces::debug
+            puts "DEBUG hit(s) @ #{level}"  if BioPieces.debug
             taxpaths = []
 
-            (0 ... hit_count).each do |i|
-              node_id, count = @hit_ary.ary[BYTES_IN_HIT * i ... BYTES_IN_HIT * i + BYTES_IN_HIT].unpack("II")
+            (0...hit_count).each do |i|
+              start = BYTES_IN_HIT * i
+              stop  = BYTES_IN_HIT * i + BYTES_IN_HIT
+
+              node_id, count = @hit_ary.ary[start...stop].unpack('II')
 
               taxpath = TaxPath.new(node_id, count, kmers.size, @tax_index)
 
-              if BioPieces::debug
+              if BioPieces.debug
                 seq_id = @tax_index[node_id].seq_id
-                puts "DEBUG S_ID: #{seq_id} KMERS: [#{count}/#{kmers.size}] #{taxpath}"
+                puts "DEBUG S_ID: #{seq_id} KMERS: [#{count}/#{kmers.size}] \
+                      #{taxpath}"
               end
 
               taxpaths << taxpath
             end
 
-            return Result.new(hit_count, compile_consensus(taxpaths, hit_count).tr('_', ' '))
+            return Result.new(hit_count, compile_consensus(taxpaths, hit_count).
+                   tr('_', ' '))
           end
         end
 
-        Result.new(0, "Unclassified")
+        Result.new(0, 'Unclassified')
       end
 
       private
@@ -360,8 +389,8 @@ module BioPieces
       # Method to load and return the tax_index from file.
       def load_tax_index
         tax_index = {}
-
-        File.open(File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")) do |ios|
+        file = File.join(@options[:dir], "#{@options[:prefix]}_tax_index.dat")
+        File.open(file) do |ios|
           ios.each do |line|
             line.chomp!
 
@@ -369,7 +398,9 @@ module BioPieces
 
             seq_id, node_id, level, name, parent_id = line.split("\t")
 
-            tax_index[node_id.to_i] = Node.new(seq_id.to_i, node_id.to_i, level.to_sym, name, parent_id.to_i)
+            tax_index[node_id.to_i] = Node.new(seq_id.to_i, node_id.to_i,
+                                               level.to_sym, name,
+                                               parent_id.to_i)
           end
         end
 
@@ -379,8 +410,8 @@ module BioPieces
       # Method to load and return the kmer_index from file.
       def load_kmer_index
         kmer_index = Hash.new { |h, k| h[k] = {} }
-
-        File.open(File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")) do |ios|
+        file = File.join(@options[:dir], "#{@options[:prefix]}_kmer_index.dat")
+        File.open(file) do |ios|
           ios.each do |line|
             line.chomp!
 
@@ -388,7 +419,8 @@ module BioPieces
 
             level, kmer, nodes = line.split("\t")
 
-            kmer_index[level.to_sym][kmer.to_i] = nodes.split(';').map { |n| n.to_i }.pack("I*")
+            kmer_index[level.to_sym][kmer.to_i] = nodes.split(';').map(&:to_i).
+                                                  pack('I*')
           end
         end
 
@@ -404,10 +436,10 @@ module BioPieces
         @count_ary.zero!
 
         kmers.each do |kmer|
-          if @kmer_index[level]
-            if nodes = @kmer_index[level][kmer]
-              increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
-            end
+          next unless @kmer_index[level]
+
+          if (nodes = @kmer_index[level][kmer])
+            increment_C(@count_ary.ary, nodes, nodes.size / BYTES_IN_INT)
           end
         end
       end
@@ -436,7 +468,8 @@ module BioPieces
           scores = []
 
           subhash.each_value do |subsubhash|
-            subsubhash.sort_by { |_, count| count }.reverse.each do |subname, count|
+            subsubhash.sort_by { |_, count| count }.reverse.
+              each do |subname, count|
               if count >= hit_size * @options[:consensus]
                 cons   << subname
                 scores << ((count / hit_size.to_f) * 100).to_i
@@ -450,7 +483,7 @@ module BioPieces
         end
 
         if consensus.empty?
-          "Unclassified"
+          'Unclassified'
         else
           consensus.join(';')
         end
@@ -460,10 +493,12 @@ module BioPieces
       # structure appropriate for subsequence determination of the taxonomic
       # consensus.
       def decompose_consensus(taxpaths)
-        tax_hash = Hash.new { |h1, k1| h1[k1] = Hash.new { |h2, k2| h2[k2] =  Hash.new(0) } }
+        tax_hash = Hash.new do |h1, k1|
+          h1[k1] = Hash.new { |h2, k2| h2[k2] =  Hash.new(0) }
+        end
 
         taxpaths.each do |taxpath|
-          taxpath.nodes[1 .. -1].each do |node|  # Ignoring root level, hence starting from 1
+          taxpath.nodes[1..-1].each do |node|  # Ignoring root level, start at 1
             node.name.split('_').each_with_index do |subname, i|
               tax_hash[node.level][i][subname] += 1
             end
@@ -477,13 +512,13 @@ module BioPieces
         # Struct for a 'hit' containing two pieces of information:
         #   * node_id - Node id for this particular node.
         #   * count   - Number of kmers matching this particular node.
-        builder.prefix %{
+        builder.prefix %(
           typedef struct
           {
              unsigned int node_id;
              unsigned int count;
           } hit;
-        }
+        )
 
         # Qsort hit struct comparision function for sorting
         # hits according to count (highest count first).
@@ -629,7 +664,7 @@ module BioPieces
 
           node_id = @node_id
 
-          while node = @tax_index[node_id]
+          while (node = @tax_index[node_id])
             nodes << node
 
             break if node.level == :r # At root level
@@ -644,7 +679,7 @@ module BioPieces
         def to_s
           levels = []
 
-          @nodes[1 .. -1].each do |node|
+          @nodes[1..-1].each do |node|
             levels << "#{node.level.upcase}##{node.name}"
           end
 
