@@ -83,6 +83,11 @@ module BioPieces
 
     private
 
+    # Get a match if possible.
+    #
+    # @param io [IO] IO stream.
+    #
+    # @return [Match, nil] match or nil whether a match was found.
     def get_match(io)
       io.each do |line|
         line.chomp!
