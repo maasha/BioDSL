@@ -29,14 +29,33 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
 require 'test/helper'
 
-class TestUsearch < Test::Unit::TestCase
+# Test class for Mummer.
+class TestMummer < Test::Unit::TestCase
   def setup
+    @entry1 = BioPieces::Seq.new(seq_name: 'test1', seq: 'ctagcttcatacctagctag')
+    @entry2 = BioPieces::Seq.new(seq_name: 'test2', seq: 'ctagcttcaGacctagctag')
   end
 
-  def teardown
-  end
+  test 'Mummer#each_mem returns OK' do
+    mems     = BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 9)
+    expected = <<-END.gsub(/^\s+\|/, '')
+      |[#<struct BioPieces::Mummer::Match
+      |  q_id="test2",
+      |  s_id="test1",
+      |  dir="forward",
+      |  q_beg=0,
+      |  s_beg=0,
+      |  hit_len=9>,
+      | #<struct BioPieces::Mummer::Match
+      |  q_id="test2",
+      |  s_id="test1",
+      |  dir="forward",
+      |  q_beg=10,
+      |  s_beg=10,
+      |  hit_len=10>]
+    END
 
-  test 'this and that' do
-    assert_true('world dominance')
+    assert_equal(Enumerator, mems.class)
+    assert_equal(expected.gsub("\n", '').gsub('  ', ' '), mems.to_a.to_s)
   end
 end

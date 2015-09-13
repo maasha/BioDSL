@@ -23,6 +23,8 @@
 # This software is part of Biopieces (www.biopieces.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+
+# Namespace for BipPieces.
 module BioPieces
   # Error class for Mummer errors.
   MummerError = Class.new(StandardError)
@@ -38,9 +40,11 @@ module BioPieces
     def self.each_mem(seq1, seq2, options = {})
       mummer = new(seq1, seq2, options)
 
-      return to_enum :each unless block_given?
-
-      mummer.each_mem { |mem| yield mem }
+      if block_given?
+        mummer.each_mem { |mem| yield mem }
+      else
+        mummer.each_mem
+      end
     end
 
     # Constructor for Mummer class.
@@ -58,14 +62,13 @@ module BioPieces
       @q_id    = nil
       @dir     = nil
 
-
       default_options
     end
 
     # @yield [Mummer::Match] A match object
     # @return [Enumerable] An Enumerable
     def each_mem
-      return to_enum :each unless block_given?
+      return to_enum :each_mem unless block_given?
 
       TmpDir.create('in1', 'in2', 'out') do |file_in1, file_in2, file_out|
         BioPieces::Fasta.open(file_in1, 'w') { |io| io.puts @seq1.to_fasta }
@@ -79,6 +82,10 @@ module BioPieces
           end
         end
       end
+    end
+
+    def each
+      'fisk'
     end
 
     private
