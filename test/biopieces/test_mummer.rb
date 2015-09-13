@@ -32,8 +32,24 @@ require 'test/helper'
 # Test class for Mummer.
 class TestMummer < Test::Unit::TestCase
   def setup
-    @entry1 = BioPieces::Seq.new(seq_name: 'test1', seq: 'ctagcttcatacctagctag')
+    @entry1 = BioPieces::Seq.new(seq_name: 'test1', seq: 'ctagcttcaacctagctag')
     @entry2 = BioPieces::Seq.new(seq_name: 'test2', seq: 'ctagcttcaGacctagctag')
+  end
+
+  test 'Mummer.each_mem with bad :length_min fails' do
+    assert_raise(BioPieces::MummerError) do
+      BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 0)
+    end
+
+    assert_raise(BioPieces::MummerError) do
+      BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 5.5)
+    end
+  end
+
+  test 'Mummer.each_mem with bad :direction fails' do
+    assert_raise(BioPieces::MummerError) do
+      BioPieces::Mummer.each_mem(@entry1, @entry2, direction: 'up')
+    end
   end
 
   test 'Mummer#each_mem returns OK' do
@@ -43,15 +59,15 @@ class TestMummer < Test::Unit::TestCase
       |  q_id="test2",
       |  s_id="test1",
       |  dir="forward",
-      |  q_beg=0,
       |  s_beg=0,
+      |  q_beg=0,
       |  hit_len=9>,
       | #<struct BioPieces::Mummer::Match
       |  q_id="test2",
       |  s_id="test1",
       |  dir="forward",
+      |  s_beg=9,
       |  q_beg=10,
-      |  s_beg=10,
       |  hit_len=10>]
     END
 

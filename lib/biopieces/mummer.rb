@@ -29,6 +29,8 @@ module BioPieces
   # Error class for Mummer errors.
   MummerError = Class.new(StandardError)
 
+  # rubocop: disable ClassLength
+
   # Class for executing MUMmer and parsing MUMmer results.
   class Mummer
     # @param seq1    [BioPieces::Seq] Sequence 1.
@@ -63,6 +65,7 @@ module BioPieces
       @dir     = nil
 
       default_options
+      check_options
     end
 
     # @yield [Mummer::Match] A match object
@@ -82,10 +85,6 @@ module BioPieces
           end
         end
       end
-    end
-
-    def each
-      'fisk'
     end
 
     private
@@ -117,6 +116,42 @@ module BioPieces
       end
 
       nil
+    end
+
+    # Check that the options are OK
+    def check_options
+      check_length_min_value
+      check_length_min_type
+      check_direction
+    end
+
+    # Check the that the value of :length_min is OK.
+    #
+    # @raise [BioPieces::MummerError] on bad length_min value.
+    def check_length_min_value
+      return if @options[:length_min] > 0
+
+      fail MummerError, "Bad length_min: #{@options[:length_min]}"
+    end
+
+    # Check that the type of :length_min is OK.
+    #
+    # @raise [BioPieces::MummerError] on bad length_min type.
+    def check_length_min_type
+      return if @options[:length_min].class == Fixnum
+
+      fail MummerError, "Bad length_min type: #{@options[:length_min].class}"
+    end
+
+    # Check that the value of :direction is OK.
+    #
+    # @raise [BioPieces::MummerError] on bad direction.
+    def check_direction
+      return if @options[:direction] == :forward ||
+                @options[:direction] == :reverse ||
+                @options[:direction] == :both
+
+      fail MummerError, "Bad direction: #{@options[:direction]}"
     end
 
     # Set some sensible default options.
@@ -168,7 +203,7 @@ module BioPieces
       @command.join(' ')
     end
 
-    Match = Struct.new(:q_id, :s_id, :dir, :q_beg, :s_beg, :hit_len) do
+    Match = Struct.new(:q_id, :s_id, :dir, :s_beg, :q_beg, :hit_len) do
       def q_end
         q_beg + hit_len - 1
       end
