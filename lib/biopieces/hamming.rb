@@ -1,48 +1,70 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
+# Namespace for BioPieces.
 module BioPieces
   # Error class for all exceptions to do with Hamming.
-  class HammingError < StandardError; end
+  HammingError = Class.new(StandardError)
 
+  # Class for calculating Hamming distance.
   class Hamming
     extend Ambiguity
 
     # Class method for calculating the Hamming distance between
     # two given strings optionally allowing for IUPAC ambiguity codes.
+    #
+    # @param str1     [String]  String 1.
+    # @param str2     [String]  String 2.
+    # @param options  [Hash]    Options hash.
+    # @option options [Boolean] :ambiguity
     def self.distance(str1, str2, options = {})
-      raise ArgumentError, "string length mismatch: #{str1.length} != #{str2.length}" if str1.length != str2.length
+      check_strings(str1, str2)
 
-      hd = self.new
+      hd = new
 
       if options[:ambiguity]
         hd.hamming_distance_ambiguity_C(str1, str2, str1.length)
       else
         hd.hamming_distance_C(str1, str2, str1.length)
       end
+    end
+
+    private
+
+    # Check that string lengths are equal.
+    #
+    # @param str1 [String] String 1.
+    # @param str2 [String] String 2.
+    #
+    # @raise [HammingError] if string lengths mismatch.
+    def check_strings(str1, str2)
+      return if str1.length == str2.length
+
+      fail HammingError, "bad string lengths: #{str1.length} != #{str2.length}"
     end
 
     # >>>>>>>>>>>>>>> RubyInline C code <<<<<<<<<<<<<<<
@@ -106,8 +128,3 @@ module BioPieces
     end
   end
 end
-
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-__END__
