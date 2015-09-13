@@ -92,7 +92,8 @@ module BioPieces
     # @param command [BioPieces::Command] Command object.
     def render_status(command)
       stats = command.status.reject { |k, _| k.to_s[0..3] == 'time' }
-      render('status.html.haml', self, exit_status: command.run_status, statsus: stats)
+      render('status.html.haml', self, exit_status: command.run_status,
+                                       statsus: stats)
     end
 
     # Render HTML time section.
