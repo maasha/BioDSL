@@ -29,17 +29,17 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
 require 'test/helper'
 
-class TestDigest < Test::Unit::TestCase 
+class TestDigest < Test::Unit::TestCase
   def setup
     @entry = BioPieces::Seq.new(seq: "cgatcgatcGGATCCgagagggtgtgtagtgGAATTCcgctgc")
   end
 
   test "#each_digest with bad residue in pattern raises" do
-    assert_raise(BioPieces::DigestError) { @entry.each_digest("X", 0) }
+    assert_raise(BioPieces::DigestError) { @entry.each_digest("X", 0).to_a }
   end
 
   test "#each_digest returns correctly" do
-    digests = @entry.each_digest("GGATCC", 1)
+    digests = @entry.each_digest("GGATCC", 1).to_a
     assert_equal(2, digests.size)
     assert_equal("[0-9]", digests.first.seq_name)
     assert_equal("cgatcgatcG", digests.first.seq)
@@ -48,14 +48,14 @@ class TestDigest < Test::Unit::TestCase
   end
 
   test "#each_digest with negavive offset returns correctly" do
-    digests = @entry.each_digest("CGATCG", -1)
+    digests = @entry.each_digest("CGATCG", -1).to_a
     assert_equal(1, digests.size)
     assert_equal("[0-42]", digests.first.seq_name)
     assert_equal(@entry.seq, digests.first.seq)
   end
 
   test "#each_digest with offset out of bounds returns correctly" do
-    digests = @entry.each_digest("AATTCcgctgc", 15)
+    digests = @entry.each_digest("AATTCcgctgc", 15).to_a
     assert_equal(1, digests.size)
     assert_equal("[0-42]", digests.first.seq_name)
     assert_equal(@entry.seq, digests.first.seq)
