@@ -32,6 +32,8 @@ require 'test/helper'
 # Test class for Mummer.
 class TestMummer < Test::Unit::TestCase
   def setup
+    omit('mummer not found') unless BioPieces::Filesys.which('mummer')
+
     @entry1 = BioPieces::Seq.new(seq_name: 'test1', seq: 'ctagcttcaacctagctag')
     @entry2 = BioPieces::Seq.new(seq_name: 'test2', seq: 'ctagcttcaGacctagctag')
   end
