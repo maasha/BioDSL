@@ -53,15 +53,13 @@ module BioPieces
       end
     end
 
-    private
-
     # Check that string lengths are equal.
     #
     # @param str1 [String] String 1.
     # @param str2 [String] String 2.
     #
     # @raise [HammingError] if string lengths mismatch.
-    def check_strings(str1, str2)
+    def self.check_strings(str1, str2)
       return if str1.length == str2.length
 
       fail HammingError, "bad string lengths: #{str1.length} != #{str2.length}"
