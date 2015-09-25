@@ -345,18 +345,14 @@ module BioPieces
     #
     # @return [Set] Set of exact patterns.
     def compile_exact
-      require 'set'
+      require 'google_hash'
 
       return unless @options[:exact]
 
-      lookup = Set.new
+      lookup = GoogleHashDenseLongToInt.new
 
       @patterns.each do |pattern|
-        if pattern.is_a?(Float) || pattern.is_a?(Integer)
-          lookup << pattern
-        else
-          lookup << pattern.to_sym
-        end
+        lookup[pattern.to_s.hash] = 1
       end
 
       lookup
@@ -386,7 +382,7 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_keys?(keys)
       keys.each do |key|
-        return true if @exact.include?(key)
+        return true if @exact.include?(key.to_s.hash)
       end
 
       false
@@ -401,8 +397,7 @@ module BioPieces
     def exact_match_values?(record, keys)
       keys.each do |key|
         if (value = record[key])
-          return true if value.is_a?(String)  && @exact.include?(value.to_sym)
-          return true if !value.is_a?(String) && @exact.include?(value)
+          return true if @exact.include?(value.to_s.hash)
         end
       end
 
@@ -417,14 +412,12 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_key_values?(record, keys)
       keys.each do |key|
-        return true if @exact.include?(key)
+        return true if @exact.include?(key.to_s.hash)
 
         next unless record[key]
         value = record[key]
 
-        if @exact.include?(value.respond_to?(:to_sym) ? value.to_sym : value)
-          return true
-        end
+        return true if @exact.include?(value.to_s.hash)
       end
 
       false
