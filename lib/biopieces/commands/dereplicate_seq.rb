@@ -70,8 +70,8 @@ module BioPieces
     #
     # @return [DereplicateSeq] Class intance.
     def initialize(options)
-      @options       = options
-      @lookup        = GoogleHashDenseLongToInt.new
+      @options = options
+      @lookup  = GoogleHashDenseRubyToInt.new
 
       check_options
     end
@@ -133,15 +133,14 @@ module BioPieces
       seq = record[:SEQ].dup
       @status[:residues_in] += seq.length
       seq.downcase! if @options[:ignore_case]
-      key = seq.hash
 
-      unless @lookup.key? key
+      unless @lookup.include? seq
         s << record
 
-        @lookup[key] = 0
+        @lookup[seq] = 0
       end
 
-      @lookup[key] += 1
+      @lookup[seq] += 1
     end
 
     # Read all serialized records from tmp file and emit to the output stream
@@ -156,7 +155,7 @@ module BioPieces
             seq = record[:SEQ].dup
             @status[:residues_out] += seq.length
             seq.downcase! if @options[:ignore_case]
-            record[:SEQ_COUNT] = @lookup[seq.hash]
+            record[:SEQ_COUNT] = @lookup[seq]
 
             output << record
 
