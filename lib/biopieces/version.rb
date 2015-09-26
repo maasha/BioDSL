@@ -27,5 +27,5 @@
 
 # Namespace for BioPieces.
 module BioPieces
-  VERSION = '0.5.8'
+  VERSION = '0.5.9'
 end

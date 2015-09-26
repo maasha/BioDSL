@@ -181,7 +181,7 @@ module BioPieces
     #
     # @return [ReadFasta] Returns an instance of the class.
     def initialize(options)
-      @options   = options
+      @options = options
 
       check_options
 
@@ -189,9 +189,6 @@ module BioPieces
       @vals_only = @options[:values_only]
       @invert    = @options[:reject] || @options[:reject_file]
       @eval      = @options[:evaluate]
-      compile_keys
-      compile_exact
-      compile_regexes
     end
 
     # Return a lambda for the grab command.
@@ -200,6 +197,9 @@ module BioPieces
     def lmb
       lambda do |input, output, status|
         status_init(status, STATS)
+        compile_keys
+        compile_exact
+        compile_regexes
 
         input.each do |record|
           @status[:records_in] += 1
@@ -317,9 +317,7 @@ module BioPieces
     def compile_exact
       return unless @options[:exact]
 
-      require 'google_hash'
-
-      @exact = GoogleHashDenseRubyToInt.new
+      @exact = {}
 
       compile_exact_patterns(@options[:select])
       compile_exact_patterns(@options[:reject])
@@ -334,7 +332,11 @@ module BioPieces
       return unless patterns
 
       [patterns].flatten.each do |pattern|
-        @exact[pattern.to_s] = 1
+        if pattern.class == String
+          @exact[pattern.to_sym] = true
+        else
+          @exact[pattern] = true
+        end
       end
     end
 
@@ -345,7 +347,15 @@ module BioPieces
       return unless file
 
       File.open(file) do |ios|
-        ios.each_line { |line| @exact[line.chomp] = 1 }
+        ios.each_line do |line|
+          pattern = line.chomp.to_num
+
+          if pattern.class == String
+            @exact[pattern.to_sym] = true
+          else
+            @exact[pattern] = true
+          end
+        end
       end
     end
 
@@ -373,7 +383,7 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_keys?(keys)
       keys.each do |key|
-        return true if @exact[key.to_s]
+        return true if @exact[key]
       end
 
       false
@@ -387,8 +397,14 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_values?(record, keys)
       keys.each do |key|
-        if (value = record[key])
-          return true if @exact.include?(value.to_s)
+        value = record[key]
+
+        next unless value
+
+        if value.class == String
+          return true if @exact.include?(value.to_sym)
+        else
+          return true if @exact.include?(value)
         end
       end
 
@@ -403,12 +419,17 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_key_values?(record, keys)
       keys.each do |key|
-        return true if @exact.include?(key.to_s)
+        return true if @exact.include?(key)
 
-        next unless record[key]
         value = record[key]
 
-        return true if @exact.include?(value.to_s)
+        next unless value
+
+        if value.class == String
+          return true if @exact.include?(value.to_sym)
+        else
+          return true if @exact.include?(value)
+        end
       end
 
       false
