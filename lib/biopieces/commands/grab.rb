@@ -348,9 +348,11 @@ module BioPieces
 
       File.open(file) do |ios|
         ios.each_line do |line|
-          pattern = line.chomp.to_num
+          pattern = line.chomp!
 
-          if pattern.class == String
+          type = pattern.to_num.class.to_s.to_sym unless type
+
+          if type == :String
             @exact[pattern.to_sym] = true
           else
             @exact[pattern] = true
