@@ -319,7 +319,7 @@ module BioPieces
 
       require 'google_hash'
 
-      @exact = GoogleHashDenseLongToInt.new
+      @exact = GoogleHashDenseRubyToInt.new
 
       compile_exact_patterns(@options[:select])
       compile_exact_patterns(@options[:reject])
@@ -334,7 +334,7 @@ module BioPieces
       return unless patterns
 
       [patterns].flatten.each do |pattern|
-        @exact[pattern.to_s.hash] = 1
+        @exact[pattern.to_s] = 1
       end
     end
 
@@ -345,7 +345,7 @@ module BioPieces
       return unless file
 
       File.open(file) do |ios|
-        ios.each_line { |line| @exact[line.chomp.hash] = 1 }
+        ios.each_line { |line| @exact[line.chomp] = 1 }
       end
     end
 
@@ -373,7 +373,7 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_keys?(keys)
       keys.each do |key|
-        return true if @exact.include?(key.to_s.hash)
+        return true if @exact[key.to_s]
       end
 
       false
@@ -388,7 +388,7 @@ module BioPieces
     def exact_match_values?(record, keys)
       keys.each do |key|
         if (value = record[key])
-          return true if @exact.include?(value.to_s.hash)
+          return true if @exact.include?(value.to_s)
         end
       end
 
@@ -403,12 +403,12 @@ module BioPieces
     # @return [Boolean] True if exact match found.
     def exact_match_key_values?(record, keys)
       keys.each do |key|
-        return true if @exact.include?(key.to_s.hash)
+        return true if @exact.include?(key.to_s)
 
         next unless record[key]
         value = record[key]
 
-        return true if @exact.include?(value.to_s.hash)
+        return true if @exact.include?(value.to_s)
       end
 
       false
