@@ -1,29 +1,31 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
+# Namespace for BioPieces.
 module BioPieces
   # Class for Inter Process Communication between forked processes using msgpack
   # to serialize and deserialize objects.
@@ -39,7 +41,7 @@ module BioPieces
     def self.pipe
       read, write = IO.pipe(Encoding::BINARY)
 
-      [self.new(read), self.new(write)]
+      [new(read), new(write)]
     end
 
     def initialize(io)
@@ -55,26 +57,24 @@ module BioPieces
     end
 
     def each
-      while ! @io.eof?
-        yield read
-      end
+      yield read until @io.eof?
     end
 
     def read
       size = @io.read(4)
-      raise EOFError unless size
-      size = size.unpack("I").first
+      fail EOFError unless size
+      size = size.unpack('I').first
       msg  = @io.read(size)
       MessagePack.unpack(msg, symbolize_keys: true)
     end
 
     def write(obj)
       msg = MessagePack.pack(obj)
-      @io.write([msg.size].pack("I"))
+      @io.write([msg.size].pack('I'))
       @io.write(msg)
     end
 
-    alias :<< :write
+    alias_method :<<, :write
   end
 
   class Channel
@@ -83,7 +83,7 @@ module BioPieces
     def self.pair
       queue = Queue.new
 
-      [self.new(queue), self.new(queue)]
+      [new(queue), new(queue)]
     end
 
     def initialize(queue)
@@ -91,7 +91,7 @@ module BioPieces
     end
 
     def each
-      while obj = read
+      while (obj = read)
         yield obj
       end
     end
@@ -108,6 +108,6 @@ module BioPieces
       @queue << nil
     end
 
-    alias :<< :write
+    alias_method :<<, :write
   end
 end

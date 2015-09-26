@@ -1,5 +1,7 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                              #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
@@ -25,75 +27,53 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# Namespace for BioPieces.
-module BioPieces
-  # Error class for all exceptions to do with Digest.
-  DigestError = Class.new(StandardError)
+require 'test/helper'
 
-  # Namespace for Digest.
-  module Digest
-    # Method to get the next digestion product from a sequence.
-    def each_digest(pattern, cut_pos)
-      return to_enum(:each_digest, pattern, cut_pos) unless block_given?
-      pattern = disambiguate(pattern)
-      offset  = 0
+# Test class for Mummer.
+class TestMummer < Test::Unit::TestCase
+  def setup
+    omit('mummer not found') unless BioPieces::Filesys.which('mummer')
 
-      seq.upcase.scan pattern do
-        pos = $`.length + cut_pos
+    @entry1 = BioPieces::Seq.new(seq_name: 'test1', seq: 'ctagcttcaacctagctag')
+    @entry2 = BioPieces::Seq.new(seq_name: 'test2', seq: 'ctagcttcaGacctagctag')
+  end
 
-        if pos >= 0 && pos < length - 2
-          subseq = self[offset...pos]
-          subseq.seq_name = "#{seq_name}[#{offset}-#{pos - offset - 1}]"
-
-          yield subseq
-        end
-
-        offset = pos
-      end
-
-      offset = 0 if offset < 0 || offset > length
-      subseq = self[offset..-1]
-      subseq.seq_name = "#{seq_name}[#{offset}-#{length - 1}]"
-
-      yield subseq
+  test 'Mummer.each_mem with bad :length_min fails' do
+    assert_raise(BioPieces::MummerError) do
+      BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 0)
     end
 
-    private
-
-    # Method that returns a regexp object with a restriction
-    # enzyme pattern with ambiguity codes substituted to the
-    # appropriate regexp.
-    def disambiguate(pattern)
-      ambiguity = {
-        'A' => 'A',
-        'T' => 'T',
-        'U' => 'T',
-        'C' => 'C',
-        'G' => 'G',
-        'M' => '[AC]',
-        'R' => '[AG]',
-        'W' => '[AT]',
-        'S' => '[CG]',
-        'Y' => '[CT]',
-        'K' => '[GT]',
-        'V' => '[ACG]',
-        'H' => '[ACT]',
-        'D' => '[AGT]',
-        'B' => '[CGT]',
-        'N' => '[GATC]'
-      }
-
-      new_pattern = ''
-
-      pattern.upcase.each_char do |char|
-        if ambiguity[char]
-          new_pattern << ambiguity[char]
-        else
-          fail DigestError, "Could not disambiguate residue: #{char}"
-        end
-      end
-
-      Regexp.new(new_pattern)
+    assert_raise(BioPieces::MummerError) do
+      BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 5.5)
     end
+  end
+
+  test 'Mummer.each_mem with bad :direction fails' do
+    assert_raise(BioPieces::MummerError) do
+      BioPieces::Mummer.each_mem(@entry1, @entry2, direction: 'up')
+    end
+  end
+
+  test 'Mummer#each_mem returns OK' do
+    mems     = BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 9)
+    expected = <<-END.gsub(/^\s+\|/, '')
+      |[#<struct BioPieces::Mummer::Match
+      |  q_id="test2",
+      |  s_id="test1",
+      |  dir="forward",
+      |  s_beg=0,
+      |  q_beg=0,
+      |  hit_len=9>,
+      | #<struct BioPieces::Mummer::Match
+      |  q_id="test2",
+      |  s_id="test1",
+      |  dir="forward",
+      |  s_beg=9,
+      |  q_beg=10,
+      |  hit_len=10>]
+    END
+
+    assert_equal(Enumerator, mems.class)
+    assert_equal(expected.gsub("\n", '').gsub('  ', ' '), mems.to_a.to_s)
   end
 end

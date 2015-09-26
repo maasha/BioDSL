@@ -179,7 +179,7 @@ module BioPieces
     def execute_spades(input_file, tmp_dir)
       cmd_line = compile_command(input_file, tmp_dir)
 
-      if BioPices.verbose
+      if BioPieces.verbose
         $stderr.puts cmd_line
         system(cmd_line)
       else
