@@ -353,8 +353,6 @@ module BioPieces
           if pattern.class == String
             @exact[pattern.to_sym] = true
           else
-            pp "HER"
-            puts pattern.class
             @exact[pattern] = true
           end
         end
