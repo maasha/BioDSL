@@ -29,18 +29,20 @@ module BioPieces
   # == Grab records in stream.
   #
   # +grab+ select records from the stream by matching patterns to keys or
-  # values. +grab+ is  Biopieces' equivalent of Unix' +grep+, however, +grab+
+  # values. +grab+ is Biopieces' equivalent of Unix' +grep+, however, +grab+
   # is much more versatile.
   #
   # NB! If chaining multiple +grab+ commands then use the most restrictive
   # +grab+ first in order to get the best performance.
   #
+  # NB! Avoid using exact with long values because of memory use.
+  #
   # == Usage
   #
   #    grab(<select: <pattern>|select_file: <file>|reject: <pattern>|
-  #                reject_file: <file>|evaluate: <expression>|exact: <bool>>
-  #               [, keys: <list>|keys_only: <bool>|values_only: <bool>|
-  #               ignore_case: <bool>])
+  #         reject_file: <file>|evaluate: <expression>|exact: <bool>>
+  #         [, keys: <list>|keys_only: <bool>|values_only: <bool>|
+  #         ignore_case: <bool>])
   #
   # === Options
   #
@@ -186,11 +188,10 @@ module BioPieces
       @keys_only = @options[:keys_only]
       @vals_only = @options[:values_only]
       @invert    = @options[:reject] || @options[:reject_file]
-      @patterns  = compile_patterns
-      @keys      = compile_keys
-      @exact     = compile_exact
-      @regex     = compile_regexes
       @eval      = @options[:evaluate]
+      compile_keys
+      compile_exact
+      compile_regexes
     end
 
     # Return a lambda for the grab command.
@@ -248,114 +249,104 @@ module BioPieces
 
     # Compile a list of keys from the options hash, which may contain either a
     # list of keys, a symbol or a comma seperated string of keys.
-    #
-    # @return [Array] List of keys (Symbols).
     def compile_keys
       return unless @options[:keys]
 
-      case @options[:keys].class.to_s
-      when 'Array'
-        @options[:keys].map(&:to_sym)
-      when 'Symbol'
-        [@options[:keys]]
-      when 'String'
-        @options[:keys].split(/, */).map { |key| key.sub(/^:/, '').to_sym }
-      end
-    end
-
-    # Compile a list of patterns to select or reject.
-    #
-    # @return [Array] List of patterns.
-    def compile_patterns
-      case
-      when @options[:select]      then compile_patterns_select
-      when @options[:select_file] then compile_patterns_select_file
-      when @options[:reject]      then compile_patterns_reject
-      when @options[:reject_file] then compile_patterns_reject_file
-      end
-    end
-
-    # Compile a list of patterns to select from an Array, a String, an Integer
-    # or a Float.
-    #
-    # @return [Array] List of patterns.
-    def compile_patterns_select
-      if @options[:select].class == Array
-        @options[:select]
-      else
-        [@options[:select]]
-      end
-    end
-
-    # Compile a list of patterns to select from a file with one pattern per
-    # line.
-    #
-    # @return [Array] List of patterns.
-    def compile_patterns_select_file
-      patterns = []
-
-      File.open(@options[:select_file]) do |ios|
-        ios.each_line { |line| patterns << line.chomp.to_num }
-      end
-
-      patterns
-    end
-
-    # Compile a list of patterns to reject from an Array, a String, an Integer
-    # or a Float.
-    #
-    # @return [Array] List of patterns.
-    def compile_patterns_reject
-      if @options[:reject].is_a? Array
-        @options[:reject]
-      else
-        [@options[:reject]]
-      end
-    end
-
-    # Compile a list of patterns to reject from a file with one pattern per
-    # line.
-    #
-    # @return [Array] List of patterns.
-    def compile_patterns_reject_file
-      patterns = []
-
-      File.open(@options[:reject_file]) do |ios|
-        ios.each_line { |line| patterns << line.chomp.to_num }
-      end
-
-      patterns
+      @keys = case @options[:keys].class.to_s
+              when 'Array'
+                @options[:keys].map(&:to_sym)
+              when 'Symbol'
+                [@options[:keys]]
+              when 'String'
+                @options[:keys].split(/, */).map do |key|
+                  key.sub(/^:/, '').to_sym
+                end
+              end
     end
 
     # Compile a list of regexes for matching.
-    #
-    # @return [Array] List of regexes.
     def compile_regexes
-      return if     @exact
-      return unless @patterns
+      return if @options[:exact]
+      return if @options[:evaluate]
 
-      if @options[:ignore_case]
-        @patterns.inject([]) { |a, e| a << Regexp.new(/#{e}/i) }
-      else
-        @patterns.inject([]) { |a, e| a << Regexp.new(/#{e}/) }
+      @regex = []
+
+      compile_regex_patterns(@options[:select])
+      compile_regex_patterns(@options[:reject])
+      compile_regex_file(@options[:select_file])
+      compile_regex_file(@options[:reject_file])
+    end
+
+    # Compile a list of regex from a list of given patterns.
+    #
+    # @param patterns [Array] List of patterns.
+    def compile_regex_patterns(patterns)
+      return unless patterns
+
+      [patterns].flatten.each do |pattern|
+        if @options[:ignore_case]
+          @regex << Regexp.new(/#{pattern}/i)
+        else
+          @regex << Regexp.new(/#{pattern}/)
+        end
       end
     end
 
-    # Compile a lookup set for fast exact matching.
+    # Compile a list of regex from a given file with one pattern per line.
+    #
+    # @param file [String] Path to file with patterns.
+    def compile_regex_file(file)
+      return unless file
+
+      File.open(file) do |ios|
+        ios.each_line do |line|
+          line.chomp!
+
+          if @options[:ignore_case]
+            @regex << Regexp.new(/#{line}/i)
+          else
+            @regex << Regexp.new(/#{line}/)
+          end
+        end
+      end
+    end
+
+    # Compile a lookup hash for fast exact matching.
     #
     # @return [Set] Set of exact patterns.
     def compile_exact
-      require 'google_hash'
-
       return unless @options[:exact]
 
-      lookup = GoogleHashDenseLongToInt.new
+      require 'google_hash'
 
-      @patterns.each do |pattern|
-        lookup[pattern.to_s.hash] = 1
+      @exact = GoogleHashDenseLongToInt.new
+
+      compile_exact_patterns(@options[:select])
+      compile_exact_patterns(@options[:reject])
+      compile_exact_file(@options[:select_file])
+      compile_exact_file(@options[:reject_file])
+    end
+
+    # Compile a lookup hash for a given list of patterns.
+    #
+    # @param patterns [Array] List of patterns.
+    def compile_exact_patterns(patterns)
+      return unless patterns
+
+      [patterns].flatten.each do |pattern|
+        @exact[pattern.to_s.hash] = 1
       end
+    end
 
-      lookup
+    # Compile a lookup hash a given file with one pattern per line.
+    #
+    # @param file [String] Path to file with patterns.
+    def compile_exact_file(file)
+      return unless file
+
+      File.open(file) do |ios|
+        ios.each_line { |line| @exact[line.chomp.hash] = 1 }
+      end
     end
 
     # Match exactly record keys or values
