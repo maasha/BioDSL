@@ -189,6 +189,9 @@ module BioPieces
       @vals_only = @options[:values_only]
       @invert    = @options[:reject] || @options[:reject_file]
       @eval      = @options[:evaluate]
+      @exact     = nil
+      @regex     = nil
+      @keys      = nil
     end
 
     # Return a lambda for the grab command.
