@@ -58,8 +58,6 @@ module BioPieces
   #    {:SEQ_NAME=>"test1", :SEQ=>"ATGC", :SEQ_LEN=>4, :SEQ_COUNT=>2}
   #    {:SEQ_NAME=>"test3", :SEQ=>"GCAT", :SEQ_LEN=>4, :SEQ_COUNT=>1}
   class DereplicateSeq
-    require 'google_hash'
-
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 
@@ -71,7 +69,7 @@ module BioPieces
     # @return [DereplicateSeq] Class intance.
     def initialize(options)
       @options = options
-      @lookup  = GoogleHashDenseRubyToInt.new
+      @lookup  = {}
 
       check_options
     end
@@ -133,14 +131,15 @@ module BioPieces
       seq = record[:SEQ].dup
       @status[:residues_in] += seq.length
       seq.downcase! if @options[:ignore_case]
+      key = seq.to_sym
 
-      unless @lookup.include? seq
+      unless @lookup[key]
         s << record
 
-        @lookup[seq] = 0
+        @lookup[key] = 0
       end
 
-      @lookup[seq] += 1
+      @lookup[key] += 1
     end
 
     # Read all serialized records from tmp file and emit to the output stream
@@ -155,7 +154,7 @@ module BioPieces
             seq = record[:SEQ].dup
             @status[:residues_out] += seq.length
             seq.downcase! if @options[:ignore_case]
-            record[:SEQ_COUNT] = @lookup[seq]
+            record[:SEQ_COUNT] = @lookup[seq.to_sym]
 
             output << record
 
