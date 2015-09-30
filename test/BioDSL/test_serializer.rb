@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,63 +23,50 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+require 'test/helper'
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
+class TestSerializer < Test::Unit::TestCase 
+  def setup
+    @records = [
+      {"foo" => 1},
+      {"bar" => 2}
+    ]
   end
 
-  SimpleCov.command_name 'test:units'
-end
-
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
-
-ENV['BP_TEST'] = "true"
-
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
+  test "BioDSL::Serializer with no block raises" do
+    assert_raise(BioDSL::SerializerError) { BioDSL::Serializer.new("foo") }
   end
 
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
-  end
-end
+  test "BioDSL::Serializer returns correctly" do
+    require 'tempfile'
 
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
+    file = Tempfile.new("serializer")
 
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
-  end
+    begin
+      File.open(file, 'wb') do |io|
+        BioDSL::Serializer.new(io) do |s|
+          @records.each { |r| s << r }
+        end
+      end
 
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
-  end
+      result = []
 
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
+      File.open(file, 'rb') do |io|
+        BioDSL::Serializer.new(io) do |s|
+          s.each do |record|
+            result << record
+          end
+        end
+      end
+
+      assert_equal(@records, result)
+    ensure
+      file.close
+      file.unlink
+    end
   end
 end

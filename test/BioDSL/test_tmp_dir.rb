@@ -1,46 +1,9 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +27,32 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+require 'test/helper'
 
-  files.each do |file|
-    body = ""
+# Test class for TmpDir
+class TmpDirTest < Test::Unit::TestCase
+  test 'BioDSL::TmpDir#create with no files returns correctly' do
+    dir = ''
 
-    File.open(file) do |ios|
-      body = ios.read
+    BioDSL::TmpDir.create do |tmp_dir|
+      dir = tmp_dir
+      assert_true(File.directory? dir)
     end
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
+    assert_false(File.directory? dir)
+  end
 
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
+  test 'BioDSL::TmpDir#create with files returns correctly' do
+    dir = ''
 
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
+    BioDSL::TmpDir.create('foo', 'bar') do |foo, bar, tmp_dir|
+      dir = tmp_dir
+      assert_true(File.directory? dir)
+      assert_equal(File.join(dir, 'foo'), foo)
+      assert_equal(File.join(dir, 'bar'), bar)
     end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
-    end
+    assert_false(File.directory? dir)
   end
 end

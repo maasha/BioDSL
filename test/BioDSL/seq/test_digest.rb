@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,63 +23,49 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+require 'test/helper'
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
+class TestDigest < Test::Unit::TestCase
+  def setup
+    @entry = BioDSL::Seq.new(seq: "cgatcgatcGGATCCgagagggtgtgtagtgGAATTCcgctgc")
   end
 
-  SimpleCov.command_name 'test:units'
-end
-
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
-
-ENV['BP_TEST'] = "true"
-
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
+  test "#each_digest with bad residue in pattern raises" do
+    assert_raise(BioDSL::DigestError) { @entry.each_digest("X", 0).to_a }
   end
 
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
-  end
-end
-
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
-
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
+  test "#each_digest returns correctly" do
+    digests = @entry.each_digest("GGATCC", 1).to_a
+    assert_equal(2, digests.size)
+    assert_equal("[0-9]", digests.first.seq_name)
+    assert_equal("cgatcgatcG", digests.first.seq)
+    assert_equal("[10-42]", digests.last.seq_name)
+    assert_equal("GATCCgagagggtgtgtagtgGAATTCcgctgc", digests.last.seq)
   end
 
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  test "#each_digest with negavive offset returns correctly" do
+    digests = @entry.each_digest("CGATCG", -1).to_a
+    assert_equal(1, digests.size)
+    assert_equal("[0-42]", digests.first.seq_name)
+    assert_equal(@entry.seq, digests.first.seq)
   end
 
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  test "#each_digest with offset out of bounds returns correctly" do
+    digests = @entry.each_digest("AATTCcgctgc", 15).to_a
+    assert_equal(1, digests.size)
+    assert_equal("[0-42]", digests.first.seq_name)
+    assert_equal(@entry.seq, digests.first.seq)
+  end
+
+  test "#each_digest in block context returns correctly" do
+    @entry.each_digest("GGATCC", 1) do |digest|
+      assert_equal("[0-9]", digest.seq_name)
+      assert_equal("cgatcgatcG", digest.seq)
+      break
+    end
   end
 end

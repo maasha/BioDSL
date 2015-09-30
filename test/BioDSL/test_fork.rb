@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,63 +23,63 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+require 'test/helper'
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
+class TestFork < Test::Unit::TestCase 
+  def setup
+    @obj = {foo: "bar"}
   end
 
-  SimpleCov.command_name 'test:units'
-end
-
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
-
-ENV['BP_TEST'] = "true"
-
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
+  test "BioDSL::Fork.new without block raises" do
+    assert_raise(ArgumentError) { BioDSL::Fork.new }
   end
 
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
-  end
-end
+  test "BioDSL::Fork.read with no running fork raises" do
+    parent = BioDSL::Fork.new do |child|
+    end
 
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
-
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
+    assert_raise(BioDSL::ForkError) { parent.read }
   end
 
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  test "BioDSL::Fork.write with no running fork raises" do
+    parent = BioDSL::Fork.new do |child|
+    end
+
+    assert_raise(BioDSL::ForkError) { parent.write @obj }
   end
 
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  test "BioDSL::Fork.wait with no running fork raises" do
+    parent = BioDSL::Fork.new do |child|
+    end
+
+    assert_raise(BioDSL::ForkError) { parent.wait }
+  end
+
+  test "BioDSL::Fork.wait with running fork don't raise" do
+    parent = BioDSL::Fork.execute do |child|
+    end
+
+    assert_nothing_raised { parent.wait }
+  end
+
+  test "BioDSL::Fork IPC returns correctly" do
+    parent = BioDSL::Fork.execute do |child|
+      obj = child.read
+      obj[:child] = true
+      child.write obj
+    end
+
+    parent.write @obj
+    parent.output.close
+
+    result = parent.read
+
+    parent.wait
+
+    assert_equal({foo: "bar", child: true}, result)
   end
 end

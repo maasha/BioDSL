@@ -1,46 +1,8 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +26,54 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+require 'test/helper'
 
-  files.each do |file|
-    body = ""
+# Test class for Mummer.
+class TestMummer < Test::Unit::TestCase
+  def setup
+    omit('mummer not found') unless BioDSL::Filesys.which('mummer')
 
-    File.open(file) do |ios|
-      body = ios.read
+    @entry1 = BioDSL::Seq.new(seq_name: 'test1', seq: 'ctagcttcaacctagctag')
+    @entry2 = BioDSL::Seq.new(seq_name: 'test2', seq: 'ctagcttcaGacctagctag')
+  end
+
+  test 'Mummer.each_mem with bad :length_min fails' do
+    assert_raise(BioDSL::MummerError) do
+      BioDSL::Mummer.each_mem(@entry1, @entry2, length_min: 0)
     end
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
+    assert_raise(BioDSL::MummerError) do
+      BioDSL::Mummer.each_mem(@entry1, @entry2, length_min: 5.5)
     end
+  end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
+  test 'Mummer.each_mem with bad :direction fails' do
+    assert_raise(BioDSL::MummerError) do
+      BioDSL::Mummer.each_mem(@entry1, @entry2, direction: 'up')
     end
+  end
+
+  test 'Mummer#each_mem returns OK' do
+    mems     = BioDSL::Mummer.each_mem(@entry1, @entry2, length_min: 9)
+    expected = <<-END.gsub(/^\s+\|/, '')
+      |[#<struct BioDSL::Mummer::Match
+      |  q_id="test2",
+      |  s_id="test1",
+      |  dir="forward",
+      |  s_beg=0,
+      |  q_beg=0,
+      |  hit_len=9>,
+      | #<struct BioDSL::Mummer::Match
+      |  q_id="test2",
+      |  s_id="test1",
+      |  dir="forward",
+      |  s_beg=9,
+      |  q_beg=10,
+      |  hit_len=10>]
+    END
+
+    assert_equal(Enumerator, mems.class)
+    assert_equal(expected.gsub("\n", '').gsub('  ', ' '), mems.to_a.to_s)
   end
 end

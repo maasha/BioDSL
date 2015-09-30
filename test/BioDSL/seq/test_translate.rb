@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,63 +23,53 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+require 'test/helper'
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
+class TestTranslate < Test::Unit::TestCase 
+  def setup
+    @entry = BioDSL::Seq.new(seq: "atcgatcgatcgtacggttga", type: :dna)
   end
 
-  SimpleCov.command_name 'test:units'
-end
-
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
-
-ENV['BP_TEST'] = "true"
-
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
+  test "#tranlate with bad type raises" do
+    @entry.type = nil
+    assert_raise(BioDSL::SeqError) { @entry.translate }
   end
 
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
-  end
-end
-
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
-
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
+  test "#tranlate with bad length raises" do
+    @entry.seq = "atcgatcgatcgtacggtga"
+    assert_raise(BioDSL::SeqError) { @entry.translate }
   end
 
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  test "#tranlate with bad translation table raises" do
+    @entry.seq = "atcgatcgatcgtacggttga"
+    assert_raise(BioDSL::SeqError) { @entry.translate(0) }
   end
 
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  test "#tranlate with bad start codon raises" do
+    @entry.seq = "ttagatcgatcgtacggttga"
+    assert_raise(BioDSL::SeqError) { @entry.translate }
+  end
+
+  test "#tranlate with bad codon raises" do
+    @entry.seq = "atggatcgaxxxtcgtacggttga"
+    assert_raise(BioDSL::SeqError) { @entry.translate }
+  end
+
+  test "#tranlate returns correctly" do
+    entry = @entry.translate
+    assert_equal("MDRSYG", entry.seq)
+    assert_equal(:protein, entry.type)
+    assert_equal("atcgatcgatcgtacggttga", @entry.seq)
+    assert_equal(:dna, @entry.type)
+  end
+
+  test "#tranlate! returns correctly" do
+    @entry.translate!
+    assert_equal("MDRSYG", @entry.seq)
+    assert_equal(:protein, @entry.type)
   end
 end

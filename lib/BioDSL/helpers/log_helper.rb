@@ -1,46 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
-
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +24,32 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+module BioDSL
+  # Namespace for LogHelper.
+  module LogHelper
+    require 'yaml'
 
-  files.each do |file|
-    body = ""
+    # Log an OK messge to the log file.
+    def log_ok
+      return if BioDSL.test
 
-    File.open(file) do |ios|
-      body = ios.read
-    end
-
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
+      File.open(BioDSL::Config::LOG_FILE, 'a') do |ios|
+        ios.puts to_s
+        ios.puts status.to_yaml
+        ios.puts 'OK'
       end
     end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
+    # Log an ERROR messge to the log file.
+    def log_error(exception)
+      File.open(BioDSL::Config::LOG_FILE, 'a') do |ios|
+        ios.puts to_s
+        ios.puts status.to_yaml if self.respond_to? :status
+        ios.puts 'ERROR'
+        ios.puts exception.message
+        ios.puts exception.backtrace
+      end
     end
   end
 end

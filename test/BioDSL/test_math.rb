@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,63 +23,19 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+require 'test/helper'
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
+class MathTest < Test::Unit::TestCase
+  test "BioDSL::Math#dist_point2point returns correctly" do
+    assert_equal(1.5, BioDSL::Math.dist_point2point(1.0, 1.0, 1.0, 2.5))
   end
 
-  SimpleCov.command_name 'test:units'
-end
-
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
-
-ENV['BP_TEST'] = "true"
-
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
-  end
-
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
+  test "BioDSL::Math#dist_point2line returns correctly" do
+    assert_equal(1.5, BioDSL::Math.dist_point2line( 3, 3, 0, 4.5, 5, 4.5))
   end
 end
 
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
-
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
-  end
-
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
-  end
-
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
-  end
-end

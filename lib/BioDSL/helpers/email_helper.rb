@@ -1,46 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
-
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +24,43 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+module BioDSL
+  # Namespace for EmailHelper.
+  module EmailHelper
+    # Send email notification to email address specfied in @options[:email],
+    # including a optional subject specified in @options[:subject], that will
+    # otherwise default to self.to_s. The body of the email will be an HTML
+    # report.
+    #
+    # @param pipeline [BioDSL::Pipeline] Pipeline object
+    def send_email(pipeline)
+      return unless @options[:email]
 
-  files.each do |file|
-    body = ""
-
-    File.open(file) do |ios|
-      body = ios.read
-    end
-
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
+      html_part = Mail::Part.new do
+        content_type 'text/html; charset=UTF-8'
+        body BioDSL::HtmlReport.new(pipeline).to_html
       end
+
+      compose_mail(html_part).deliver!
     end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
+    # Compose an email.
+    #
+    # @param html_part [Mail::Part] The email body.
+    #
+    # @return [Mail] Mail to be sent.
+    def compose_mail(html_part)
+      mail = Mail.new
+      mail[:from]    = "do-not-reply@#{`hostname -f`.strip}"
+      mail[:to]      = @options[:email]
+      mail[:subject] = @options[:subject] || to_s.first(30)
+      mail.html_part = html_part
+      mail.delivery_method :smtp,
+                           address: 'localhost',
+                           port: 25,
+                           enable_starttls_auto: false
+      mail
     end
   end
 end

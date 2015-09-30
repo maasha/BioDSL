@@ -20,63 +20,40 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+module BioDSL
+  # Error class for all exceptions to do with Homopolymer.
+  class HomopolymerError < StandardError; end
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
-  end
+  module Homopolymer
+    def each_homopolymer(min = 1)
+      raise HomopolymerError, "Bad min value: #{min}" if min <= 0
+      list = []
 
-  SimpleCov.command_name 'test:units'
-end
+      self.seq.upcase.scan(/A{#{min},}|T{#{min},}|G{#{min},}|C{#{min},}|N{#{min},}/) do |match|
+        hp = Homopolymer.new(match, match.length, $`.length)
 
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
+        if block_given?
+          yield hp
+        else
+          list << hp
+        end
+      end
 
-ENV['BP_TEST'] = "true"
+      block_given? ? self : list
+    end
 
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
-  end
+    class Homopolymer
+      attr_reader :pattern, :length, :pos
 
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
-  end
-end
-
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
-
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
-  end
-
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
-  end
-
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
+      def initialize(pattern, length, pos)
+        @pattern = pattern
+        @length  = length
+        @pos     = pos
+      end
+    end
   end
 end

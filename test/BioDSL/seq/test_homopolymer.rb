@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
+
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
 # Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
@@ -20,63 +23,36 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+require 'test/helper'
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
+class TestHomopolymer < Test::Unit::TestCase 
+  def setup
+    @entry = BioDSL::Seq.new(seq: "atcgatTTTTTTcggttga")
   end
 
-  SimpleCov.command_name 'test:units'
-end
-
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
-
-ENV['BP_TEST'] = "true"
-
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
+  test "#each_homopolymer with bad min raises" do
+    assert_raise(BioDSL::HomopolymerError) { @entry.each_homopolymer(0) }
+    assert_raise(BioDSL::HomopolymerError) { @entry.each_homopolymer(-1) }
   end
 
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
-  end
-end
-
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
-
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
+  test "#each_homopolymer returns correctly" do
+    hps = @entry.each_homopolymer(3)
+    assert_equal(1, hps.size)
+    assert_equal(7, hps.first.length)
+    assert_equal("TTTTTTT", hps.first.pattern)
+    assert_equal(5, hps.first.pos)
   end
 
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
-  end
-
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
+  test "#each_homopolymer in block context returns correctly" do
+    @entry.each_homopolymer(3) do |hp|
+      assert_equal(7, hp.length)
+      assert_equal("TTTTTTT", hp.pattern)
+      assert_equal(5, hp.pos)
+      break
+    end
   end
 end

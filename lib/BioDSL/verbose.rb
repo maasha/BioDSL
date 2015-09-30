@@ -1,46 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
-
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -61,34 +21,22 @@ def run_boilerplate
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+# Namespace for BioDSL.
+module BioDSL
+  # Class variabel visible across the BioDSL module scope.
+  @@verbose = false
 
-  files.each do |file|
-    body = ""
+  # Class variable getter method.
+  def self.verbose
+    @@verbose
+  end
 
-    File.open(file) do |ios|
-      body = ios.read
-    end
-
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
-    end
-
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
-    end
+  # Class variable setter method.
+  def self.verbose=(x)
+    @@verbose = x
   end
 end

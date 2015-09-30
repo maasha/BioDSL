@@ -1,46 +1,9 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +27,57 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+require 'test/helper'
 
-  files.each do |file|
-    body = ""
+# Test class for MergeValues.
+class TestMergeValues < Test::Unit::TestCase
+  def setup
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
-    File.open(file) do |ios|
-      body = ios.read
-    end
+    @output.write(ID: 'FOO', COUNT: 10, SEQ: 'gataag')
+    @output.write(ID: 'FOO', SEQ: 'gataag')
+    @output.close
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
+    @p = BioDSL::Pipeline.new
+  end
 
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
+  test 'BioDSL::Pipeline::MergeValues with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.merge_values(foo: 'bar') }
+  end
 
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
-    end
+  test 'BioDSL::Pipeline::MergeValues with valid options don\'t raise' do
+    assert_nothing_raised { @p.merge_values(keys: [:ID]) }
+  end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
-    end
+  test 'BioDSL::Pipeline::MergeValues returns correctly' do
+    @p.merge_values(keys: [:COUNT, :ID]).run(input: @input, output: @output2)
+
+    expected = <<-EXP.gsub(/^\s+\|/, '')
+      |{:ID=>"FOO", :COUNT=>"10_FOO", :SEQ=>"gataag"}
+      |{:ID=>"FOO", :SEQ=>"gataag"}
+    EXP
+
+    assert_equal(expected, collect_result)
+  end
+
+  test 'BioDSL::Pipeline::MergeValues status returns correctly' do
+    @p.merge_values(keys: [:COUNT, :ID]).run(input: @input, output: @output2)
+
+    assert_equal(2, @p.status.first[:records_in])
+    assert_equal(2, @p.status.first[:records_out])
+  end
+
+  test 'BioDSL::Pipeline::MergeValues with :delimiter returns correctly' do
+    @p.merge_values(keys: [:ID, :COUNT], delimiter: ':count=').
+      run(input: @input, output: @output2)
+
+    expected = <<-EXP.gsub(/^\s+\|/, '')
+      |{:ID=>"FOO:count=10", :COUNT=>10, :SEQ=>"gataag"}
+      |{:ID=>"FOO", :SEQ=>"gataag"}
+    EXP
+
+    assert_equal(expected, collect_result)
   end
 end

@@ -1,46 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
-
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +24,90 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+# Namespace for BioDSL.
+module BioDSL
+  # Class for Inter Process Communication between forked processes using msgpack
+  # to serialize and deserialize objects.
+  class Stream
+    require 'msgpack'
 
-  files.each do |file|
-    body = ""
+    include Enumerable
 
-    File.open(file) do |ios|
-      body = ios.read
+    # Create a pair of connected pipe endpoints. The connection uses msgpack
+    # allowing objects to be written and read.
+    #
+    # Stream.pipe ->  [read_io, write_io]
+    def self.pipe
+      read, write = IO.pipe(Encoding::BINARY)
+
+      [new(read), new(write)]
     end
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
+    def initialize(io)
+      @io = io
+    end
 
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
+    def close
+      @io.close
+    end
 
-      File.open(file, 'w') do |ios|
-        ios.puts body
+    def closed?
+      @io.closed?
+    end
+
+    def each
+      yield read until @io.eof?
+    end
+
+    def read
+      size = @io.read(4)
+      fail EOFError unless size
+      size = size.unpack('I').first
+      msg  = @io.read(size)
+      MessagePack.unpack(msg, symbolize_keys: true)
+    end
+
+    def write(obj)
+      msg = MessagePack.pack(obj)
+      @io.write([msg.size].pack('I'))
+      @io.write(msg)
+    end
+
+    alias_method :<<, :write
+  end
+
+  class Channel
+    include Enumerable
+
+    def self.pair
+      queue = Queue.new
+
+      [new(queue), new(queue)]
+    end
+
+    def initialize(queue)
+      @queue = queue
+    end
+
+    def each
+      while (obj = read)
+        yield obj
       end
     end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
+    def read
+      @queue.pop
     end
+
+    def write(obj)
+      @queue << obj
+    end
+
+    def terminate
+      @queue << nil
+    end
+
+    alias_method :<<, :write
   end
 end

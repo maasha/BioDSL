@@ -1,46 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
-
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +24,32 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+# Namespace for BioDSL.
+module BioDSL
+  # Adding methods to Math module.
+  module Math
+    # Class method to calculate the distance from at point to a line.
+    # The point and line are given as pairs of coordinates.
+    def self.dist_point2line(
+      px,  # point  x coordinate
+      py,  # point  y coordinate
+      x1,  # line 1 x coordinate
+      y1,  # line 1 y coordinate
+      x2,  # line 2 x coordinate
+      y2   # line 2 y coordinate
+    )
 
-  files.each do |file|
-    body = ""
+      a = (y2 - y1).to_f / (x2 - x1).to_f
+      b = y1 - a * x1
 
-    File.open(file) do |ios|
-      body = ios.read
+      (a * px + b - py).abs / ::Math.sqrt(a**2 + 1)
     end
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
-      end
-    end
-
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
+    # Class method to calculate the distance between two points given
+    # as pairs of coordinates.
+    def self.dist_point2point(x1, y1, x2, y2)
+      ::Math.sqrt((x2.to_f - x1.to_f)**2 + (y2.to_f - y1.to_f)**2)
     end
   end
 end

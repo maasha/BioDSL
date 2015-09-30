@@ -1,46 +1,6 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
-
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +24,76 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+# Namespace for BioDSL.
+module BioDSL
+  # Error class for all exceptions to do with Digest.
+  DigestError = Class.new(StandardError)
 
-  files.each do |file|
-    body = ""
+  # Namespace for Digest.
+  module Digest
+    # Method to get the next digestion product from a sequence.
+    def each_digest(pattern, cut_pos)
+      return to_enum(:each_digest, pattern, cut_pos) unless block_given?
+      pattern = disambiguate(pattern)
+      offset  = 0
 
-    File.open(file) do |ios|
-      body = ios.read
-    end
+      seq.upcase.scan pattern do
+        pos = $`.length + cut_pos
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
+        if pos >= 0 && pos < length - 2
+          subseq = self[offset...pos]
+          subseq.seq_name = "#{seq_name}[#{offset}-#{pos - offset - 1}]"
 
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
+          yield subseq
+        end
 
-      File.open(file, 'w') do |ios|
-        ios.puts body
+        offset = pos
       end
+
+      offset = 0 if offset < 0 || offset > length
+      subseq = self[offset..-1]
+      subseq.seq_name = "#{seq_name}[#{offset}-#{length - 1}]"
+
+      yield subseq
     end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
+    private
+
+    # Method that returns a regexp object with a restriction
+    # enzyme pattern with ambiguity codes substituted to the
+    # appropriate regexp.
+    def disambiguate(pattern)
+      ambiguity = {
+        'A' => 'A',
+        'T' => 'T',
+        'U' => 'T',
+        'C' => 'C',
+        'G' => 'G',
+        'M' => '[AC]',
+        'R' => '[AG]',
+        'W' => '[AT]',
+        'S' => '[CG]',
+        'Y' => '[CT]',
+        'K' => '[GT]',
+        'V' => '[ACG]',
+        'H' => '[ACT]',
+        'D' => '[AGT]',
+        'B' => '[CGT]',
+        'N' => '[GATC]'
+      }
+
+      new_pattern = ''
+
+      pattern.upcase.each_char do |char|
+        if ambiguity[char]
+          new_pattern << ambiguity[char]
+        else
+          fail DigestError, "Could not disambiguate residue: #{char}"
+        end
+      end
+
+      Regexp.new(new_pattern)
     end
   end
 end

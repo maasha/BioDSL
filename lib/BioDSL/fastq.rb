@@ -20,63 +20,58 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-require 'simplecov'
+module BioDSL
+  # Error class for all exceptions to do with FASTQ.
+  class FastqError < StandardError; end
 
-if ENV['SIMPLECOV']
-  SimpleCov.start do
-    add_filter "/test/"
-  end
+  # Class for parsing FASTQ entries from an ios and return as Seq objects.
+  class Fastq < BioDSL::Filesys
+    def self.open(*args)
+      ios = IO.open(*args)
 
-  SimpleCov.command_name 'test:units'
-end
+      if block_given?
+        begin
+          yield self.new(ios)
+        ensure
+          ios.close
+        end
+      else
+        return self.new(ios)
+      end
+    end
 
-require 'pp'
-require 'tempfile'
-require 'fileutils'
-require 'BioDSL'
-require 'test/unit'
-require 'mocha/test_unit'
+    def initialize(io)
+      @io        = io
+    end
 
-ENV['BP_TEST'] = "true"
+    def each
+      while entry = next_entry
+        yield entry
+      end
+    end
 
-module Kernel
-  def capture_stdout
-    out = StringIO.new
-    $stdout = out
-    yield
-    return out.string
-  ensure
-    $stdout = STDOUT
-  end
+    # Method to get the next FASTQ entry from an ios and return this
+    # as a Seq object. If no entry is found or eof then nil is returned.
+    def next_entry
+      return nil if @io.eof?
+      seq_name = @io.gets[1 .. -2]
+      seq      = @io.gets.chomp
+      @io.gets
+      qual     = @io.gets.chomp
 
-  def capture_stderr
-    out = StringIO.new
-    $stderr = out
-    yield
-    return out.string
-  ensure
-    $stderr = STDERR
-  end
-end
+      Seq.new(seq_name: seq_name, seq: seq, qual: qual)
+    end
 
-class Test::Unit::TestCase
-  # Ruby 2.2 have omit, < 2.2 have skip
-  alias :omit :skip if ! self.instance_methods.include? :omit
-
-  def self.test(desc, &impl)
-    define_method("test #{desc}", &impl)
-  end
-
-  def collect_result
-    @input2.each_with_object('') { |e, a| a << "#{e}#{$/}" }
-  end
-
-  def collect_sorted_result
-    @input2.sort_by { |a| a.to_s }.
-      each_with_object('') { |e, a| a << "#{e}#{$/}" }
+    class IO < Filesys
+      def each
+        while not @io.eof?
+          yield @io.gets
+        end
+      end
+    end
   end
 end

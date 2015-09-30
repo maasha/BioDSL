@@ -1,46 +1,5 @@
-require 'bundler'
-require 'rake/testtask'
-require 'pp'
-
-Bundler::GemHelper.install_tasks
-
-task :default => 'test'
- 
-Rake::TestTask.new do |t|
-  t.description = "Run test suite"
-  t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
-  t.warning     = true
-end
- 
-desc 'Run test suite with simplecov'
-task :simplecov do
-  ENV['SIMPLECOV'] = 'true'
-  Rake::Task['test'].invoke
-end
-
-desc 'Add or update yardoc'
-task :doc do
-  run_docgen
-end
-
-task :build => :boilerplate
-
-desc 'Add or update license boilerplate in source files'
-task :boilerplate do
-  run_boilerplate
-end
-
-def run_docgen
-  $stderr.puts "Building docs"
-  `yardoc lib/`
-  $stderr.puts "Docs done"
-end
-
-def run_boilerplate
-  boilerplate = <<END
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                              #
-# Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen (mail@maasha.dk).                #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
 #                                                                              #
 # This program is free software; you can redistribute it and/or                #
 # modify it under the terms of the GNU General Public License                  #
@@ -64,31 +23,46 @@ def run_boilerplate
 # This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-END
+module BioDSL
+  # Module to provide a temporary directory.
+  module TmpDir
+    require 'tempfile'
 
-  files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
+    # Create a temporary directory in block context. The directory is deleted
+    # when the TmpDir object is garbage collected or the Ruby intepreter exits.
+    # If called with a list of filenames, these are provided as block arguments
+    # such that the files parent are the temporary directory. However, the last
+    # block argument is always the path to the temporary directory.
+    #
+    # @param files [Array] List of file names.
+    #
+    # @example
+    #   BioDSL::TmpDir.create do |dir|
+    #     puts dir
+    #       # => "<tmp_dir>"
+    #   end
+    #
+    # @example
+    #   BioDSL::TmpDir.create("foo", "bar") do |foo, bar, dir|
+    #     puts foo
+    #       # => "<tmp_dir>/foo"
+    #     puts bar
+    #       # => "<tmp_dir>/foo"
+    #     puts dir
+    #       # => "<tmp_dir>"
+    #   end
+    def self.create(*files, &block)
+      fail 'no block given' unless block
 
-  files.each do |file|
-    body = ""
+      Dir.mktmpdir(nil, BioDSL::Config::TMP_DIR) do |dir|
+        paths = files.each_with_object([]) { |e, a| a << File.join(dir, e) }
 
-    File.open(file) do |ios|
-      body = ios.read
-    end
-
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
-      STDERR.puts "Updating boilerplate: #{file}"
-
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
-
-      File.open(file, 'w') do |ios|
-        ios.puts body
+        if paths.empty?
+          block.call(dir)
+        else
+          block.call(paths << dir)
+        end
       end
-    end
-
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
     end
   end
 end
