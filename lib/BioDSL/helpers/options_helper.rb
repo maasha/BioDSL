@@ -21,15 +21,15 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-module BioPieces
+module BioDSL
   # Module containing methods to check options in various ways.
   module OptionsHelper
     require 'csv'
 
-    BioPieces::OptionError = Class.new(StandardError)
+    BioDSL::OptionError = Class.new(StandardError)
 
     private
 
@@ -44,11 +44,11 @@ module BioPieces
     # @example That passes:
     #   options_allowed({foo: 'bar'}, :foo, :one)
     #
-    # @raise [BioPieces::OptionError] If non-allowed options located.
+    # @raise [BioDSL::OptionError] If non-allowed options located.
     def options_allowed(options, *allowed)
       options.each_key do |option|
         unless allowed.include? option
-          fail BioPieces::OptionError, "Disallowed option: #{option}. " \
+          fail BioDSL::OptionError, "Disallowed option: #{option}. " \
             "Allowed options: #{allowed.join(', ')}"
         end
       end
@@ -65,13 +65,13 @@ module BioPieces
     # @example That passes:
     #   options_allowed_values({foo: 'bar'}, foo: ['bar', 'rab'])
     #
-    # @raise [BioPieces::OptionError] If non-allowed options located.
+    # @raise [BioDSL::OptionError] If non-allowed options located.
     def options_allowed_values(options, allowed)
       allowed.each do |key, values|
         next unless options[key]
 
         unless values.include? options[key]
-          fail BioPieces::OptionError, 'Disallowed option value: ' \
+          fail BioDSL::OptionError, 'Disallowed option value: ' \
             "#{options[key]}. Allowed options: #{values.join(', ')}"
         end
       end
@@ -88,11 +88,11 @@ module BioPieces
     # @example That passes:
     #   options_required({foo: 'bar', one: 'two'}, :foo, :one)
     #
-    # @raise [BioPieces::OptionError] Unless all required options are given.
+    # @raise [BioDSL::OptionError] Unless all required options are given.
     def options_required(options, *required)
       required.each do |option|
         unless options[option]
-          fail BioPieces::OptionError, "Required option missing: #{option}. " \
+          fail BioDSL::OptionError, "Required option missing: #{option}. " \
             "Required options: #{required.join(', ')}"
         end
       end
@@ -109,11 +109,11 @@ module BioPieces
     # @example That passes:
     #   options_required_unique({foo: 'bar', one: 'two'}, :foo)
     #
-    # @raise [BioPieces::OptionError] If multiple required options are found.
+    # @raise [BioDSL::OptionError] If multiple required options are found.
     def options_required_unique(options, *unique)
       return unless unique.select { |option| options[option] }.size > 1
 
-      fail BioPieces::OptionError, 'Multiple required uniques options ' \
+      fail BioDSL::OptionError, 'Multiple required uniques options ' \
         "used: #{unique.join(', ')}"
     end
 
@@ -131,11 +131,11 @@ module BioPieces
     # @example That passes:
     #   options_unique({}, :foo)
     #
-    # @raise [BioPieces::OptionError] If non-unique options are found.
+    # @raise [BioDSL::OptionError] If non-unique options are found.
     def options_unique(options, *unique)
       return unless unique.select { |option| options[option] }.size > 1
 
-      fail BioPieces::OptionError, 'Multiple uniques options used: ' \
+      fail BioDSL::OptionError, 'Multiple uniques options used: ' \
         "#{unique.join(', ')}"
     end
 
@@ -150,11 +150,11 @@ module BioPieces
     # @example That passes:
     #   options_unique_list({foo: [0, 1]}, :foo)
     #
-    # @raise [BioPieces::OptionError] If duplicate elements are found.
+    # @raise [BioDSL::OptionError] If duplicate elements are found.
     def options_list_unique(options, *lists)
       lists.each do |list|
         if options[list] && options[list].uniq.size != options[list].size
-          fail BioPieces::OptionError, 'Duplicate elements found in list ' \
+          fail BioDSL::OptionError, 'Duplicate elements found in list ' \
             "#{list}: #{options[list]}"
         end
       end
@@ -172,11 +172,11 @@ module BioPieces
     # @example That passes:
     #   options_tie({output: "foo", gzip: true}, gzip: :output)
     #
-    # @raise [BioPieces::OptionError] If option found without it's tie.
+    # @raise [BioDSL::OptionError] If option found without it's tie.
     def options_tie(options, others)
       others.each do |option, other|
         if options[option] && !options[other]
-          fail BioPieces::OptionError, "Tie option: #{other} not in options: " \
+          fail BioDSL::OptionError, "Tie option: #{other} not in options: " \
             "#{options.keys.join(', ')}"
         end
       end
@@ -194,11 +194,11 @@ module BioPieces
     # @example That passes:
     #   options_tie({reject: true}, reject: :select)
     #
-    # @raise [BioPieces::OptionError] If conflicting options are found.
+    # @raise [BioDSL::OptionError] If conflicting options are found.
     def options_conflict(options, conflicts)
       conflicts.each do |option, conflict|
         if options[option] && options[conflict]
-          fail BioPieces::OptionError, "Conflicting options: #{option}, " \
+          fail BioDSL::OptionError, "Conflicting options: #{option}, " \
             "#{conflict}"
         end
       end
@@ -219,7 +219,7 @@ module BioPieces
     # @example With a given Array.
     #   options_files_exist(options, [:input1, :input2])
     #
-    # @raise [BioPieces::OptionError] on non-existing files.
+    # @raise [BioDSL::OptionError] on non-existing files.
     def options_files_exist(options, *args)
       args.each do |arg|
         next unless options[arg]
@@ -229,7 +229,7 @@ module BioPieces
           file = glob_check(file, arg) if file.include? '*'
 
           unless File.file? File.expand_path(file)
-            fail BioPieces::OptionError, "For option #{arg} - no such file: " \
+            fail BioDSL::OptionError, "For option #{arg} - no such file: " \
               "#{file}"
           end
         end
@@ -251,7 +251,7 @@ module BioPieces
     # @example That passes
     #   options_files_exist_force({file: __FILE__, force: true}, :file)
     #
-    # @raise [BioPieces::OptionError]
+    # @raise [BioDSL::OptionError]
     #   If files exist and the force option flag is not set
     def options_files_exist_force(options, *args)
       args.each do |arg|
@@ -261,7 +261,7 @@ module BioPieces
 
         files.each do |file|
           if File.file?(file) && !options[:force]
-            fail BioPieces::OptionError, "File exist: #{file} - use " \
+            fail BioDSL::OptionError, "File exist: #{file} - use " \
               "'force: true' to override"
           end
         end
@@ -283,7 +283,7 @@ module BioPieces
     # @example With a given Array.
     #   options_dirs_exist(options, [:input1, :input2])
     #
-    # @raise [BioPieces::OptionError] on non-existing directories.
+    # @raise [BioDSL::OptionError] on non-existing directories.
     def options_dirs_exist(options, *args)
       args.each do |arg|
         next unless options[arg]
@@ -292,7 +292,7 @@ module BioPieces
 
         dirs.each do |dir|
           unless File.directory? File.expand_path(dir)
-            fail BioPieces::OptionError, "For option #{arg} - no such " \
+            fail BioDSL::OptionError, "For option #{arg} - no such " \
               "directory: #{dir}"
           end
         end
@@ -311,7 +311,7 @@ module BioPieces
     # @example That passes:
     #   options_assert({{min: 0}, ':min == 0')
     #
-    # @raise [BioPieces::OptionError] If assertion fails.
+    # @raise [BioDSL::OptionError] If assertion fails.
     def options_assert(options, expression)
       options.each do |key, value|
         expression.gsub!(/:#{key}/, value.to_s)
@@ -320,7 +320,7 @@ module BioPieces
       return if expression[0] == ':'
       return if eval expression
 
-      fail BioPieces::OptionError, "Assertion failed: #{expression}"
+      fail BioDSL::OptionError, "Assertion failed: #{expression}"
     end
 
     # Expand a given glob expression into lists of paths.
@@ -358,7 +358,7 @@ module BioPieces
     #   options = {}
     #   options_load_rc(options, :some_option)
     #   options == {option1: 'value1', option2: 'value2'}
-    def options_load_rc(options, command, file = BioPieces::Config::RC_FILE)
+    def options_load_rc(options, command, file = BioDSL::Config::RC_FILE)
       return unless File.exist? file
 
       rc_options = Hash.new { |h, k| h[k] = [] }
@@ -376,12 +376,12 @@ module BioPieces
     #
     # @param key [Symbol] Option Hash key whos value is the glob expression.
     #
-    # @raise [BioPieces::OptionError] If the glob expression fail to match.
+    # @raise [BioDSL::OptionError] If the glob expression fail to match.
     #
     # @return [String] The first mathing file.
     def glob_check(glob, key)
       first = Dir.glob(glob).select { |f| File.file? f }.first
-      fail BioPieces::OptionError, "For option #{key} - glob expression: " \
+      fail BioDSL::OptionError, "For option #{key} - glob expression: " \
         "#{glob} didn't match any files" if first.nil?
       first
     end

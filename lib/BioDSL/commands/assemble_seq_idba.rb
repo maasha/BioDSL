@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # rubocop:disable ClassLength
 
   # == Assemble sequences the stream using IDBA_UD.
@@ -65,7 +65,7 @@ module BioPieces
   #    run
   class AssembleSeqIdba
     require 'English'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -116,7 +116,7 @@ module BioPieces
       options_assert(@options, ':kmer_max >= 16')
       options_assert(@options, ':kmer_max <= 512')
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
     end
 
     # Set the default option values.
@@ -133,12 +133,12 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param fa_in [String] Path to temporary FASTA file.
     def process_input(input, output, fa_in)
-      BioPieces::Fasta.open(fa_in, 'w') do |fasta_io|
+      BioDSL::Fasta.open(fa_in, 'w') do |fasta_io|
         input.each do |record|
           @status[:records_in] += 1
 
           if record.key? :SEQ
-            entry = BioPieces::Seq.new_bp(record)
+            entry = BioDSL::Seq.new_bp(record)
 
             @status[:sequences_in] += 1
             @status[:residues_in]  += entry.length
@@ -160,7 +160,7 @@ module BioPieces
     # @raise If execution fails.
     def execute_idba(fa_in, tmp_dir)
       cmd_line = compile_cmd_line(fa_in, tmp_dir)
-      $stderr.puts "Running: #{cmd_line}" if BioPieces.verbose
+      $stderr.puts "Running: #{cmd_line}" if BioDSL.verbose
       system(cmd_line)
 
       fail cmd_line unless $CHILD_STATUS.success?
@@ -180,7 +180,7 @@ module BioPieces
       cmd << "--mink #{@options[:kmer_min]}"
       cmd << "--maxk #{@options[:kmer_max]}"
       cmd << "--num_threads #{@options[:cpus]}"
-      cmd << '> /dev/null 2>&1' unless BioPieces.verbose
+      cmd << '> /dev/null 2>&1' unless BioDSL.verbose
 
       cmd.join(' ')
     end
@@ -190,7 +190,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param fa_out [String] Path to contig FASTA file.
     def process_output(output, fa_out)
-      BioPieces::Fasta.open(fa_out, 'r') do |ios|
+      BioDSL::Fasta.open(fa_out, 'r') do |ios|
         ios.each do |entry|
           output << entry.to_bp
           @status[:records_out]   += 1

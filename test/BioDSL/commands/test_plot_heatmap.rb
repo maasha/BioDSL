@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,19 +35,19 @@ require 'test/helper'
 # rubocop:disable MethodLength
 class TestPlotHeatmap < Test::Unit::TestCase
   def setup
-    omit('gnuplot not found') unless BioPieces::Filesys.which('gnuplot')
+    omit('gnuplot not found') unless BioDSL::Filesys.which('gnuplot')
 
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.plot')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     setup_data
     setup_expected1
     setup_expected2
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_data
@@ -108,21 +108,21 @@ class TestPlotHeatmap < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.plot_heatmap(foo: 'bar') }
+  test 'BioDSL::Pipeline::PlotHeatmap with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.plot_heatmap(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap with invalid terminal raises' do
-    assert_raise(BioPieces::OptionError) { @p.plot_heatmap(terminal: 'foo') }
+  test 'BioDSL::Pipeline::PlotHeatmap with invalid terminal raises' do
+    assert_raise(BioDSL::OptionError) { @p.plot_heatmap(terminal: 'foo') }
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap with valid terminal don\'t raise' do
+  test 'BioDSL::Pipeline::PlotHeatmap with valid terminal don\'t raise' do
     %w(dumb post svg x11 aqua png pdf).each do |terminal|
       assert_nothing_raised { @p.plot_heatmap(terminal: terminal.to_sym) }
     end
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap to file outputs correctly' do
+  test 'BioDSL::Pipeline::PlotHeatmap to file outputs correctly' do
     result = capture_stderr do
       @p.plot_heatmap(output: @file, test: true).
       run(input: @input, output: @output2)
@@ -132,7 +132,7 @@ class TestPlotHeatmap < Test::Unit::TestCase
     assert_equal(@expected, result)
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap to file with logscale outputs OK' do
+  test 'BioDSL::Pipeline::PlotHeatmap to file with logscale outputs OK' do
     result = capture_stderr do
       @p.plot_heatmap(output: @file, logscale: true, test: true).
       run(input: @input, output: @output2)
@@ -142,12 +142,12 @@ class TestPlotHeatmap < Test::Unit::TestCase
     assert_equal(@expected2, result)
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap to existing file raises' do
+  test 'BioDSL::Pipeline::PlotHeatmap to existing file raises' do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { @p.plot_heatmap(output: @file) }
+    assert_raise(BioDSL::OptionError) { @p.plot_heatmap(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap to existing file with :force' \
+  test 'BioDSL::Pipeline::PlotHeatmap to existing file with :force' \
     'outputs correctly' do
     `touch #{@file}`
     result = capture_stderr do
@@ -158,7 +158,7 @@ class TestPlotHeatmap < Test::Unit::TestCase
     assert_equal(@expected, result)
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap with flux outputs correctly' do
+  test 'BioDSL::Pipeline::PlotHeatmap with flux outputs correctly' do
     result = capture_stderr do
       @p.plot_heatmap(output: @file, force: true, test: true).
       run(input: @input, output: @output2)
@@ -175,7 +175,7 @@ class TestPlotHeatmap < Test::Unit::TestCase
     assert_equal(stream_expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::PlotHeatmap status outputs correctly' do
+  test 'BioDSL::Pipeline::PlotHeatmap status outputs correctly' do
     @p.plot_heatmap(output: @file, force: true).
       run(input: @input, output: @output2)
 

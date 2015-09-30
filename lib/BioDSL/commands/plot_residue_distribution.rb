@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Plot the residue distribution of sequences in the stream.
   #
   # +plot_residue_distribution+ creates a residue distribution plot per sequence
@@ -71,7 +71,7 @@ module BioPieces
   class PlotResidueDistribution
     require 'gnuplotter'
     require 'set'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -154,7 +154,7 @@ module BioPieces
 
     # Given a record with a sequence count its residues.
     #
-    # @param record [Hash] BioPieces record
+    # @param record [Hash] BioDSL record
     def count_residues(record)
       @status[:sequences_in] += 1
       @status[:residues_in]  += record[:SEQ].length

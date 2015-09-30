@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,25 +33,25 @@ require 'test/helper'
 # Test class for SplitValues.
 class TestSplitValues < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(ID: 'FOO:count=10', SEQ: 'gataag')
     @output.write(ID: 'FOO_10_20', SEQ: 'gataag')
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::SplitValues with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.split_values(foo: 'bar') }
+  test 'BioDSL::Pipeline::SplitValues with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.split_values(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::SplitValues with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::SplitValues with valid options don\'t raise' do
     assert_nothing_raised { @p.split_values(key: :ID) }
   end
 
-  test 'BioPieces::Pipeline::SplitValues returns correctly' do
+  test 'BioDSL::Pipeline::SplitValues returns correctly' do
     @p.split_values(key: :ID).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -62,14 +62,14 @@ class TestSplitValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SplitValues status returns correctly' do
+  test 'BioDSL::Pipeline::SplitValues status returns correctly' do
     @p.split_values(key: :ID).run(input: @input, output: @output2)
 
     assert_equal(2, @p.status.first[:records_in])
     assert_equal(2, @p.status.first[:records_out])
   end
 
-  test 'BioPieces::Pipeline::SplitValues with :delimiter returns correctly' do
+  test 'BioDSL::Pipeline::SplitValues with :delimiter returns correctly' do
     @p.split_values(key: 'ID', delimiter: ':count=').
       run(input: @input, output: @output2)
 
@@ -81,7 +81,7 @@ class TestSplitValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SplitValues w. :delimiter and :keys returns OK' do
+  test 'BioDSL::Pipeline::SplitValues w. :delimiter and :keys returns OK' do
     @p.split_values(key: 'ID', keys: ['ID', :COUNT], delimiter: ':count=').
       run(input: @input, output: @output2)
 

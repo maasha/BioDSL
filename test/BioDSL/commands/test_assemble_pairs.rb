@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,8 +35,8 @@ require 'test/helper'
 class TestAssemblePairs < Test::Unit::TestCase
   # rubocop:disable MethodLength
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test1/1', SEQ: 'aaaaaaaagagtcat',
                   SCORES: 'IIIIIIIIIIIIIII', SEQ_LEN: 15)
@@ -58,25 +58,25 @@ class TestAssemblePairs < Test::Unit::TestCase
 
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.assemble_pairs(foo: 'bar') }
+  test 'BioDSL::Pipeline::AssemblePairs with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.assemble_pairs(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with allow_unassembled and ' \
+  test 'BioDSL::Pipeline::AssemblePairs with allow_unassembled and ' \
     'merge_unassembled raises' do
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(BioDSL::OptionError) do
       @p.assemble_pairs(allow_unassembled: true, merge_unassembled: true)
     end
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::AssemblePairs with valid options don\'t raise' do
     assert_nothing_raised { @p.assemble_pairs(reverse_complement: true) }
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs returns correctly' do
+  test 'BioDSL::Pipeline::AssemblePairs returns correctly' do
     @p.assemble_pairs.run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/\s+\|/, '')
       |{:SEQ_NAME=>"test1/1:overlap=7:hamming=0",
@@ -103,7 +103,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs status returns correctly' do
+  test 'BioDSL::Pipeline::AssemblePairs status returns correctly' do
     @p.assemble_pairs.run(input: @input, output: @output2)
 
     assert_equal(10,  @p.status.first[:records_in])
@@ -114,7 +114,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(120, @p.status.first[:residues_in])
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with merge_unassembled: true ' \
+  test 'BioDSL::Pipeline::AssemblePairs with merge_unassembled: true ' \
     'returns correctly' do
     @p.assemble_pairs(merge_unassembled: true).
       run(input: @input, output: @output2)
@@ -148,7 +148,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :mismatch_percent returns OK' do
+  test 'BioDSL::Pipeline::AssemblePairs with :mismatch_percent returns OK' do
     @p.assemble_pairs(mismatch_percent: 0).run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/\s+\|/, '')
       |{:SEQ_NAME=>"test1/1:overlap=7:hamming=0",
@@ -175,7 +175,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :overlap_min returns OK' do
+  test 'BioDSL::Pipeline::AssemblePairs with :overlap_min returns OK' do
     @p.assemble_pairs(overlap_min: 5).run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/\s+\|/, '')
       |{:SEQ_NAME=>"test1/1:overlap=7:hamming=0",
@@ -190,7 +190,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :overlap_min and ' \
+  test 'BioDSL::Pipeline::AssemblePairs with :overlap_min and ' \
     'merge_unassembled: true returns correctly' do
     @p.assemble_pairs(overlap_min: 5, merge_unassembled: true).
       run(input: @input, output: @output2)
@@ -224,7 +224,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :overlap_max returns OK' do
+  test 'BioDSL::Pipeline::AssemblePairs with :overlap_max returns OK' do
     @p.assemble_pairs(overlap_max: 5).run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/\s+\|/, '')
       |{:SEQ_NAME=>"test2/1:overlap=3:hamming=1",
@@ -245,7 +245,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :reverse_complement ' \
+  test 'BioDSL::Pipeline::AssemblePairs with :reverse_complement ' \
     'returns correctly' do
     @p.assemble_pairs(reverse_complement: true).
       run(input: @input, output: @output2)
@@ -268,7 +268,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :reverse_complement and ' \
+  test 'BioDSL::Pipeline::AssemblePairs with :reverse_complement and ' \
     ':overlap_min returns correctly' do
     @p.assemble_pairs(reverse_complement: true, overlap_min: 5).
       run(input: @input, output: @output2)
@@ -285,7 +285,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :reverse_complement and ' \
+  test 'BioDSL::Pipeline::AssemblePairs with :reverse_complement and ' \
     'overlap_max returns correctly' do
     @p.assemble_pairs(reverse_complement: true, overlap_max: 5).
       run(input: @input, output: @output2)
@@ -302,7 +302,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with :reverse_complement and ' \
+  test 'BioDSL::Pipeline::AssemblePairs with :reverse_complement and ' \
     ':overlap_min and :merge_unassembled returns correctly' do
     @p.assemble_pairs(reverse_complement: true,
                       overlap_min: 5, merge_unassembled: true)
@@ -338,7 +338,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with allow_unassembled returns OK' do
+  test 'BioDSL::Pipeline::AssemblePairs with allow_unassembled returns OK' do
     @p.assemble_pairs(overlap_min: 100, allow_unassembled: true).
       run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/\s+\|/, '')
@@ -396,7 +396,7 @@ class TestAssemblePairs < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::AssemblePairs with allow_unassembled and ' \
+  test 'BioDSL::Pipeline::AssemblePairs with allow_unassembled and ' \
     'reverse_complement returns OK' do
     @p.assemble_pairs(overlap_min: 100, allow_unassembled: true,
                       reverse_complement: true)

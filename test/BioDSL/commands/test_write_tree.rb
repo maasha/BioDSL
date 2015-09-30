@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,19 +33,19 @@ require 'test/helper'
 # Test class for WriteTree.
 class TestWriteTree < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
 
-    omit('FastTree not found') unless BioPieces::Filesys.which('FastTree')
+    omit('FastTree not found') unless BioDSL::Filesys.which('FastTree')
 
     setup_data
 
     @file = File.join(@tmpdir, 'test.tree')
-    @p    = BioPieces::Pipeline.new
+    @p    = BioDSL::Pipeline.new
   end
 
   def setup_data
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ: 'attgactgacg--')
     @output.write(SEQ: 'attgactaagacg')
@@ -60,18 +60,18 @@ class TestWriteTree < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir if @tmpdir
   end
 
-  test 'BioPieces::Pipeline::WriteTree with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.write_tree(foo: 'bar') }
+  test 'BioDSL::Pipeline::WriteTree with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.write_tree(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::WriteTree to stdout outputs correctly' do
+  test 'BioDSL::Pipeline::WriteTree to stdout outputs correctly' do
     result = capture_stdout { @p.write_tree.run(input: @input) }
     expected = '(1:0.00055,(3:0.0,4:0.0):0.00054,' \
       '(0:0.00055,2:0.00054)0.996:0.34079);'
     assert_equal(expected, result.chomp)
   end
 
-  test 'BioPieces::Pipeline::WriteTree to file outputs correctly' do
+  test 'BioDSL::Pipeline::WriteTree to file outputs correctly' do
     @p.write_tree(output: @file).run(input: @input, output: @output2)
     result = File.read(@file)
     expected = '(1:0.00055,(3:0.0,4:0.0):0.00054,' \
@@ -79,12 +79,12 @@ class TestWriteTree < Test::Unit::TestCase
     assert_equal(expected, result.chomp)
   end
 
-  test 'BioPieces::Pipeline::WriteTree to existing file raises' do
+  test 'BioDSL::Pipeline::WriteTree to existing file raises' do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { @p.write_tree(output: @file) }
+    assert_raise(BioDSL::OptionError) { @p.write_tree(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::WriteTree to existing file w. :force outputs OK' do
+  test 'BioDSL::Pipeline::WriteTree to existing file w. :force outputs OK' do
     `touch #{@file}`
     @p.write_tree(output: @file, force: true).run(input: @input)
     result = File.open(@file).read
@@ -93,7 +93,7 @@ class TestWriteTree < Test::Unit::TestCase
     assert_equal(expected, result.chomp)
   end
 
-  test 'BioPieces::Pipeline::WriteTree with flux outputs correctly' do
+  test 'BioDSL::Pipeline::WriteTree with flux outputs correctly' do
     @p.write_tree(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     expected = '(1:0.00055,(3:0.0,4:0.0):0.00054,' \
@@ -112,7 +112,7 @@ class TestWriteTree < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::WriteTree status outputs correctly' do
+  test 'BioDSL::Pipeline::WriteTree status outputs correctly' do
     @p.write_tree(output: @file).run(input: @input, output: @output2)
     assert_equal(6,  @p.status.first[:records_in])
     assert_equal(6,  @p.status.first[:records_out])

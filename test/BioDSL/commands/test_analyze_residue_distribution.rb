@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,11 +33,11 @@ require 'test/helper'
 # Test class for AnalyzeResidueDistribution.
 class TestAnalyzeResidueDistribution < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.plot')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     [{SEQ: 'AGCT'},
      {SEQ: 'AGCU'},
@@ -56,21 +56,21 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline#analyze_residue_distribution with disallowed ' \
+  test 'BioDSL::Pipeline#analyze_residue_distribution with disallowed ' \
     'option raises' do
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(BioDSL::OptionError) do
       @p.analyze_residue_distribution(foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline#analyze_residue_distribution with allowed ' \
+  test 'BioDSL::Pipeline#analyze_residue_distribution with allowed ' \
     'options don\'t raise' do
     assert_nothing_raised { @p.analyze_residue_distribution(percent: true) }
   end
 
   # rubocop:disable Metrics/LineLength
 
-  test 'BioPieces::Pipeline#analyze_residue_distribution returns correctly' do
+  test 'BioDSL::Pipeline#analyze_residue_distribution returns correctly' do
     @p.analyze_residue_distribution.run(input: @input, output: @output2)
     expected = <<-EOD.gsub(/^\s*\|/, '')
       |{:SEQ=>"AGCT"}
@@ -94,7 +94,7 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline#analyze_residue_distribution with :precent returns correctly' do
+  test 'BioDSL::Pipeline#analyze_residue_distribution with :precent returns correctly' do
     @p.analyze_residue_distribution(percent: true).run(input: @input, output: @output2)
     expected = <<-EOD.gsub(/^\s*\|/, '')
       |{:SEQ=>"AGCT"}
@@ -120,7 +120,7 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
 
   # rubocop:enable Metrics/LineLength
 
-  test 'BioPieces::Pipeline#analyze_residue_distribution status returns OK' do
+  test 'BioDSL::Pipeline#analyze_residue_distribution status returns OK' do
     @p.analyze_residue_distribution(percent: true).
       run(input: @input, output: @output2)
 

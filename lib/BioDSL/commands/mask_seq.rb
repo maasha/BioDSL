@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Mask sequences in the stream based on quality scores.
   #
   # +mask_seq+ masks sequences in the stream using either hard masking or
@@ -141,9 +141,9 @@ module BioPieces
 
     # Mask sequence in given record.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def mask_seq(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length
@@ -158,7 +158,7 @@ module BioPieces
 
     # Soft mask sequences in given entry.
     #
-    # @param entry [biopieces::seq] sequences entry.
+    # @param entry [BioDSL::seq] sequences entry.
     def mask_seq_soft(entry)
       entry.mask_seq_soft!(@options[:quality_min])
       @status[:masked] += entry.seq.count('a-z')
@@ -166,7 +166,7 @@ module BioPieces
 
     # Hard mask sequences in given entry.
     #
-    # @param entry [biopieces::seq] sequences entry.
+    # @param entry [BioDSL::seq] sequences entry.
     def mask_seq_hard(entry)
       entry.mask_seq_hard!(@options[:quality_min])
       @status[:masked] += entry.seq.count('N')

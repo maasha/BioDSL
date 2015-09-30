@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 # rubocop:disable LineLength
-module BioPieces
+module BioDSL
   # == Plot matches from the stream as a dotplot.
   #
   # +plot_matches+ is used to create dotplots of matches in the stream.
@@ -108,7 +108,7 @@ module BioPieces
   # rubocop:enable LineLength
   class PlotMatches
     require 'gnuplotter'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -209,7 +209,7 @@ module BioPieces
     #
     # @param forward [GnuPlotter::DataSet] Forward matches.
     # @param reverse [GnuPlotter::DataSet] Reverse matches.
-    # @param record  [Hash] BioPieces record.
+    # @param record  [Hash] BioDSL record.
     def plot_match(forward, reverse, record)
       return unless record[:Q_BEG] && record[:Q_END] &&
                     record[:S_BEG] && record[:S_END]
@@ -226,7 +226,7 @@ module BioPieces
     #
     # @param forward [GnuPlotter::DataSet] Forward matches.
     # @param reverse [GnuPlotter::DataSet] Reverse matches.
-    # @param record  [Hash] BioPieces record.
+    # @param record  [Hash] BioDSL record.
     # @param q_len   [Integer] Length of query match.
     # @param s_len   [Integer] Length of subject match.
     def plot_match_strand(forward, reverse, record, q_len, s_len)
@@ -243,7 +243,7 @@ module BioPieces
     #
     # @param forward [GnuPlotter::DataSet] Forward matches.
     # @param reverse [GnuPlotter::DataSet] Reverse matches.
-    # @param record  [Hash] BioPieces record.
+    # @param record  [Hash] BioDSL record.
     # @param q_len   [Integer] Length of query match.
     # @param s_len   [Integer] Length of subject match.
     def plot_match_direction(forward, reverse, record, q_len, s_len)
@@ -272,7 +272,7 @@ module BioPieces
     # Emit record to output stream if defined.
     #
     # @param output [Enumerator::Yielder] Output stream.
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def process_output(output, record)
       return unless output
       output << record

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,25 +33,25 @@ require 'test/helper'
 # Test class for IndexTaxonomy.
 class TestIndexTaxonomy < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def teardown
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::IndexTaxonomy with invalid options raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::IndexTaxonomy with invalid options raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.index_taxonomy(output_dir: @tmpdir, foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline::IndexTaxonomy with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::IndexTaxonomy with valid options don\'t raise' do
     assert_nothing_raised do
       @p.index_taxonomy(output_dir: @tmpdir, kmer_size: 8, step_size: 1,
                         prefix: 'foo')

@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,12 +31,12 @@ require 'test/helper'
 
 class TestHomopolymer < Test::Unit::TestCase 
   def setup
-    @entry = BioPieces::Seq.new(seq: "atcgatTTTTTTcggttga")
+    @entry = BioDSL::Seq.new(seq: "atcgatTTTTTTcggttga")
   end
 
   test "#each_homopolymer with bad min raises" do
-    assert_raise(BioPieces::HomopolymerError) { @entry.each_homopolymer(0) }
-    assert_raise(BioPieces::HomopolymerError) { @entry.each_homopolymer(-1) }
+    assert_raise(BioDSL::HomopolymerError) { @entry.each_homopolymer(0) }
+    assert_raise(BioDSL::HomopolymerError) { @entry.each_homopolymer(-1) }
   end
 
   test "#each_homopolymer returns correctly" do

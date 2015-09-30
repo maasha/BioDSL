@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,7 +31,7 @@ require 'test/helper'
 
 class TestTrim < Test::Unit::TestCase 
   def setup
-    @entry      = BioPieces::Seq.new
+    @entry      = BioDSL::Seq.new
     #                2         3         44         3         2
     #              8901234567890123456789009876543210987654321098
     @entry.qual = "3456789:;<=>?@3BCDEFGHIIHGFEDCB3@?>=<;:9876543"
@@ -40,21 +40,21 @@ class TestTrim < Test::Unit::TestCase
 
   test "#quality_trim with nil seq raises" do
     @entry.seq = nil
-    assert_raise(BioPieces::TrimError) { @entry.quality_trim(20, 1) }
+    assert_raise(BioDSL::TrimError) { @entry.quality_trim(20, 1) }
   end
 
   test "#quality_trim with nil qual raises" do
     @entry.qual = nil
-    assert_raise(BioPieces::TrimError) { @entry.quality_trim(20, 1) }
+    assert_raise(BioDSL::TrimError) { @entry.quality_trim(20, 1) }
   end
 
   test "#quality_trim with bad min_qual raises" do
-    assert_raise(BioPieces::TrimError) { @entry.quality_trim(-1, 1) }
-    assert_raise(BioPieces::TrimError) { @entry.quality_trim(41, 1) }
+    assert_raise(BioDSL::TrimError) { @entry.quality_trim(-1, 1) }
+    assert_raise(BioDSL::TrimError) { @entry.quality_trim(41, 1) }
   end
 
   test "#quality_trim with bad min_len raises" do
-    assert_raise(BioPieces::TrimError) { @entry.quality_trim(20, 0) }
+    assert_raise(BioDSL::TrimError) { @entry.quality_trim(20, 0) }
   end
 
   test "#quality_trim returns correctly" do

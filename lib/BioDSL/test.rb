@@ -21,13 +21,13 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# Namespace for BioPieces.
-module BioPieces
-  # Class variabel visible across the BioPieces module scope.
+# Namespace for BioDSL.
+module BioDSL
+  # Class variabel visible across the BioDSL module scope.
   @@test = false
 
   # Class variable getter method.

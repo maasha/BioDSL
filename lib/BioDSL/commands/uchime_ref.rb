@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Run uchime_ref on sequences in the stream.
   #
   # This is a wrapper for the +usearch+ tool to run the program uchime_ref.
@@ -53,7 +53,7 @@ module BioPieces
   # == Examples
   #
   class UchimeRef
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -99,7 +99,7 @@ module BioPieces
       options_required(@options, :database)
       options_files_exist(@options, :database)
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
     end
 
     # Process input stream and save records with sequences to a temporary FASTA
@@ -109,7 +109,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param tmp_in [String] Path to temporary FASTA file.
     def process_input(input, output, tmp_in)
-      BioPieces::Fasta.open(tmp_in, 'w') do |ios|
+      BioDSL::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 
@@ -118,7 +118,7 @@ module BioPieces
             @status[:residues_in]  += record[:SEQ].length
             seq_name = record[:SEQ_NAME] || i.to_s
 
-            entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
+            entry = BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
             ios.puts entry.to_fasta
           else
@@ -134,7 +134,7 @@ module BioPieces
     # @param tmp_in [String] Path to input file.
     # @param tmp_out [String] Path to output file.
     #
-    # @raise [BioPieces::UsearchError] If command fails.
+    # @raise [BioDSL::UsearchError] If command fails.
     def run_uchime_ref(tmp_in, tmp_out)
       uchime_opts = {
         input: tmp_in,
@@ -145,8 +145,8 @@ module BioPieces
         verbose: @options[:verbose]
       }
 
-      BioPieces::Usearch.uchime_ref(uchime_opts)
-    rescue BioPieces::UsearchError => e
+      BioDSL::Usearch.uchime_ref(uchime_opts)
+    rescue BioDSL::UsearchError => e
       raise unless e.message =~ /Empty input file/
     end
 

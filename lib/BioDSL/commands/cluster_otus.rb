@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Create OTUs from sequences in the stream.
   #
   # Use the +usearch+ program cluster_otus to cluster sequences in the stream
@@ -60,7 +60,7 @@ module BioPieces
   #     cluster_otus.
   #     run
   class ClusterOtus
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -88,7 +88,7 @@ module BioPieces
         TmpDir.create('tmp.fa', 'tmp.uc') do |tmp_in, tmp_out|
           process_input(input, output, tmp_in)
 
-          BioPieces::Usearch.cluster_otus(input: tmp_in, output: tmp_out,
+          BioDSL::Usearch.cluster_otus(input: tmp_in, output: tmp_out,
                                           identity: @options[:identity],
                                           verbose: @options[:verbose])
 
@@ -118,7 +118,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param tmp_in [String] Path to temporary FASTA file.
     def process_input(input, output, tmp_in)
-      BioPieces::Fasta.open(tmp_in, 'w') do |ios|
+      BioDSL::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 
@@ -137,7 +137,7 @@ module BioPieces
     # Create a Sequence entry from a record using the record index as sequence
     # name if no such is found.
     #
-    # @param record [Hash] Biopieces record.
+    # @param record [Hash] BioDSL record.
     # @param i [Integer] Record index
     def record2entry(record, i)
       seq_name = record[:SEQ_NAME] || i.to_s
@@ -145,10 +145,10 @@ module BioPieces
       if record.key? :SEQ_COUNT
         seq_name << ";size=#{record[:SEQ_COUNT]}"
       else
-        fail BioPieces::SeqError, 'Missing SEQ_COUNT'
+        fail BioDSL::SeqError, 'Missing SEQ_COUNT'
       end
 
-      BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
+      BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ])
     end
 
     # Process the cluster output and emit otus to the output stream.
@@ -158,7 +158,7 @@ module BioPieces
     #
     # @raise [UsearchError] if size info is missing from SEQ_NAME.
     def process_output(output, tmp_out)
-      BioPieces::Fasta.open(tmp_out) do |ios|
+      BioDSL::Fasta.open(tmp_out) do |ios|
         ios.each do |entry|
           record = entry.to_bp
 
@@ -166,7 +166,7 @@ module BioPieces
             record[:SEQ_COUNT] = Regexp.last_match(1).to_i
             record[:SEQ_NAME].sub!(/;size=\d+$/, '')
           else
-            fail BioPieces::UsearchError, 'Missing size in SEQ_NAME: ' \
+            fail BioDSL::UsearchError, 'Missing size in SEQ_NAME: ' \
               "#{record[:SEQ_NAME]}"
           end
 

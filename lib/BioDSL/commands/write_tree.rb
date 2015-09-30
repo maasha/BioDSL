@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Write aligned sequences from stream as a tree.
   #
   # Description
@@ -56,7 +56,7 @@ module BioPieces
   #    run
   class WriteTree
     require 'open3'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -132,17 +132,17 @@ module BioPieces
       cmd = []
       cmd << 'FastTree'
       cmd << '-nt'    unless @options[:type] == :protein
-      cmd << '-quiet' unless BioPieces.verbose
+      cmd << '-quiet' unless BioDSL.verbose
       cmd.join(' ')
     end
 
     # Write a record with sequence to stdin.
     #
     # @param stdin  [IO]      Open3 IO.
-    # @param record [Hash]    BioPieces record.
+    # @param record [Hash]    BioDSL record.
     # @param i      [Integer] Record index.
     def write_seq(stdin, record, i)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
       entry.seq_name ||= i
 
       @status[:sequences_in] += 1

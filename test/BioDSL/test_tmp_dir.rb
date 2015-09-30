@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -32,10 +32,10 @@ require 'test/helper'
 
 # Test class for TmpDir
 class TmpDirTest < Test::Unit::TestCase
-  test 'BioPieces::TmpDir#create with no files returns correctly' do
+  test 'BioDSL::TmpDir#create with no files returns correctly' do
     dir = ''
 
-    BioPieces::TmpDir.create do |tmp_dir|
+    BioDSL::TmpDir.create do |tmp_dir|
       dir = tmp_dir
       assert_true(File.directory? dir)
     end
@@ -43,10 +43,10 @@ class TmpDirTest < Test::Unit::TestCase
     assert_false(File.directory? dir)
   end
 
-  test 'BioPieces::TmpDir#create with files returns correctly' do
+  test 'BioDSL::TmpDir#create with files returns correctly' do
     dir = ''
 
-    BioPieces::TmpDir.create('foo', 'bar') do |foo, bar, tmp_dir|
+    BioDSL::TmpDir.create('foo', 'bar') do |foo, bar, tmp_dir|
       dir = tmp_dir
       assert_true(File.directory? dir)
       assert_equal(File.join(dir, 'foo'), foo)

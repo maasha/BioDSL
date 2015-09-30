@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Complment sequences in the stream.
   #
   # +complement_seq+ complements sequences in the stream. The sequence type -
@@ -99,9 +99,9 @@ module BioPieces
 
     # Complements sequence in record.
     #
-    # @param record [Hash] BioPieces record with sequence.
+    # @param record [Hash] BioDSL record with sequence.
     def complement(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
       @type = entry.type_guess unless @type
       entry.type = @type
       entry.complement!

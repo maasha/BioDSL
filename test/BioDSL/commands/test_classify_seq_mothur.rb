@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,27 +33,27 @@ require 'test/helper'
 # Test class for ClassifySeqMothur.
 class TestClassifySeqMothur < Test::Unit::TestCase
   def setup
-    omit('mothur not found') unless BioPieces::Filesys.which('mothur')
+    omit('mothur not found') unless BioDSL::Filesys.which('mothur')
 
     @p = BP.new
     @database = __FILE__
     @taxonomy = __FILE__
   end
 
-  test 'BioPieces::Pipeline#classify_seq_mothur with disallowed option fail' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline#classify_seq_mothur with disallowed option fail' do
+    assert_raise(BioDSL::OptionError) do
       @p.classify_seq_mothur(database: @database, taxonomy: @taxonomy,
                              foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline#classify_seq_mothur w. allowed option dont fail' do
+  test 'BioDSL::Pipeline#classify_seq_mothur w. allowed option dont fail' do
     assert_nothing_raised do
       @p.classify_seq_mothur(database: @database, taxonomy: @taxonomy, cpus: 2)
     end
   end
 
-  # test "BioPieces::Pipeline#classify_seq_mothur outputs correctly" do
+  # test "BioDSL::Pipeline#classify_seq_mothur outputs correctly" do
   #   # TODO: mock this sucker.
   # end
 end

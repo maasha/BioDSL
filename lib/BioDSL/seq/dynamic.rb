@@ -20,11 +20,11 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Error class for Dynamic.
   class DynamicError < StandardError; end
 
@@ -36,7 +36,7 @@ module BioPieces
   # Inspired by the paper by Bruno Woltzenlogel Paleo (page 197):
   # http://www.logic.at/people/bruno/Papers/2007-GATE-ESSLLI.pdf
   module Dynamic
-    extend BioPieces::Ambiguity
+    extend BioDSL::Ambiguity
 
     # ------------------------------------------------------------------------------
     #   str.patmatch(pattern[, pos[, max_edit_distance]])

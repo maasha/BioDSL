@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,21 +35,21 @@ require 'test/helper'
 # Test class for WriteFastq.
 class TestWriteFastq < Test::Unit::TestCase
   def setup
-    @zcat = BioPieces::Filesys.which('gzcat') ||
-            BioPieces::Filesys.which('zcat')
+    @zcat = BioDSL::Filesys.which('gzcat') ||
+            BioDSL::Filesys.which('zcat')
 
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.fq')
     @file2  = File.join(@tmpdir, 'test.fq')
 
     setup_data
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_data
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test1', SEQ: 'atcg', SEQ_LEN: 4, SCORES: '!!II')
     @output.write(SEQ_NAME: 'test2', SEQ: 'gtac', SEQ_LEN: 4, SCORES: '!!II')
@@ -60,26 +60,26 @@ class TestWriteFastq < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::WriteFastq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.write_fastq(foo: 'bar') }
+  test 'BioDSL::Pipeline::WriteFastq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.write_fastq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::WriteFastq with invalid encoding raises' do
-    assert_raise(BioPieces::OptionError) { @p.write_fastq(encoding: 'foo') }
+  test 'BioDSL::Pipeline::WriteFastq with invalid encoding raises' do
+    assert_raise(BioDSL::OptionError) { @p.write_fastq(encoding: 'foo') }
   end
 
-  test 'BioPieces::Pipeline::WriteFastq with valid encoding dont raise' do
+  test 'BioDSL::Pipeline::WriteFastq with valid encoding dont raise' do
     assert_nothing_raised { @p.write_fastq(encoding: :base_33) }
     assert_nothing_raised { @p.write_fastq(encoding: :base_64) }
   end
 
-  test 'BioPieces::Pipeline::WriteFastq to stdout outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFastq to stdout outputs correctly' do
     result = capture_stdout { @p.write_fastq.run(input: @input) }
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFastq status outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFastq status outputs correctly' do
     capture_stdout { @p.write_fastq.run(input: @input) }
     assert_equal(2, @p.status.first[:records_in])
     assert_equal(2, @p.status.first[:records_out])
@@ -89,7 +89,7 @@ class TestWriteFastq < Test::Unit::TestCase
     assert_equal(8, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::WriteFastq to stdout with base 64 encoding ' \
+  test 'BioDSL::Pipeline::WriteFastq to stdout with base 64 encoding ' \
     'outputs correctly' do
     result = capture_stdout do
       @p.write_fastq(encoding: :base_64).run(input: @input)
@@ -98,7 +98,7 @@ class TestWriteFastq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFastq to file outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFastq to file outputs correctly' do
     @p.write_fastq(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"
@@ -106,12 +106,12 @@ class TestWriteFastq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFastq to existing file raises' do
+  test 'BioDSL::Pipeline::WriteFastq to existing file raises' do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { @p.write_fastq(output: @file) }
+    assert_raise(BioDSL::OptionError) { @p.write_fastq(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::WriteFastq to existing file with :force ' \
+  test 'BioDSL::Pipeline::WriteFastq to existing file with :force ' \
     'outputs OK' do
     `touch #{@file}`
     @p.write_fastq(output: @file, force: true).run(input: @input)
@@ -120,37 +120,37 @@ class TestWriteFastq < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFastq with gzipped data and no output ' \
+  test 'BioDSL::Pipeline::WriteFastq with gzipped data and no output ' \
     'file raises' do
-    assert_raise(BioPieces::OptionError) { @p.write_fastq(gzip: true) }
+    assert_raise(BioDSL::OptionError) { @p.write_fastq(gzip: true) }
   end
 
-  test 'BioPieces::Pipeline::WriteFastq w. bzip2ed data and no ' \
+  test 'BioDSL::Pipeline::WriteFastq w. bzip2ed data and no ' \
     'output file raises' do
-    assert_raise(BioPieces::OptionError) { @p.write_fastq(bzip2: true) }
+    assert_raise(BioDSL::OptionError) { @p.write_fastq(bzip2: true) }
   end
 
-  test 'BioPieces::Pipeline::WriteFastq to file outputs gzipped data OK' do
+  test 'BioDSL::Pipeline::WriteFastq to file outputs gzipped data OK' do
     @p.write_fastq(output: @file, gzip: true).run(input: @input)
     result = `#{@zcat} #{@file}`
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFastq to file outputs bzip2ed data OK' do
+  test 'BioDSL::Pipeline::WriteFastq to file outputs bzip2ed data OK' do
     @p.write_fastq(output: @file, bzip2: true).run(input: @input)
     result = `bzcat #{@file}`
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFastq w. both gzip and bzip2 output raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::WriteFastq w. both gzip and bzip2 output raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.write_fastq(output: @file, gzip: true, bzip2: true)
     end
   end
 
-  test 'BioPieces::Pipeline::WriteFastq with flux outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFastq with flux outputs correctly' do
     @p.write_fastq(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     expected = "@test1\natcg\n+\n!!II\n@test2\ngtac\n+\n!!II\n"

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,16 +33,16 @@ require 'test/helper'
 # Test class for AssembleSeqIdba.
 class TestAssembleSeqIdba < Test::Unit::TestCase
   def setup
-    omit('idba_ud not found') unless BioPieces::Filesys.which('idba_ud')
+    omit('idba_ud not found') unless BioDSL::Filesys.which('idba_ud')
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::AssembleSeqIdba with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.assemble_seq_idba(foo: 'bar') }
+  test 'BioDSL::Pipeline::AssembleSeqIdba with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.assemble_seq_idba(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::AssembleSeqIdba with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::AssembleSeqIdba with valid options don\'t raise' do
     assert_nothing_raised { @p.assemble_seq_idba(cpus: 1) }
   end
 

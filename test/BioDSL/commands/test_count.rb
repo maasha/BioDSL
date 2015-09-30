@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,45 +33,45 @@ require 'test/helper'
 # Test class for Count.
 class TestCount < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.txt')
     @file2  = File.join(@tmpdir, 'test.txt')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test1', SEQ: 'atcg', SEQ_LEN: 4)
     @output.write(SEQ_NAME: 'test2', SEQ: 'gtac', SEQ_LEN: 4)
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def teardown
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::Count with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.count(foo: 'bar') }
+  test 'BioDSL::Pipeline::Count with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.count(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::Count with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::Count with valid options don\'t raise' do
     assert_nothing_raised { @p.count(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::Count to file outputs correctly' do
+  test 'BioDSL::Pipeline::Count to file outputs correctly' do
     @p.count(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     expected = "#RECORD_TYPE\tCOUNT\ncount\t2\n"
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::Count to existing file raises' do
+  test 'BioDSL::Pipeline::Count to existing file raises' do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { @p.count(output: @file) }
+    assert_raise(BioDSL::OptionError) { @p.count(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::Count to existing file with :force outputs OK' do
+  test 'BioDSL::Pipeline::Count to existing file with :force outputs OK' do
     `touch #{@file}`
     @p.count(output: @file, force: true).run(input: @input)
     result = File.open(@file).read
@@ -79,7 +79,7 @@ class TestCount < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::Count with flux outputs correctly' do
+  test 'BioDSL::Pipeline::Count with flux outputs correctly' do
     @p.count(output: @file).run(input: @input, output: @output2)
     result = File.open(@file).read
     expected = "#RECORD_TYPE\tCOUNT\ncount\t2\n"
@@ -94,7 +94,7 @@ class TestCount < Test::Unit::TestCase
     assert_equal(stream_expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Count status outputs correctly' do
+  test 'BioDSL::Pipeline::Count status outputs correctly' do
     @p.count.run(input: @input, output: @output2)
 
     assert_equal(2, @p.status.first[:records_in])

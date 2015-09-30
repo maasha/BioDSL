@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Genecall sequences in the stream.
   #
   # +Genecall+ predict genes in prokaryotic single genomes or metagenomes using
@@ -77,7 +77,7 @@ module BioPieces
   #    run
   class Genecall
     require 'English'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -136,12 +136,12 @@ module BioPieces
       cmd << "-i #{tmp_in}"
       cmd << "-d #{tmp_fna}"
       cmd << "-a #{tmp_faa}"
-      cmd << '-q'               unless BioPieces.verbose
-      cmd << '> /dev/null 2>&1' unless BioPieces.verbose
+      cmd << '-q'               unless BioDSL.verbose
+      cmd << '> /dev/null 2>&1' unless BioDSL.verbose
 
       cmd_line = cmd.join(' ')
 
-      $stderr.puts "Running: #{cmd_line}" if BioPieces.verbose
+      $stderr.puts "Running: #{cmd_line}" if BioDSL.verbose
       system(cmd_line)
 
       fail cmd_line unless $CHILD_STATUS.success?
@@ -171,12 +171,12 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param fa_in [String] Path to temporary FASTA file.
     def process_input(input, output, fa_in)
-      BioPieces::Fasta.open(fa_in, 'w') do |fasta_io|
+      BioDSL::Fasta.open(fa_in, 'w') do |fasta_io|
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 
           if record.key? :SEQ
-            entry = BioPieces::Seq.new(seq_name: i, seq: record[:SEQ])
+            entry = BioDSL::Seq.new(seq_name: i, seq: record[:SEQ])
             @names[i] = record[:SEQ_NAME] || i
 
             @status[:sequences_in]  += 1
@@ -201,7 +201,7 @@ module BioPieces
     def process_output(output, tmp_fna, tmp_faa)
       file = (@type == :dna) ? tmp_fna : tmp_faa
 
-      BioPieces::Fasta.open(file, 'r') do |ios|
+      BioDSL::Fasta.open(file, 'r') do |ios|
         ios.each do |entry|
           output << parse_entry(entry)
 
@@ -214,7 +214,7 @@ module BioPieces
 
     # Parse Prodigal genecall data from sequence name.
     #
-    # @param entry [BioPieces::Seq] Sequence object.
+    # @param entry [BioDSL::Seq] Sequence object.
     #
     # @return [Hash] BioPiece record.
     def parse_entry(entry)

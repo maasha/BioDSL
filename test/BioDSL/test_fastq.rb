@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -32,7 +32,7 @@ require 'test/helper'
 class FastqTest < Test::Unit::TestCase
   def setup
     @io    = StringIO.new("@test1\nATCG\n+\nABCD\n@test2\natcg\n+test2\n@ABG\n")
-    @fastq = BioPieces::Fastq.new(@io)
+    @fastq = BioDSL::Fastq.new(@io)
   end
 
   test "#next_entry obtains the correct seq_name" do

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -36,13 +36,13 @@ class TestClassifySeq < Test::Unit::TestCase
     @p = BP.new
   end
 
-  test 'BioPieces::Pipeline#classify_seq with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline#classify_seq with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.classify_seq(dir: Dir.pwd, foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline#classify_seq with allowed option dont raise' do
+  test 'BioDSL::Pipeline#classify_seq with allowed option dont raise' do
     assert_nothing_raised { @p.classify_seq(dir: Dir.pwd) }
   end
 

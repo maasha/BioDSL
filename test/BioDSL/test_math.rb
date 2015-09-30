@@ -23,19 +23,19 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
 class MathTest < Test::Unit::TestCase
-  test "BioPieces::Math#dist_point2point returns correctly" do
-    assert_equal(1.5, BioPieces::Math.dist_point2point(1.0, 1.0, 1.0, 2.5))
+  test "BioDSL::Math#dist_point2point returns correctly" do
+    assert_equal(1.5, BioDSL::Math.dist_point2point(1.0, 1.0, 1.0, 2.5))
   end
 
-  test "BioPieces::Math#dist_point2line returns correctly" do
-    assert_equal(1.5, BioPieces::Math.dist_point2line( 3, 3, 0, 4.5, 5, 4.5))
+  test "BioDSL::Math#dist_point2line returns correctly" do
+    assert_equal(1.5, BioDSL::Math.dist_point2line( 3, 3, 0, 4.5, 5, 4.5))
   end
 end
 

@@ -20,16 +20,16 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of the BioDSL framework (www.BioDSL.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Class to calculate the Levenshtein distance between two
   # given strings.
   # http://en.wikipedia.org/wiki/Levenshtein_distance
   class Levenshtein
-    extend BioPieces::Ambiguity
+    extend BioDSL::Ambiguity
 
     BYTES_IN_INT = 4
 

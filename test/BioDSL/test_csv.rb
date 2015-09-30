@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -70,7 +70,7 @@ Cat         AAATGCA     3.42
 END
 
     io   = StringIO.new(table)
-    @csv = BioPieces::CSV.new(io)
+    @csv = BioDSL::CSV.new(io)
 
     @table  = table
     @table2 = table2
@@ -99,7 +99,7 @@ END
   test "CSV.read_array returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path)
+    result   = BioDSL::CSV.read_array(@file.path)
     expected = [["Human", "ATACGTCAG", 23524],
                 ["Dog", "AGCATGAC", 2442],
                 ["Mouse", "GACTG", 234],
@@ -111,7 +111,7 @@ END
   test "CSV.read_array with floats returns correctly" do
     @file.write(@table3)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path)
+    result   = BioDSL::CSV.read_array(@file.path)
     expected = [["Human", "ATACGTCAG", 5.24],
                 ["Dog", "AGCATGAC", 4.2],
                 ["Mouse", "GACTG", 3.4],
@@ -123,7 +123,7 @@ END
   test "CSV.read_array with include_header: true returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, include_header: true)
     expected = [["Organism", "Sequence", "Count"],
                 ["Human", "ATACGTCAG", 23524],
                 ["Dog", "AGCATGAC", 2442],
@@ -136,7 +136,7 @@ END
   test "CSV.read_array with :delimiter returns correctly" do
     @file.write(@table2)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, delimiter: ";")
+    result   = BioDSL::CSV.read_array(@file.path, delimiter: ";")
     expected = [["Human", "ATACGTCAG", 23524],
                 ["Dog", "AGCATGAC", 2442],
                 ["Mouse", "GACTG", 234],
@@ -148,7 +148,7 @@ END
   test "CSV.read_array with :delimiter and :include_header returns correctly" do
     @file.write(@table2)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, delimiter: ";", include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, delimiter: ";", include_header: true)
     expected = [["Organism", "Sequence", "Count"],
                 ["Human", "ATACGTCAG", 23524],
                 ["Dog", "AGCATGAC", 2442],
@@ -161,13 +161,13 @@ END
   test "CSV.read_array with :select and out-of-bounds numerical value raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, select: [3]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, select: [3]) }
   end
 
   test "CSV.read_array with :select of numerical values return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, select: [2, 0])
+    result   = BioDSL::CSV.read_array(@file.path, select: [2, 0])
     expected = [[23524, "Human"],
                 [2442,  "Dog"],
                 [234,   "Mouse"],
@@ -179,7 +179,7 @@ END
   test "CSV.read_array with :select of numerical values and :include_header returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, select: [2, 0], include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, select: [2, 0], include_header: true)
     expected = [["Count", "Organism"],
                 [23524, "Human"],
                 [2442,  "Dog"],
@@ -192,13 +192,13 @@ END
   test "CSV.read_array with :select and out-of-bounds range raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, select: 1 .. 3) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, select: 1 .. 3) }
   end
 
   test "CSV.read_array with :select of range return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, select: 0 .. 1)
+    result   = BioDSL::CSV.read_array(@file.path, select: 0 .. 1)
     expected = [["Human", "ATACGTCAG"],
                 ["Dog", "AGCATGAC"],
                 ["Mouse", "GACTG"],
@@ -210,7 +210,7 @@ END
   test "CSV.read_array with :select of range and :include_header returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, select: 0 .. 1, include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, select: 0 .. 1, include_header: true)
     expected = [["Organism", "Sequence"],
                 ["Human", "ATACGTCAG"],
                 ["Dog", "AGCATGAC"],
@@ -223,19 +223,19 @@ END
   test "CSV.read_array with :select of non-numerical values and no header raises" do
     @file.write(@table3)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, select: ["Organism"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, select: ["Organism"]) }
   end
 
   test "CSV.read_array with :select of non-numerical values not matching header raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, select: ["ount"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, select: ["ount"]) }
   end
 
   test "CSV.read_array with :select of non-numerical values returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, select: ["Count", :Organism])
+    result   = BioDSL::CSV.read_array(@file.path, select: ["Count", :Organism])
     expected = [[23524, "Human"],
                 [2442,  "Dog"],
                 [234,   "Mouse"],
@@ -247,7 +247,7 @@ END
   test "CSV.read_array with :select of non-numerical values and :include_header returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, select: ["Count", :Organism], include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, select: ["Count", :Organism], include_header: true)
     expected = [["Count", "Organism"],
                 [23524,   "Human"],
                 [2442,    "Dog"],
@@ -260,13 +260,13 @@ END
   test "CSV.read_array with :reject and out-of-bounds numerical value raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, reject: [3]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, reject: [3]) }
   end
 
   test "CSV.read_array with :reject of numerical values return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, reject: [2, 0])
+    result   = BioDSL::CSV.read_array(@file.path, reject: [2, 0])
     expected = [["ATACGTCAG"],
                 ["AGCATGAC"],
                 ["GACTG"],
@@ -278,7 +278,7 @@ END
   test "CSV.read_array with :reject of numerical values and :include_header returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, reject: [2, 0], include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, reject: [2, 0], include_header: true)
     expected = [["Sequence"],
                 ["ATACGTCAG"],
                 ["AGCATGAC"],
@@ -291,13 +291,13 @@ END
   test "CSV.read_array with :reject and out-of-bounds range raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, reject: 1 .. 3) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, reject: 1 .. 3) }
   end
 
   test "CSV.read_array with :reject of range return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, reject: 0 .. 1)
+    result   = BioDSL::CSV.read_array(@file.path, reject: 0 .. 1)
     expected = [[23524],
                 [2442],
                 [234],
@@ -309,7 +309,7 @@ END
   test "CSV.read_array with :reject of range and :include_header returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, reject: 0 .. 1, include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, reject: 0 .. 1, include_header: true)
     expected = [["Count"],
                 [23524],
                 [2442],
@@ -322,19 +322,19 @@ END
   test "CSV.read_array with :reject of non-numerical values and no header raises" do
     @file.write(@table3)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, reject: ["Organism"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, reject: ["Organism"]) }
   end
 
   test "CSV.read_array with :reject of non-numerical values not matching header raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_array(@file.path, reject: ["ount"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_array(@file.path, reject: ["ount"]) }
   end
 
   test "CSV.read_array with :reject of non-numerical values returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, reject: ["Count", :Organism])
+    result   = BioDSL::CSV.read_array(@file.path, reject: ["Count", :Organism])
     expected = [["ATACGTCAG"],
                 ["AGCATGAC"],
                 ["GACTG"],
@@ -346,7 +346,7 @@ END
   test "CSV.read_array with :reject of non-numerical values and :include_header returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_array(@file.path, reject: ["Count", :Organism], include_header: true)
+    result   = BioDSL::CSV.read_array(@file.path, reject: ["Count", :Organism], include_header: true)
     expected = [["Sequence"],
                 ["ATACGTCAG"],
                 ["AGCATGAC"],
@@ -359,7 +359,7 @@ END
   test "CSV.read_hash returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path)
+    result   = BioDSL::CSV.read_hash(@file.path)
     expected = [{Count: 23524, Organism: "Human", Sequence: "ATACGTCAG"},
                 {Count: 2442,  Organism: "Dog",   Sequence: "AGCATGAC"},
                 {Count: 234,   Organism: "Mouse", Sequence: "GACTG"},
@@ -371,7 +371,7 @@ END
   test "CSV.read_hash with no header returns correctly" do
     @file.write(@table3)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path)
+    result   = BioDSL::CSV.read_hash(@file.path)
     expected = [{V0: "Human", V1: "ATACGTCAG", V2: 5.24},
                 {V0: "Dog",   V1: "AGCATGAC",  V2: 4.2},
                 {V0: "Mouse", V1: "GACTG",     V2: 3.4},
@@ -383,7 +383,7 @@ END
   test "CSV.read_hash with :delimiter returns correctly" do
     @file.write(@table2)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path, delimiter: ";")
+    result   = BioDSL::CSV.read_hash(@file.path, delimiter: ";")
     expected = [{:Count=>23524, :Organism=>"Human", :Sequence=>"ATACGTCAG"},
                 {:Count=>2442,  :Organism=>"Dog",   :Sequence=>"AGCATGAC"},
                 {:Count=>234,   :Organism=>"Mouse", :Sequence=>"GACTG"},
@@ -395,13 +395,13 @@ END
   test "CSV.read_hash with :select and out-of-bounds numerical value raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: [3]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, select: [3]) }
   end
 
   test "CSV.read_hash with :select of numerical values return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path, select: [2, 0])
+    result   = BioDSL::CSV.read_hash(@file.path, select: [2, 0])
     expected = [{:Count=>23524, :Organism=>"Human"},
                 {:Count=>2442,  :Organism=>"Dog"},
                 {:Count=>234,   :Organism=>"Mouse"},
@@ -413,13 +413,13 @@ END
   test "CSV.read_hash with :select and out-of-bounds range raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: 1 .. 3) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, select: 1 .. 3) }
   end
 
   test "CSV.read_hash with :select of range return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path, select: 0 .. 1)
+    result   = BioDSL::CSV.read_hash(@file.path, select: 0 .. 1)
     expected = [{:Organism=>"Human", :Sequence=>"ATACGTCAG"},
                 {:Organism=>"Dog",   :Sequence=>"AGCATGAC"},
                 {:Organism=>"Mouse", :Sequence=>"GACTG"},
@@ -431,19 +431,19 @@ END
   test "CSV.read_hash with :select of non-numerical values and no header raises" do
     @file.write(@table3)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: ["Organism"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, select: ["Organism"]) }
   end
 
   test "CSV.read_hash with :select of non-numerical values not matching header raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, select: ["ount"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, select: ["ount"]) }
   end
 
   test "CSV.read_hash with :select of non-numerical values returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path, select: ["Count", :Organism])
+    result   = BioDSL::CSV.read_hash(@file.path, select: ["Count", :Organism])
     expected = [{:Count=>23524, :Organism=>"Human"},
                 {:Count=>2442,  :Organism=>"Dog"},
                 {:Count=>234,   :Organism=>"Mouse"},
@@ -455,13 +455,13 @@ END
   test "CSV.read_hash with :reject and out-of-bounds numerical value raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: [3]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, reject: [3]) }
   end
 
   test "CSV.read_hash with :reject of numerical values return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path, reject: [2, 0])
+    result   = BioDSL::CSV.read_hash(@file.path, reject: [2, 0])
     expected = [{:Sequence=>"ATACGTCAG"},
                 {:Sequence=>"AGCATGAC"},
                 {:Sequence=>"GACTG"},
@@ -473,13 +473,13 @@ END
   test "CSV.read_hash with :reject and out-of-bounds range raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: 1 .. 3) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, reject: 1 .. 3) }
   end
 
   test "CSV.read_hash with :reject of range return correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path, reject: 0 .. 1)
+    result   = BioDSL::CSV.read_hash(@file.path, reject: 0 .. 1)
     expected = [{:Count=>23524},
                 {:Count=>2442},
                 {:Count=>234},
@@ -491,19 +491,19 @@ END
   test "CSV.read_hash with :reject of non-numerical values and no header raises" do
     @file.write(@table3)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: ["Organism"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, reject: ["Organism"]) }
   end
 
   test "CSV.read_hash with :reject of non-numerical values not matching header raises" do
     @file.write(@table)
     @file.rewind
-    assert_raise(BioPieces::CSVError) { BioPieces::CSV.read_hash(@file.path, reject: ["ount"]) }
+    assert_raise(BioDSL::CSVError) { BioDSL::CSV.read_hash(@file.path, reject: ["ount"]) }
   end
 
   test "CSV.read_hash with :reject of non-numerical values returns correctly" do
     @file.write(@table)
     @file.rewind
-    result   = BioPieces::CSV.read_hash(@file.path, reject: ["Count", :Organism])
+    result   = BioDSL::CSV.read_hash(@file.path, reject: ["Count", :Organism])
     expected = [{:Sequence=>"ATACGTCAG"},
                 {:Sequence=>"AGCATGAC"},
                 {:Sequence=>"GACTG"},

@@ -21,21 +21,21 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Module with Config constants.
   module Config
     require 'parallel'
-    require 'biopieces/helpers/options_helper'
+    require 'BioDSL/helpers/options_helper'
 
     extend OptionsHelper
 
-    HISTORY_FILE             = File.join(ENV['HOME'], '.biopieces_history')
-    LOG_FILE                 = File.join(ENV['HOME'], '.biopieces_log')
-    RC_FILE                  = File.join(ENV['HOME'], '.biopiecesrc')
+    HISTORY_FILE             = File.join(ENV['HOME'], '.BioDSL_history')
+    LOG_FILE                 = File.join(ENV['HOME'], '.BioDSL_log')
+    RC_FILE                  = File.join(ENV['HOME'], '.BioDSLrc')
     STATUS_PROGRESS_INTERVAL = 0.1   # update progress every n second.
 
     options = options_load_rc({}, :pipeline)

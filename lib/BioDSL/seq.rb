@@ -20,22 +20,22 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part Biopieces (www.biopieces.org).                           #
+# This software is part BioDSL (www.BioDSL.org).                           #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   require 'narray'
-  require 'biopieces/seq/ambiguity'
-  require 'biopieces/seq/assemble'
-  require 'biopieces/seq/digest'
-  require 'biopieces/seq/kmer'
-  require 'biopieces/seq/translate'
-  require 'biopieces/seq/trim'
-  require 'biopieces/seq/backtrack'
-  require 'biopieces/seq/dynamic'
-  require 'biopieces/seq/homopolymer'
-  require 'biopieces/seq/levenshtein'
+  require 'BioDSL/seq/ambiguity'
+  require 'BioDSL/seq/assemble'
+  require 'BioDSL/seq/digest'
+  require 'BioDSL/seq/kmer'
+  require 'BioDSL/seq/translate'
+  require 'BioDSL/seq/trim'
+  require 'BioDSL/seq/backtrack'
+  require 'BioDSL/seq/dynamic'
+  require 'BioDSL/seq/homopolymer'
+  require 'BioDSL/seq/levenshtein'
 
   # Error class for all exceptions to do with Seq.
   class SeqError < StandardError; end
@@ -52,12 +52,12 @@ module BioPieces
     SCORE_MIN  = 0
     SCORE_MAX  = 40
 
-    include BioPieces::Digest
-    include BioPieces::Homopolymer
-    include BioPieces::Translate
-    include BioPieces::Trim
-    include BioPieces::Kmer
-    include BioPieces::BackTrack
+    include BioDSL::Digest
+    include BioDSL::Homopolymer
+    include BioDSL::Translate
+    include BioDSL::Trim
+    include BioDSL::Kmer
+    include BioDSL::BackTrack
 
     attr_accessor :seq_name, :seq, :type, :qual
 
@@ -225,7 +225,7 @@ module BioPieces
       self.seq.tr!('Uu','Tt')
     end
 
-    # Method that given a Seq entry returns a Biopieces record (a hash).
+    # Method that given a Seq entry returns a BioDSL record (a hash).
     def to_bp
       record            = {}
       record[:SEQ_NAME] = self.seq_name   if self.seq_name
@@ -346,9 +346,9 @@ module BioPieces
     # two Sequence objects (case insensitive).
     def hamming_distance(entry, options = {})
       if options[:ambiguity]
-        BioPieces::Hamming.distance(self.seq, entry.seq, options)
+        BioDSL::Hamming.distance(self.seq, entry.seq, options)
       else
-        BioPieces::Hamming.distance(self.seq.upcase, entry.seq.upcase, options)
+        BioDSL::Hamming.distance(self.seq.upcase, entry.seq.upcase, options)
       end
     end
 

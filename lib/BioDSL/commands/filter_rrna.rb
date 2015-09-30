@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Filter rRNA sequences from the stream.
   #
   # Description
@@ -62,7 +62,7 @@ module BioPieces
   class FilterRrna
     require 'English'
     require 'set'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -142,11 +142,11 @@ module BioPieces
       cmd << "--reads #{seq_file}"
       cmd << "--aligned #{out_file}"
       cmd << '--fastx'
-      cmd << '-v' if BioPieces.verbose
+      cmd << '-v' if BioDSL.verbose
 
       cmd_line = cmd.join(' ')
 
-      $stderr.puts "Running command: #{cmd_line}" if BioPieces.verbose
+      $stderr.puts "Running command: #{cmd_line}" if BioDSL.verbose
 
       system(cmd_line)
 
@@ -158,7 +158,7 @@ module BioPieces
     #
     # @param out_file [String] Path to output file.
     def parse_sortme_output(out_file)
-      BioPieces::Fasta.open("#{out_file}.fasta", 'r') do |ios|
+      BioDSL::Fasta.open("#{out_file}.fasta", 'r') do |ios|
         ios.each do |entry|
           @filter << entry.seq_name.to_i
         end
@@ -172,9 +172,9 @@ module BioPieces
     # @param tmp_file [String] Path to tmp file for serialized records.
     # @param seq_file [String] Path to tmp FASTA sequence file.
     def process_input(input, tmp_file, seq_file)
-      BioPieces::Fasta.open(seq_file, 'w') do |seq_io|
+      BioDSL::Fasta.open(seq_file, 'w') do |seq_io|
         File.open(tmp_file, 'wb') do |tmp_ios|
-          BioPieces::Serializer.new(tmp_ios) do |s|
+          BioDSL::Serializer.new(tmp_ios) do |s|
             input.each_with_index do |record, i|
               @status[:records_in] += 1
 
@@ -187,15 +187,15 @@ module BioPieces
       end
     end
 
-    # Given a BioPieces record and an index create a new sequence entry object
+    # Given a BioDSL record and an index create a new sequence entry object
     # that is returned using the index as sequence name.
     #
-    # @param record [Hash] Biopieces record
+    # @param record [Hash] BioDSL record
     # @param i [Integer] Index.
     #
-    # @return [BioPieces::Seq] Sequence entry.
+    # @return [BioDSL::Seq] Sequence entry.
     def record2entry(record, i)
-      entry = BioPieces::Seq.new(seq_name: i, seq: record[:SEQ])
+      entry = BioDSL::Seq.new(seq_name: i, seq: record[:SEQ])
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length
       entry
@@ -208,7 +208,7 @@ module BioPieces
     # @param tmp_file [String] Path to tmp file with serialized records.
     def process_output(output, tmp_file)
       File.open(tmp_file, 'rb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           s.each_with_index do |record, i|
             output_record(output, record, i)
           end
@@ -220,7 +220,7 @@ module BioPieces
     # information that should be filtered.
     #
     # @param output [Enumerator::Yielder] Output stream.
-    # @param record [Hash] Biopieces record.
+    # @param record [Hash] BioDSL record.
     # @param i [Integer] Index.
     def output_record(output, record, i)
       if record.key? :SEQ

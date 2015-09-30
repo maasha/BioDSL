@@ -21,15 +21,15 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Grab records in stream.
   #
   # +grab+ select records from the stream by matching patterns to keys or
-  # values. +grab+ is Biopieces' equivalent of Unix' +grep+, however, +grab+
+  # values. +grab+ is BioDSL' equivalent of Unix' +grep+, however, +grab+
   # is much more versatile.
   #
   # NB! If chaining multiple +grab+ commands then use the most restrictive

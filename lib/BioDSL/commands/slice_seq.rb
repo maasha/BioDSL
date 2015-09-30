@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Slice sequences in the stream and obtain subsequences.
   #
   # Slice subsequences from sequences using index positions, that is single
@@ -133,9 +133,9 @@ module BioPieces
 
     # Slice sequence in given record.
     #
-    # @param record [Hash] Biopieces record.
+    # @param record [Hash] BioDSL record.
     def slice_seq(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length

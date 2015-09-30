@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Plot tabular numerical data in a heatmap.
   #
   # A heatmap can be plotted with +plot_heatmap+ using numerical data (Non-
@@ -70,7 +70,7 @@ module BioPieces
   class PlotHeatmap
     require 'gnuplotter'
     require 'set'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -148,7 +148,7 @@ module BioPieces
 
     # Determine the headings.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def determine_headings(record)
       @headings =
         if @options[:keys]
@@ -165,7 +165,7 @@ module BioPieces
     # Sort records keys numerically, when the keys are in the format Vn, where n
     # is an Integer.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     #
     # @return [Array] List of sorted keys.
     def sort_keys(record)

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -34,71 +34,71 @@ require 'test/helper'
 
 # Test class for CAry.
 class TestCAry < Test::Unit::TestCase
-  test 'BioPieces::CAry.new with bad count raises' do
-    assert_raise(BioPieces::CAryError) { BioPieces::CAry.new(-10, 4) }
-    assert_raise(BioPieces::CAryError) { BioPieces::CAry.new(0, 4) }
+  test 'BioDSL::CAry.new with bad count raises' do
+    assert_raise(BioDSL::CAryError) { BioDSL::CAry.new(-10, 4) }
+    assert_raise(BioDSL::CAryError) { BioDSL::CAry.new(0, 4) }
   end
 
-  test 'BioPieces::CAry.new with bad size raises' do
-    assert_raise(BioPieces::CAryError) { BioPieces::CAry.new(10, -4) }
-    assert_raise(BioPieces::CAryError) { BioPieces::CAry.new(10, 0) }
+  test 'BioDSL::CAry.new with bad size raises' do
+    assert_raise(BioDSL::CAryError) { BioDSL::CAry.new(10, -4) }
+    assert_raise(BioDSL::CAryError) { BioDSL::CAry.new(10, 0) }
   end
 
-  test 'BioPieces::CAry.to_s returns correctly' do
-    assert_equal('0' * 40, BioPieces::CAry.new(5, 1).to_s)
+  test 'BioDSL::CAry.to_s returns correctly' do
+    assert_equal('0' * 40, BioDSL::CAry.new(5, 1).to_s)
   end
 
-  test 'BioPieces::CAry.new with ary returns correctly' do
+  test 'BioDSL::CAry.new with ary returns correctly' do
     assert_equal([1, 2].pack('I*').unpack('B*').first,
-                 BioPieces::CAry.new(2, 4, [1, 2].pack('I*')).to_s)
+                 BioDSL::CAry.new(2, 4, [1, 2].pack('I*')).to_s)
   end
 
-  test 'BioPieces::CAry.fill! returns correctly' do
-    cary = BioPieces::CAry.new(5, 1)
+  test 'BioDSL::CAry.fill! returns correctly' do
+    cary = BioDSL::CAry.new(5, 1)
     cary.fill!
     assert_equal('1' * 40, cary.to_s)
   end
 
-  test 'BioPieces::CAry.fill returns correctly' do
-    cary = BioPieces::CAry.new(5, 1)
+  test 'BioDSL::CAry.fill returns correctly' do
+    cary = BioDSL::CAry.new(5, 1)
     new = cary.fill
     assert_equal('0' * 40, cary.to_s)
     assert_equal('1' * 40, new.to_s)
   end
 
-  test 'BioPieces::CAry.zero! returns correctly' do
-    cary = BioPieces::CAry.new(5, 1).fill
+  test 'BioDSL::CAry.zero! returns correctly' do
+    cary = BioDSL::CAry.new(5, 1).fill
     cary.zero!
     assert_equal('0' * 40, cary.to_s)
   end
 
-  test 'BioPieces::CAry.zero returns correctly' do
-    cary = BioPieces::CAry.new(5, 1).fill
+  test 'BioDSL::CAry.zero returns correctly' do
+    cary = BioDSL::CAry.new(5, 1).fill
     new  = cary.zero
     assert_equal('1' * 40, cary.to_s)
     assert_equal('0' * 40, new.to_s)
   end
 
-  test 'BioPieces::CAry.& raises with bad object type' do
-    cary = BioPieces::CAry.new(5, 1)
-    assert_raise(BioPieces::CAryError) { cary & 10 }
+  test 'BioDSL::CAry.& raises with bad object type' do
+    cary = BioDSL::CAry.new(5, 1)
+    assert_raise(BioDSL::CAryError) { cary & 10 }
   end
 
-  test 'BioPieces::CAry.& raises with uneven counts' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(4, 1)
-    assert_raise(BioPieces::CAryError) { cary1 & cary2 }
+  test 'BioDSL::CAry.& raises with uneven counts' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(4, 1)
+    assert_raise(BioDSL::CAryError) { cary1 & cary2 }
   end
 
-  test 'BioPieces::CAry.& raises with uneven sizes' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(5, 2)
-    assert_raise(BioPieces::CAryError) { cary1 & cary2 }
+  test 'BioDSL::CAry.& raises with uneven sizes' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(5, 2)
+    assert_raise(BioDSL::CAryError) { cary1 & cary2 }
   end
 
-  test 'BioPieces::CAry.& returns correctly' do
-    cary1 = BioPieces::CAry.new(5, 1).fill
-    cary2 = BioPieces::CAry.new(5, 1).fill
+  test 'BioDSL::CAry.& returns correctly' do
+    cary1 = BioDSL::CAry.new(5, 1).fill
+    cary2 = BioDSL::CAry.new(5, 1).fill
 
     cary1 & cary2
 
@@ -106,26 +106,26 @@ class TestCAry < Test::Unit::TestCase
     assert_equal('1' * 40, cary1.to_s)
   end
 
-  test 'BioPieces::CAry.| raises with bad object type' do
-    cary = BioPieces::CAry.new(5, 1)
-    assert_raise(BioPieces::CAryError) { cary | 10 }
+  test 'BioDSL::CAry.| raises with bad object type' do
+    cary = BioDSL::CAry.new(5, 1)
+    assert_raise(BioDSL::CAryError) { cary | 10 }
   end
 
-  test 'BioPieces::CAry.| raises with uneven counts' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(4, 1)
-    assert_raise(BioPieces::CAryError) { cary1 | cary2 }
+  test 'BioDSL::CAry.| raises with uneven counts' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(4, 1)
+    assert_raise(BioDSL::CAryError) { cary1 | cary2 }
   end
 
-  test 'BioPieces::CAry.| raises with uneven sizes' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(5, 2)
-    assert_raise(BioPieces::CAryError) { cary1 | cary2 }
+  test 'BioDSL::CAry.| raises with uneven sizes' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(5, 2)
+    assert_raise(BioDSL::CAryError) { cary1 | cary2 }
   end
 
-  test 'BioPieces::CAry.| returns correctly' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(5, 1).fill
+  test 'BioDSL::CAry.| returns correctly' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(5, 1).fill
 
     cary1 | cary2
 
@@ -133,26 +133,26 @@ class TestCAry < Test::Unit::TestCase
     assert_equal('1' * 40, cary2.to_s)
   end
 
-  test 'BioPieces::CAry.^ raises with bad object type' do
-    cary = BioPieces::CAry.new(5, 1)
-    assert_raise(BioPieces::CAryError) { cary ^ 10 }
+  test 'BioDSL::CAry.^ raises with bad object type' do
+    cary = BioDSL::CAry.new(5, 1)
+    assert_raise(BioDSL::CAryError) { cary ^ 10 }
   end
 
-  test 'BioPieces::CAry.^ raises with uneven counts' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(4, 1)
-    assert_raise(BioPieces::CAryError) { cary1 ^ cary2 }
+  test 'BioDSL::CAry.^ raises with uneven counts' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(4, 1)
+    assert_raise(BioDSL::CAryError) { cary1 ^ cary2 }
   end
 
-  test 'BioPieces::CAry.^ raises with uneven sizes' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(5, 2)
-    assert_raise(BioPieces::CAryError) { cary1 ^ cary2 }
+  test 'BioDSL::CAry.^ raises with uneven sizes' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(5, 2)
+    assert_raise(BioDSL::CAryError) { cary1 ^ cary2 }
   end
 
-  test 'BioPieces::CAry.^ returns correctly' do
-    cary1 = BioPieces::CAry.new(5, 1)
-    cary2 = BioPieces::CAry.new(5, 1).fill
+  test 'BioDSL::CAry.^ returns correctly' do
+    cary1 = BioDSL::CAry.new(5, 1)
+    cary2 = BioDSL::CAry.new(5, 1).fill
 
     cary1 ^ cary2
 
@@ -160,13 +160,13 @@ class TestCAry < Test::Unit::TestCase
     assert_equal('1' * 40, cary2.to_s)
   end
 
-  test 'BioPieces::CAry #store and #retrieve returns correctly' do
+  test 'BioDSL::CAry #store and #retrieve returns correctly' do
     file = Tempfile.new('cary')
-    cary = BioPieces::CAry.new(5, 1).fill
+    cary = BioDSL::CAry.new(5, 1).fill
 
     begin
-      BioPieces::CAry.store(file, cary)
-      cary2 = BioPieces::CAry.retrieve(file)
+      BioDSL::CAry.store(file, cary)
+      cary2 = BioDSL::CAry.retrieve(file)
       assert_equal(cary.to_s, cary2.to_s)
     ensure
       file.close

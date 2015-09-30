@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,31 +33,31 @@ require 'test/helper'
 # Test class for MeanScores.
 class TestMeanScores < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SCORES: 'IIIIIIIIIIIIIIIIIIII')
     @output.write(SCORES: '!!!!!IIIIIIIIIIIIIII')
     @output.write(SCORES: 'IIIIIIIIIIIIIII!!!!!')
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::MeanScores with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.mean_scores(foo: 'bar') }
+  test 'BioDSL::Pipeline::MeanScores with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.mean_scores(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::MeanScores with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::MeanScores with valid options don\'t raise' do
     assert_nothing_raised { @p.mean_scores(local: true) }
   end
 
-  test 'BioPieces::Pipeline::MeanScores with window_size and local: false ' \
+  test 'BioDSL::Pipeline::MeanScores with window_size and local: false ' \
     'raises' do
-    assert_raise(BioPieces::OptionError) { @p.mean_scores(window_size: 10) }
+    assert_raise(BioDSL::OptionError) { @p.mean_scores(window_size: 10) }
   end
 
-  test 'BioPieces::Pipeline::MeanScores returns correctly' do
+  test 'BioDSL::Pipeline::MeanScores returns correctly' do
     @p.mean_scores.run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -69,7 +69,7 @@ class TestMeanScores < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::MeanScores status returns correctly' do
+  test 'BioDSL::Pipeline::MeanScores status returns correctly' do
     @p.mean_scores.run(input: @input, output: @output2)
 
     assert_equal(3,     @p.status.first[:records_in])
@@ -83,7 +83,7 @@ class TestMeanScores < Test::Unit::TestCase
     assert_equal(33.33, @p.status.first[:mean_mean])
   end
 
-  test 'BioPieces::Pipeline::MeanScores with local: true returns correctly' do
+  test 'BioDSL::Pipeline::MeanScores with local: true returns correctly' do
     @p.mean_scores(local: true).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -95,7 +95,7 @@ class TestMeanScores < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::MeanScores with local: true and :window_size ' \
+  test 'BioDSL::Pipeline::MeanScores with local: true and :window_size ' \
     'returns correctly' do
     @p.mean_scores(local: true, window_size: 10).
       run(input: @input, output: @output2)

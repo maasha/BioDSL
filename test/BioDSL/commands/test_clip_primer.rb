@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -34,23 +34,23 @@ require 'test/helper'
 # rubocop:disable ClassLength
 class TestClipPrimer < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.clip_primer(foo: 'bar') }
+  test 'BioDSL::Pipeline::ClipPrimer with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.clip_primer(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with valid options dont raise' do
+  test 'BioDSL::Pipeline::ClipPrimer with valid options dont raise' do
     assert_nothing_raised do
       @p.clip_primer(primer: 'atcg', direction: :forward)
     end
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with forward full length match ' \
+  test 'BioDSL::Pipeline::ClipPrimer with forward full length match ' \
     'returns correctly' do
     @output.write(SEQ: 'TCGTATGCCGTCTTCTGCTT')
     @output.close
@@ -69,7 +69,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer status returns correctly' do
+  test 'BioDSL::Pipeline::ClipPrimer status returns correctly' do
     @output.write(SEQ: 'TCGTATGCCGTCTTCTGCTT')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :forward).
@@ -83,7 +83,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(20, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse full length match ' \
+  test 'BioDSL::Pipeline::ClipPrimer with reverse full length match ' \
     'returns correctly' do
     @output.write(SEQ: 'TCGTATGCCGTCTTCTGCTT')
     @output.close
@@ -102,7 +102,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer w. forward begin match returns OK' do
+  test 'BioDSL::Pipeline::ClipPrimer w. forward begin match returns OK' do
     @output.write(SEQ: 'TCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :forward).
@@ -120,7 +120,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse begin match returns OK' do
+  test 'BioDSL::Pipeline::ClipPrimer with reverse begin match returns OK' do
     @output.write(SEQ: 'TCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :reverse).
@@ -138,7 +138,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with forward middle match returns OK' do
+  test 'BioDSL::Pipeline::ClipPrimer with forward middle match returns OK' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :forward).
@@ -156,7 +156,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse middle match returns OK' do
+  test 'BioDSL::Pipeline::ClipPrimer with reverse middle match returns OK' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :reverse).
@@ -174,7 +174,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with forward end match returns OK' do
+  test 'BioDSL::Pipeline::ClipPrimer with forward end match returns OK' do
     @output.write(SEQ: 'gactgaTCGTATGCCGTCTTCTGCTT')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :forward).
@@ -192,7 +192,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse end match returns OK' do
+  test 'BioDSL::Pipeline::ClipPrimer with reverse end match returns OK' do
     @output.write(SEQ: 'gactgaTCGTATGCCGTCTTCTGCTT')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :reverse).
@@ -210,7 +210,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with forward middle match and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with forward middle match and ' \
     'reverse_complement returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -230,7 +230,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse middle match and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with reverse middle match and ' \
     'reverse_complement returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -250,7 +250,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with forward middle miss and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with forward middle miss and ' \
     'search_distance returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -263,7 +263,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with forward middle match and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with forward middle match and ' \
     'search_distance returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -283,7 +283,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse middle miss and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with reverse middle miss and ' \
     'search_distance returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -295,7 +295,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse middle match and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with reverse middle match and ' \
     'search_distance returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -314,7 +314,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with forward match and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with forward match and ' \
     'search_distance longer than sequence returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -333,7 +333,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with reverse match and ' \
+  test 'BioDSL::Pipeline::ClipPrimer with reverse match and ' \
     'search_distance longer than sequence returns correctly' do
     @output.write(SEQ: 'actgactgaTCGTATGCCGTCTTCTGCTTactacgt')
     @output.close
@@ -352,7 +352,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with sequence length shorter than ' \
+  test 'BioDSL::Pipeline::ClipPrimer with sequence length shorter than ' \
     'pattern returns correctly' do
     @output.write(SEQ: 'actgactgaTC')
     @output.close
@@ -364,7 +364,7 @@ class TestClipPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ClipPrimer with sequence length 0 returns OK' do
+  test 'BioDSL::Pipeline::ClipPrimer with sequence length 0 returns OK' do
     @output.write(SEQ: '')
     @output.close
     @p.clip_primer(primer: 'TCGTATGCCGTCTTCTGCTT', direction: :forward).

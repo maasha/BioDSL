@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Run usearch_global on sequences in the stream.
   #
   # This is a wrapper for the +usearch+ tool to run the program usearch_global.
@@ -57,7 +57,7 @@ module BioPieces
   # == Examples
   #
   class UsearchGlobal
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -106,7 +106,7 @@ module BioPieces
       options_assert(@options, ':identity >  0.0')
       options_assert(@options, ':identity <= 1.0')
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
     end
 
     # Process input and emit to the output stream while saving all records
@@ -116,7 +116,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param tmp_in [String] Path to temporary file.
     def process_input(input, output, tmp_in)
-      BioPieces::Fasta.open(tmp_in, 'w') do |ios|
+      BioDSL::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 
@@ -129,7 +129,7 @@ module BioPieces
           @status[:sequences_in] += 1
           seq_name = record[:SEQ_NAME] || i.to_s
 
-          entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
+          entry = BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
           ios.puts entry.to_fasta
         end
@@ -148,8 +148,8 @@ module BioPieces
         verbose: @options[:verbose]
       }
 
-      BioPieces::Usearch.usearch_global(run_opts)
-    rescue BioPieces::UsearchError => e
+      BioDSL::Usearch.usearch_global(run_opts)
+    rescue BioDSL::UsearchError => e
       raise unless e.message =~ /Empty input file/
     end
 
@@ -158,7 +158,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param tmp_out [String] Path to output file.
     def process_output(output, tmp_out)
-      BioPieces::Usearch.open(tmp_out) do |ios|
+      BioDSL::Usearch.open(tmp_out) do |ios|
         ios.each(:uc) do |record|
           record[:RECORD_TYPE] = 'usearch'
           output << record

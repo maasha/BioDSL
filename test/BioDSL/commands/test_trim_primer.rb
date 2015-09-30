@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,23 +35,23 @@ require 'test/helper'
 # rubocop: disable ClassLength
 class TestTrimPrimer < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.trim_primer(foo: 'bar') }
+  test 'BioDSL::Pipeline::TrimPrimer with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.trim_primer(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with valid options dont raise' do
+  test 'BioDSL::Pipeline::TrimPrimer with valid options dont raise' do
     assert_nothing_raised do
       @p.trim_primer(primer: 'atcg', direction: :forward)
     end
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with forward and pattern longer than ' \
+  test 'BioDSL::Pipeline::TrimPrimer with forward and pattern longer than ' \
     'sequence returns correctly' do
     @output.write(SEQ: 'TATG')
     @output.close
@@ -70,7 +70,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with reverse and pattern longer than ' \
+  test 'BioDSL::Pipeline::TrimPrimer with reverse and pattern longer than ' \
     'sequence returns correctly' do
     @output.write(SEQ: 'TCGT')
     @output.close
@@ -89,7 +89,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with forward and internal match ' \
+  test 'BioDSL::Pipeline::TrimPrimer with forward and internal match ' \
     'returns correctly' do
     @output.write(SEQ: 'aTCGTATGactgactgatcgca')
     @output.close
@@ -101,7 +101,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with reverse and internal match ' \
+  test 'BioDSL::Pipeline::TrimPrimer with reverse and internal match ' \
     'returns correctly' do
     @output.write(SEQ: 'ctgactgatcgcaaTCGTATGa')
     @output.close
@@ -113,7 +113,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer w. forward and full match returns OK' do
+  test 'BioDSL::Pipeline::TrimPrimer w. forward and full match returns OK' do
     @output.write(SEQ: 'TCGTATGactgactgatcgca')
     @output.close
     @p.trim_primer(primer: 'TCGTATG', direction: :forward).
@@ -131,7 +131,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer w. reverse and full match returns OK' do
+  test 'BioDSL::Pipeline::TrimPrimer w. reverse and full match returns OK' do
     @output.write(SEQ: 'ctgactgatcgcaaTCGTATG')
     @output.close
     @p.trim_primer(primer: 'TCGTATG', direction: :reverse).
@@ -149,7 +149,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer w. forward and partial match returns ' \
+  test 'BioDSL::Pipeline::TrimPrimer w. forward and partial match returns ' \
     'correctly' do
     @output.write(SEQ: 'TATGactgactgatcgca')
     @output.close
@@ -168,7 +168,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with forward and partial match and ' \
+  test 'BioDSL::Pipeline::TrimPrimer with forward and partial match and ' \
     'reverse_complment: true returns correctly' do
     @output.write(SEQ: 'TATGactgactgatcgca')
     @output.close
@@ -188,7 +188,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer w. reverse and partial match returns ' \
+  test 'BioDSL::Pipeline::TrimPrimer w. reverse and partial match returns ' \
     'correctly' do
     @output.write(SEQ: 'ctgactgatcgcaaTCGT')
     @output.close
@@ -207,7 +207,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with reverse and partial match and ' \
+  test 'BioDSL::Pipeline::TrimPrimer with reverse and partial match and ' \
     'reverse_complment: true returns correctly' do
     @output.write(SEQ: 'ctgactgatcgcaaTCGT')
     @output.close
@@ -227,7 +227,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with forward and minimum match ' \
+  test 'BioDSL::Pipeline::TrimPrimer with forward and minimum match ' \
     'returns correctly' do
     @output.write(SEQ: 'Gactgactgatcgca')
     @output.close
@@ -246,7 +246,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with reverse and minimum match ' \
+  test 'BioDSL::Pipeline::TrimPrimer with reverse and minimum match ' \
     'returns correctly' do
     @output.write(SEQ: 'ctgactgatcgcaaT')
     @output.close
@@ -265,7 +265,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with forward and partial match and ' \
+  test 'BioDSL::Pipeline::TrimPrimer with forward and partial match and ' \
     'overlap_min returns correctly' do
     @output.write(SEQ: 'TATGactgactgatcgca')
     @output.close
@@ -284,7 +284,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with reverse and partial match and ' \
+  test 'BioDSL::Pipeline::TrimPrimer with reverse and partial match and ' \
     'overlap_min returns correctly' do
     @output.write(SEQ: 'ctgactgatcgcaaTCGT')
     @output.close
@@ -303,7 +303,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with forward and partial miss due ' \
+  test 'BioDSL::Pipeline::TrimPrimer with forward and partial miss due ' \
     'to overlap_min returns correctly' do
     @output.write(SEQ: 'TATGactgactgatcgca')
     @output.close
@@ -315,7 +315,7 @@ class TestTrimPrimer < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::TrimPrimer with reverse and partial miss due ' \
+  test 'BioDSL::Pipeline::TrimPrimer with reverse and partial miss due ' \
     'to overlap_min returns correctly' do
     @output.write(SEQ: 'ctgactgatcgcaaTCGT')
     @output.close

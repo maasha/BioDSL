@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,10 +33,10 @@ require 'test/helper'
 # Test class for OptionHelper.
 # rubocop:disable Metrics/ClassLength,
 class TestOptionsHelper < Test::Unit::TestCase
-  include BioPieces::OptionsHelper
+  include BioDSL::OptionsHelper
 
   def setup
-    @err = BioPieces::OptionError
+    @err = BioDSL::OptionError
   end
 
   test '#options_allowed with disallowed option raises' do

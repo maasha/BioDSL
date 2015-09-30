@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,19 +35,19 @@ require 'test/helper'
 # rubocop: disable ClassLength
 class TestPlotScores < Test::Unit::TestCase
   def setup
-    omit('gnuplot not found') unless BioPieces::Filesys.which('gnuplot')
+    omit('gnuplot not found') unless BioDSL::Filesys.which('gnuplot')
 
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.plot')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     setup_data
     setup_expected1
     setup_expected2
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_data
@@ -226,21 +226,21 @@ class TestPlotScores < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::PlotScores with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.plot_scores(foo: 'bar') }
+  test 'BioDSL::Pipeline::PlotScores with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.plot_scores(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::PlotScores with invalid terminal raises' do
-    assert_raise(BioPieces::OptionError) { @p.plot_scores(terminal: 'foo') }
+  test 'BioDSL::Pipeline::PlotScores with invalid terminal raises' do
+    assert_raise(BioDSL::OptionError) { @p.plot_scores(terminal: 'foo') }
   end
 
-  test 'BioPieces::Pipeline::PlotScores with valid terminal don\'t raise' do
+  test 'BioDSL::Pipeline::PlotScores with valid terminal don\'t raise' do
     %w(dumb post svg x11 aqua png pdf).each do |terminal|
       assert_nothing_raised { @p.plot_scores(terminal: terminal.to_sym) }
     end
   end
 
-  test 'BioPieces::Pipeline::PlotScores to file outputs correctly' do
+  test 'BioDSL::Pipeline::PlotScores to file outputs correctly' do
     result = capture_stderr do
       @p.plot_scores(output: @file, test: true).
       run(input: @input, output: @output2)
@@ -249,7 +249,7 @@ class TestPlotScores < Test::Unit::TestCase
     assert_equal(@expected, result)
   end
 
-  test 'BioPieces::Pipeline::PlotScores status outputs correctly' do
+  test 'BioDSL::Pipeline::PlotScores status outputs correctly' do
     @p.plot_scores(output: @file).
       run(input: @input, output: @output2)
 
@@ -261,7 +261,7 @@ class TestPlotScores < Test::Unit::TestCase
     assert_equal(0, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::PlotScores to file with count: true outputs OK' do
+  test 'BioDSL::Pipeline::PlotScores to file with count: true outputs OK' do
     result = capture_stderr do
       @p.plot_scores(count: true, output: @file, test: true).
       run(input: @input, output: @output2)
@@ -270,12 +270,12 @@ class TestPlotScores < Test::Unit::TestCase
     assert_equal(@expected2, result)
   end
 
-  test 'BioPieces::Pipeline::PlotScores to existing file raises' do
+  test 'BioDSL::Pipeline::PlotScores to existing file raises' do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { @p.plot_scores(output: @file) }
+    assert_raise(BioDSL::OptionError) { @p.plot_scores(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::PlotScores to existing file with :force outputs ' \
+  test 'BioDSL::Pipeline::PlotScores to existing file with :force outputs ' \
     'correctly' do
     `touch #{@file}`
     result = capture_stderr do
@@ -285,7 +285,7 @@ class TestPlotScores < Test::Unit::TestCase
     assert_equal(@expected, result)
   end
 
-  test 'BioPieces::Pipeline::PlotScores with flux outputs correctly' do
+  test 'BioDSL::Pipeline::PlotScores with flux outputs correctly' do
     result = capture_stderr do
       @p.plot_scores(output: @file, force: true, test: true).
       run(input: @input, output: @output2)

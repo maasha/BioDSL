@@ -20,10 +20,10 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-module BioPieces
+module BioDSL
   trap('INT') { fail 'Interrupted: ctrl-c pressed' }
 
   # Error class for Pipeline errors.
@@ -33,12 +33,12 @@ module BioPieces
 
   # Pipeline class
   class Pipeline
-    require 'biopieces/command'
-    require 'biopieces/helpers/email_helper'
-    require 'biopieces/helpers/history_helper'
-    require 'biopieces/helpers/log_helper'
-    require 'biopieces/helpers/options_helper'
-    require 'biopieces/helpers/status_helper'
+    require 'BioDSL/command'
+    require 'BioDSL/helpers/email_helper'
+    require 'BioDSL/helpers/history_helper'
+    require 'BioDSL/helpers/log_helper'
+    require 'BioDSL/helpers/options_helper'
+    require 'BioDSL/helpers/status_helper'
     require 'mail'
     require 'yaml'
 
@@ -77,7 +77,7 @@ module BioPieces
 
     # Method that adds two Pipelines and return a new Pipeline.
     def +(other)
-      unless other.is_a?(BioPieces::Pipeline)
+      unless other.is_a?(BioDSL::Pipeline)
         fail PipelineError, "Not a pipeline: #{other.inspect}"
       end
 
@@ -89,7 +89,7 @@ module BioPieces
     # Removes last command from a Pipeline and returns a new Pipeline with this
     # command.
     def pop
-      p = BioPieces::Pipeline.new
+      p = BioDSL::Pipeline.new
       p.commands = [@commands.pop]
       p
     end
@@ -105,7 +105,7 @@ module BioPieces
     def run(options = {})
       prime_variables(options)
 
-      fail BioPieces::PipelineError, 'Empty pipeline' if @commands.empty?
+      fail BioDSL::PipelineError, 'Empty pipeline' if @commands.empty?
 
       @options = options
 
@@ -173,11 +173,11 @@ module BioPieces
 
       const = method.to_s.split('_').map(&:capitalize).join('')
 
-      if BioPieces.const_defined? const
+      if BioDSL.const_defined? const
         options = args.first || {}
         options_load_rc(options, method)
 
-        klass = BioPieces.const_get(const)
+        klass = BioDSL.const_get(const)
         klass.send(:include, OptionsHelper)
         klass.send(:include, StatusHelper)
         lmb = klass.send(:new, options).lmb
@@ -199,13 +199,13 @@ module BioPieces
     #
     # @raise [Errno::ENOENT] If no such file was found.
     def require_file(method)
-      return if BioPieces.const_defined? method.to_s.capitalize
+      return if BioDSL.const_defined? method.to_s.capitalize
 
       # FIXME
-      # file = File.join('lib', 'biopieces', 'commands', "#{method}.rb")
+      # file = File.join('lib', 'BioDSL', 'commands', "#{method}.rb")
       # fail Errno::ENOENT, "No such file: #{file}" unless File.exist? file
 
-      require File.join('biopieces', 'commands', method.to_s)
+      require File.join('BioDSL', 'commands', method.to_s)
     end
 
     # Print status.
@@ -294,7 +294,7 @@ module BioPieces
              end
 
       File.open(file, 'w') do |ios|
-        ios.puts BioPieces::HtmlReport.new(self).to_html
+        ios.puts BioDSL::HtmlReport.new(self).to_html
       end
     end
 
@@ -317,18 +317,18 @@ module BioPieces
     # @option options [Booleon] :debug   Debug flag.
     # @option options [Booleon] :verbose Verbose flag.
     def prime_variables(options)
-      BioPieces.test    = ENV['BP_TEST']
-      BioPieces.debug   = options[:debug]
-      BioPieces.verbose = options[:verbose]
+      BioDSL.test    = ENV['BP_TEST']
+      BioDSL.debug   = options[:debug]
+      BioDSL.verbose = options[:verbose]
     end
 
     # Output exception message and possibly stack tracre to STDERR,
     # log error message and exit with non-zero status.
     def exit_gracefully(exception)
-      fail exception if BioPieces.test
+      fail exception if BioDSL.test
 
       STDERR.puts "Error in run: #{exception.message}"
-      STDERR.puts exception.backtrace if BioPieces.verbose
+      STDERR.puts exception.backtrace if BioDSL.verbose
       log_error(exception)
       exit 2
     end

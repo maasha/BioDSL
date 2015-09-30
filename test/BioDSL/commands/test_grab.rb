@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -34,17 +34,17 @@ require 'test/helper'
 # rubocop:disable ClassLength
 class TestGrab < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     write_stream
     write_test_file1
     write_test_file2
 
-    @p = BioPieces::Pipeline.new
-    @e = BioPieces::OptionError
+    @p = BioDSL::Pipeline.new
+    @e = BioDSL::OptionError
   end
 
   def write_stream
@@ -76,21 +76,21 @@ class TestGrab < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::Grab with invalid options raises' do
+  test 'BioDSL::Pipeline::Grab with invalid options raises' do
     assert_raise(@e) { @p.grab(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::Grab with select and reject raises' do
+  test 'BioDSL::Pipeline::Grab with select and reject raises' do
     assert_raise(@e) { @p.grab(select: 'foo', reject: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::Grab with keys_only and values_only raises' do
+  test 'BioDSL::Pipeline::Grab with keys_only and values_only raises' do
     assert_raise(@e) do
       @p.grab(select: 'foo', keys_only: true, values_only: true)
     end
   end
 
-  test 'BioPieces::Pipeline::Grab with evaluate and conflicting keys raises' do
+  test 'BioDSL::Pipeline::Grab with evaluate and conflicting keys raises' do
     assert_raise(@e) { @p.grab(evaluate: 0, select: 'foo') }
     assert_raise(@e) { @p.grab(evaluate: 0, reject: 'foo') }
     assert_raise(@e) { @p.grab(evaluate: 0, keys: 'foo') }
@@ -100,26 +100,26 @@ class TestGrab < Test::Unit::TestCase
     assert_raise(@e) { @p.grab(evaluate: 0, exact: true) }
   end
 
-  test 'BioPieces::Pipeline::Grab with missing select_file raises' do
+  test 'BioDSL::Pipeline::Grab with missing select_file raises' do
     assert_raise(@e) { @p.grab(select_file: '___select') }
   end
 
-  test 'BioPieces::Pipeline::Grab with missing reject_file raises' do
+  test 'BioDSL::Pipeline::Grab with missing reject_file raises' do
     assert_raise(@e) { @p.grab(reject_file: '___reject') }
   end
 
-  test 'BioPieces::Pipeline::Grab#to_s with select and symbol key return OK' do
+  test 'BioDSL::Pipeline::Grab#to_s with select and symbol key return OK' do
     @p.grab(select: :SEQ_NAME)
     expected = 'BP.new.grab(select: :SEQ_NAME)'
     assert_equal(expected, @p.to_s)
   end
 
-  test 'BioPieces::Pipeline::Grab with no hits return OK' do
+  test 'BioDSL::Pipeline::Grab with no hits return OK' do
     @p.grab(select: 'fish').run(input: @input, output: @output2)
     assert_equal('', collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select and key hit return OK' do
+  test 'BioDSL::Pipeline::Grab with select and key hit return OK' do
     @p.grab(select: 'SEQ_NAME').run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '')
       |{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}
@@ -128,14 +128,14 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab status returns correctly' do
+  test 'BioDSL::Pipeline::Grab status returns correctly' do
     @p.grab(select: 'SEQ_NAME').run(input: @input, output: @output2)
 
     assert_equal(3, @p.status.first[:records_in])
     assert_equal(2, @p.status.first[:records_out])
   end
 
-  test 'BioPieces::Pipeline::Grab with multiple select patterns return OK' do
+  test 'BioDSL::Pipeline::Grab with multiple select patterns return OK' do
     @p.grab(select: %w(est1 QM)).run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '')
       |{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}
@@ -144,31 +144,31 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with multiple reject patterns return OK' do
+  test 'BioDSL::Pipeline::Grab with multiple reject patterns return OK' do
     @p.grab(reject: %w(est QM)).run(input: @input, output: @output2)
     expected = %({:FOO=>"SEQ"}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject and key hit return OK' do
+  test 'BioDSL::Pipeline::Grab with reject and key hit return OK' do
     @p.grab(reject: 'SEQ_NAME').run(input: @input, output: @output2)
     expected = %({:FOO=>"SEQ"}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject with symbol return OK' do
+  test 'BioDSL::Pipeline::Grab with reject with symbol return OK' do
     @p.grab(reject: :SEQ_NAME).run(input: @input, output: @output2)
     expected = %({:FOO=>"SEQ"}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select and value hit return OK' do
+  test 'BioDSL::Pipeline::Grab with select and value hit return OK' do
     @p.grab(select: 'test1').run(input: @input, output: @output2)
     expected = %({:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject and value hit return OK' do
+  test 'BioDSL::Pipeline::Grab with reject and value hit return OK' do
     @p.grab(reject: 'test1').run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '')
       |{:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}
@@ -177,7 +177,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select and keys_only return OK' do
+  test 'BioDSL::Pipeline::Grab with select and keys_only return OK' do
     @p.grab(select: 'SEQ', keys_only: true).run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '')
       |{:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}
@@ -186,13 +186,13 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject and keys_only return OK' do
+  test 'BioDSL::Pipeline::Grab with reject and keys_only return OK' do
     @p.grab(reject: 'SEQ', keys_only: true).run(input: @input, output: @output2)
     expected = %({:FOO=>"SEQ"}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select and values_only return OK' do
+  test 'BioDSL::Pipeline::Grab with select and values_only return OK' do
     @p.grab(select: 'SEQ', values_only: true).
       run(input: @input, output: @output2)
 
@@ -203,7 +203,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject and values_only return OK' do
+  test 'BioDSL::Pipeline::Grab with reject and values_only return OK' do
     @p.grab(reject: 'SEQ', values_only: true).
       run(input: @input, output: @output2)
 
@@ -211,7 +211,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select and values_only and ^ return OK' do
+  test 'BioDSL::Pipeline::Grab w. select and values_only and ^ return OK' do
     @p.grab(select: '^SEQ', values_only: true).
       run(input: @input, output: @output2)
 
@@ -219,7 +219,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. reject and values_only and ^ return OK' do
+  test 'BioDSL::Pipeline::Grab w. reject and values_only and ^ return OK' do
     @p.grab(reject: '^SEQ', values_only: true).
       run(input: @input, output: @output2)
 
@@ -230,7 +230,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select and ignore_case return OK' do
+  test 'BioDSL::Pipeline::Grab with select and ignore_case return OK' do
     @p.grab(select: 'ATCG', ignore_case: true).
       run(input: @input, output: @output2)
 
@@ -238,7 +238,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject and ignore_case return OK' do
+  test 'BioDSL::Pipeline::Grab with reject and ignore_case return OK' do
     @p.grab(reject: 'ATCG', ignore_case: true).
       run(input: @input, output: @output2)
 
@@ -249,13 +249,13 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select and specified keys return OK' do
+  test 'BioDSL::Pipeline::Grab with select and specified keys return OK' do
     @p.grab(select: 'SEQ', keys: :FOO).run(input: @input, output: @output2)
     expected = %({:FOO=>"SEQ"}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select and keys in Array return OK' do
+  test 'BioDSL::Pipeline::Grab w. select and keys in Array return OK' do
     @p.grab(select: 'SEQ', values_only: true, keys: [:FOO, :SEQ]).
       run(input: @input, output: @output2)
 
@@ -267,7 +267,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select and keys in String return OK' do
+  test 'BioDSL::Pipeline::Grab with select and keys in String return OK' do
     @p.grab(select: 'SEQ', values_only: true, keys: ':FOO, :SEQ').
       run(input: @input, output: @output2)
 
@@ -279,7 +279,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject and specified keys return OK' do
+  test 'BioDSL::Pipeline::Grab with reject and specified keys return OK' do
     @p.grab(reject: 'SEQ', keys: :FOO).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -290,14 +290,14 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with evaluate return OK' do
+  test 'BioDSL::Pipeline::Grab with evaluate return OK' do
     @p.grab(evaluate: ':SEQ_LEN > 4').run(input: @input, output: @output2)
 
     expected = %({:SEQ_NAME=>"test2", :SEQ=>"DSEQM", :SEQ_LEN=>5}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with select_file return OK' do
+  test 'BioDSL::Pipeline::Grab with select_file return OK' do
     @p.grab(select_file: @pattern_file).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -308,34 +308,34 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select and exact w/o match return OK' do
+  test 'BioDSL::Pipeline::Grab w. select and exact w/o match return OK' do
     @p.grab(select: 'tcg', exact: true).run(input: @input, output: @output2)
 
     assert_equal('', collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select and exact match return OK' do
+  test 'BioDSL::Pipeline::Grab w. select and exact match return OK' do
     @p.grab(select: 'atcg', exact: true).run(input: @input, output: @output2)
 
     expected = %({:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select and exact number match return OK' do
+  test 'BioDSL::Pipeline::Grab w. select and exact number match return OK' do
     @p.grab(select: 4, exact: true).run(input: @input, output: @output2)
 
     expected = %({:SEQ_NAME=>"test1", :SEQ=>"atcg", :SEQ_LEN=>4}\n)
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select, exact number and keys_only OK' do
+  test 'BioDSL::Pipeline::Grab w. select, exact number and keys_only OK' do
     @p.grab(select: 4, exact: true, keys_only: true).
       run(input: @input, output: @output2)
 
     assert_equal('', collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select, exact number and values_only OK' do
+  test 'BioDSL::Pipeline::Grab w. select, exact number and values_only OK' do
     @p.grab(select: 4, exact: true, values_only: true).
       run(input: @input, output: @output2)
 
@@ -343,14 +343,14 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select, exact, keys and no match OK' do
+  test 'BioDSL::Pipeline::Grab w. select, exact, keys and no match OK' do
     @p.grab(select: 'atcg', exact: true, keys: :SEQ_LEN).
       run(input: @input, output: @output2)
 
     assert_equal('', collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select, exact, keys and match return OK' do
+  test 'BioDSL::Pipeline::Grab w. select, exact, keys and match return OK' do
     @p.grab(select: 'atcg', exact: true, keys: :SEQ).
       run(input: @input, output: @output2)
 
@@ -358,7 +358,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select, exact, keys_only and no match ' \
+  test 'BioDSL::Pipeline::Grab w. select, exact, keys_only and no match ' \
        'return OK' do
     @p.grab(select: 'atcg', exact: true, keys_only: true).
       run(input: @input, output: @output2)
@@ -366,7 +366,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal('', collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select, exact, keys_only and String ' \
+  test 'BioDSL::Pipeline::Grab w. select, exact, keys_only and String ' \
        'match return OK' do
     @p.grab(select: 'FOO', exact: true, keys_only: true).
       run(input: @input, output: @output2)
@@ -375,7 +375,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab w. select, exact, keys_only and Symbol ' \
+  test 'BioDSL::Pipeline::Grab w. select, exact, keys_only and Symbol ' \
        'match return OK' do
     @p.grab(select: :FOO, exact: true, keys_only: true).
       run(input: @input, output: @output2)
@@ -384,7 +384,7 @@ class TestGrab < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Grab with reject_file return OK' do
+  test 'BioDSL::Pipeline::Grab with reject_file return OK' do
     @p.grab(reject_file: @pattern_file2, values_only: true, keys: :SEQ).
       run(input: @input, output: @output2)
 

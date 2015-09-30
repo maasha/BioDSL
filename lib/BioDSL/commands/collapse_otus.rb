@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Collapse OTUs based on identicial taxonomy strings.
   #
   # +collapse_otus+ collapses OTUs in OTU style records if the TAXONOMY string
@@ -142,7 +142,7 @@ module BioPieces
     # counts.
     #
     # @param hash [Hash] Hash with taxonomy records.
-    # @param record [Hash] Biopieces record with taxonomy info.
+    # @param record [Hash] BioDSL record with taxonomy info.
     def collapse_tax(hash, record)
       key = record[:TAXONOMY].gsub(/\(\d+\)/, '').to_sym
 

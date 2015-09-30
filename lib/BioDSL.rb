@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -49,33 +49,33 @@ class String
   end
 end
 
-# Namespace for BioPieces.
-module BioPieces
+# Namespace for BioDSL.
+module BioDSL
   require 'pp'
-  require 'biopieces/cary'
-  require 'biopieces/commands'
-  require 'biopieces/debug'
-  require 'biopieces/helpers'
-  require 'biopieces/seq'
-  require 'biopieces/config'
-  require 'biopieces/hamming'
-  require 'biopieces/version'
-  require 'biopieces/filesys'
-  require 'biopieces/csv'
-  require 'biopieces/fork'
-  require 'biopieces/html_report'
-  require 'biopieces/pipeline'
-  require 'biopieces/fasta'
-  require 'biopieces/fastq'
-  require 'biopieces/math'
-  require 'biopieces/mummer'
-  require 'biopieces/taxonomy'
-  require 'biopieces/tmp_dir'
-  require 'biopieces/serializer'
-  require 'biopieces/stream'
-  require 'biopieces/test'
-  require 'biopieces/usearch'
-  require 'biopieces/verbose'
+  require 'BioDSL/cary'
+  require 'BioDSL/commands'
+  require 'BioDSL/debug'
+  require 'BioDSL/helpers'
+  require 'BioDSL/seq'
+  require 'BioDSL/config'
+  require 'BioDSL/hamming'
+  require 'BioDSL/version'
+  require 'BioDSL/filesys'
+  require 'BioDSL/csv'
+  require 'BioDSL/fork'
+  require 'BioDSL/html_report'
+  require 'BioDSL/pipeline'
+  require 'BioDSL/fasta'
+  require 'BioDSL/fastq'
+  require 'BioDSL/math'
+  require 'BioDSL/mummer'
+  require 'BioDSL/taxonomy'
+  require 'BioDSL/tmp_dir'
+  require 'BioDSL/serializer'
+  require 'BioDSL/stream'
+  require 'BioDSL/test'
+  require 'BioDSL/usearch'
+  require 'BioDSL/verbose'
 end
 
-BP = BioPieces::Pipeline # Module alias for irb short hand
+BP = BioDSL::Pipeline # Module alias for irb short hand

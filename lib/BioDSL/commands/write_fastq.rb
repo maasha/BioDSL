@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Write sequences from stream in FASTQ format.
   #
   # Description
@@ -132,7 +132,7 @@ module BioPieces
     #
     # @param input  [Enumerable]                  Input stream.
     # @param output [Enumerable::Yielder]         Output stream.
-    # @param ios    [BioPieces::Fastq::IO,STDOUT] Output IO.
+    # @param ios    [BioDSL::Fastq::IO,STDOUT] Output IO.
     def process_input(input, output, ios)
       input.each do |record|
         @status[:records_in] += 1
@@ -154,10 +154,10 @@ module BioPieces
     # Given a BioPeices record convert this to a sequence entry and output in
     # FASTQ format to the speficied IO.
     #
-    # @param record [Hash] BioPieces record.
-    # @param ios    [BioPieces::Fastq::IO,STDOUT] Output IO.
+    # @param record [Hash] BioDSL record.
+    # @param ios    [BioDSL::Fastq::IO,STDOUT] Output IO.
     def write_fastq(record, ios)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
       entry.qual_convert!(:base_33, @encoding)
 
       ios.puts entry.to_fastq

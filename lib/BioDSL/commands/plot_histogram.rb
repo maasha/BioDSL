@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 # rubocop:disable LineLength
-module BioPieces
+module BioDSL
   # == Plot a histogram of numerical values for a specified key.
   #
   # +plot_histogram+ create a histogram plot of the values for a specified key
@@ -104,7 +104,7 @@ module BioPieces
   # rubocop:enable LineLength
   class PlotHistogram
     require 'gnuplotter'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -202,7 +202,7 @@ module BioPieces
     # Output record to the output stream if such is defined.
     #
     # @param output [Enumerator::Yielder] Output stream.
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def process_output(output, record)
       return unless output
       output << record

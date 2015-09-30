@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,25 +33,25 @@ require 'test/helper'
 # Test class for SliceSeq.
 class TestSliceSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(FOO: 'BAR', SEQ: 'atcg')
     @output.write(SEQ: 'atcg', SCORES: '0123')
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.slice_seq(slice: 1, foo: 'bar') }
+  test 'BioDSL::Pipeline::SliceSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.slice_seq(slice: 1, foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::SliceSeq with valid options don\'t raise' do
     assert_nothing_raised { @p.slice_seq(slice: 1) }
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with index returns correctly' do
+  test 'BioDSL::Pipeline::SliceSeq with index returns correctly' do
     @p.slice_seq(slice: 1).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -62,7 +62,7 @@ class TestSliceSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with out of range index returns OK' do
+  test 'BioDSL::Pipeline::SliceSeq with out of range index returns OK' do
     @p.slice_seq(slice: 10).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -73,7 +73,7 @@ class TestSliceSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with negative index returns correctly' do
+  test 'BioDSL::Pipeline::SliceSeq with negative index returns correctly' do
     @p.slice_seq(slice: -1).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -84,7 +84,7 @@ class TestSliceSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with negative out of range index ' \
+  test 'BioDSL::Pipeline::SliceSeq with negative out of range index ' \
     'returns correctly' do
     @p.slice_seq(slice: -10).run(input: @input, output: @output2)
 
@@ -96,7 +96,7 @@ class TestSliceSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with range returns correctly' do
+  test 'BioDSL::Pipeline::SliceSeq with range returns correctly' do
     @p.slice_seq(slice: 1..-1).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -107,7 +107,7 @@ class TestSliceSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SliceSeq with out of range end range returns OK' do
+  test 'BioDSL::Pipeline::SliceSeq with out of range end range returns OK' do
     @p.slice_seq(slice: 1..10).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -118,7 +118,7 @@ class TestSliceSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::SliceSeq status returns OK' do
+  test 'BioDSL::Pipeline::SliceSeq status returns OK' do
     @p.slice_seq(slice: 1..10).run(input: @input, output: @output2)
 
     assert_equal(2, @p.status.first[:records_in])

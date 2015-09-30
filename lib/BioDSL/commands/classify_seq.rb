@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Classify sequences in the stream.
   #
   # +classify_seq+ searches sequences in the stream against a pre-indexed
@@ -144,7 +144,7 @@ module BioPieces
 
         @status[:sequences_in] = 0
 
-        search = BioPieces::Taxonomy::Search.new(@options)
+        search = BioDSL::Taxonomy::Search.new(@options)
 
         input.each_with_index do |record, i|
           @status[:records_in] += 1
@@ -196,9 +196,9 @@ module BioPieces
 
     # Execute classfication of a sequence containing record.
     #
-    # @param record [Hash]                        BioPieces record.
+    # @param record [Hash]                        BioDSL record.
     # @param i      [Fixnum]                      Record number,
-    # @param search [BioPieces::Taxonomy::Search] Search object.
+    # @param search [BioDSL::Taxonomy::Search] Search object.
     def classify_seq(record, i, search)
       @status[:sequences_in]  += 1
       @status[:sequences_out] += 1
@@ -206,7 +206,7 @@ module BioPieces
       @status[:residues_out]  += record[:SEQ].length
       seq_name = record[:SEQ_NAME] || i.to_s
 
-      result = search.execute(BioPieces::Seq.new(seq_name: seq_name,
+      result = search.execute(BioDSL::Seq.new(seq_name: seq_name,
                                                  seq: record[:SEQ]))
 
       record[:TAXONOMY]      = result.taxonomy

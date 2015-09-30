@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -37,18 +37,18 @@ class TestSerializer < Test::Unit::TestCase
     ]
   end
 
-  test "BioPieces::Serializer with no block raises" do
-    assert_raise(BioPieces::SerializerError) { BioPieces::Serializer.new("foo") }
+  test "BioDSL::Serializer with no block raises" do
+    assert_raise(BioDSL::SerializerError) { BioDSL::Serializer.new("foo") }
   end
 
-  test "BioPieces::Serializer returns correctly" do
+  test "BioDSL::Serializer returns correctly" do
     require 'tempfile'
 
     file = Tempfile.new("serializer")
 
     begin
       File.open(file, 'wb') do |io|
-        BioPieces::Serializer.new(io) do |s|
+        BioDSL::Serializer.new(io) do |s|
           @records.each { |r| s << r }
         end
       end
@@ -56,7 +56,7 @@ class TestSerializer < Test::Unit::TestCase
       result = []
 
       File.open(file, 'rb') do |io|
-        BioPieces::Serializer.new(io) do |s|
+        BioDSL::Serializer.new(io) do |s|
           s.each do |record|
             result << record
           end

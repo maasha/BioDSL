@@ -20,7 +20,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the Biopieces framework (www.biopieces.org).          #
+# This software is part of the BioDSL framework (www.BioDSL.org).          #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -37,7 +37,7 @@ end
 require 'pp'
 require 'tempfile'
 require 'fileutils'
-require 'biopieces'
+require 'BioDSL'
 require 'test/unit'
 require 'mocha/test_unit'
 

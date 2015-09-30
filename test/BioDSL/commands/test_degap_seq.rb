@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,21 +33,21 @@ require 'test/helper'
 # Test class for DegapSeq.
 class TestDegapSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::DegapSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.degap_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::DegapSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.degap_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::DegapSeq with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::DegapSeq with valid options don\'t raise' do
     assert_nothing_raised { @p.degap_seq(columns_only: true) }
   end
 
-  test 'BioPieces::Pipeline::DegapSeq returns correctly' do
+  test 'BioDSL::Pipeline::DegapSeq returns correctly' do
     @output.write(SEQ: 'AT--C.G~')
     @output.close
     @p.degap_seq.run(input: @input, output: @output2)
@@ -57,7 +57,7 @@ class TestDegapSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::DegapSeq status returns correctly' do
+  test 'BioDSL::Pipeline::DegapSeq status returns correctly' do
     @output.write(SEQ: 'AT--C.G~')
     @output.close
     @p.degap_seq.run(input: @input, output: @output2)
@@ -70,17 +70,17 @@ class TestDegapSeq < Test::Unit::TestCase
     assert_equal(4, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::DegapSeq with :columns_only and uneven seq ' \
+  test 'BioDSL::Pipeline::DegapSeq with :columns_only and uneven seq ' \
     'lengths raises' do
     @output.write(SEQ: 'AT--C.G~')
     @output.write(SEQ: 'AT--C.G')
     @output.close
-    assert_raise(BioPieces::SeqError) do
+    assert_raise(BioDSL::SeqError) do
       @p.degap_seq(columns_only: true).run(input: @input, output: @output2)
     end
   end
 
-  test 'BioPieces::Pipeline::DegapSeq with :columns_only returns correctly' do
+  test 'BioDSL::Pipeline::DegapSeq with :columns_only returns correctly' do
     @output.write(SEQ: 'ATA-C.G~')
     @output.write(SEQ: 'AT--C.G.')
     @output.close

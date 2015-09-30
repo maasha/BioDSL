@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Merge pair-end sequences in the stream.
   #
   # +merge_pair_seq+ merges paired sequences in the stream, if these are
@@ -141,17 +141,17 @@ module BioPieces
       options_allowed(@options, nil)
     end
 
-    # Merge entry pair and return a new biopieces record with this.
+    # Merge entry pair and return a new BioDSL record with this.
     #
-    # @param record1 [Hash] BioPieces record 1.
-    # @param record2 [Hash] BioPieces record 2.
+    # @param record1 [Hash] BioDSL record 1.
+    # @param record2 [Hash] BioDSL record 2.
     #
-    # @return [Hash] BioPieces record.
+    # @return [Hash] BioDSL record.
     def merge_pair_seq(record1, record2)
-      entry1 = BioPieces::Seq.new_bp(record1)
-      entry2 = BioPieces::Seq.new_bp(record2)
+      entry1 = BioDSL::Seq.new_bp(record1)
+      entry2 = BioDSL::Seq.new_bp(record2)
 
-      BioPieces::Seq.check_name_pair(entry1, entry2)
+      BioDSL::Seq.check_name_pair(entry1, entry2)
 
       @status[:residues_in] += entry1.length + entry2.length
 

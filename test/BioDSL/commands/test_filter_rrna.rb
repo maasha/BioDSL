@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,20 +35,20 @@ class TestFilterRrna < Test::Unit::TestCase
   def setup
     @tmp_dir = Dir.mktmpdir('filter_rrna')
 
-    omit('sortmerna not found')   unless BioPieces::Filesys.which('sortmerna')
-    omit('indexdb_rna not found') unless BioPieces::Filesys.which('indexdb_rna')
+    omit('sortmerna not found')   unless BioDSL::Filesys.which('sortmerna')
+    omit('indexdb_rna not found') unless BioDSL::Filesys.which('indexdb_rna')
 
     setup_test_streams
     setup_test_data
     setup_fasta_file
     setup_indexdb
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_test_streams
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
   end
 
   def setup_test_data
@@ -73,8 +73,8 @@ class TestFilterRrna < Test::Unit::TestCase
     @ref_fasta = File.join(@tmp_dir, 'test.fna')
     @ref_index = "#{@ref_fasta}.idx"
 
-    BioPieces::Fasta.open(@ref_fasta, 'w') do |ios|
-      ios.puts BioPieces::Seq.new_bp(@hash1).to_fasta
+    BioDSL::Fasta.open(@ref_fasta, 'w') do |ios|
+      ios.puts BioDSL::Seq.new_bp(@hash1).to_fasta
     end
   end
 
@@ -89,19 +89,19 @@ class TestFilterRrna < Test::Unit::TestCase
     FileUtils.rm_rf(@tmp_dir)
   end
 
-  test 'BioPieces::Pipeline::FilterRrna with invalid options raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::FilterRrna with invalid options raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__, foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline::FilterRrna with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::FilterRrna with valid options don\'t raise' do
     assert_nothing_raised do
       @p.filter_rrna(ref_fasta: __FILE__, ref_index: __FILE__)
     end
   end
 
-  test 'BioPieces::Pipeline::FilterRrna returns correctly' do
+  test 'BioDSL::Pipeline::FilterRrna returns correctly' do
     @p.filter_rrna(ref_fasta: @ref_fasta, ref_index: "#{@ref_index}*").
       run(input: @input, output: @output2)
 
@@ -114,7 +114,7 @@ class TestFilterRrna < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::FilterRrna status returns correctly' do
+  test 'BioDSL::Pipeline::FilterRrna status returns correctly' do
     @p.filter_rrna(ref_fasta: @ref_fasta, ref_index: "#{@ref_index}*").
       run(input: @input, output: @output2)
 

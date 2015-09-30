@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,18 +33,18 @@ require 'test/helper'
 # Test class for PlotMatches
 class TestPlotMatches < Test::Unit::TestCase
   def setup
-    omit('gnuplot not found') unless BioPieces::Filesys.which('gnuplot')
+    omit('gnuplot not found') unless BioDSL::Filesys.which('gnuplot')
 
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.plot')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     setup_data
     setup_expected
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_data
@@ -89,21 +89,21 @@ class TestPlotMatches < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::PlotMatches with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.plot_matches(foo: 'bar') }
+  test 'BioDSL::Pipeline::PlotMatches with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.plot_matches(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::PlotMatches with invalid terminal raises' do
-    assert_raise(BioPieces::OptionError) { @p.plot_matches(terminal: 'foo') }
+  test 'BioDSL::Pipeline::PlotMatches with invalid terminal raises' do
+    assert_raise(BioDSL::OptionError) { @p.plot_matches(terminal: 'foo') }
   end
 
-  test 'BioPieces::Pipeline::PlotMatches with valid terminal don\'t raise' do
+  test 'BioDSL::Pipeline::PlotMatches with valid terminal don\'t raise' do
     %w(dumb post svg x11 aqua png pdf).each do |terminal|
       assert_nothing_raised { @p.plot_matches(terminal: terminal.to_sym) }
     end
   end
 
-  test 'BioPieces::Pipeline::PlotMatches to file outputs correctly' do
+  test 'BioDSL::Pipeline::PlotMatches to file outputs correctly' do
     result = capture_stderr do
       @p.plot_matches(output: @file, test: true).
       run(input: @input, output: @output2)
@@ -112,12 +112,12 @@ class TestPlotMatches < Test::Unit::TestCase
     assert_equal(@expected, result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::PlotMatches to existing file raises' do
+  test 'BioDSL::Pipeline::PlotMatches to existing file raises' do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) { @p.plot_matches(output: @file) }
+    assert_raise(BioDSL::OptionError) { @p.plot_matches(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::PlotMatches to existing file with :force ' \
+  test 'BioDSL::Pipeline::PlotMatches to existing file with :force ' \
     'outputs correctly' do
     `touch #{@file}`
     result = capture_stderr do
@@ -128,7 +128,7 @@ class TestPlotMatches < Test::Unit::TestCase
     assert_equal(@expected, result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::PlotMatches with flux outputs correctly' do
+  test 'BioDSL::Pipeline::PlotMatches with flux outputs correctly' do
     result = capture_stderr do
       @p.plot_matches(output: @file, force: true, test: true).
       run(input: @input, output: @output2)
@@ -146,7 +146,7 @@ class TestPlotMatches < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::PlotMatches status outputs correctly' do
+  test 'BioDSL::Pipeline::PlotMatches status outputs correctly' do
     @p.plot_matches(output: @file, force: true).
       run(input: @input, output: @output2)
 

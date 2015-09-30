@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Create taxonomy index from sequences in the stream.
   #
   # +index_taxonomy+ is used to create a taxonomy index to allow subsequent
@@ -139,7 +139,7 @@ module BioPieces
       create_output_dir
       check_output_files
 
-      @index   = BioPieces::Taxonomy::Index.new(options)
+      @index   = BioDSL::Taxonomy::Index.new(options)
     end
 
     # Return command lambda for index_taxonomy.
@@ -195,7 +195,7 @@ module BioPieces
     # Check if the output files already exist and throw an exception if so and
     # the no force options is used.
     #
-    # @raise [BioPieces::OptionsError] If file exists and force option not used.
+    # @raise [BioDSL::OptionsError] If file exists and force option not used.
     def check_output_files
       files = [
         File.join(@options[:output_dir], "#{@options[:prefix]}_tax_index.dat"),
@@ -207,20 +207,20 @@ module BioPieces
 
         unless @options[:force]
           msg = "File exists: #{file} - use 'force: true' to overwrite"
-          fail BioPieces::OptionError, msg
+          fail BioDSL::OptionError, msg
         end
       end
     end
 
     # Add to the taxonomy index the sequence information from a given record.
     #
-    # @param record [Hash] BioPieces record with sequence info.
+    # @param record [Hash] BioDSL record with sequence info.
     def add_to_index(record)
       @status[:sequences_in] += 1
 
       _, seq_name = record[:SEQ_NAME].split(' ', 2)
 
-      @index.add(BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
+      @index.add(BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ]))
     end
   end
 end

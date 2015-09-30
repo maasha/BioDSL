@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Calculate the mean or local mean of quality SCORES in the stream.
   #
   # +mean_scores+ calculates either the global or local mean value or quality
@@ -147,9 +147,9 @@ module BioPieces
     # Calculate the mean score for a given record and record
     # count, sum, min and max.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def calc_mean(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       if @options[:local]
         mean = entry.scores_mean_local(@options[:window_size]).round(2)

@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   class TaxonomyError < StandardError; end
 
   # Module containing classes for creating a taxonomic database and searching
@@ -313,8 +313,8 @@ module BioPieces
           fail TaxonomyError, "missing #{opt} option" unless @options[opt]
         end
 
-        @count_ary  = BioPieces::CAry.new(MAX_COUNT, BYTES_IN_INT)
-        @hit_ary    = BioPieces::CAry.new(MAX_HITS, BYTES_IN_HIT)
+        @count_ary  = BioDSL::CAry.new(MAX_COUNT, BYTES_IN_INT)
+        @hit_ary    = BioDSL::CAry.new(MAX_HITS, BYTES_IN_HIT)
         @tax_index  = load_tax_index
         @kmer_index = load_kmer_index
       end
@@ -342,7 +342,7 @@ module BioPieces
         kmers = entry.to_kmers(kmer_size: @options[:kmer_size],
                                step_size: @options[:step_size])
 
-        puts "DEBUG Q: #{entry.seq_name}" if BioPieces.debug
+        puts "DEBUG Q: #{entry.seq_name}" if BioDSL.debug
 
         TAX_LEVELS.reverse.each do |level|
           kmers_lookup(kmers, level)
@@ -354,9 +354,9 @@ module BioPieces
           hit_count = @options[:hits_max] if @options[:hits_max] < hit_count
 
           if hit_count == 0
-            puts "DEBUG no hits @ #{level}" if BioPieces.debug
+            puts "DEBUG no hits @ #{level}" if BioDSL.debug
           else
-            puts "DEBUG hit(s) @ #{level}"  if BioPieces.debug
+            puts "DEBUG hit(s) @ #{level}"  if BioDSL.debug
             taxpaths = []
 
             (0...hit_count).each do |i|
@@ -367,7 +367,7 @@ module BioPieces
 
               taxpath = TaxPath.new(node_id, count, kmers.size, @tax_index)
 
-              if BioPieces.debug
+              if BioDSL.debug
                 seq_id = @tax_index[node_id].seq_id
                 puts "DEBUG S_ID: #{seq_id} KMERS: [#{count}/#{kmers.size}] \
                       #{taxpath}"

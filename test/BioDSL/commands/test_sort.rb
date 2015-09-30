@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for Sort.
 class TestSort < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(NAME: 'test2', COUNT: 4)
     @output.write(NAME: 'test1', COUNT: 21)
@@ -42,18 +42,18 @@ class TestSort < Test::Unit::TestCase
     @output.write(NAME: 'test3', COUNT: 9)
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::Sort with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.sort(key: :COUNT, foo: 'bar') }
+  test 'BioDSL::Pipeline::Sort with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.sort(key: :COUNT, foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::Sort with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::Sort with valid options don\'t raise' do
     assert_nothing_raised { @p.sort(key: :COUNT) }
   end
 
-  test 'BioPieces::Pipeline::Sort alphabetical returns correctly' do
+  test 'BioDSL::Pipeline::Sort alphabetical returns correctly' do
     @p.sort(key: 'NAME').run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -66,7 +66,7 @@ class TestSort < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Sort numerical returns correctly' do
+  test 'BioDSL::Pipeline::Sort numerical returns correctly' do
     @p.sort(key: :COUNT).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -79,7 +79,7 @@ class TestSort < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Sort reverse returns correctly' do
+  test 'BioDSL::Pipeline::Sort reverse returns correctly' do
     @p.sort(key: :COUNT, reverse: true).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -92,7 +92,7 @@ class TestSort < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Sort with block_size returns correctly' do
+  test 'BioDSL::Pipeline::Sort with block_size returns correctly' do
     @p.sort(key: :COUNT, block_size: 60).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -105,7 +105,7 @@ class TestSort < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Sort with block_size and reverse returns OK' do
+  test 'BioDSL::Pipeline::Sort with block_size and reverse returns OK' do
     @p.sort(key: :COUNT, block_size: 30, reverse: true).
       run(input: @input, output: @output2)
 
@@ -119,7 +119,7 @@ class TestSort < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::Sort status returns OK' do
+  test 'BioDSL::Pipeline::Sort status returns OK' do
     @p.sort(key: :COUNT).run(input: @input, output: @output2)
 
     assert_equal(4, @p.status.first[:records_in])

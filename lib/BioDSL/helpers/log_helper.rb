@@ -21,20 +21,20 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Namespace for LogHelper.
   module LogHelper
     require 'yaml'
 
     # Log an OK messge to the log file.
     def log_ok
-      return if BioPieces.test
+      return if BioDSL.test
 
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
+      File.open(BioDSL::Config::LOG_FILE, 'a') do |ios|
         ios.puts to_s
         ios.puts status.to_yaml
         ios.puts 'OK'
@@ -43,7 +43,7 @@ module BioPieces
 
     # Log an ERROR messge to the log file.
     def log_error(exception)
-      File.open(BioPieces::Config::LOG_FILE, 'a') do |ios|
+      File.open(BioDSL::Config::LOG_FILE, 'a') do |ios|
         ios.puts to_s
         ios.puts status.to_yaml if self.respond_to? :status
         ios.puts 'ERROR'

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -34,18 +34,18 @@ require 'test/helper'
 # rubocop:disable ClassLength
 class TestReadFasta < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
 
     write_fasta_data1
     write_fasta_data2
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     write_stream_data
 
-    @p = BioPieces::Pipeline.new
-    @err = BioPieces::OptionError
+    @p = BioDSL::Pipeline.new
+    @err = BioDSL::OptionError
   end
 
   def write_fasta_data1
@@ -84,31 +84,31 @@ class TestReadFasta < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with invalid options raises' do
+  test 'BioDSL::Pipeline::ReadFasta with invalid options raises' do
     assert_raise(@err) { @p.read_fasta(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::ReadFasta without required options raises' do
+  test 'BioDSL::Pipeline::ReadFasta without required options raises' do
     assert_raise(@err) { @p.read_fasta }
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with bad first raises' do
+  test 'BioDSL::Pipeline::ReadFasta with bad first raises' do
     assert_raise(@err) { @p.read_fasta(input: @file, first: -1) }
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with bad last raises' do
+  test 'BioDSL::Pipeline::ReadFasta with bad last raises' do
     assert_raise(@err) { @p.read_fasta(input: @file, last: -1) }
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with exclusive unique options raises' do
+  test 'BioDSL::Pipeline::ReadFasta with exclusive unique options raises' do
     assert_raise(@err) { @p.read_fasta(input: @file, first: 1, last: 1) }
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with non-existing input file raises' do
+  test 'BioDSL::Pipeline::ReadFasta with non-existing input file raises' do
     assert_raise(@err) { @p.read_fasta(input: '___adsf') }
   end
 
-  test 'BioPieces::Pipeline::ReadFasta returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta returns correctly' do
     @p.read_fasta(input: @file).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -119,7 +119,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta status returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta status returns correctly' do
     @p.read_fasta(input: @file).run(output: @output2)
 
     assert_equal(0, @p.status.first[:records_in])
@@ -130,7 +130,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(19, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with gzipped data returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta with gzipped data returns correctly' do
     `gzip #{@file}`
 
     @p.read_fasta(input: "#{@file}.gz").run(output: @output2)
@@ -143,7 +143,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with bzip2\'ed data returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta with bzip2\'ed data returns correctly' do
     `bzip2 #{@file}`
 
     @p.read_fasta(input: "#{@file}.bz2").run(output: @output2)
@@ -156,7 +156,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with multiple files returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta with multiple files returns correctly' do
     @p.read_fasta(input: [@file, @file2]).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -169,7 +169,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with input glob returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta with input glob returns correctly' do
     @p.read_fasta(input: File.join(@tmpdir, 'test*.fna')).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -182,7 +182,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with :first returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta with :first returns correctly' do
     @p.read_fasta(input: [@file, @file2], first: 3).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -194,7 +194,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta#to_s with :first returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta#to_s with :first returns correctly' do
     @p.read_fasta(input: @file, first: 3)
 
     expected = %{BP.new.read_fasta(input: "#{@file}", first: 3)}
@@ -202,7 +202,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, @p.to_s)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with :last returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta with :last returns correctly' do
     @p.read_fasta(input: [@file, @file2], last: 3).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -214,7 +214,7 @@ class TestReadFasta < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadFasta with flux returns correctly' do
+  test 'BioDSL::Pipeline::ReadFasta with flux returns correctly' do
     @p.read_fasta(input: @file2).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')

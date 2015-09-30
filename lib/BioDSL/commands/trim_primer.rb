@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Trim sequence ends in the stream matching a specified primer.
   #
   # +trim_primer+ can trim full or partial primer sequence from sequence ends.
@@ -194,9 +194,9 @@ module BioPieces
 
     # Trim record with sequence in the forward direction.
     #
-    # @param record [Hash] BioPieces record
+    # @param record [Hash] BioDSL record
     def trim_forward(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:residues_in]  += entry.length
 
@@ -215,9 +215,9 @@ module BioPieces
 
     # Search a given entry and return match data.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     #
-    # @return [BioPieces::Seq::Match,nil] Match result.
+    # @return [BioDSL::Seq::Match,nil] Match result.
     def match_forward(entry)
       match_opt         = match_options(@pattern.length)
       match_opt[:start] = 0
@@ -229,9 +229,9 @@ module BioPieces
     # Use given match data to extract subsequence from given entry and merge to
     # the given record.
     #
-    # @param record [Hash] BioPieces record
-    # @param entry [BioPieces::Seq] Sequence entry.
-    # @param match [BioPieces::Seq::Match] Match data.
+    # @param record [Hash] BioDSL record
+    # @param entry [BioDSL::Seq] Sequence entry.
+    # @param match [BioDSL::Seq::Match] Match data.
     def merge_forward(record, entry, match)
       entry = entry[match.pos + match.length..-1]
 
@@ -244,9 +244,9 @@ module BioPieces
 
     # Trim record with sequence in the reverse direction.
     #
-    # @param record [Hash] BioPieces record
+    # @param record [Hash] BioDSL record
     def trim_reverse(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:residues_in]  += entry.length
 
@@ -265,9 +265,9 @@ module BioPieces
 
     # Search a given entry and return match data.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     #
-    # @return [BioPieces::Seq::Match,nil] Match result.
+    # @return [BioDSL::Seq::Match,nil] Match result.
     def match_reverse(entry)
       match_opt = match_options(@pattern.length)
 
@@ -282,9 +282,9 @@ module BioPieces
     # Use given match data to extract subsequence from given entry and merge to
     # the given record.
     #
-    # @param record [Hash] BioPieces record
-    # @param entry [BioPieces::Seq] Sequence entry.
-    # @param match [BioPieces::Seq::Match] Match data.
+    # @param record [Hash] BioDSL record
+    # @param entry [BioDSL::Seq] Sequence entry.
+    # @param match [BioDSL::Seq::Match] Match data.
     def merge_reverse(record, entry, match)
       entry = entry[0...match.pos]
 

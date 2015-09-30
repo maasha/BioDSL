@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,7 +35,7 @@ require 'test/helper'
 # rubocop: disable ClassLength
 class TestReadTable < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
 
     @data = <<-EOF.gsub(/^\s+\|/, '')
       |#ID COUNT
@@ -50,7 +50,7 @@ class TestReadTable < Test::Unit::TestCase
     setup_file2
     setup_data
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_file1
@@ -70,8 +70,8 @@ class TestReadTable < Test::Unit::TestCase
   end
 
   def setup_data
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test1', SEQ: 'atgcagcac', SEQ_LEN: 9)
     @output.write(SEQ_NAME: 'test2', SEQ: 'acagcactgA', SEQ_LEN: 10)
@@ -82,55 +82,55 @@ class TestReadTable < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::ReadTable with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_table(foo: 'bar') }
+  test 'BioDSL::Pipeline::ReadTable with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.read_table(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::ReadTable without required options raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_table }
+  test 'BioDSL::Pipeline::ReadTable without required options raises' do
+    assert_raise(BioDSL::OptionError) { @p.read_table }
   end
 
-  test 'BioPieces::Pipeline::ReadTable with bad first raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadTable with bad first raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_table(input: @file, first: -1)
     end
   end
 
-  test 'BioPieces::Pipeline::ReadTable with bad last raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadTable with bad last raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_table(input: @file, last: -1)
     end
   end
 
-  test 'BioPieces::Pipeline::ReadTable with exclusive unique options raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadTable with exclusive unique options raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_table(input: @file, first: 1, last: 1)
     end
   end
 
-  test 'BioPieces::Pipeline::ReadTable with non-existing input file raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_table(input: '___adsf') }
+  test 'BioDSL::Pipeline::ReadTable with non-existing input file raises' do
+    assert_raise(BioDSL::OptionError) { @p.read_table(input: '___adsf') }
   end
 
-  test 'BioPieces::Pipeline::ReadTable with duplicate keys raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadTable with duplicate keys raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_table(input: @file, keys: [:a, :a])
     end
   end
 
-  test 'BioPieces::Pipeline::ReadTable with duplicate select raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadTable with duplicate select raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_table(input: @file, select: [1, 1])
     end
   end
 
-  test 'BioPieces::Pipeline::ReadTable with duplicate reject raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadTable with duplicate reject raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_table(input: @file, reject: [1, 1])
     end
   end
 
-  test 'BioPieces::Pipeline::ReadTable returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable returns correctly' do
     @p.read_table(input: @file).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -142,14 +142,14 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable status returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable status returns correctly' do
     @p.read_table(input: @file).run(output: @output2)
 
     assert_equal(0, @p.status.first[:records_in])
     assert_equal(3, @p.status.first[:records_out])
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :skip returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with :skip returns correctly' do
     @p.read_table(input: @file, skip: 2).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -161,7 +161,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :delimeter returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with :delimeter returns correctly' do
     @p.read_table(input: @file, skip: 2, delimiter: 'ID').run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -173,7 +173,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :select returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with :select returns correctly' do
     @p.read_table(input: @file, select: [:COUNT]).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -185,7 +185,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :reject returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with :reject returns correctly' do
     @p.read_table(input: @file, reject: [:COUNT]).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -197,7 +197,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :keys returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with :keys returns correctly' do
     @p.read_table(input: @file, keys: ['FOO', :BAR]).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -209,7 +209,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :skip and :keys returns OK' do
+  test 'BioDSL::Pipeline::ReadTable with :skip and :keys returns OK' do
     @p.read_table(input: @file, skip: 2, keys: ['FOO', :BAR]).
       run(output: @output2)
 
@@ -222,7 +222,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with gzipped data returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with gzipped data returns correctly' do
     `gzip #{@file}`
 
     @p.read_table(input: "#{@file}.gz").run(output: @output2)
@@ -236,7 +236,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with bzip2\'ed data returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with bzip2\'ed data returns correctly' do
     `bzip2 #{@file}`
 
     @p.read_table(input: "#{@file}.bz2").run(output: @output2)
@@ -250,7 +250,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with multiple files returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with multiple files returns correctly' do
     @p.read_table(input: [@file, @file2]).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -265,7 +265,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with input glob returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with input glob returns correctly' do
     @p.read_table(input: File.join(@tmpdir, 'test*.tab')).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -280,7 +280,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :first returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with :first returns correctly' do
     @p.read_table(input: [@file, @file2], first: 3).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -292,7 +292,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable#to_s with :first returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable#to_s with :first returns correctly' do
     @p.read_table(input: @file, first: 3)
 
     expected = %{BP.new.read_table(input: "#{@file}", first: 3)}
@@ -300,7 +300,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, @p.to_s)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with :last returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with :last returns correctly' do
     @p.read_table(input: [@file, @file2], last: 2).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -311,7 +311,7 @@ class TestReadTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::ReadTable with flux returns correctly' do
+  test 'BioDSL::Pipeline::ReadTable with flux returns correctly' do
     @p.read_table(input: @file2).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for Random.
 class TestRandom < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     [{TEST: 1},
      {TEST: 2},
@@ -47,18 +47,18 @@ class TestRandom < Test::Unit::TestCase
 
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline#random with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) { @p.random(foo: 'bar') }
+  test 'BioDSL::Pipeline#random with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) { @p.random(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#random with allowed options don\'t raise' do
+  test 'BioDSL::Pipeline#random with allowed options don\'t raise' do
     assert_nothing_raised { @p.random(number: 2) }
   end
 
-  test 'BioPieces::Pipeline#random returns correctly' do
+  test 'BioDSL::Pipeline#random returns correctly' do
     @p.random(number: 3).run(input: @input, output: @output2)
     size = 0
     @input2.map { size += 1 }
@@ -66,14 +66,14 @@ class TestRandom < Test::Unit::TestCase
     assert_equal(3, size)
   end
 
-  test 'BioPieces::Pipeline#random status returns correctly' do
+  test 'BioDSL::Pipeline#random status returns correctly' do
     @p.random(number: 3).run(input: @input, output: @output2)
 
     assert_equal(6, @p.status.first[:records_in])
     assert_equal(3, @p.status.first[:records_out])
   end
 
-  test 'BioPieces::Pipeline#random with pairs: true returns correctly' do
+  test 'BioDSL::Pipeline#random with pairs: true returns correctly' do
     @p.random(number: 4, pairs: true).run(input: @input, output: @output2)
 
     size = 0

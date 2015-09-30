@@ -20,12 +20,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 # Namespace for BipPieces.
-module BioPieces
+module BioDSL
   # Error class for Mummer errors.
   MummerError = Class.new(StandardError)
 
@@ -33,7 +33,7 @@ module BioPieces
 
   # Class for executing MUMmer and parsing MUMmer results.
   class Mummer
-    # @param seq1    [BioPieces::Seq] Sequence 1.
+    # @param seq1    [BioDSL::Seq] Sequence 1.
     # @param seq2    [BioPeices::Seq] Sequence 2.
     # @param options [Hash]           Options hash.
     #
@@ -51,7 +51,7 @@ module BioPieces
 
     # Constructor for Mummer class.
     #
-    # @param seq1    [BioPieces::Seq] Sequence 1.
+    # @param seq1    [BioDSL::Seq] Sequence 1.
     # @param seq2    [BioPeices::Seq] Sequence 2.
     # @param options [Hash]           Options hash.
     #
@@ -74,8 +74,8 @@ module BioPieces
       return to_enum :each_mem unless block_given?
 
       TmpDir.create('in1', 'in2', 'out') do |file_in1, file_in2, file_out|
-        BioPieces::Fasta.open(file_in1, 'w') { |io| io.puts @seq1.to_fasta }
-        BioPieces::Fasta.open(file_in2, 'w') { |io| io.puts @seq2.to_fasta }
+        BioDSL::Fasta.open(file_in1, 'w') { |io| io.puts @seq1.to_fasta }
+        BioDSL::Fasta.open(file_in2, 'w') { |io| io.puts @seq2.to_fasta }
 
         execute(file_in1, file_in2, file_out)
 
@@ -127,7 +127,7 @@ module BioPieces
 
     # Check the that the value of :length_min is OK.
     #
-    # @raise [BioPieces::MummerError] on bad length_min value.
+    # @raise [BioDSL::MummerError] on bad length_min value.
     def check_length_min_value
       return if @options[:length_min] > 0
 
@@ -136,7 +136,7 @@ module BioPieces
 
     # Check that the type of :length_min is OK.
     #
-    # @raise [BioPieces::MummerError] on bad length_min type.
+    # @raise [BioDSL::MummerError] on bad length_min type.
     def check_length_min_type
       return if @options[:length_min].class == Fixnum
 
@@ -145,7 +145,7 @@ module BioPieces
 
     # Check that the value of :direction is OK.
     #
-    # @raise [BioPieces::MummerError] on bad direction.
+    # @raise [BioDSL::MummerError] on bad direction.
     def check_direction
       return if @options[:direction] == :forward ||
                 @options[:direction] == :reverse ||
@@ -168,7 +168,7 @@ module BioPieces
     def execute(file_in1, file_in2, file_out)
       cmd = compile_command(file_in1, file_in2, file_out)
 
-      $stderr.puts "Running command: #{cmd}" if BioPieces.verbose
+      $stderr.puts "Running command: #{cmd}" if BioDSL.verbose
 
       system(cmd)
 
@@ -198,7 +198,7 @@ module BioPieces
       @command << file_in1
       @command << file_in2
       @command << "> #{file_out}"
-      @command << '2>&1' unless BioPieces.verbose
+      @command << '2>&1' unless BioDSL.verbose
 
       @command.join(' ')
     end

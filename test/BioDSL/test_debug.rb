@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,12 +31,12 @@ require 'test/helper'
 
 class DebugTest < Test::Unit::TestCase
   def teardown
-    BioPieces::debug = false
+    BioDSL::debug = false
   end
 
-  test "BioPieces::debug returns correctly" do
-    BioPieces::debug = true
-    assert_equal(true, BioPieces::debug)
+  test "BioDSL::debug returns correctly" do
+    BioDSL::debug = true
+    assert_equal(true, BioDSL::debug)
   end
 end
 

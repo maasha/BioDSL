@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Read tabular data from one or more files.
   #
   # Tabular input can be read with +read_table+ which will read in chosen rows
@@ -246,7 +246,7 @@ module BioPieces
     # @param output [Enumerator::Yeilder] Output stream.
     def read_first(output)
       options_glob(@options[:input]).each do |file|
-        BioPieces::CSV.open(file) do |ios|
+        BioDSL::CSV.open(file) do |ios|
           ios.skip(@skip)
 
           ios.each_hash(read_options) do |record|
@@ -263,7 +263,7 @@ module BioPieces
     # @param output [Enumerator::Yeilder] Output stream.
     def read_last(output)
       options_glob(@options[:input]).each do |file|
-        BioPieces::CSV.open(file) do |ios|
+        BioDSL::CSV.open(file) do |ios|
           ios.skip(@skip)
 
           ios.each_hash(read_options) do |record|
@@ -281,7 +281,7 @@ module BioPieces
     # @param output [Enumerator::Yeilder] Output stream.
     def read_all(output)
       options_glob(@options[:input]).each do |file|
-        BioPieces::CSV.open(file) do |ios|
+        BioDSL::CSV.open(file) do |ios|
           ios.skip(@skip)
 
           ios.each_hash(read_options) do |record|
@@ -295,7 +295,7 @@ module BioPieces
 
     # Replace the keys of a given record.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def replace_keys(record)
       record.first(@keys.size).each_with_index do |(k, v), i|
         record[@keys[i]] = v

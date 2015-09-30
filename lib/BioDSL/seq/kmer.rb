@@ -20,11 +20,11 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Error class for all exceptions to do with Kmer.
   class KmerError < StandardError; end
 
@@ -78,7 +78,7 @@ module BioPieces
       if defined? @kmer_ary and @kmer_ary.count == size
         @kmer_ary.zero!
       else
-        @kmer_ary = BioPieces::CAry.new(size, 1)
+        @kmer_ary = BioDSL::CAry.new(size, 1)
       end
 
       if self.qual

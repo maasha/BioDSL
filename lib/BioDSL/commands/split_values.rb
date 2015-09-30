@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Split the values of a key into new key/value pairs.
   #
   # +split_values+ splits the value of a given key into multiple values that are
@@ -149,7 +149,7 @@ module BioPieces
     # Convert values and add to record.
     #
     # @param values [Array] List of values.
-    # @param record [Hash]  BioPieces record.
+    # @param record [Hash]  BioDSL record.
     def split_values(values, record)
       values.each_with_index do |val, i|
         val = val.send(@convert[i]) if @convert[i]

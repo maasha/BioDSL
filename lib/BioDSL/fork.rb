@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# BioPieces namespace.
-module BioPieces
+# BioDSL namespace.
+module BioDSL
   # Error class for all Fork errors.
   ForkError = Class.new(StandardError)
 
@@ -66,8 +66,8 @@ module BioPieces
     def execute
       @alive = true
 
-      child_read, parent_write = BioPieces::Stream.pipe
-      parent_read, child_write = BioPieces::Stream.pipe
+      child_read, parent_write = BioDSL::Stream.pipe
+      parent_read, child_write = BioDSL::Stream.pipe
 
       pid = fork_process(child_read, child_write, parent_read, parent_write)
 
@@ -92,7 +92,7 @@ module BioPieces
     #
     # @raise [ForkError] unless process is running.
     def read
-      fail BioPieces::ForkError, 'Not running' unless running?
+      fail BioDSL::ForkError, 'Not running' unless running?
 
       @input.read
     end
@@ -101,7 +101,7 @@ module BioPieces
     #
     # @raise [ForkError] unless process is running.
     def write(obj)
-      fail BioPieces::ForkError, 'Not running' unless running?
+      fail BioDSL::ForkError, 'Not running' unless running?
 
       @output.write(obj)
     end
@@ -110,7 +110,7 @@ module BioPieces
     #
     # @raise [ForkError] unless process is running.
     def wait
-      fail BioPieces::ForkError, 'Not running' unless running?
+      fail BioDSL::ForkError, 'Not running' unless running?
 
       @input.close  unless @input.closed?
       @output.close unless @output.closed?
@@ -122,10 +122,10 @@ module BioPieces
 
     # Fork process with IPC.
     #
-    # @param child_read   [BioPieces::Stream] Child read IO.
-    # @param child_write  [BioPieces::Stream] Child write IO.
-    # @param parent_read  [BioPieces::Stream] Parent read IO.
-    # @param parent_write [BioPieces::Stream] Parent write IO.
+    # @param child_read   [BioDSL::Stream] Child read IO.
+    # @param child_write  [BioDSL::Stream] Child write IO.
+    # @param parent_read  [BioDSL::Stream] Parent read IO.
+    # @param parent_write [BioDSL::Stream] Parent write IO.
     #
     # @return [FixNum] Process ID.
     def fork_process(child_read, child_write, parent_read, parent_write)

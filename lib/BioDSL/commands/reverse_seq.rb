@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Reverse sequences in the stream.
   #
   # +reverse_seq+ reverses sequences in the stream. If a SCORES key is found
@@ -97,9 +97,9 @@ module BioPieces
 
     # Reverse sequence.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def reverse(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
       entry.reverse!
 
       @status[:sequences_in]  += 1

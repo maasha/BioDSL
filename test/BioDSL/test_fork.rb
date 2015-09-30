@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -34,40 +34,40 @@ class TestFork < Test::Unit::TestCase
     @obj = {foo: "bar"}
   end
 
-  test "BioPieces::Fork.new without block raises" do
-    assert_raise(ArgumentError) { BioPieces::Fork.new }
+  test "BioDSL::Fork.new without block raises" do
+    assert_raise(ArgumentError) { BioDSL::Fork.new }
   end
 
-  test "BioPieces::Fork.read with no running fork raises" do
-    parent = BioPieces::Fork.new do |child|
+  test "BioDSL::Fork.read with no running fork raises" do
+    parent = BioDSL::Fork.new do |child|
     end
 
-    assert_raise(BioPieces::ForkError) { parent.read }
+    assert_raise(BioDSL::ForkError) { parent.read }
   end
 
-  test "BioPieces::Fork.write with no running fork raises" do
-    parent = BioPieces::Fork.new do |child|
+  test "BioDSL::Fork.write with no running fork raises" do
+    parent = BioDSL::Fork.new do |child|
     end
 
-    assert_raise(BioPieces::ForkError) { parent.write @obj }
+    assert_raise(BioDSL::ForkError) { parent.write @obj }
   end
 
-  test "BioPieces::Fork.wait with no running fork raises" do
-    parent = BioPieces::Fork.new do |child|
+  test "BioDSL::Fork.wait with no running fork raises" do
+    parent = BioDSL::Fork.new do |child|
     end
 
-    assert_raise(BioPieces::ForkError) { parent.wait }
+    assert_raise(BioDSL::ForkError) { parent.wait }
   end
 
-  test "BioPieces::Fork.wait with running fork don't raise" do
-    parent = BioPieces::Fork.execute do |child|
+  test "BioDSL::Fork.wait with running fork don't raise" do
+    parent = BioDSL::Fork.execute do |child|
     end
 
     assert_nothing_raised { parent.wait }
   end
 
-  test "BioPieces::Fork IPC returns correctly" do
-    parent = BioPieces::Fork.execute do |child|
+  test "BioDSL::Fork IPC returns correctly" do
+    parent = BioDSL::Fork.execute do |child|
       obj = child.read
       obj[:child] = true
       child.write obj

@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Assemble sequences the stream using SPAdes.
   #
   # +assemble_seq_spades+ is a wrapper around the single prokaryotic genome
@@ -64,7 +64,7 @@ module BioPieces
   # rubocop:disable ClassLength
   class AssembleSeqSpades
     require 'English'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -120,7 +120,7 @@ module BioPieces
       options_allowed(@options, :careful, :cpus, :kmers)
       options_allowed_values(@options, careful: [true, false, nil])
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
     end
 
     # Set default options.
@@ -135,8 +135,8 @@ module BioPieces
     # @param input [Enumerator] Input stream.
     # @param output [Enumerator::Yielder] Output stream.
     def process_input(in_fq, in_fa, input, output)
-      BioPieces::Fastq.open(in_fq, 'w') do |io_fq|
-        BioPieces::Fasta.open(in_fa, 'w') do |io_fa|
+      BioDSL::Fastq.open(in_fq, 'w') do |io_fq|
+        BioDSL::Fasta.open(in_fa, 'w') do |io_fa|
           input.each do |record|
             @status[:records_in] += 1
 
@@ -153,11 +153,11 @@ module BioPieces
 
     # Write a sequence record to the temporary file.
     #
-    # @param io_fq [BioPieces::Fastq::IO] FASTQ IO stream.
-    # @param io_fa [BioPieces::Fasta::IO] FASTA IO stream.
+    # @param io_fq [BioDSL::Fastq::IO] FASTQ IO stream.
+    # @param io_fa [BioDSL::Fasta::IO] FASTA IO stream.
     # @param record [Hash] BioPiece record with sequence.
     def write_sequence(io_fq, io_fa, record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length
@@ -179,7 +179,7 @@ module BioPieces
     def execute_spades(input_file, tmp_dir)
       cmd_line = compile_command(input_file, tmp_dir)
 
-      if BioPieces.verbose
+      if BioDSL.verbose
         $stderr.puts cmd_line
         system(cmd_line)
       else
@@ -213,7 +213,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream
     # @param output_file [String] Path to output FASTA file with contigs.
     def process_output(output, output_file)
-      BioPieces::Fasta.open(output_file) do |ios|
+      BioDSL::Fasta.open(output_file) do |ios|
         ios.each do |entry|
           output << entry.to_bp
           @status[:records_out]   += 1

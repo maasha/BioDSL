@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Run classify_seq_mothur on sequences in the stream.
   #
   # This is a wrapper for the +mothur+ command +classify.seqs()+. Basically,
@@ -70,7 +70,7 @@ module BioPieces
   #    run
   class ClassifySeqMothur
     require 'English'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -120,7 +120,7 @@ module BioPieces
       options_assert(@options, ':confidence > 0')
       options_assert(@options, ':confidence <= 100')
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
 
       defaults
     end
@@ -138,7 +138,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param tmp_in [String] Path to temporary FASTA file.
     def process_input(input, output, tmp_in)
-      BioPieces::Fasta.open(tmp_in, 'w') do |ios|
+      BioDSL::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 
@@ -149,7 +149,7 @@ module BioPieces
             @status[:records_out]   += record[:SEQ].length
             seq_name = record[:SEQ_NAME] || i.to_s
 
-            entry = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
+            entry = BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
             ios.puts entry.to_fasta
           end
@@ -177,7 +177,7 @@ module BioPieces
         |processors=#{@options[:cpus]})"
       CMD
 
-      BioPieces.verbose ? system(cmd) : system("#{cmd} > /dev/null 2>&1")
+      BioDSL.verbose ? system(cmd) : system("#{cmd} > /dev/null 2>&1")
 
       fail 'Mothur failed' unless $CHILD_STATUS.success?
     end
@@ -187,7 +187,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param tmp_out [String] Path to file with classfication result.
     def process_output(output, tmp_out)
-      BioPieces::CSV.open(tmp_out) do |ios|
+      BioDSL::CSV.open(tmp_out) do |ios|
         ios.each_hash do |new_record|
           new_record[:SEQ_NAME] = new_record[:V0]
           new_record[:TAXONOMY] = new_record[:V1]
@@ -204,7 +204,7 @@ module BioPieces
 
     # Filter taxonomic leveles based on the confidence.
     #
-    # @param record [Hash] BioPieces record with taxonomy.
+    # @param record [Hash] BioDSL record with taxonomy.
     #
     # @return [String] Return taxonomic string.
     def confidence_filter(record)

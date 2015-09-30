@@ -20,11 +20,11 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Error class for all exceptions to do with CAry.
   class CAryError < StandardError; end
 
@@ -96,9 +96,9 @@ module BioPieces
 
     # Method to do bitwise AND operation between two CArys.
     def &(cary)
-      raise BioPieces::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
-      raise BioPieces::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
-      raise BioPieces::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
+      raise BioDSL::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
+      raise BioDSL::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
+      raise BioDSL::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
 
       bitwise_and_C(@ary, cary.ary, @count * @size)
 
@@ -107,9 +107,9 @@ module BioPieces
 
     # Method to do bitwise OR operation between two CArys.
     def |(cary)
-      raise BioPieces::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
-      raise BioPieces::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
-      raise BioPieces::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
+      raise BioDSL::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
+      raise BioDSL::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
+      raise BioDSL::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
 
       bitwise_or_C(@ary, cary.ary, @count * @size)
 
@@ -118,9 +118,9 @@ module BioPieces
 
     # Method to do bitwise XOR operation between two CArys.
     def ^(cary)
-      raise BioPieces::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
-      raise BioPieces::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
-      raise BioPieces::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
+      raise BioDSL::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
+      raise BioDSL::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
+      raise BioDSL::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
 
       bitwise_xor_C(@ary, cary.ary, @count * @size)
 

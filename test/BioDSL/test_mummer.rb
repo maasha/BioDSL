@@ -23,7 +23,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -32,39 +32,39 @@ require 'test/helper'
 # Test class for Mummer.
 class TestMummer < Test::Unit::TestCase
   def setup
-    omit('mummer not found') unless BioPieces::Filesys.which('mummer')
+    omit('mummer not found') unless BioDSL::Filesys.which('mummer')
 
-    @entry1 = BioPieces::Seq.new(seq_name: 'test1', seq: 'ctagcttcaacctagctag')
-    @entry2 = BioPieces::Seq.new(seq_name: 'test2', seq: 'ctagcttcaGacctagctag')
+    @entry1 = BioDSL::Seq.new(seq_name: 'test1', seq: 'ctagcttcaacctagctag')
+    @entry2 = BioDSL::Seq.new(seq_name: 'test2', seq: 'ctagcttcaGacctagctag')
   end
 
   test 'Mummer.each_mem with bad :length_min fails' do
-    assert_raise(BioPieces::MummerError) do
-      BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 0)
+    assert_raise(BioDSL::MummerError) do
+      BioDSL::Mummer.each_mem(@entry1, @entry2, length_min: 0)
     end
 
-    assert_raise(BioPieces::MummerError) do
-      BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 5.5)
+    assert_raise(BioDSL::MummerError) do
+      BioDSL::Mummer.each_mem(@entry1, @entry2, length_min: 5.5)
     end
   end
 
   test 'Mummer.each_mem with bad :direction fails' do
-    assert_raise(BioPieces::MummerError) do
-      BioPieces::Mummer.each_mem(@entry1, @entry2, direction: 'up')
+    assert_raise(BioDSL::MummerError) do
+      BioDSL::Mummer.each_mem(@entry1, @entry2, direction: 'up')
     end
   end
 
   test 'Mummer#each_mem returns OK' do
-    mems     = BioPieces::Mummer.each_mem(@entry1, @entry2, length_min: 9)
+    mems     = BioDSL::Mummer.each_mem(@entry1, @entry2, length_min: 9)
     expected = <<-END.gsub(/^\s+\|/, '')
-      |[#<struct BioPieces::Mummer::Match
+      |[#<struct BioDSL::Mummer::Match
       |  q_id="test2",
       |  s_id="test1",
       |  dir="forward",
       |  s_beg=0,
       |  q_beg=0,
       |  hit_len=9>,
-      | #<struct BioPieces::Mummer::Match
+      | #<struct BioDSL::Mummer::Match
       |  q_id="test2",
       |  s_id="test1",
       |  dir="forward",

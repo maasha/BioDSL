@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 # rubocop: disable LineLength
-module BioPieces
+module BioDSL
   # == Create a histogram with mean sequence quality scores.
   #
   # +plot_scores+ creates a histogram of the mean values per base of the quality
@@ -106,7 +106,7 @@ module BioPieces
   class PlotScores
     require 'gnuplotter'
     require 'narray'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -187,7 +187,7 @@ module BioPieces
 
     # Collect plot data from a given record.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def collect_plot_data(record)
       scores = record[:SCORES]
       return unless scores && scores.length > 0
@@ -203,11 +203,11 @@ module BioPieces
 
     # Check if the scores string is longer than SCORES_MAX.
     #
-    # @raise [BiopiecesError] if too long.
+    # @raise [BioDSLError] if too long.
     def check_length(scores)
       return unless scores.length > SCORES_MAX
       msg = "score string too long: #{scores.length} > #{SCORES_MAX}"
-      fail BiopiecesError, msg
+      fail BioDSLError, msg
     end
 
     # Prepare data to plot.

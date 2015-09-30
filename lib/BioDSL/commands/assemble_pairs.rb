@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Assemble ordered overlapping pair-end sequences in the stream.
   #
   # +assemble_pairs+ assembles overlapping pair-end sequences into single
@@ -165,7 +165,7 @@ module BioPieces
 
     # Output a record to the stream if a stram is provided.
     #
-    # @param record [Hash] BioPieces record to output.
+    # @param record [Hash] BioDSL record to output.
     # @param output [Enumerator::Yielder, nil] Output stream or nil.
     def output_record(record, output)
       return unless output
@@ -175,8 +175,8 @@ module BioPieces
 
     # Assemble records with sequences and output to the stream
     #
-    # @param record1 [Hash]                Biopieces record1.
-    # @param record2 [Hash]                Biopieces record2.
+    # @param record1 [Hash]                BioDSL record1.
+    # @param record2 [Hash]                BioDSL record2.
     # @param output  [Enumerator::Yielder] Output stream.
     def assemble_pairs(record1, record2, output)
       entry1, entry2 = records2entries(record1, record2)
@@ -201,8 +201,8 @@ module BioPieces
     #
     # @return [Array] Returns a tuple of sequence entries.
     def records2entries(record1, record2)
-      entry1 = BioPieces::Seq.new_bp(record1)
-      entry2 = BioPieces::Seq.new_bp(record2)
+      entry1 = BioDSL::Seq.new_bp(record1)
+      entry2 = BioDSL::Seq.new_bp(record2)
       entry1.type = :dna
       entry2.type = :dna
 
@@ -219,8 +219,8 @@ module BioPieces
     # Determines if an overlap between two given entries is possible considering
     # the minimum overlap length.
     #
-    # @param entry1      [BioPieces::Seq] Sequence entry1.
-    # @param entry2      [BioPieces::Seq] Sequence entry2.
+    # @param entry1      [BioDSL::Seq] Sequence entry1.
+    # @param entry2      [BioDSL::Seq] Sequence entry2.
     # @param overlap_min [Integer]        Minimum overlap.
     #
     # @return [Boolean] True if overlap possible otherwise false.
@@ -231,12 +231,12 @@ module BioPieces
     # Assemble a pair of given entries if possible and return an assembled
     # entry, or nil the entries could not be assembled.
     #
-    # @param entry1 [BioPieces::Seq] Sequence entry1.
-    # @param entry2 [BioPieces::Seq] Sequence entry2.
+    # @param entry1 [BioDSL::Seq] Sequence entry1.
+    # @param entry2 [BioDSL::Seq] Sequence entry2.
     #
-    # @return [BioPieces::Seq, nil] Returns Seq entry or nil.
+    # @return [BioDSL::Seq, nil] Returns Seq entry or nil.
     def assemble_entries(entry1, entry2)
-      BioPieces::Assemble.pair(
+      BioDSL::Assemble.pair(
         entry1,
         entry2,
         mismatches_max: @options[:mismatch_percent],
@@ -247,7 +247,7 @@ module BioPieces
 
     # Output assembled pairs to the output stream.
     #
-    # @param assembled [BioPieces::Seq] Assembled sequence entry.
+    # @param assembled [BioDSL::Seq] Assembled sequence entry.
     # @param output [Enumerator::Yielder] Output stream.
     def output_assembled(assembled, output)
       output << assembled2record(assembled)
@@ -261,9 +261,9 @@ module BioPieces
     # Convert a sequence entry to a BioPiece record with hamming distance and
     # overlap length from the entry's seq_name.
     #
-    # @param assembled [BioPieces::Seq] Merged sequence entry.
+    # @param assembled [BioDSL::Seq] Merged sequence entry.
     #
-    # @return [Hash] BioPieces record.
+    # @return [Hash] BioDSL record.
     def assembled2record(assembled)
       new_record = assembled.to_bp
 
@@ -281,8 +281,8 @@ module BioPieces
 
     # Merge and output entries to the stream.
     #
-    # @param entry1 [BioPieces::Seq] Entry1.
-    # @param entry2 [BioPieces::Seq] Entry2.
+    # @param entry1 [BioDSL::Seq] Entry1.
+    # @param entry2 [BioDSL::Seq] Entry2.
     # @param output [Enumerator::Yielder] Output stream.
     def output_merged(entry1, entry2, output)
       entry1 << entry2
@@ -297,8 +297,8 @@ module BioPieces
 
     # Output unassembled entries to the stream.
     #
-    # @param entry1 [BioPieces::Seq] Entry1.
-    # @param entry2 [BioPieces::Seq] Entry2.
+    # @param entry1 [BioDSL::Seq] Entry1.
+    # @param entry2 [BioDSL::Seq] Entry2.
     # @param output [Enumerator::Yielder] Output stream.
     def output_entries(entry1, entry2, output)
       output << entry2record(entry1)
@@ -312,9 +312,9 @@ module BioPieces
 
     # Converts a sequence entry to a BioPeice record.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     #
-    # @return [Hash] Biopieces record.
+    # @return [Hash] BioDSL record.
     def entry2record(entry)
       record = entry.to_bp
       record[:OVERLAP_LEN]  = 0

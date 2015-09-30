@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -34,8 +34,8 @@ require 'test/helper'
 class TestMergePairSeq < Test::Unit::TestCase
   # rubocop:disable MethodLength
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     [
       {SEQ_NAME: 'M01168:16:000000000-A1R9L:1:1101:14862:1868 1:N:0:14',
@@ -68,14 +68,14 @@ class TestMergePairSeq < Test::Unit::TestCase
 
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::MergePairSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.merge_pair_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::MergePairSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.merge_pair_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::MergePairSeq returns correctly' do
+  test 'BioDSL::Pipeline::MergePairSeq returns correctly' do
     @p.merge_pair_seq.run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -102,7 +102,7 @@ class TestMergePairSeq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::MergePairSeq status returns correctly' do
+  test 'BioDSL::Pipeline::MergePairSeq status returns correctly' do
     @p.merge_pair_seq.run(input: @input, output: @output2)
 
     assert_equal(6, @p.status.first[:records_in])

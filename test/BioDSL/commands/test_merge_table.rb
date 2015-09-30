@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,14 +33,14 @@ require 'test/helper'
 # Test class for MergeTable.
 class TestMergeTable < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
 
     @file = File.join(@tmpdir, 'test.tab')
 
     setup_data_file
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(ID: 1, COUNT: 5423)
     @output.write(ID: 2, COUNT: 34)
@@ -50,7 +50,7 @@ class TestMergeTable < Test::Unit::TestCase
 
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_data_file
@@ -71,39 +71,39 @@ class TestMergeTable < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::MergeTable with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.merge_table(foo: 'bar') }
+  test 'BioDSL::Pipeline::MergeTable with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.merge_table(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::MergeTable without required options raises' do
-    assert_raise(BioPieces::OptionError) { @p.merge_table }
+  test 'BioDSL::Pipeline::MergeTable without required options raises' do
+    assert_raise(BioDSL::OptionError) { @p.merge_table }
   end
 
-  test 'BioPieces::Pipeline::MergeTable with non-existing input file raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::MergeTable with non-existing input file raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.merge_table(input: '___adsf', key: :ID)
     end
   end
 
-  test 'BioPieces::Pipeline::MergeTable with bad skip value file raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::MergeTable with bad skip value file raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.merge_table(input: @file, key: :ID, skip: -1)
     end
   end
 
-  test 'BioPieces::Pipeline::MergeTable with duplicate keys raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::MergeTable with duplicate keys raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.merge_table(input: @file, key: :ID, keys: [:a, :a])
     end
   end
 
-  test 'BioPieces::Pipeline::MergeTable with duplicate columns raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::MergeTable with duplicate columns raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.merge_table(input: @file, key: :ID, columns: [1, 1])
     end
   end
 
-  test 'BioPieces::Pipeline::MergeTable returns correctly' do
+  test 'BioDSL::Pipeline::MergeTable returns correctly' do
     @p.merge_table(input: @file, key: :ID).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -117,7 +117,7 @@ class TestMergeTable < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::MergeTable status returns correctly' do
+  test 'BioDSL::Pipeline::MergeTable status returns correctly' do
     @p.merge_table(input: @file, key: :ID).run(input: @input, output: @output2)
 
     assert_equal(5, @p.status.first[:records_in])

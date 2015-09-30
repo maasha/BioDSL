@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,7 +35,7 @@ class TestUchimeRef < Test::Unit::TestCase
   require 'tempfile'
 
   def setup
-    omit('usearch not found') unless BioPieces::Filesys.which('usearch')
+    omit('usearch not found') unless BioDSL::Filesys.which('usearch')
 
     data = <<-DAT.gsub(/^\s+\|/, '')
       |>test1
@@ -54,26 +54,26 @@ class TestUchimeRef < Test::Unit::TestCase
     @db.unlink
   end
 
-  test 'BioPieces::Pipeline#uchime_ref with disallowed option raises' do
-    p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.uchime_ref(foo: 'bar') }
+  test 'BioDSL::Pipeline#uchime_ref with disallowed option raises' do
+    p = BioDSL::Pipeline.new
+    assert_raise(BioDSL::OptionError) { p.uchime_ref(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#uchime_ref with allowed option dont raise' do
-    p = BioPieces::Pipeline.new
+  test 'BioDSL::Pipeline#uchime_ref with allowed option dont raise' do
+    p = BioDSL::Pipeline.new
     assert_nothing_raised { p.uchime_ref(database: @db.path) }
   end
 
-  test 'BioPieces::Pipeline#uchime_ref outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#uchime_ref outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ_COUNT: 5, SEQ: 'atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
     p.uchime_ref(database: @db.path).run(input: input, output: output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -91,16 +91,16 @@ class TestUchimeRef < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline#uchime_ref status outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#uchime_ref status outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ_COUNT: 5, SEQ: 'atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
     p.uchime_ref(database: @db.path).run(input: input, output: output2)
 
     assert_equal(3,  p.status.first[:records_in])

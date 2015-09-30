@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for UniqueValues.
 class TestUniqueValues < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     [{V0: 'HUMAN', V1: 'H1'},
      {V0: 'HUMAN', V1: 'H2'},
@@ -49,20 +49,20 @@ class TestUniqueValues < Test::Unit::TestCase
 
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline#unique_values with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline#unique_values with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.unique_values(key: :V0, foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline#unique_values with allowed options dont raise' do
+  test 'BioDSL::Pipeline#unique_values with allowed options dont raise' do
     assert_nothing_raised { @p.unique_values(key: :V0) }
   end
 
-  test 'BioPieces::Pipeline#unique_values returns correctly' do
+  test 'BioDSL::Pipeline#unique_values returns correctly' do
     @p.unique_values(key: 'V0').run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -75,14 +75,14 @@ class TestUniqueValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline#unique_values status returns correctly' do
+  test 'BioDSL::Pipeline#unique_values status returns correctly' do
     @p.unique_values(key: 'V0').run(input: @input, output: @output2)
 
     assert_equal(7, @p.status.first[:records_in])
     assert_equal(4, @p.status.first[:records_out])
   end
 
-  test 'BioPieces::Pipeline#unique_values with :invert returns correctly' do
+  test 'BioDSL::Pipeline#unique_values with :invert returns correctly' do
     @p.unique_values(key: 'V0', invert: true).
       run(input: @input, output: @output2)
 

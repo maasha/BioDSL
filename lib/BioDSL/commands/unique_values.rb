@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Select unique or non-unique records based on the value of a given key.
   #
   # _unique_values+ selects records from the stream by checking values of a
@@ -128,7 +128,7 @@ module BioPieces
     # will be output, unless the +invert+ option was used which will result in
     # non-unique records to be output.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     #
     # @return [Boolean]
     def output_record?(record)

@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Namespace with methods to record and manipulate cammand status.
   module StatusHelper
     require 'tempfile'
@@ -57,7 +57,7 @@ module BioPieces
         loop do
           progress_print(commands)
 
-          sleep BioPieces::Config::STATUS_PROGRESS_INTERVAL
+          sleep BioDSL::Config::STATUS_PROGRESS_INTERVAL
         end
       end
 
@@ -122,7 +122,7 @@ module BioPieces
 
     # Update the time_stop and time_elapsed for a given command.
     #
-    # @param command [BioPieces::Command] Command object.
+    # @param command [BioDSL::Command] Command object.
     def update_time(command)
       command.status[:time_stop] = Time.now unless command.run_status == 'done'
 

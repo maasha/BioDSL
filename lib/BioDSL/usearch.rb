@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# Namespace for BioPieces.
-module BioPieces
+# Namespace for BioDSL.
+module BioDSL
   # Error class for all exceptions to do with Usearch.
   class UsearchError < StandardError; end
 
@@ -275,7 +275,7 @@ module BioPieces
 
       # Parse each UC type record and yield the result.
       #
-      # @yield [Hash] BioPieces record with UC result.
+      # @yield [Hash] BioDSL record with UC result.
       def each_uc
         @io.each do |line|
           fields = line.chomp.split("\t")

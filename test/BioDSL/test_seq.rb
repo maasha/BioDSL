@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,35 +31,35 @@ require 'test/helper'
 
 class TestSeq < Test::Unit::TestCase 
   def setup
-    @entry = BioPieces::Seq.new
+    @entry = BioDSL::Seq.new
   end
 
-  test "BioPieces::Seq.new with differnet length SEQ and SCORES raises" do
-    assert_raise(BioPieces::SeqError) { BioPieces::Seq.new(seq_name: "test", seq: "ATCG", type: :dna, qual: "hhh") }
+  test "BioDSL::Seq.new with differnet length SEQ and SCORES raises" do
+    assert_raise(BioDSL::SeqError) { BioDSL::Seq.new(seq_name: "test", seq: "ATCG", type: :dna, qual: "hhh") }
   end
 
-  test "BioPieces::Seq.new_bp returns correctly" do
+  test "BioDSL::Seq.new_bp returns correctly" do
     record = {:SEQ_NAME => "test", :SEQ => "ATCG", :SEQ_TYPE => :dna, :SCORES => "hhhh"}
-    seq    = BioPieces::Seq.new_bp(record)
+    seq    = BioDSL::Seq.new_bp(record)
     assert_equal("test", seq.seq_name)
     assert_equal("ATCG", seq.seq)
     assert_equal(:dna,  seq.type)
     assert_equal("hhhh", seq.qual)
   end
 
-  test "BioPieces::Seq.generate_oligos with bad type raises" do
-    assert_raise(BioPieces::SeqError) { BioPieces::Seq.generate_oligos(2, :foo) }
+  test "BioDSL::Seq.generate_oligos with bad type raises" do
+    assert_raise(BioDSL::SeqError) { BioDSL::Seq.generate_oligos(2, :foo) }
   end
 
-  test "BioPieces::Seq.generate_oligos with bad length raises" do
-    assert_raise(BioPieces::SeqError) { BioPieces::Seq.generate_oligos(0, :dna) }
+  test "BioDSL::Seq.generate_oligos with bad length raises" do
+    assert_raise(BioDSL::SeqError) { BioDSL::Seq.generate_oligos(0, :dna) }
   end
 
-  test "BioPieces::Seq.generate_oligos returns correctly" do
+  test "BioDSL::Seq.generate_oligos returns correctly" do
     expected = %w{aa at ac ag ta tt tc tg ca ct cc cg ga gt gc gg}
-    assert_equal(expected, BioPieces::Seq.generate_oligos(2, :dna))
+    assert_equal(expected, BioDSL::Seq.generate_oligos(2, :dna))
     expected = %w{aa au ac ag ua uu uc ug ca cu cc cg ga gu gc gg}
-    assert_equal(expected, BioPieces::Seq.generate_oligos(2, :rna))
+    assert_equal(expected, BioDSL::Seq.generate_oligos(2, :rna))
     expected = %w{
       ff fl fs fy fc fw fp fh fq fr fi fm ft fn fk fv fa fd fe fg
       lf ll ls ly lc lw lp lh lq lr li lm lt ln lk lv la ld le lg
@@ -82,38 +82,38 @@ class TestSeq < Test::Unit::TestCase
       ef el es ey ec ew ep eh eq er ei em et en ek ev ea ed ee eg
       gf gl gs gy gc gw gp gh gq gr gi gm gt gn gk gv ga gd ge gg
     }
-    assert_equal(expected, BioPieces::Seq.generate_oligos(2, :protein))
+    assert_equal(expected, BioDSL::Seq.generate_oligos(2, :protein))
   end
 
-  test "BioPieces::Seq.check_name_pair with badly formatted names raises" do
-    entry1 = BioPieces::Seq.new(seq_name: "foo")
-    entry2 = BioPieces::Seq.new(seq_name: "bar")
-    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry1, entry2) }
-    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry2, entry1) }
+  test "BioDSL::Seq.check_name_pair with badly formatted names raises" do
+    entry1 = BioDSL::Seq.new(seq_name: "foo")
+    entry2 = BioDSL::Seq.new(seq_name: "bar")
+    assert_raise(BioDSL::SeqError) { BioDSL::Seq.check_name_pair(entry1, entry2) }
+    assert_raise(BioDSL::SeqError) { BioDSL::Seq.check_name_pair(entry2, entry1) }
   end
 
-  test "BioPieces::Seq.check_name_pair with Illumina1.3/1.5 names and no match raises" do
-    entry1 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/1")
-    entry2 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:491:1793#0/2")
-    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry1, entry2) }
+  test "BioDSL::Seq.check_name_pair with Illumina1.3/1.5 names and no match raises" do
+    entry1 = BioDSL::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/1")
+    entry2 = BioDSL::Seq.new(seq_name: "HWUSI-EAS100R:6:73:491:1793#0/2")
+    assert_raise(BioDSL::SeqError) { BioDSL::Seq.check_name_pair(entry1, entry2) }
   end
 
-  test "BioPieces::Seq.check_name_pair with Illumina1.8 names and no match raises" do
-    entry1 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG")
-    entry2 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15433:179393 2:Y:18:ATCACG")
-    assert_raise(BioPieces::SeqError) { BioPieces::Seq.check_name_pair(entry1, entry2) }
+  test "BioDSL::Seq.check_name_pair with Illumina1.8 names and no match raises" do
+    entry1 = BioDSL::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG")
+    entry2 = BioDSL::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15433:179393 2:Y:18:ATCACG")
+    assert_raise(BioDSL::SeqError) { BioDSL::Seq.check_name_pair(entry1, entry2) }
   end
 
-  test "BioPieces::Seq.check_name_pair with Illumina1.3/1.5 names and match don't raise" do
-    entry1 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/1")
-    entry2 = BioPieces::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/2")
-    assert_nothing_raised { BioPieces::Seq.check_name_pair(entry1, entry2) }
+  test "BioDSL::Seq.check_name_pair with Illumina1.3/1.5 names and match don't raise" do
+    entry1 = BioDSL::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/1")
+    entry2 = BioDSL::Seq.new(seq_name: "HWUSI-EAS100R:6:73:941:1973#0/2")
+    assert_nothing_raised { BioDSL::Seq.check_name_pair(entry1, entry2) }
   end
 
-  test "BioPieces::Seq.check_name_pair with Illumina1.8 names and match don't raise" do
-    entry1 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG")
-    entry2 = BioPieces::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 2:Y:18:ATCACG")
-    assert_nothing_raised { BioPieces::Seq.check_name_pair(entry1, entry2) }
+  test "BioDSL::Seq.check_name_pair with Illumina1.8 names and match don't raise" do
+    entry1 = BioDSL::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG")
+    entry2 = BioDSL::Seq.new(seq_name: "EAS139:136:FC706VJ:2:2104:15343:197393 2:Y:18:ATCACG")
+    assert_nothing_raised { BioDSL::Seq.check_name_pair(entry1, entry2) }
   end
 
   test "#is_dna? with no sequence type returns false" do
@@ -144,7 +144,7 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#type_guess without sequence raises" do
-    assert_raise(BioPieces::SeqError) { @entry.type_guess }
+    assert_raise(BioDSL::SeqError) { @entry.type_guess }
   end
 
   test "#type_guess with protein returns protein" do
@@ -163,7 +163,7 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#type_guess! without sequence raises" do
-    assert_raise(BioPieces::SeqError) { @entry.type_guess! }
+    assert_raise(BioDSL::SeqError) { @entry.type_guess! }
   end
 
   test "#type_guess! with protein returns protein" do
@@ -196,13 +196,13 @@ class TestSeq < Test::Unit::TestCase
 
   test "#to_rna with no sequence raises" do
     @entry.type = :dna
-    assert_raise(BioPieces::SeqError) { @entry.to_rna }
+    assert_raise(BioDSL::SeqError) { @entry.to_rna }
   end
 
   test "#to_rna with bad type raises" do
     @entry.seq  = 'ATCG'
     @entry.type = :rna
-    assert_raise(BioPieces::SeqError) { @entry.to_rna }
+    assert_raise(BioDSL::SeqError) { @entry.to_rna }
   end
 
   test "#to_rna transcribes correctly" do
@@ -220,13 +220,13 @@ class TestSeq < Test::Unit::TestCase
 
   test "#to_dna with no sequence raises" do
     @entry.type = :rna
-    assert_raise(BioPieces::SeqError) { @entry.to_dna }
+    assert_raise(BioDSL::SeqError) { @entry.to_dna }
   end
 
   test "#to_dna with bad type raises" do
     @entry.seq  = 'AUCG'
     @entry.type = :dna
-    assert_raise(BioPieces::SeqError) { @entry.to_dna }
+    assert_raise(BioDSL::SeqError) { @entry.to_dna }
   end
 
   test "#to_dna transcribes correctly" do
@@ -250,24 +250,24 @@ class TestSeq < Test::Unit::TestCase
 
   test "#to_fasta with missing seq_name raises" do
     @entry.seq = 'ATCG'
-    assert_raise(BioPieces::SeqError) { @entry.to_fasta }
+    assert_raise(BioDSL::SeqError) { @entry.to_fasta }
   end
 
   test "#to_fasta with empty seq_name raises" do
     @entry.seq_name = ''
     @entry.seq      = 'ATCG'
-    assert_raise(BioPieces::SeqError) { @entry.to_fasta }
+    assert_raise(BioDSL::SeqError) { @entry.to_fasta }
   end
 
   test "#to_fasta with missing seq raises" do
     @entry.seq_name = 'test'
-    assert_raise(BioPieces::SeqError) { @entry.to_fasta }
+    assert_raise(BioDSL::SeqError) { @entry.to_fasta }
   end
 
   test "#to_fasta with empty seq raises" do
     @entry.seq_name = 'test'
     @entry.seq      = ''
-    assert_raise(BioPieces::SeqError) { @entry.to_fasta }
+    assert_raise(BioDSL::SeqError) { @entry.to_fasta }
   end
 
   test "#to_fasta returns correct entry" do
@@ -277,7 +277,7 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#to_fasta wraps correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test", seq: "ATCG")
+    entry = BioDSL::Seq.new(seq_name: "test", seq: "ATCG")
     assert_equal(">test\nAT\nCG\n", entry.to_fasta(2))
   end
 
@@ -289,12 +289,12 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#to_key with bad residue raises" do
-    entry = BioPieces::Seq.new(seq_name: "test", seq: "AUCG")
-    assert_raise(BioPieces::SeqError) { entry.to_key }
+    entry = BioDSL::Seq.new(seq_name: "test", seq: "AUCG")
+    assert_raise(BioDSL::SeqError) { entry.to_key }
   end
 
   test "#to_key returns correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test", seq: "ATCG")
+    entry = BioDSL::Seq.new(seq_name: "test", seq: "ATCG")
     assert_equal(54, entry.to_key)
   end
 
@@ -313,13 +313,13 @@ class TestSeq < Test::Unit::TestCase
 
   test "#complement with no sequence raises" do
     @entry.type = :dna
-    assert_raise(BioPieces::SeqError) { @entry.complement }
+    assert_raise(BioDSL::SeqError) { @entry.complement }
   end
 
   test "#complement with bad type raises" do
     @entry.seq  = 'ATCG'
     @entry.type = :protein
-    assert_raise(BioPieces::SeqError) { @entry.complement }
+    assert_raise(BioDSL::SeqError) { @entry.complement }
   end
 
   test "#complement for DNA is correct" do
@@ -340,13 +340,13 @@ class TestSeq < Test::Unit::TestCase
 
   test "#complement! with no sequence raises" do
     @entry.type = :dna
-    assert_raise(BioPieces::SeqError) { @entry.complement! }
+    assert_raise(BioDSL::SeqError) { @entry.complement! }
   end
 
   test "#complement! with bad type raises" do
     @entry.seq  = 'ATCG'
     @entry.type = :protein
-    assert_raise(BioPieces::SeqError) { @entry.complement! }
+    assert_raise(BioDSL::SeqError) { @entry.complement! }
   end
 
   test "#complement! for DNA is correct" do
@@ -362,32 +362,32 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#hamming_distance returns correctly" do
-    seq1 = BioPieces::Seq.new(seq: "ATCG")
-    seq2 = BioPieces::Seq.new(seq: "atgg")
+    seq1 = BioDSL::Seq.new(seq: "ATCG")
+    seq2 = BioDSL::Seq.new(seq: "atgg")
     assert_equal(1, seq1.hamming_distance(seq2))
   end
 
   test "#hamming_distance with ambiguity codes return correctly" do
-    seq1 = BioPieces::Seq.new(seq: "ATCG")
-    seq2 = BioPieces::Seq.new(seq: "atng")
+    seq1 = BioDSL::Seq.new(seq: "ATCG")
+    seq2 = BioDSL::Seq.new(seq: "atng")
 
     assert_equal(1, seq1.hamming_distance(seq2))
     assert_equal(0, seq1.hamming_distance(seq2, ambiguity: true))
   end
 
   test "#edit_distance returns correctly" do
-    seq1 = BioPieces::Seq.new(seq: "ATCG")
-    seq2 = BioPieces::Seq.new(seq: "tgncg")
+    seq1 = BioDSL::Seq.new(seq: "ATCG")
+    seq2 = BioDSL::Seq.new(seq: "tgncg")
     assert_equal(2, seq1.edit_distance(seq2))
   end
 
   test "#generate with length < 1 raises" do
-    assert_raise(BioPieces::SeqError) { @entry.generate(-10, :dna) }
-    assert_raise(BioPieces::SeqError) { @entry.generate(0, :dna) }
+    assert_raise(BioDSL::SeqError) { @entry.generate(-10, :dna) }
+    assert_raise(BioDSL::SeqError) { @entry.generate(0, :dna) }
   end
 
   test "#generate with bad type raises" do
-    assert_raise(BioPieces::SeqError) { @entry.generate(10, "foo") }
+    assert_raise(BioDSL::SeqError) { @entry.generate(10, "foo") }
   end
 
   test "#generate with ok type dont raise" do
@@ -410,7 +410,7 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#+ without qual returns correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test1", seq: "at") + BioPieces::Seq.new(seq_name: "test2", seq: "cg")
+    entry = BioDSL::Seq.new(seq_name: "test1", seq: "at") + BioDSL::Seq.new(seq_name: "test2", seq: "cg")
     assert_nil(entry.seq_name)
     assert_equal("atcg", entry.seq)
     assert_nil(entry.type)
@@ -418,7 +418,7 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#+ with qual returns correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test1", seq: "at", type: :dna, qual: "II") + BioPieces::Seq.new(seq_name: "test2", seq: "cg", type: :dna, qual: "JJ")
+    entry = BioDSL::Seq.new(seq_name: "test1", seq: "at", type: :dna, qual: "II") + BioDSL::Seq.new(seq_name: "test2", seq: "cg", type: :dna, qual: "JJ")
     assert_nil(entry.seq_name)
     assert_equal("atcg", entry.seq)
     assert_equal(:dna,   entry.type)
@@ -427,32 +427,32 @@ class TestSeq < Test::Unit::TestCase
 
   test "#<< with different types raises" do
     @entry.seq = "atcg"
-    assert_raise(BioPieces::SeqError) { @entry << BioPieces::Seq.new(seq_name: "test", seq: "atcg", type: :dna) }
+    assert_raise(BioDSL::SeqError) { @entry << BioDSL::Seq.new(seq_name: "test", seq: "atcg", type: :dna) }
   end
 
   test "#<< with missing qual in one entry raises" do
     @entry.seq  = "atcg"
     @entry.type = :dna
-    assert_raise(BioPieces::SeqError) { @entry << BioPieces::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "IIII") }
+    assert_raise(BioDSL::SeqError) { @entry << BioDSL::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "IIII") }
     @entry.qual = "IIII"
-    assert_raise(BioPieces::SeqError) { @entry << BioPieces::Seq.new(seq_name: "test", seq: "atcg", type: :dna) }
+    assert_raise(BioDSL::SeqError) { @entry << BioDSL::Seq.new(seq_name: "test", seq: "atcg", type: :dna) }
   end
 
   test "#<< with nil qual in both entries dont raise" do
     @entry.seq = "atcg"
-    assert_nothing_raised { @entry << BioPieces::Seq.new(seq_name: "test", seq: "atcg") }
+    assert_nothing_raised { @entry << BioDSL::Seq.new(seq_name: "test", seq: "atcg") }
   end
 
   test "#<< with qual in both entries dont raise" do
     @entry.seq  = "atcg"
     @entry.type = :dna
     @entry.qual = "IIII"
-    assert_nothing_raised { @entry << BioPieces::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "IIII") }
+    assert_nothing_raised { @entry << BioDSL::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "IIII") }
   end
 
   test "#<< without qual returns correctly" do
     @entry.seq  = "atcg"
-    @entry <<  BioPieces::Seq.new(seq_name: "test", seq: "ATCG")
+    @entry <<  BioDSL::Seq.new(seq_name: "test", seq: "ATCG")
     assert_equal("atcgATCG", @entry.seq)
   end
 
@@ -460,13 +460,13 @@ class TestSeq < Test::Unit::TestCase
     @entry.seq  = "atcg"
     @entry.type = :dna
     @entry.qual = "HHHH"
-    @entry <<  BioPieces::Seq.new(seq_name: "test", seq: "ATCG", type: :dna, qual: "IIII")
+    @entry <<  BioDSL::Seq.new(seq_name: "test", seq: "ATCG", type: :dna, qual: "IIII")
     assert_equal("atcgATCG", @entry.seq)
     assert_equal("HHHHIIII", @entry.qual)
   end
 
   test "#[] with qual returns correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "FGHI")
+    entry = BioDSL::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "FGHI")
 
     e = entry[2]
 
@@ -479,7 +479,7 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#[] without qual returns correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test", seq: "atcg")
+    entry = BioDSL::Seq.new(seq_name: "test", seq: "atcg")
 
     e = entry[2]
 
@@ -490,9 +490,9 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "[]= with qual returns correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "FGHI")
+    entry = BioDSL::Seq.new(seq_name: "test", seq: "atcg", type: :dna, qual: "FGHI")
 
-    entry[0] = BioPieces::Seq.new(seq_name: "foo", seq: "T", type: :dna, qual: "I")
+    entry[0] = BioDSL::Seq.new(seq_name: "foo", seq: "T", type: :dna, qual: "I")
 
     assert_equal("test", entry.seq_name)
     assert_equal("Ttcg", entry.seq)
@@ -501,9 +501,9 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "[]= without qual returns correctly" do
-    entry = BioPieces::Seq.new(seq_name: "test", seq: "atcg")
+    entry = BioDSL::Seq.new(seq_name: "test", seq: "atcg")
 
-    entry[0] = BioPieces::Seq.new(seq_name: "foo", seq: "T")
+    entry[0] = BioDSL::Seq.new(seq_name: "foo", seq: "T")
 
     assert_equal("test", entry.seq_name)
     assert_equal("Ttcg", entry.seq)
@@ -545,19 +545,19 @@ class TestSeq < Test::Unit::TestCase
     @entry.seq  = nil
     @entry.qual = ""
 
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_hard!(20) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_hard!(20) }
   end
 
   test "#mask_seq_hard! with nil qual raises" do
     @entry.seq  = ""
     @entry.qual = nil
 
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_hard!(20) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_hard!(20) }
   end
 
   test "#mask_seq_hard! with bad cutoff raises" do
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_hard!(-1) }
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_hard!(41) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_hard!(-1) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_hard!(41) }
   end
 
   test "#mask_seq_hard! with OK cutoff dont raise" do
@@ -579,19 +579,19 @@ class TestSeq < Test::Unit::TestCase
     @entry.seq  = nil
     @entry.qual = ""
 
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_soft!(20) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_soft!(20) }
   end
 
   test "#mask_seq_soft! with nil qual raises" do
     @entry.seq  = ""
     @entry.qual = nil
 
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_soft!(20) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_soft!(20) }
   end
 
   test "#mask_seq_soft! with bad cutoff raises" do
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_soft!(-1) }
-    assert_raise(BioPieces::SeqError) { @entry.mask_seq_soft!(41) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_soft!(-1) }
+    assert_raise(BioDSL::SeqError) { @entry.mask_seq_soft!(41) }
   end
 
   test "#mask_seq_soft! with OK cutoff dont raise" do
@@ -632,31 +632,31 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#qual_valid? with nil qual raises" do
-    assert_raise(BioPieces::SeqError) { @entry.qual_valid?(:base_33) }
-    assert_raise(BioPieces::SeqError) { @entry.qual_valid?(:base_64) }
+    assert_raise(BioDSL::SeqError) { @entry.qual_valid?(:base_33) }
+    assert_raise(BioDSL::SeqError) { @entry.qual_valid?(:base_64) }
   end
 
   test "#qual_valid? with bad encoding raises" do
     @entry.qual = "abc"
-    assert_raise(BioPieces::SeqError) { @entry.qual_valid?("foobar") }
+    assert_raise(BioDSL::SeqError) { @entry.qual_valid?("foobar") }
   end
 
   test "#qual_valid? with OK range returns correctly" do
-    @entry.qual = ((BioPieces::Seq::SCORE_MIN + 33).chr .. (BioPieces::Seq::SCORE_MAX + 33).chr).to_a.join
+    @entry.qual = ((BioDSL::Seq::SCORE_MIN + 33).chr .. (BioDSL::Seq::SCORE_MAX + 33).chr).to_a.join
     assert_equal(true,  @entry.qual_valid?(:base_33))
-    @entry.qual = ((BioPieces::Seq::SCORE_MIN + 64).chr .. (BioPieces::Seq::SCORE_MAX + 64).chr).to_a.join
+    @entry.qual = ((BioDSL::Seq::SCORE_MIN + 64).chr .. (BioDSL::Seq::SCORE_MAX + 64).chr).to_a.join
     assert_equal(true,  @entry.qual_valid?(:base_64))
   end
 
   test "#qual_valid? with bad range returns correctly" do
-    @entry.qual = ((BioPieces::Seq::SCORE_MIN + 33 - 1).chr .. (BioPieces::Seq::SCORE_MAX + 33).chr).to_a.join
+    @entry.qual = ((BioDSL::Seq::SCORE_MIN + 33 - 1).chr .. (BioDSL::Seq::SCORE_MAX + 33).chr).to_a.join
     assert_equal(false,  @entry.qual_valid?(:base_33))
-    @entry.qual = ((BioPieces::Seq::SCORE_MIN + 33).chr .. (BioPieces::Seq::SCORE_MAX + 33 + 1).chr).to_a.join
+    @entry.qual = ((BioDSL::Seq::SCORE_MIN + 33).chr .. (BioDSL::Seq::SCORE_MAX + 33 + 1).chr).to_a.join
     assert_equal(false,  @entry.qual_valid?(:base_33))
 
-    @entry.qual = ((BioPieces::Seq::SCORE_MIN + 64 - 1).chr .. (BioPieces::Seq::SCORE_MAX + 64).chr).to_a.join
+    @entry.qual = ((BioDSL::Seq::SCORE_MIN + 64 - 1).chr .. (BioDSL::Seq::SCORE_MAX + 64).chr).to_a.join
     assert_equal(false,  @entry.qual_valid?(:base_64))
-    @entry.qual = ((BioPieces::Seq::SCORE_MIN + 64).chr .. (BioPieces::Seq::SCORE_MAX + 64 + 1).chr).to_a.join
+    @entry.qual = ((BioDSL::Seq::SCORE_MIN + 64).chr .. (BioDSL::Seq::SCORE_MAX + 64 + 1).chr).to_a.join
     assert_equal(false,  @entry.qual_valid?(:base_64))
   end
 
@@ -684,7 +684,7 @@ class TestSeq < Test::Unit::TestCase
 
   test "#qual_coerce! with bad base raises" do
     @entry.qual = ('!' .. '~').to_a.join
-    assert_raise(BioPieces::SeqError) { @entry.qual_coerce!(:foo) }
+    assert_raise(BioDSL::SeqError) { @entry.qual_coerce!(:foo) }
   end
 
   test "#qual_coerce! returns correctly" do
@@ -696,7 +696,7 @@ class TestSeq < Test::Unit::TestCase
 
   test "#scores_mean without qual raises" do
     @entry.qual = nil
-    assert_raise(BioPieces::SeqError) { @entry.scores_mean }
+    assert_raise(BioDSL::SeqError) { @entry.scores_mean }
   end
 
   test "#scores_mean returns correctly" do
@@ -706,7 +706,7 @@ class TestSeq < Test::Unit::TestCase
 
   test "#scores_min without qual raises" do
     @entry.qual = nil
-    assert_raise(BioPieces::SeqError) { @entry.scores_min }
+    assert_raise(BioDSL::SeqError) { @entry.scores_min }
   end
 
   test "#scores_min returns correctly" do
@@ -716,7 +716,7 @@ class TestSeq < Test::Unit::TestCase
 
   test "#scores_max without qual raises" do
     @entry.qual = nil
-    assert_raise(BioPieces::SeqError) { @entry.scores_max }
+    assert_raise(BioDSL::SeqError) { @entry.scores_max }
   end
 
   test "#scores_max returns correctly" do
@@ -726,7 +726,7 @@ class TestSeq < Test::Unit::TestCase
 
   test "#scores_mean_local without qual raises" do
     @entry.qual = nil
-    assert_raise(BioPieces::SeqError) { @entry.scores_mean_local(2) }
+    assert_raise(BioDSL::SeqError) { @entry.scores_mean_local(2) }
   end
 
   test "#scores_mean_local returns correctly" do

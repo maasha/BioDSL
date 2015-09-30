@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Merge records on a given key with tabular data from one or more files.
   #
   # +merge_table+ reads in one or more tabular files and merges any records in
@@ -172,7 +172,7 @@ module BioPieces
     # Parse input table files and add each row to a table hash.
     def parse_input_tables
       options_glob(@options[:input]).each do |file|
-        BioPieces::CSV.open(file) do |ios|
+        BioDSL::CSV.open(file) do |ios|
           ios.skip(@options[:skip])
 
           ios.each_hash(delimiter: @options[:delimiter],
@@ -187,7 +187,7 @@ module BioPieces
 
     # Trim given record removing unwanted key/values.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def trim_record(record)
       record.first(@keys.size).each_with_index do |(k, v), i|
         record.delete(k)
@@ -197,7 +197,7 @@ module BioPieces
 
     # Add a given record to the table hash.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     #
     # @raise [RuntimeError] if duplicate values are found.
     def add_row(record)
@@ -214,7 +214,7 @@ module BioPieces
 
     # Check if a given record is already added to the table and raise if so.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     #
     # @raise [RuntimeError] if duplicate values are found.
     def check_duplicate(record)

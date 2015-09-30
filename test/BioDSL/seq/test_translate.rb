@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,32 +31,32 @@ require 'test/helper'
 
 class TestTranslate < Test::Unit::TestCase 
   def setup
-    @entry = BioPieces::Seq.new(seq: "atcgatcgatcgtacggttga", type: :dna)
+    @entry = BioDSL::Seq.new(seq: "atcgatcgatcgtacggttga", type: :dna)
   end
 
   test "#tranlate with bad type raises" do
     @entry.type = nil
-    assert_raise(BioPieces::SeqError) { @entry.translate }
+    assert_raise(BioDSL::SeqError) { @entry.translate }
   end
 
   test "#tranlate with bad length raises" do
     @entry.seq = "atcgatcgatcgtacggtga"
-    assert_raise(BioPieces::SeqError) { @entry.translate }
+    assert_raise(BioDSL::SeqError) { @entry.translate }
   end
 
   test "#tranlate with bad translation table raises" do
     @entry.seq = "atcgatcgatcgtacggttga"
-    assert_raise(BioPieces::SeqError) { @entry.translate(0) }
+    assert_raise(BioDSL::SeqError) { @entry.translate(0) }
   end
 
   test "#tranlate with bad start codon raises" do
     @entry.seq = "ttagatcgatcgtacggttga"
-    assert_raise(BioPieces::SeqError) { @entry.translate }
+    assert_raise(BioDSL::SeqError) { @entry.translate }
   end
 
   test "#tranlate with bad codon raises" do
     @entry.seq = "atggatcgaxxxtcgtacggttga"
-    assert_raise(BioPieces::SeqError) { @entry.translate }
+    assert_raise(BioDSL::SeqError) { @entry.translate }
   end
 
   test "#tranlate returns correctly" do

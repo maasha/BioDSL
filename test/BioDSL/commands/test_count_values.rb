@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for CountValues.
 class TestCountValues < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     [{V0: 'HUMAN', V1: 'H1'},
      {V0: 'HUMAN', V1: 'H2'},
@@ -48,18 +48,18 @@ class TestCountValues < Test::Unit::TestCase
 
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline#count_values with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) { @p.count_values(foo: 'bar') }
+  test 'BioDSL::Pipeline#count_values with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) { @p.count_values(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#count_values with allowed options don\'t raise' do
+  test 'BioDSL::Pipeline#count_values with allowed options don\'t raise' do
     assert_nothing_raised { @p.count_values(keys: [:V0]) }
   end
 
-  test 'BioPieces::Pipeline#count_values returns correctly' do
+  test 'BioDSL::Pipeline#count_values returns correctly' do
     @p.count_values(keys: ['V0', :V1, :FOO]).
       run(input: @input, output: @output2)
 
@@ -75,7 +75,7 @@ class TestCountValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline#count_values status returns correctly' do
+  test 'BioDSL::Pipeline#count_values status returns correctly' do
     @p.count_values(keys: ['V0', :V1, :FOO]).
       run(input: @input, output: @output2)
 

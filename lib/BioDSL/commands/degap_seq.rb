@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Remove gaps from sequences or gap only columns in alignments.
   #
   # +degap_seq+ remove gaps from sequences (the letters ~-_.). If the option
@@ -85,7 +85,7 @@ module BioPieces
     # @return [DegapSeq] Instance of DegapSeq.
     def initialize(options)
       @options = options
-      @indels  = BioPieces::Seq::INDELS.sort.join('')
+      @indels  = BioDSL::Seq::INDELS.sort.join('')
       @na_mask = nil
       @max_len = nil
       @count   = 0
@@ -137,7 +137,7 @@ module BioPieces
     # @param tmp_file [String] Path to temporary file.
     def process_input(input, tmp_file)
       File.open(tmp_file, 'wb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           input.each do |record|
             @status[:records_in] += 1
 
@@ -172,10 +172,10 @@ module BioPieces
     #
     # @param seq [String] Sequences.
     #
-    # @raise [BioPieces::SeqError] if sequence length and max_len don't match.
+    # @raise [BioDSL::SeqError] if sequence length and max_len don't match.
     def check_length(seq)
       return if @max_len == seq.length
-      fail BioPieces::SeqError,
+      fail BioDSL::SeqError,
            "Uneven seq lengths: #{@max_len} != #{seq.length}"
     end
 
@@ -191,7 +191,7 @@ module BioPieces
     # @param tmp_file [String] Path to temporary file.
     def process_output(output, tmp_file)
       File.open(tmp_file, 'rb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           s.each do |record|
             remove_residues(record) if record[:SEQ]
 
@@ -202,10 +202,10 @@ module BioPieces
       end
     end
 
-    # Given a BioPieces record containing sequence information
+    # Given a BioDSL record containing sequence information
     # remove all residues based on the na_mask.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def remove_residues(record)
       na_seq           = NArray.to_na(record[:SEQ], 'byte')
       record[:SEQ]     = na_seq[@na_mask].to_s
@@ -232,12 +232,12 @@ module BioPieces
       end
     end
 
-    # Given a BioPieces record with sequence information, remove all gaps from
+    # Given a BioDSL record with sequence information, remove all gaps from
     # the sequence.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def degap_seq(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length

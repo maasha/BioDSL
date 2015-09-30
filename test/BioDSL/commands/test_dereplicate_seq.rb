@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for DereplicateSeq.
 class TestDereplicateSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test1', SEQ: 'ATCG')
     @output.write(SEQ_NAME: 'test2', SEQ: 'ATCG')
@@ -43,18 +43,18 @@ class TestDereplicateSeq < Test::Unit::TestCase
     @output.write(FISH: 'eel')
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::DereplicateSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.dereplicate_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::DereplicateSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.dereplicate_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::DereplicateSeq with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::DereplicateSeq with valid options don\'t raise' do
     assert_nothing_raised { @p.dereplicate_seq(ignore_case: true) }
   end
 
-  test 'BioPieces::Pipeline::DereplicateSeq returns correctly' do
+  test 'BioDSL::Pipeline::DereplicateSeq returns correctly' do
     @p.dereplicate_seq.run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -67,7 +67,7 @@ class TestDereplicateSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::DereplicateSeq status returns correctly' do
+  test 'BioDSL::Pipeline::DereplicateSeq status returns correctly' do
     @p.dereplicate_seq.run(input: @input, output: @output2)
 
     assert_equal(5,  @p.status.first[:records_in])
@@ -78,7 +78,7 @@ class TestDereplicateSeq < Test::Unit::TestCase
     assert_equal(12, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::DereplicateSeq with ignore_case returns OK' do
+  test 'BioDSL::Pipeline::DereplicateSeq with ignore_case returns OK' do
     @p.dereplicate_seq(ignore_case: true).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')

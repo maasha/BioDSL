@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,32 +33,32 @@ require 'test/helper'
 # Test class for AddKey.
 class TestAddKey < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(one: 1, two: 2, three: 3)
     @output.write(SEQ_NAME: 'test1', SEQ: 'atcg', SEQ_LEN: 4)
     @output.write(SEQ_NAME: 'test2', SEQ: 'gtac', SEQ_LEN: 4)
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline#add_key with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) { @p.add_key(foo: 'bar') }
+  test 'BioDSL::Pipeline#add_key with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) { @p.add_key(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#add_key with value and prefix options raise' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline#add_key with value and prefix options raise' do
+    assert_raise(BioDSL::OptionError) do
       @p.add_key(key: 'SEQ_NAME', value: 'foobar', prefix: 'foo')
     end
   end
 
-  test 'BioPieces::Pipeline#add_key with allowed options don\'t raise' do
+  test 'BioDSL::Pipeline#add_key with allowed options don\'t raise' do
     assert_nothing_raised { @p.add_key(key: 'SEQ_NAME', value: 'fobar') }
   end
 
-  test 'BioPieces::Pipeline#add_key status returns correctly' do
+  test 'BioDSL::Pipeline#add_key status returns correctly' do
     @p.add_key(key: 'SEQ_NAME', value: 'fobar').
       run(input: @input, output: @output2)
 
@@ -66,7 +66,7 @@ class TestAddKey < Test::Unit::TestCase
     assert_equal(3, @p.status.last[:records_out])
   end
 
-  test 'BioPieces::Pipeline#add_key with value returns correctly' do
+  test 'BioDSL::Pipeline#add_key with value returns correctly' do
     @p.add_key(key: 'SEQ_NAME', value: 'fobar').
       run(input: @input, output: @output2)
 
@@ -79,7 +79,7 @@ class TestAddKey < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline#add_key with empty prefix returns correctly' do
+  test 'BioDSL::Pipeline#add_key with empty prefix returns correctly' do
     @p.add_key(key: 'SEQ_NAME', prefix: '').run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '')
       |{:one=>1, :two=>2, :three=>3, :SEQ_NAME=>"0"}
@@ -90,7 +90,7 @@ class TestAddKey < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline#add_key with prefix returns correctly' do
+  test 'BioDSL::Pipeline#add_key with prefix returns correctly' do
     @p.add_key(key: 'SEQ_NAME', prefix: 'ID_').
       run(input: @input, output: @output2)
 

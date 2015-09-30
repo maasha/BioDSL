@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,11 +31,11 @@ require 'test/helper'
 
 class TestDigest < Test::Unit::TestCase
   def setup
-    @entry = BioPieces::Seq.new(seq: "cgatcgatcGGATCCgagagggtgtgtagtgGAATTCcgctgc")
+    @entry = BioDSL::Seq.new(seq: "cgatcgatcGGATCCgagagggtgtgtagtgGAATTCcgctgc")
   end
 
   test "#each_digest with bad residue in pattern raises" do
-    assert_raise(BioPieces::DigestError) { @entry.each_digest("X", 0).to_a }
+    assert_raise(BioDSL::DigestError) { @entry.each_digest("X", 0).to_a }
   end
 
   test "#each_digest returns correctly" do

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,8 +35,8 @@ require 'test/helper'
 # rubocop:disable Metrics/LineLength
 class TestMaskSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     hash = {
       SEQ_NAME: 'test',
@@ -48,18 +48,18 @@ class TestMaskSeq < Test::Unit::TestCase
     @output.write hash
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::MaskSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.mask_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::MaskSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.mask_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::MaskSeq with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::MaskSeq with valid options don\'t raise' do
     assert_nothing_raised { @p.mask_seq(mask: :hard) }
   end
 
-  test 'BioPieces::Pipeline::MaskSeq with mask: :soft returns correctly' do
+  test 'BioDSL::Pipeline::MaskSeq with mask: :soft returns correctly' do
     @p.mask_seq.run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -72,7 +72,7 @@ class TestMaskSeq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::MaskSeq with mask: :hard returns correctly' do
+  test 'BioDSL::Pipeline::MaskSeq with mask: :hard returns correctly' do
     @p.mask_seq(mask: 'hard').run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -85,7 +85,7 @@ class TestMaskSeq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::MaskSeq status returns correctly' do
+  test 'BioDSL::Pipeline::MaskSeq status returns correctly' do
     @p.mask_seq(mask: 'hard').run(input: @input, output: @output2)
 
     assert_equal(1, @p.status.first[:records_in])

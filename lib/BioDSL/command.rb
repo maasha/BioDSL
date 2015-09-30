@@ -20,10 +20,10 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-module BioPieces
+module BioDSL
   # Command class for initiating and calling commands.
   class Command
     attr_reader :name, :status, :options
@@ -77,7 +77,7 @@ module BioPieces
 
     # Add a key with time_elapsed to the status.
     #
-    # @return [BioPieces::Status] returns self.
+    # @return [BioDSL::Status] returns self.
     def calc_time_elapsed
       delta = @status[:time_stop] - @status[:time_start]
       @status[:time_elapsed] = (Time.mktime(0) + delta).strftime("%H:%M:%S")
@@ -88,7 +88,7 @@ module BioPieces
     # Locate all status key pairs <foo>_in and <foo>_out and add a new status
     # key <foo>_delta with the numerical difference.
     #
-    # @return [BioPieces::Status] returns self.
+    # @return [BioDSL::Status] returns self.
     def calc_delta
       @status.keys.select { |s| s[-3..-1] == '_in' }.each do |in_key|
         base    = in_key[0...-3]

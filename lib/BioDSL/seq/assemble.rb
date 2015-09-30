@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# Namespace for BioPieces.
-module BioPieces
+# Namespace for BioDSL.
+module BioDSL
   # Error class for all Assemble errors.
   AssembleError = Class.new(StandardError)
 
@@ -123,7 +123,7 @@ module BioPieces
 
     # Method to extract and downcase the left part of an assembled pair.
     #
-    # @return [BioPieces::Seq] Left part.
+    # @return [BioDSL::Seq] Left part.
     def entry_left
       entry = @entry1[0...@offset1]
       entry.seq.downcase!
@@ -132,7 +132,7 @@ module BioPieces
 
     # Method to extract and downcase the right part of an assembled pair.
     #
-    # @return [BioPieces::Seq] Right part.
+    # @return [BioDSL::Seq] Right part.
     def entry_right
       entry = if @entry1.length > @offset1 + @overlap
                 @entry1[@offset1 + @overlap..-1]
@@ -146,7 +146,7 @@ module BioPieces
 
     # Method to extract and upcase the overlapping part of an assembled pair.
     #
-    # @return [BioPieces::Seq] Overlapping part.
+    # @return [BioDSL::Seq] Overlapping part.
     def entry_overlap
       if @entry1.qual && @entry2.qual
         entry_overlap1 = @entry1[@offset1...@offset1 + @overlap]

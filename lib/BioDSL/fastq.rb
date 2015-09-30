@@ -20,16 +20,16 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Error class for all exceptions to do with FASTQ.
   class FastqError < StandardError; end
 
   # Class for parsing FASTQ entries from an ios and return as Seq objects.
-  class Fastq < BioPieces::Filesys
+  class Fastq < BioDSL::Filesys
     def self.open(*args)
       ios = IO.open(*args)
 

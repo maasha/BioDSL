@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,17 +33,17 @@ require 'test/helper'
 # Test class for ComplementSeq.
 class TestComplementSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::ComplementSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.complement_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::ComplementSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.complement_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::ComplementSeq of DNA returns correctly' do
+  test 'BioDSL::Pipeline::ComplementSeq of DNA returns correctly' do
     @output.write(SEQ: 'gatcGATCGT')
     @output.close
     @p.complement_seq.run(input: @input, output: @output2)
@@ -53,7 +53,7 @@ class TestComplementSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ComplementSeq of RNA returns correctly' do
+  test 'BioDSL::Pipeline::ComplementSeq of RNA returns correctly' do
     @output.write(SEQ: 'gaucGAUCGU')
     @output.close
     @p.complement_seq.run(input: @input, output: @output2)
@@ -63,7 +63,7 @@ class TestComplementSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::ComplementSeq status returns correctly' do
+  test 'BioDSL::Pipeline::ComplementSeq status returns correctly' do
     @output.write(SEQ: 'gaucGAUCGU')
     @output.close
     @p.complement_seq.run(input: @input, output: @output2)

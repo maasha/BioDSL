@@ -21,16 +21,16 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Class for creating HTML reports from an executed BioPieces pipeline.
+module BioDSL
+  # Class for creating HTML reports from an executed BioDSL pipeline.
   class HtmlReport
     require 'tilt/haml'
     require 'base64'
-    require 'biopieces/helpers/options_helper'
+    require 'BioDSL/helpers/options_helper'
 
     include OptionsHelper
 
@@ -66,7 +66,7 @@ module BioPieces
 
     # Render HTML pipeline section
     #
-    # @param pipeline [String] String from BioPieces::Pipeline#to_s
+    # @param pipeline [String] String from BioDSL::Pipeline#to_s
     def render_pipeline(pipeline)
       pipeline = pipeline.scan(/[^.]+\(.*?\)|[^.(]+/).join(".\n").sub(/\n/, '')
 
@@ -82,14 +82,14 @@ module BioPieces
 
     # Render HTML command section.
     #
-    # @param command [BioPieces::Command] Command object.
+    # @param command [BioDSL::Command] Command object.
     def render_command(command, index)
       render('command.html.haml', self, command: command, index: index)
     end
 
     # Render HTML status section.
     #
-    # @param command [BioPieces::Command] Command object.
+    # @param command [BioDSL::Command] Command object.
     def render_status(command)
       stats = command.status.reject { |k, _| k.to_s[0..3] == 'time' }
       render('status.html.haml', self, exit_status: command.run_status,
@@ -98,7 +98,7 @@ module BioPieces
 
     # Render HTML time section.
     #
-    # @param status [BioPieces::Status] Status object.
+    # @param status [BioDSL::Status] Status object.
     def render_time(status)
       render('time.html.haml', self, status: status)
     end
@@ -193,8 +193,8 @@ module BioPieces
     def help_url(command)
       camel = command.to_s.split('_').map(&:capitalize).join
 
-      'http://www.rubydoc.info/gems/biopieces/' \
-      "#{BioPieces::VERSION}/BioPieces/#{camel}"
+      'http://www.rubydoc.info/gems/BioDSL/' \
+      "#{BioDSL::VERSION}/BioDSL/#{camel}"
     end
   end
 end

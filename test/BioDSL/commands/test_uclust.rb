@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,29 +33,29 @@ require 'test/helper'
 # Test class for Uclust.
 class TestUclust < Test::Unit::TestCase
   def setup
-    omit('usearch not found') unless BioPieces::Filesys.which('usearch')
+    omit('usearch not found') unless BioDSL::Filesys.which('usearch')
   end
 
-  test 'BioPieces::Pipeline#uclust with disallowed option raises' do
-    p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.uclust(foo: 'bar') }
+  test 'BioDSL::Pipeline#uclust with disallowed option raises' do
+    p = BioDSL::Pipeline.new
+    assert_raise(BioDSL::OptionError) { p.uclust(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#uclust with allowed option dont raise' do
-    p = BioPieces::Pipeline.new
+  test 'BioDSL::Pipeline#uclust with allowed option dont raise' do
+    p = BioDSL::Pipeline.new
     assert_nothing_raised { p.uclust(identity: 1, strand: :both) }
   end
 
-  test 'BioPieces::Pipeline#uclust outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#uclust outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
     output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
     p.uclust(identity: 0.97, strand: 'plus').run(input: input, output: output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -85,16 +85,16 @@ class TestUclust < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_sorted_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline#uclust status outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#uclust status outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
     output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
     p.uclust(identity: 0.97, strand: 'plus').run(input: input, output: output2)
 
     assert_equal(3, p.status.first[:records_in])
@@ -105,16 +105,16 @@ class TestUclust < Test::Unit::TestCase
     assert_equal(80, p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline#uclust outputs msa correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#uclust outputs msa correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
     output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
     p.uclust(identity: 0.97, strand: 'plus', align: true).
       run(input: input, output: output2)
 

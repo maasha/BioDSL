@@ -1,19 +1,19 @@
 $LOAD_PATH.push File.expand_path('../lib', __FILE__)
 
-require 'biopieces/version'
+require 'BioDSL/version'
 
 Gem::Specification.new do |s|
-  s.name              = 'biopieces'
-  s.version           = BioPieces::VERSION
+  s.name              = 'BioDSL'
+  s.version           = BioDSL::VERSION
   s.platform          = Gem::Platform::RUBY
   s.date              = Time.now.strftime('%F')
-  s.summary           = 'Biopieces'
-  s.description       = 'Biopieces is a bioinformatic framework of tools ' \
+  s.summary           = 'BioDSL'
+  s.description       = 'BioDSL is a bioinformatic framework of tools ' \
                         'easily used and easily created.'
   s.authors           = ['Martin A. Hansen']
   s.email             = 'mail@maasha.dk'
-  s.rubyforge_project = 'biopieces'
-  s.homepage          = 'http://www.biopieces.org'
+  s.rubyforge_project = 'BioDSL'
+  s.homepage          = 'http://www.BioDSL.org'
   s.license           = 'GPL2'
   s.rubygems_version  = '2.0.0'
   s.files             = `git ls-files`.split("\n")

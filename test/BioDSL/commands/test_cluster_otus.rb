@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,66 +33,66 @@ require 'test/helper'
 # Test class for ClusterOtus.
 class TestClusterOtus < Test::Unit::TestCase
   def setup
-    omit('usearch not found') unless BioPieces::Filesys.which('usearch')
+    omit('usearch not found') unless BioDSL::Filesys.which('usearch')
   end
 
-  test 'BioPieces::Pipeline#cluster_otus with disallowed option raises' do
-    p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.cluster_otus(foo: 'bar') }
+  test 'BioDSL::Pipeline#cluster_otus with disallowed option raises' do
+    p = BioDSL::Pipeline.new
+    assert_raise(BioDSL::OptionError) { p.cluster_otus(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#cluster_otus with allowed option dont raise' do
-    p = BioPieces::Pipeline.new
+  test 'BioDSL::Pipeline#cluster_otus with allowed option dont raise' do
+    p = BioDSL::Pipeline.new
     assert_nothing_raised { p.cluster_otus(identity: 1) }
   end
 
-  test 'BioPieces::Pipeline#cluster_otus with SEQ and no SEQ_COUNT raises' do
-    input, output   = BioPieces::Stream.pipe
-    input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#cluster_otus with SEQ and no SEQ_COUNT raises' do
+    input, output   = BioDSL::Stream.pipe
+    input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ: 'atcg')
     output.write(SEQ: 'atcg')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
 
-    assert_raise(BioPieces::SeqError) do
+    assert_raise(BioDSL::SeqError) do
       p.cluster_otus.run(input: input, output: output2)
     end
 
     input2.close
   end
 
-  test 'BioPieces::Pipeline#cluster_otus with SEQ and unsorted SEQ_COUNT ' \
+  test 'BioDSL::Pipeline#cluster_otus with SEQ and unsorted SEQ_COUNT ' \
     'raises' do
-    input, output   = BioPieces::Stream.pipe
-    input2, output2 = BioPieces::Stream.pipe
+    input, output   = BioDSL::Stream.pipe
+    input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ_COUNT: 3, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
 
-    assert_raise(BioPieces::UsearchError) do
+    assert_raise(BioDSL::UsearchError) do
       p.cluster_otus.run(input: input, output: output2)
     end
 
     input2.close
   end
 
-  test 'BioPieces::Pipeline#cluster_otus outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#cluster_otus outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ_COUNT: 5, SEQ: 'atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new.cluster_otus.run(input: input, output: output2)
+    p = BioDSL::Pipeline.new.cluster_otus.run(input: input, output: output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').delete("\n")
       |{:one=>1,
@@ -107,16 +107,16 @@ class TestClusterOtus < Test::Unit::TestCase
     assert_equal(expected, collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline#cluster_otus status outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#cluster_otus status outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ_COUNT: 5, SEQ: 'atcgaAcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.write(SEQ_COUNT: 4, SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new.cluster_otus.run(input: input, output: output2)
+    p = BioDSL::Pipeline.new.cluster_otus.run(input: input, output: output2)
 
     assert_equal(3,  p.status.first[:records_in])
     assert_equal(2,  p.status.first[:records_out])

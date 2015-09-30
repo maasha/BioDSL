@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,16 +33,16 @@ require 'test/helper'
 # Test class for AssembleSeqSpandes.
 class TestAssembleSeqSpades < Test::Unit::TestCase
   def setup
-    omit('spades.py not found') unless BioPieces::Filesys.which('spades.py')
+    omit('spades.py not found') unless BioDSL::Filesys.which('spades.py')
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::AssembleSeqSpades with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.assemble_seq_spades(foo: 'bar') }
+  test 'BioDSL::Pipeline::AssembleSeqSpades with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.assemble_seq_spades(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::AssembleSeqSpades with OK options dont raise' do
+  test 'BioDSL::Pipeline::AssembleSeqSpades with OK options dont raise' do
     assert_nothing_raised { @p.assemble_seq_spades(cpus: 1) }
   end
 

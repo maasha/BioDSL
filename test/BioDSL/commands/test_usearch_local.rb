@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,7 +35,7 @@ class TestUsearchLocal < Test::Unit::TestCase
   require 'tempfile'
 
   def setup
-    omit('usearch not found') unless BioPieces::Filesys.which('usearch')
+    omit('usearch not found') unless BioDSL::Filesys.which('usearch')
 
     data = <<-DAT.gsub(/^\s+\|/, '')
       |>test1
@@ -54,26 +54,26 @@ class TestUsearchLocal < Test::Unit::TestCase
     @db.unlink
   end
 
-  test 'BioPieces::Pipeline#usearch_local with disallowed option raises' do
-    p = BioPieces::Pipeline.new
-    assert_raise(BioPieces::OptionError) { p.usearch_local(foo: 'bar') }
+  test 'BioDSL::Pipeline#usearch_local with disallowed option raises' do
+    p = BioDSL::Pipeline.new
+    assert_raise(BioDSL::OptionError) { p.usearch_local(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#usearch_local with allowed option dont raise' do
-    p = BioPieces::Pipeline.new
+  test 'BioDSL::Pipeline#usearch_local with allowed option dont raise' do
+    p = BioDSL::Pipeline.new
     assert_nothing_raised { p.usearch_local(database: @db.path, identity: 1) }
   end
 
-  test 'BioPieces::Pipeline#usearch_local outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#usearch_local outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
     output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
     p.usearch_local(database: @db.path, identity: 0.97, strand: 'plus').
       run(input: input, output: output2)
 
@@ -104,16 +104,16 @@ class TestUsearchLocal < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_sorted_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline#usearch_local status outputs correctly' do
-    input, output   = BioPieces::Stream.pipe
-    @input2, output2 = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline#usearch_local status outputs correctly' do
+    input, output   = BioDSL::Stream.pipe
+    @input2, output2 = BioDSL::Stream.pipe
 
     output.write(one: 1, two: 2, three: 3)
     output.write(SEQ: 'gtgtgtagctacgatcagctagcgatcgagctatatgttt')
     output.write(SEQ: 'atcgatcgatcgatcgatcgatcgatcgtacgacgtagct')
     output.close
 
-    p = BioPieces::Pipeline.new
+    p = BioDSL::Pipeline.new
     p.usearch_local(database: @db.path, identity: 0.97, strand: 'plus').
       run(input: input, output: output2)
 

@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Write sequences from stream in FASTA format.
   #
   # Description
@@ -188,12 +188,12 @@ module BioPieces
     #
     # @param record [Hash] Biopices record to convert.
     #
-    # @return [BioPieces::Seq] Sequence entry.
+    # @return [BioDSL::Seq] Sequence entry.
     def record2entry(record)
       return unless record.key? :SEQ_NAME
       return unless record.key? :SEQ
 
-      BioPieces::Seq.new_bp(record)
+      BioDSL::Seq.new_bp(record)
     end
 
     # Determine what compression should be used for output.

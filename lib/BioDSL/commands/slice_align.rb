@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 # rubocop: disable LineLength
-module BioPieces
+module BioDSL
   # == Slice aligned sequences in the stream to obtain subsequences.
   #
   # +slice_align+ slices an alignment to extract subsequence from all sequences
@@ -183,7 +183,7 @@ module BioPieces
       @options  = options
       @forward  = forward
       @reverse  = reverse
-      @indels   = BioPieces::Seq::INDELS.sort.join
+      @indels   = BioDSL::Seq::INDELS.sort.join
       @template = nil
       @slice    = options[:slice]
 
@@ -238,7 +238,7 @@ module BioPieces
     def parse_template_file
       return unless @options[:template_file]
 
-      @template = BioPieces::Fasta.read(@options[:template_file]).first
+      @template = BioDSL::Fasta.read(@options[:template_file]).first
     end
 
     # Set the slice positions using the template sequence.
@@ -307,9 +307,9 @@ module BioPieces
 
     # Slice sequence in given record accoding to slice positions.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     def slice_align(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length
@@ -326,7 +326,7 @@ module BioPieces
 
     # Usings primers to locate slice positions in entry.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     def setup_slice(entry)
       pos_index = PosIndex.new(entry, @indels)
       compact   = Seq.new(seq: entry.seq.dup.delete(@indels))
@@ -340,11 +340,11 @@ module BioPieces
     # Find pattern in entry and return match.
     #
     # @param pattern [String]         Search pattern.
-    # @param entry   [BioPieces::Seq] Sequence to search.
+    # @param entry   [BioDSL::Seq] Sequence to search.
     #
-    # @return [BioPieces::Seq::Match] Pattern match.
+    # @return [BioDSL::Seq::Match] Pattern match.
     #
-    # @raise [BioPieces::SeqError] If no match.
+    # @raise [BioDSL::SeqError] If no match.
     def find_match(pattern, entry)
       match = entry.patmatch(pattern,
                              max_mismatches: @max_mis,
@@ -353,7 +353,7 @@ module BioPieces
 
       return match unless match.nil?
 
-      fail BioPieces::SeqError, "pattern not found: #{pattern}"
+      fail BioDSL::SeqError, "pattern not found: #{pattern}"
     end
 
     # Class for indexing gapped sequence positions to non-gapped sequence
@@ -361,7 +361,7 @@ module BioPieces
     class PosIndex
       # Constructor for PosIndex.
       #
-      # @param entry  [BioPieces::Seq] Gapped sequence entry.
+      # @param entry  [BioDSL::Seq] Gapped sequence entry.
       # @param indels [String]         String with indel alphabet.
       #
       # @return [PosIndex] Class instance.

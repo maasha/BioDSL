@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for CollapseOtus.
 class TestCollapseOtus < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(OTU: 'OTU_0', SAMPLE1_COUNT: 3352,
                   TAXONOMY: 'Streptococcaceae(100);Lactococcus(100)')
@@ -50,11 +50,11 @@ class TestCollapseOtus < Test::Unit::TestCase
     @p = BP.new
   end
 
-  test 'BioPieces::Pipeline::Count with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.collapse_otus(foo: 'bar') }
+  test 'BioDSL::Pipeline::Count with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.collapse_otus(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::Count to file outputs correctly' do
+  test 'BioDSL::Pipeline::Count to file outputs correctly' do
     @p.collapse_otus.run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '').delete("\n")
       |{:OTU=>"OTU_0",
@@ -70,7 +70,7 @@ class TestCollapseOtus < Test::Unit::TestCase
     assert_equal(expected, collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::Count status outputs correctly' do
+  test 'BioDSL::Pipeline::Count status outputs correctly' do
     @p.collapse_otus.run(input: @input, output: @output2)
 
     assert_equal(4, @p.status.first[:records_in])

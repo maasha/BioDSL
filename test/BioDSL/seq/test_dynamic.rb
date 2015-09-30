@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,8 +31,8 @@ require 'test/helper'
 
 class TestDynamic < Test::Unit::TestCase
   def setup
-    @p = BioPieces::Seq.new(seq_name: "test", seq: "atcg")
-    @p.extend(BioPieces::Dynamic)
+    @p = BioDSL::Seq.new(seq_name: "test", seq: "atcg")
+    @p.extend(BioDSL::Dynamic)
   end
 
   test "#patmatch with no match returns nil" do
@@ -120,14 +120,14 @@ class TestDynamic < Test::Unit::TestCase
   end
 
   test "#patscan locates three patterns ok" do
-    p = BioPieces::Seq.new(seq_name: "test", seq: "ataacgagctagctagctagctgactac")
-    p.extend(BioPieces::Dynamic)
+    p = BioDSL::Seq.new(seq_name: "test", seq: "ataacgagctagctagctagctgactac")
+    p.extend(BioDSL::Dynamic)
     assert_equal(3, p.patscan("tag").count)
   end
 
   test "#patscan with pos locates two patterns ok" do
-    p = BioPieces::Seq.new(seq_name: "test", seq: "ataacgagctagctagctagctgactac")
-    p.extend(BioPieces::Dynamic)
+    p = BioDSL::Seq.new(seq_name: "test", seq: "ataacgagctagctagctagctgactac")
+    p.extend(BioDSL::Dynamic)
     assert_equal(2, p.patscan("tag", 10).count)
   end
 end

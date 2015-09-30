@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Align sequences in the stream using Mothur.
   #
   # This is a wrapper for the +mothur+ command +align.seqs()+. Basically,
@@ -59,7 +59,7 @@ module BioPieces
   #    run
   class AlignSeqMothur
     require 'English'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -104,7 +104,7 @@ module BioPieces
       options_required(@options, :template_file)
       options_files_exist(@options, :template_file)
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
     end
 
     # Set default options.
@@ -115,11 +115,11 @@ module BioPieces
     # Process all records in the input stream and write those with sequences to
     # file and all other records to the output stream.
     #
-    # @param input  [BioPieces::Stream] The input stream.
-    # @param output [BioPieces::Stream] The output stream.
+    # @param input  [BioDSL::Stream] The input stream.
+    # @param output [BioDSL::Stream] The output stream.
     # @param tmp_in [String]            Path to temporary file.
     def process_input(input, output, tmp_in)
-      BioPieces::Fasta.open(tmp_in, 'w') do |ios|
+      BioDSL::Fasta.open(tmp_in, 'w') do |ios|
         input.each_with_index do |record, i|
           @status[:records_in] += 1
 
@@ -138,11 +138,11 @@ module BioPieces
     # instead.
     #
     # @param ios    [Fasta::IO] FASTA IO.
-    # @param record [Hash]      BioPieces record to create FASTA entry from.
+    # @param record [Hash]      BioDSL record to create FASTA entry from.
     # @param i      [Integer]   Sequence index.
     def write_entry(ios, record, i)
       seq_name = record[:SEQ_NAME] || i.to_s
-      entry    = BioPieces::Seq.new(seq_name: seq_name, seq: record[:SEQ])
+      entry    = BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ])
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length
@@ -152,10 +152,10 @@ module BioPieces
 
     # Read all FASTA entries from output file and emit to the output stream.
     #
-    # @param output  [BioPieces::Stream] The output stream.
+    # @param output  [BioDSL::Stream] The output stream.
     # @param tmp_out [String]            Path to temporary file.
     def process_output(output, tmp_out)
-      BioPieces::Fasta.open(tmp_out) do |ios|
+      BioDSL::Fasta.open(tmp_out) do |ios|
         ios.each do |entry|
           output << entry.to_bp
           @status[:records_out]   += 1
@@ -182,7 +182,7 @@ module BioPieces
         |processors=#{cpus})"
       CMD
 
-      if BioPieces.verbose
+      if BioDSL.verbose
         system(cmd)
       else
         system("#{cmd} > /dev/null 2>&1")

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,34 +33,34 @@ require 'test/helper'
 # Test class for the dump command.
 class TestDump < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(one: 1, two: 2, three: 3)
     @output.write(SEQ_NAME: 'test1', SEQ: 'atcg', SEQ_LEN: 4)
     @output.write(SEQ_NAME: 'test2', SEQ: 'gtac', SEQ_LEN: 4)
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline#dump with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) { @p.dump(foo: 'bar') }
+  test 'BioDSL::Pipeline#dump with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) { @p.dump(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#dump with bad first raises' do
-    assert_raise(BioPieces::OptionError) { @p.dump(first: 0) }
+  test 'BioDSL::Pipeline#dump with bad first raises' do
+    assert_raise(BioDSL::OptionError) { @p.dump(first: 0) }
   end
 
-  test 'BioPieces::Pipeline#dump with bad last raises' do
-    assert_raise(BioPieces::OptionError) { @p.dump(last: 0) }
+  test 'BioDSL::Pipeline#dump with bad last raises' do
+    assert_raise(BioDSL::OptionError) { @p.dump(last: 0) }
   end
 
-  test 'BioPieces::Pipeline#dump with first and last raises' do
-    assert_raise(BioPieces::OptionError) { @p.dump(first: 1, last: 1) }
+  test 'BioDSL::Pipeline#dump with first and last raises' do
+    assert_raise(BioDSL::OptionError) { @p.dump(first: 1, last: 1) }
   end
 
-  test 'BioPieces::Pipeline#dump returns correctly' do
+  test 'BioDSL::Pipeline#dump returns correctly' do
     result1 = capture_stdout { @p.dump.run(input: @input, output: @output2) }
     result2 = collect_result
 
@@ -74,14 +74,14 @@ class TestDump < Test::Unit::TestCase
     assert_equal(expected, result2)
   end
 
-  test 'BioPieces::Pipeline#dump status returns correctly' do
+  test 'BioDSL::Pipeline#dump status returns correctly' do
     capture_stdout { @p.dump.run(input: @input, output: @output2) }
 
     assert_equal(3, @p.status.first[:records_in])
     assert_equal(3, @p.status.first[:records_out])
   end
 
-  test 'BioPieces::Pipeline#dump with options[first: 1] returns correctly' do
+  test 'BioDSL::Pipeline#dump with options[first: 1] returns correctly' do
     result1 = capture_stdout do
       @p.dump(first: 1).run(input: @input, output: @output2)
     end
@@ -94,7 +94,7 @@ class TestDump < Test::Unit::TestCase
     assert_equal(expected, result2)
   end
 
-  test 'BioPieces::Pipeline#dump with options[last: 1] returns correctly' do
+  test 'BioDSL::Pipeline#dump with options[last: 1] returns correctly' do
     result1 = capture_stdout do
       @p.dump(last: 1).run(input: @input, output: @output2)
     end

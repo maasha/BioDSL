@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Namespace for EmailHelper.
   module EmailHelper
     # Send email notification to email address specfied in @options[:email],
@@ -33,13 +33,13 @@ module BioPieces
     # otherwise default to self.to_s. The body of the email will be an HTML
     # report.
     #
-    # @param pipeline [BioPieces::Pipeline] Pipeline object
+    # @param pipeline [BioDSL::Pipeline] Pipeline object
     def send_email(pipeline)
       return unless @options[:email]
 
       html_part = Mail::Part.new do
         content_type 'text/html; charset=UTF-8'
-        body BioPieces::HtmlReport.new(pipeline).to_html
+        body BioDSL::HtmlReport.new(pipeline).to_html
       end
 
       compose_mail(html_part).deliver!

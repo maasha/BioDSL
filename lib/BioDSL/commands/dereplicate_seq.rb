@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Dereplicate sequences in the stream.
   #
   # +dereplicate_seq+ removes all duplicate sequence records. Dereplicated
@@ -104,7 +104,7 @@ module BioPieces
     # @param tmp_file [String] Path to temporary file.
     def process_input(input, output, tmp_file)
       File.open(tmp_file, 'wb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           input.each do |record|
             @status[:records_in] += 1
 
@@ -123,8 +123,8 @@ module BioPieces
     # Serialize records with unique sequences and keep a count of how many time
     # each sequence was encountered.
     #
-    # @param record [Hash] BioPieces record.
-    # @param s [BioPieces::Serializer] Serializer.
+    # @param record [Hash] BioDSL record.
+    # @param s [BioDSL::Serializer] Serializer.
     def serialize(record, s)
       @status[:sequences_in] += 1
 
@@ -149,7 +149,7 @@ module BioPieces
     # @param tmp_file [String] Path to tmp file.
     def process_output(output, tmp_file)
       File.open(tmp_file, 'rb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           s.each do |record|
             seq = record[:SEQ].dup
             @status[:residues_out] += seq.length

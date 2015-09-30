@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Sort records in the stream.
   #
   # +sort+ records in the stream given a specific key. Sorting on multiple keys
@@ -178,7 +178,7 @@ module BioPieces
       file = Tempfile.new('sort')
 
       File.open(file, 'wb') do |ios|
-        BioPieces::Serializer.new(ios) do |serializer|
+        BioDSL::Serializer.new(ios) do |serializer|
           @records.each { |record| serializer << record }
         end
       end
@@ -195,7 +195,7 @@ module BioPieces
     # Fill the pqueue with the first record from each of the file descriptors.
     def fill_pqueue
       @fds.each_with_index do |fd, i|
-        BioPieces::Serializer.new(fd) do |serializer|
+        BioDSL::Serializer.new(fd) do |serializer|
           @pqueue << [serializer.next_entry, i] unless fd.eof?
         end
       end
@@ -214,7 +214,7 @@ module BioPieces
 
         fd = @fds[i]
 
-        BioPieces::Serializer.new(fd) do |serializer|
+        BioDSL::Serializer.new(fd) do |serializer|
           @pqueue << [serializer.next_entry, i] unless fd.eof?
         end
       end

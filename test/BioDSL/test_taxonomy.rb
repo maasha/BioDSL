@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,19 +33,19 @@ class TestTaxonomy < Test::Unit::TestCase
   def setup
     @tmpdir = Dir.mktmpdir("Taxonomy")
 
-    @index = BioPieces::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir, prefix: "test")
+    @index = BioDSL::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir, prefix: "test")
 
-    @index2 = BioPieces::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir, prefix: "test")
-    @index2.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#",  seq: "aaga"))
-    @index2.add(BioPieces::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
-    @index2.add(BioPieces::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
-    @index2.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
+    @index2 = BioDSL::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir, prefix: "test")
+    @index2.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#",  seq: "aaga"))
+    @index2.add(BioDSL::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
+    @index2.add(BioDSL::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
+    @index2.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
     
-    @index3 = BioPieces::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir, prefix: "test")
-    @index3.add(BioPieces::Seq.new(seq_name: "K#a;P#b;C#;O#;F#;G#;S#",      seq: "aagc"))
-    @index3.add(BioPieces::Seq.new(seq_name: "K#a;P#c;C#d;O#;F#;G#;S#",     seq: "aagag"))
-    @index3.add(BioPieces::Seq.new(seq_name: "K#a;P#c;C#d_1;O#;F#;G#;S#",   seq: "aagag"))
-    @index3.add(BioPieces::Seq.new(seq_name: "K#a;P#c;C#d_1_2;O#;F#;G#;S#", seq: "aagac"))
+    @index3 = BioDSL::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir, prefix: "test")
+    @index3.add(BioDSL::Seq.new(seq_name: "K#a;P#b;C#;O#;F#;G#;S#",      seq: "aagc"))
+    @index3.add(BioDSL::Seq.new(seq_name: "K#a;P#c;C#d;O#;F#;G#;S#",     seq: "aagag"))
+    @index3.add(BioDSL::Seq.new(seq_name: "K#a;P#c;C#d_1;O#;F#;G#;S#",   seq: "aagag"))
+    @index3.add(BioDSL::Seq.new(seq_name: "K#a;P#c;C#d_1_2;O#;F#;G#;S#", seq: "aagac"))
     @index3.save
 
     @tree_file = File.join(@tmpdir, "test_tax_index.dat")
@@ -56,37 +56,37 @@ class TestTaxonomy < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test "Biopieces::Taxonomy::Index#new without options[:kmer_size] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Index.new(step_size: 1, output_dir: @tmpdir, prefix: "test") }
+  test "BioDSL::Taxonomy::Index#new without options[:kmer_size] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Index.new(step_size: 1, output_dir: @tmpdir, prefix: "test") }
   end
 
-  test "Biopieces::Taxonomy::Index#new without options[:step_size] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Index.new(kmer_size: 3, output_dir: @tmpdir, prefix: "test") }
+  test "BioDSL::Taxonomy::Index#new without options[:step_size] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Index.new(kmer_size: 3, output_dir: @tmpdir, prefix: "test") }
   end
 
-  test "Biopieces::Taxonomy::Index#new without options[:output_dir] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Index.new(kmer_size: 3, step_size: 1, prefix: "test") }
+  test "BioDSL::Taxonomy::Index#new without options[:output_dir] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Index.new(kmer_size: 3, step_size: 1, prefix: "test") }
   end
 
-  test "Biopieces::Taxonomy::Index#new without options[:prefix] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir) }
+  test "BioDSL::Taxonomy::Index#new without options[:prefix] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir) }
   end
 
-  test "BioPieces::Taxonomy::Index#add with bad header with wrong number of tax levels raises" do
-    assert_raise(BioPieces::TaxonomyError) { @index.add(BioPieces::Seq.new(seq_name: "K#1;P#2", seq: "aaga")) }
+  test "BioDSL::Taxonomy::Index#add with bad header with wrong number of tax levels raises" do
+    assert_raise(BioDSL::TaxonomyError) { @index.add(BioDSL::Seq.new(seq_name: "K#1;P#2", seq: "aaga")) }
   end
 
-  test "BioPieces::Taxonomy::Index#add with bad header with wrong tax order raises" do
-    assert_raise(BioPieces::TaxonomyError) { @index.add(BioPieces::Seq.new(seq_name: "K#1;C#;P#3;O#;F#;G#;S#", seq: "aaga")) }
+  test "BioDSL::Taxonomy::Index#add with bad header with wrong tax order raises" do
+    assert_raise(BioDSL::TaxonomyError) { @index.add(BioDSL::Seq.new(seq_name: "K#1;C#;P#3;O#;F#;G#;S#", seq: "aaga")) }
   end
 
-  test "BioPieces::Taxonomy::Index#add with bad header with gapped info raises" do
-    assert_raise(BioPieces::TaxonomyError) { @index.add(BioPieces::Seq.new(seq_name: "K#1;P#;C#3;O#;F#;G#;S#", seq: "aaga")) }
+  test "BioDSL::Taxonomy::Index#add with bad header with gapped info raises" do
+    assert_raise(BioDSL::TaxonomyError) { @index.add(BioDSL::Seq.new(seq_name: "K#1;P#;C#3;O#;F#;G#;S#", seq: "aaga")) }
   end
 
-  test "BioPieces::Taxonomy::Index#add with OK header don't raise" do
-    assert_nothing_raised { @index.add(BioPieces::Seq.new(seq_name: "K#;P#;C#;O#;F#;G#;S#", seq: "aaga")) }
-    assert_nothing_raised { @index.add(BioPieces::Seq.new(seq_name: "K#1;P#2;C#3;O#4;F#5;G#6;S#7", seq: "aaga")) }
+  test "BioDSL::Taxonomy::Index#add with OK header don't raise" do
+    assert_nothing_raised { @index.add(BioDSL::Seq.new(seq_name: "K#;P#;C#;O#;F#;G#;S#", seq: "aaga")) }
+    assert_nothing_raised { @index.add(BioDSL::Seq.new(seq_name: "K#1;P#2;C#3;O#4;F#5;G#6;S#7", seq: "aaga")) }
   end
 
   # '00' then oligo << 'a'
@@ -94,9 +94,9 @@ class TestTaxonomy < Test::Unit::TestCase
   # '10' then oligo << 'c'
   # '11' then oligo << 'g'
 
-  test "BioPieces::Taxonomy::Index#add with empty tree returns correctly" do
+  test "BioDSL::Taxonomy::Index#add with empty tree returns correctly" do
     assert_equal(1, @index.size)
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
     assert_equal(3,       @index.size)
     assert_equal("root",  @index.get_node(0).name)
     assert_equal("b",     @index.get_node(1).name)
@@ -106,9 +106,9 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal([3, 12], @index.get_node(2).kmers.to_a) # aag=000011=3, aga=001100=12 
   end
 
-  test "BioPieces::Taxonomy::Index#add with edge split returns correctly" do
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#", seq: "aagu"))
+  test "BioDSL::Taxonomy::Index#add with edge split returns correctly" do
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#", seq: "aagu"))
     assert_equal(4,       @index.size)
     assert_equal("root",  @index.get_node(0).name)
     assert_equal("b",     @index.get_node(1).name)
@@ -120,10 +120,10 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal([3, 13], @index.get_node(3).kmers.to_a) # aag=000011=3, agu=001101=13 
   end
 
-  test "BioPieces::Taxonomy::Index#add to existing non-leaf node returns correctly" do
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#", seq: "aagu"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",  seq: "aag"))
+  test "BioDSL::Taxonomy::Index#add to existing non-leaf node returns correctly" do
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#", seq: "aaga"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#", seq: "aagu"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",  seq: "aag"))
     assert_equal(4,       @index.size)
     assert_equal("root",  @index.get_node(0).name)
     assert_equal("b",     @index.get_node(1).name)
@@ -135,11 +135,11 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal([3, 13], @index.get_node(3).kmers.to_a) # aag=000011=3, agu=001101=13 
   end
 
-  test "BioPieces::Taxonomy::Index#add exteding existing leaf node returns correctly" do
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#",  seq: "aaga"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
+  test "BioDSL::Taxonomy::Index#add exteding existing leaf node returns correctly" do
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#",  seq: "aaga"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
     assert_equal(5,           @index.size)
     assert_equal("root",      @index.get_node(0).name)
     assert_equal("b",         @index.get_node(1).name)
@@ -153,11 +153,11 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal([3, 12, 51], @index.get_node(4).kmers.to_a.sort) # aag=000011=3, aga=001101=12, gag=110011=51 
   end
 
-  test "BioPieces::Taxonomy::Index#tree_union returns correctly" do
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#",  seq: "aaga"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
-    @index.add(BioPieces::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
+  test "BioDSL::Taxonomy::Index#tree_union returns correctly" do
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#;O#;F#;G#;S#",  seq: "aaga"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
+    @index.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
     @index.tree_union
     assert_equal(5,               @index.size)
     assert_equal("root",          @index.get_node(0).name)
@@ -172,7 +172,7 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal([3, 12, 51],     @index.get_node(4).kmers.to_a.sort)
   end
 
-  test "BioPieces::Taxonomy::Index#save outputs correct tax tree inxex" do
+  test "BioDSL::Taxonomy::Index#save outputs correct tax tree inxex" do
     @index2.save
 
     expected = <<EOD
@@ -205,7 +205,7 @@ EOD
   # node 2 - [3, 12, 51]
   # node 3 - [3, 13]
   # node 4 - [3, 12, 51]
-  test "BioPieces::Taxonomy::Index#save outputs correct kmer index" do
+  test "BioDSL::Taxonomy::Index#save outputs correct kmer index" do
     @index2.save
 
     expected = <<EOD
@@ -230,32 +230,32 @@ EOD
     assert_equal(expected, File.read(@kmer_file))
   end
 
-  test "Biopieces::Taxonomy::Search#new without options[:kmer_size] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Search.new(step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.99, hits_max: 5, consensus: 0.5) }
+  test "BioDSL::Taxonomy::Search#new without options[:kmer_size] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Search.new(step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.99, hits_max: 5, consensus: 0.5) }
   end
 
-  test "Biopieces::Taxonomy::Search#new without options[:step_size] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Search.new(kmer_size: 3, dir: @tmpdir, prefix: "test", coverage: 0.99, hits_max: 5, consensus: 0.5) }
+  test "BioDSL::Taxonomy::Search#new without options[:step_size] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Search.new(kmer_size: 3, dir: @tmpdir, prefix: "test", coverage: 0.99, hits_max: 5, consensus: 0.5) }
   end
 
-  test "Biopieces::Taxonomy::Search#new without options[:dir] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, prefix: "test", coverage: 0.99, hits_max: 5, consensus: 0.5) }
+  test "BioDSL::Taxonomy::Search#new without options[:dir] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, prefix: "test", coverage: 0.99, hits_max: 5, consensus: 0.5) }
   end
 
-  test "Biopieces::Taxonomy::Search#new without options[:prefix] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, coverage: 0.99, hits_max: 5, consensus: 0.5) }
+  test "BioDSL::Taxonomy::Search#new without options[:prefix] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, coverage: 0.99, hits_max: 5, consensus: 0.5) }
   end
 
-  test "Biopieces::Taxonomy::Search#new without options[:coverage] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", hits_max: 5, consensus: 0.5) }
+  test "BioDSL::Taxonomy::Search#new without options[:coverage] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", hits_max: 5, consensus: 0.5) }
   end
 
-  test "Biopieces::Taxonomy::Search#new without options[:hits_max] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.99, consensus: 0.5) }
+  test "BioDSL::Taxonomy::Search#new without options[:hits_max] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.99, consensus: 0.5) }
   end
 
-  test "Biopieces::Taxonomy::Search#new without options[:consensus] raises" do
-    assert_raise(BioPieces::TaxonomyError) { BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.99, hits_max: 5) }
+  test "BioDSL::Taxonomy::Search#new without options[:consensus] raises" do
+    assert_raise(BioDSL::TaxonomyError) { BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.99, hits_max: 5) }
   end
 
   # R          r
@@ -286,49 +286,49 @@ EOD
   # C: aga: d, d_1, d_1_2
   # C: gag: d, d_1
   # C: gac: f
-  test "Biopieces::Taxonomy::Search#execute return correctly" do
-    @search = BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 1.0, hits_max: 5, consensus: 0.0)
-    result  = @search.execute(BioPieces::Seq.new(seq_name: "test", seq: "aaga"))
+  test "BioDSL::Taxonomy::Search#execute return correctly" do
+    @search = BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 1.0, hits_max: 5, consensus: 0.0)
+    result  = @search.execute(BioDSL::Seq.new(seq_name: "test", seq: "aaga"))
 
     assert_equal(3, result.hits)
     assert_equal("K#a(100);P#c(100);C#d 1 2(100/66/33)", result.taxonomy)
   end
 
-  test "Biopieces::Taxonomy::Search#execute with coverage limit returns correctly" do
-    @search = BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 1.0, hits_max: 5, consensus: 0.0)
-    result  = @search.execute(BioPieces::Seq.new(seq_name: "test", seq: "aagat"))
+  test "BioDSL::Taxonomy::Search#execute with coverage limit returns correctly" do
+    @search = BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 1.0, hits_max: 5, consensus: 0.0)
+    result  = @search.execute(BioDSL::Seq.new(seq_name: "test", seq: "aagat"))
 
     assert_equal(0, result.hits)
     assert_equal("Unclassified", result.taxonomy)
   end
 
-  test "Biopieces::Taxonomy::Search#execute with hits_max limit returns correctly" do
-    @search = BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 2, consensus: 0.0)
-    result  = @search.execute(BioPieces::Seq.new(seq_name: "test", seq: "aaga"))
+  test "BioDSL::Taxonomy::Search#execute with hits_max limit returns correctly" do
+    @search = BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 2, consensus: 0.0)
+    result  = @search.execute(BioDSL::Seq.new(seq_name: "test", seq: "aaga"))
 
     assert_equal(2, result.hits)
     assert_equal("K#a(100);P#c(100);C#d 1(100/50)", result.taxonomy)
   end
 
-  test "Biopieces::Taxonomy::Search#execute with consensus returns correctly" do
-    @search = BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 5, consensus: 0.34)
-    result  = @search.execute(BioPieces::Seq.new(seq_name: "test", seq: "aaga"))
+  test "BioDSL::Taxonomy::Search#execute with consensus returns correctly" do
+    @search = BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 5, consensus: 0.34)
+    result  = @search.execute(BioDSL::Seq.new(seq_name: "test", seq: "aaga"))
 
     assert_equal(3, result.hits)
     assert_equal("K#a(100);P#c(100);C#d 1(100/66)", result.taxonomy)
   end
 
-  test "Biopieces::Taxonomy::Search#execute with best_only returns correctly" do
-    @search = BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 5, consensus: 0.0, best_only: true)
-    result  = @search.execute(BioPieces::Seq.new(seq_name: "test", seq: "aagag"))
+  test "BioDSL::Taxonomy::Search#execute with best_only returns correctly" do
+    @search = BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 5, consensus: 0.0, best_only: true)
+    result  = @search.execute(BioDSL::Seq.new(seq_name: "test", seq: "aagag"))
 
     assert_equal(2, result.hits)
     assert_equal("K#a(100);P#c(100);C#d 1(100/50)", result.taxonomy)
   end
 
-  test "Biopieces::Taxonomy::Search#execute with no hits a C level moves to P level and returns correctly" do
-    @search = BioPieces::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 5, consensus: 0.0)
-    result  = @search.execute(BioPieces::Seq.new(seq_name: "test", seq: "agc"))
+  test "BioDSL::Taxonomy::Search#execute with no hits a C level moves to P level and returns correctly" do
+    @search = BioDSL::Taxonomy::Search.new(kmer_size: 3, step_size: 1, dir: @tmpdir, prefix: "test", coverage: 0.0, hits_max: 5, consensus: 0.0)
+    result  = @search.execute(BioDSL::Seq.new(seq_name: "test", seq: "agc"))
 
     assert_equal(1, result.hits)
     assert_equal("K#a(100);P#b(100)", result.taxonomy)

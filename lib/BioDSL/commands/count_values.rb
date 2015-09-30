@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Count the number of times values of given keys exists in stream.
   #
   # +count_values+ count the values for a given comma seperated list of keys.
@@ -111,7 +111,7 @@ module BioPieces
     # @param tmp_file [String] Path to temp file.
     def process_input(input, tmp_file)
       File.open(tmp_file, 'wb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           input.each do |record|
             @keys.map do |key|
               @count_hash[key][record[key]] += 1 if record.key? key
@@ -131,7 +131,7 @@ module BioPieces
     # @param tmp_file [String] Path to temp file with serialized input stream.
     def process_output(output, tmp_file)
       File.open(tmp_file, 'rb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           s.each do |record|
             @keys.map do |key|
               if record.key? key

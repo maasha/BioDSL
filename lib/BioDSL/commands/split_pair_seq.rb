@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Splite pair-end sequences in the stream.
   #
   # split_pair_seq splits sequences in the stream previously merged with
@@ -144,11 +144,11 @@ module BioPieces
     # been split at a position defined by the SEQ_LEN_LEFT key in the record.
     #
     # @param output [Enumerator::Yielder] Output stream.
-    # @param record [Hash]                BioPieces record.
+    # @param record [Hash]                BioDSL record.
     #
     # rubocop: disable Metrics/AbcSize
     def split_pair_seq(output, record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length
@@ -167,19 +167,19 @@ module BioPieces
 
     # Given a record locate the sequence split position.
     #
-    # @param record [Hash]           BioPieces record.
-    # @param entry  [BioPieces::Seq] Sequence entry.
+    # @param record [Hash]           BioDSL record.
+    # @param entry  [BioDSL::Seq] Sequence entry.
     #
     # @return [Integer] Sequence split position.
     #
-    # @raise [BioPieces::SeqError]
+    # @raise [BioDSL::SeqError]
     #   If left and right lengths don't fit entry length.
     def get_split_pos(record, entry)
       len_left  = record[:SEQ_LEN_LEFT].to_i
       len_right = record[:SEQ_LEN_RIGHT].to_i
 
       unless len_left + len_right == entry.length
-        fail BioPieces::SeqError, 'SEQ_LEN_LEFT + SEQ_LEN_RIGHT != SEQ_LEN ' \
+        fail BioDSL::SeqError, 'SEQ_LEN_LEFT + SEQ_LEN_RIGHT != SEQ_LEN ' \
           "#{len_left} + #{len_right} != #{entry.length}"
       end
 
@@ -188,7 +188,7 @@ module BioPieces
 
     # Split the given entry at the given position and return two new entries.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     # @param pos   [Integer]        Split position.
     #
     # @return [Array] Tuple with the two new entries.
@@ -203,8 +203,8 @@ module BioPieces
 
     # Fix sequence names.
     #
-    # @param entry1 [BioPieces::Seq] Sequence entry1.
-    # @param entry2 [BioPieces::Seq] Sequence entry2.
+    # @param entry1 [BioDSL::Seq] Sequence entry1.
+    # @param entry2 [BioDSL::Seq] Sequence entry2.
     #
     # @raise [RuntimeError] If names wasn't fixed.
     def fix_seq_names(entry1, entry2)

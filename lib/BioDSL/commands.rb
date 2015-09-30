@@ -16,12 +16,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
-  # Module that require all files in the biopieces/commands/ directory
+module BioDSL
+  # Module that require all files in the BioDSL/commands/ directory
   module Commands
     Dir[File.join(File.dirname(__FILE__), 'commands', '*')].each do |file|
       require file.split(File::SEPARATOR)[-3..-1].join(File::SEPARATOR).

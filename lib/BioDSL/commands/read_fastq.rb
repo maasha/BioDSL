@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Read FASTQ entries from one or more files.
   #
   # +read_fastq+ read in sequence entries from FASTQ files. Each sequence entry
@@ -193,7 +193,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     def read_first_single(output)
       fastq_files.each do |file|
-        BioPieces::Fastq.open(file) do |ios|
+        BioDSL::Fastq.open(file) do |ios|
           ios.each do |entry|
             check_entry(entry)
             output << entry.to_bp
@@ -213,8 +213,8 @@ module BioPieces
     # rubocop: disable MethodLength
     def read_first_pair(output)
       fastq_files.each_slice(2) do |file1, file2|
-        BioPieces::Fastq.open(file1) do |ios1|
-          BioPieces::Fastq.open(file2) do |ios2|
+        BioDSL::Fastq.open(file1) do |ios1|
+          BioDSL::Fastq.open(file2) do |ios2|
             while (entry1 = ios1.next_entry) && (entry2 = ios2.next_entry)
               check_entry(entry1, entry2)
               reverse_complement(entry2) if @options[:reverse_complement]
@@ -237,7 +237,7 @@ module BioPieces
     # rubocop: enable MethodLength
     def read_last_single(output)
       fastq_files.each do |file|
-        BioPieces::Fastq.open(file) do |ios|
+        BioDSL::Fastq.open(file) do |ios|
           ios.each do |entry|
             check_entry(entry)
             @buffer << entry
@@ -254,8 +254,8 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     def read_last_pair(output)
       fastq_files.each_slice(2) do |file1, file2|
-        BioPieces::Fastq.open(file1) do |ios1|
-          BioPieces::Fastq.open(file2) do |ios2|
+        BioDSL::Fastq.open(file1) do |ios1|
+          BioDSL::Fastq.open(file2) do |ios2|
             while (entry1 = ios1.next_entry) && (entry2 = ios2.next_entry)
               check_entry(entry1, entry2)
               reverse_complement(entry2) if @options[:reverse_complement]
@@ -275,7 +275,7 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     def read_all_single(output)
       fastq_files.each do |file|
-        BioPieces::Fastq.open(file) do |ios|
+        BioDSL::Fastq.open(file) do |ios|
           ios.each do |entry|
             check_entry(entry)
             output << entry.to_bp
@@ -292,8 +292,8 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     def read_all_pair(output)
       fastq_files.each_slice(2) do |file1, file2|
-        BioPieces::Fastq.open(file1) do |ios1|
-          BioPieces::Fastq.open(file2) do |ios2|
+        BioDSL::Fastq.open(file1) do |ios1|
+          BioDSL::Fastq.open(file2) do |ios2|
             while (entry1 = ios1.next_entry) && (entry2 = ios2.next_entry)
               check_entry(entry1, entry2)
               reverse_complement(entry2) if @options[:reverse_complement]
@@ -347,7 +347,7 @@ module BioPieces
 
     # Reverse complement sequence.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     def reverse_complement(entry)
       @type = entry.type_guess unless @type
       entry.type = @type
@@ -359,30 +359,30 @@ module BioPieces
     # @param files1 [Array] List of files.
     # @param files2 [Array] List of files.
     #
-    # @raise [BioPieces::OptionError] If not equal.
+    # @raise [BioDSL::OptionError] If not equal.
     def check_input_files(files1, files2)
       size1 = files1.size
       size2 = files2.size
       return if size1 == size2
 
       msg = "input and input2 file count don't match: #{size1} != #{size2}"
-      fail BioPieces::OptionError, msg
+      fail BioDSL::OptionError, msg
     end
 
     # Check the score range for a given entry.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     #
-    # @raise [BioPieces::SeqError] If quality score is outside range.
+    # @raise [BioDSL::SeqError] If quality score is outside range.
     def check_score_range(entry)
       return if @status[:sequences_out] >= MAX_TEST
       return if entry.qual_valid?(:base_33)
-      fail BioPieces::SeqError, 'Quality score outside valid range'
+      fail BioDSL::SeqError, 'Quality score outside valid range'
     end
 
     # Determine the quality score encoding.
     #
-    # @raise [BioPieces::SeqError] If encoding wasn't determined.
+    # @raise [BioDSL::SeqError] If encoding wasn't determined.
     def determine_encoding(entry)
       return unless @encoding == :auto
 
@@ -392,7 +392,7 @@ module BioPieces
                     :base_64
                   else
                     msg = 'Could not auto-detect quality score encoding'
-                    fail BioPieces::SeqError, msg
+                    fail BioDSL::SeqError, msg
                   end
     end
 

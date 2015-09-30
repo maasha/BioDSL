@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Run uclust on sequences in the stream.
   #
   # This is a wrapper for the +usearch+ tool to run the program uclust.
@@ -59,7 +59,7 @@ module BioPieces
   #
   # rubocop: disable ClassLength
   class Uclust
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -115,7 +115,7 @@ module BioPieces
       options_assert(@options, ':identity >  0.0')
       options_assert(@options, ':identity <= 1.0')
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
     end
 
     # Process input data and serialize all records into a temporary file and all
@@ -127,8 +127,8 @@ module BioPieces
     # @param tmp_in  [String] Path to input file.
     def process_input(input, output, tmp_rec, tmp_in)
       File.open(tmp_rec, 'wb') do |ios_rec|
-        BioPieces::Serializer.new(ios_rec) do |s|
-          BioPieces::Fasta.open(tmp_in, 'w') do |ios|
+        BioDSL::Serializer.new(ios_rec) do |s|
+          BioDSL::Fasta.open(tmp_in, 'w') do |ios|
             process_input_records(input, output, ios, s)
           end
         end
@@ -142,7 +142,7 @@ module BioPieces
     # @param input [Enumerator] Input stream
     # @param output [Enumerator::Yeilder] Output stream.
     # @param ios [Fasta::IO] Output stream to a FASTA file
-    # @param serializer [BioPieces::Serializer] Serializer IO.
+    # @param serializer [BioDSL::Serializer] Serializer IO.
     def process_input_records(input, output, ios, serializer)
       input.each_with_index do |record, i|
         @status[:records_in] += 1
@@ -158,17 +158,17 @@ module BioPieces
       end
     end
 
-    # Save a BioPieces record to a FASTA file.
+    # Save a BioDSL record to a FASTA file.
     #
     # @param ios [Fasta::IO] Output stream to a FASTA file
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     # @param i [Integer] Record index.
     def output_entry(ios, record, i)
       @status[:sequences_in] += 1
 
       record[:SEQ_NAME] ||= i.to_s
 
-      entry = BioPieces::Seq.new(seq_name: record[:SEQ_NAME], seq: record[:SEQ])
+      entry = BioDSL::Seq.new(seq_name: record[:SEQ_NAME], seq: record[:SEQ])
 
       @status[:residues_in] += entry.length
 
@@ -180,7 +180,7 @@ module BioPieces
     # @param tmp_in  [String] Path to input file.
     # @param tmp_out [String] Path to output file.
     #
-    # @raise [BioPieces::UsearchError] if command fails.
+    # @raise [BioDSL::UsearchError] if command fails.
     def run_uclust(tmp_in, tmp_out)
       uclust_opts = {
         input:    tmp_in,
@@ -192,8 +192,8 @@ module BioPieces
         verbose:  @options[:verbose]
       }
 
-      BioPieces::Usearch.cluster_smallmem(uclust_opts)
-    rescue BioPieces::UsearchError => e
+      BioDSL::Usearch.cluster_smallmem(uclust_opts)
+    rescue BioDSL::UsearchError => e
       raise unless e.message =~ /Empty input file/
     end
 
@@ -206,7 +206,7 @@ module BioPieces
     def parse_output(tmp_out)
       results = {}
 
-      BioPieces::Usearch.open(tmp_out) do |ios|
+      BioDSL::Usearch.open(tmp_out) do |ios|
         ios.each(:uc) do |record|
           record[:RECORD_TYPE] = 'uclust'
 
@@ -223,7 +223,7 @@ module BioPieces
     # @param output [Enumerator::Yeilder] Output stream.
     # @param tmp_out [String] Path to uclust output file.
     def process_output_align(output, tmp_out)
-      BioPieces::Fasta.open(tmp_out) do |ios|
+      BioDSL::Fasta.open(tmp_out) do |ios|
         ios.each do |entry|
           if entry.seq_name == 'consensus'
             @status[:clusters_out] += 1
@@ -250,7 +250,7 @@ module BioPieces
       results = parse_output(tmp_out)
 
       File.open(tmp_rec, 'rb') do |ios_rec|
-        BioPieces::Serializer.new(ios_rec) do |s|
+        BioDSL::Serializer.new(ios_rec) do |s|
           process_output_serial(s, results, output)
         end
       end
@@ -259,7 +259,7 @@ module BioPieces
     # Deserialize records from temporary file, merge these with cluster data and
     # emit to the output stream.
     #
-    # @param serializer [BioPieces::Serializer]
+    # @param serializer [BioDSL::Serializer]
     #   Serializer IO.
     #
     # @param results [Hash]
@@ -277,7 +277,7 @@ module BioPieces
           @status[:sequences_out] += 1
           @status[:residues_out]  += record[:SEQ].length
         else
-          fail BioPieces::UsearchError, 'Sequence name: ' \
+          fail BioDSL::UsearchError, 'Sequence name: ' \
             "#{record[:SEQ_NAME]} not found in uclust results"
         end
       end

@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for CollectOtus.
 class TestCollectOtus < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(one: 1, two: 2, three: 3)
     @output.write(TYPE: 'H', S_ID: 'OTU_0', SAMPLE: 'Sample0')
@@ -45,14 +45,14 @@ class TestCollectOtus < Test::Unit::TestCase
     @output.write(TYPE: 'H', S_ID: 'OTU_1', SAMPLE: 'Sample1')
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline#collect_otus with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) { @p.collect_otus(foo: 'bar') }
+  test 'BioDSL::Pipeline#collect_otus with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) { @p.collect_otus(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline#collect_otus outputs correctly' do
+  test 'BioDSL::Pipeline#collect_otus outputs correctly' do
     @p.collect_otus.run(input: @input, output: @output2)
     expected = <<-EXP.gsub(/^\s+\|/, '').delete("\n")
       |{:one=>1, :two=>2, :three=>3}
@@ -71,7 +71,7 @@ class TestCollectOtus < Test::Unit::TestCase
     assert_equal(expected, collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline#collect_otus status outputs correctly' do
+  test 'BioDSL::Pipeline#collect_otus status outputs correctly' do
     @p.collect_otus.run(input: @input, output: @output2)
 
     assert_equal(7, @p.status.first[:records_in])

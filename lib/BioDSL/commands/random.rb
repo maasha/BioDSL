@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Pick number of rand om records from the stream.
   #
   # +random+ can be used to pick a random number of records from the stream.
@@ -101,7 +101,7 @@ module BioPieces
     # @param file [String] Path to temporary file.
     def process_input(input, file)
       File.open(file, 'wb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           input.each do |record|
             @status[:records_in] += 1
 
@@ -139,7 +139,7 @@ module BioPieces
     # @param file [String] Path to termorary file with records.
     def process_output(output, file)
       File.open(file, 'rb') do |ios|
-        BioPieces::Serializer.new(ios) do |s|
+        BioDSL::Serializer.new(ios) do |s|
           s.each_with_index do |record, i|
             if @wanted.include? i
               output << record

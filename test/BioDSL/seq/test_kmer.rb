@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,7 +31,7 @@ require 'test/helper'
 
 class TestKmer < Test::Unit::TestCase 
   def setup
-    @entry = BioPieces::Seq.new(seq: "aNacCGactGAtacACGTAC")
+    @entry = BioDSL::Seq.new(seq: "aNacCGactGAtacACGTAC")
   end
 
   test "#to_kmers without argument raises" do
@@ -39,12 +39,12 @@ class TestKmer < Test::Unit::TestCase
   end
 
   test "#to_kmers without :kmer_size raises" do
-    assert_raise(BioPieces::KmerError) { @entry.to_kmers(step_size: 1) }
+    assert_raise(BioDSL::KmerError) { @entry.to_kmers(step_size: 1) }
   end
 
   test "#to_kmers with bad :kmer_size raises" do
-    assert_raise(BioPieces::KmerError) { @entry.to_kmers(kmer_size: 0) }
-    assert_raise(BioPieces::KmerError) { @entry.to_kmers(kmer_size: 13) }
+    assert_raise(BioDSL::KmerError) { @entry.to_kmers(kmer_size: 0) }
+    assert_raise(BioDSL::KmerError) { @entry.to_kmers(kmer_size: 13) }
   end
 
   test "#to_kmers with OK :kmer_size don't raise" do
@@ -53,8 +53,8 @@ class TestKmer < Test::Unit::TestCase
   end
 
   test "#to_kmers with bad :step_size raises" do
-    assert_raise(BioPieces::KmerError) { @entry.to_kmers(kmer_size: 8, step_size: 0) }
-    assert_raise(BioPieces::KmerError) { @entry.to_kmers(kmer_size: 8, step_size: 13) }
+    assert_raise(BioDSL::KmerError) { @entry.to_kmers(kmer_size: 8, step_size: 0) }
+    assert_raise(BioDSL::KmerError) { @entry.to_kmers(kmer_size: 8, step_size: 13) }
   end
 
   test "#to_kmers with OK :step_size don't raise" do
@@ -64,8 +64,8 @@ class TestKmer < Test::Unit::TestCase
 
   test "#to_kmers with bad :score_min raises" do
     @entry.qual = "IIIIIIIII!IIIIIIIIII"
-    assert_raise(BioPieces::KmerError) { @entry.to_kmers(kmer_size: 8, score_min: -1) }
-    assert_raise(BioPieces::KmerError) { @entry.to_kmers(kmer_size: 8, score_min: 41) }
+    assert_raise(BioDSL::KmerError) { @entry.to_kmers(kmer_size: 8, score_min: -1) }
+    assert_raise(BioDSL::KmerError) { @entry.to_kmers(kmer_size: 8, score_min: 41) }
   end
 
   test "#to_kmers with OK :score_min don't raise" do
@@ -129,6 +129,6 @@ class TestKmer < Test::Unit::TestCase
   test "Kmer#to_oligos return correctly" do
     kmers = @entry.to_kmers(kmer_size: 5)
     result = %w{ataca acacg actga accga acgta tacac tgata cacgt ctgat ccgac cgact cgtac gatac gactg}
-    assert_equal(result, BioPieces::Kmer.to_oligos(kmers, 5))
+    assert_equal(result, BioDSL::Kmer.to_oligos(kmers, 5))
   end
 end

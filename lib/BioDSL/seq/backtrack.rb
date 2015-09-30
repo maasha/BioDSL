@@ -20,11 +20,11 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # Error class for all exceptions to do with BackTrack.
   class BackTrackError < StandardError; end
 
@@ -36,7 +36,7 @@ module BioPieces
   # Algorithm based on code kindly provided by j_random_hacker @ Stackoverflow:
   # http://stackoverflow.com/questions/7557017/approximate-string-matching-using-backtracking/
   module BackTrack
-    extend BioPieces::Ambiguity
+    extend BioDSL::Ambiguity
 
     OK_PATTERN = Regexp.new('^[bflsycwphqrimtnkvadegu]+$')
     MAX_MIS    = 5 # Maximum number of mismatches allowed

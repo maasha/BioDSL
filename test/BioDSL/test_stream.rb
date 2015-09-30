@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -32,7 +32,7 @@ require 'test/helper'
 class TestStream < Test::Unit::TestCase 
   def setup
     @obj = {foo: "bar"}
-    @reader, @writer = BioPieces::Stream.pipe
+    @reader, @writer = BioDSL::Stream.pipe
   end
 
   def teardown
@@ -40,13 +40,13 @@ class TestStream < Test::Unit::TestCase
     @writer.close unless @writer.closed?
   end
 
-  test "BioPieces::Stream.pipe writing and reading an object returns correctly" do
+  test "BioDSL::Stream.pipe writing and reading an object returns correctly" do
     @writer.write @obj
     @writer.close
     assert_equal(@obj, @reader.read)
   end
 
-  test "BioPieces::Stream.pipe writing and reading multiple object returns correctly" do
+  test "BioDSL::Stream.pipe writing and reading multiple object returns correctly" do
     10.times { @writer.write @obj }
     @writer.close
     result = @reader.inject([]) { |memo, obj| memo << obj }

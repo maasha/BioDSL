@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for ReverseSeq.
 class TestReverseSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     hash = {
       SEQ_NAME: 'test',
@@ -46,14 +46,14 @@ class TestReverseSeq < Test::Unit::TestCase
     @output.write hash
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::ReverseSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.reverse_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::ReverseSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.reverse_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::ReverseSeq returns correctly' do
+  test 'BioDSL::Pipeline::ReverseSeq returns correctly' do
     @p.reverse_seq.run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -66,7 +66,7 @@ class TestReverseSeq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReverseSeq status returns correctly' do
+  test 'BioDSL::Pipeline::ReverseSeq status returns correctly' do
     @p.reverse_seq.run(input: @input, output: @output2)
 
     assert_equal(1, @p.status.first[:records_in])

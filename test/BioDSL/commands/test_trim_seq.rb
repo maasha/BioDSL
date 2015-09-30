@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for TrimSeq.
 class TestTrimSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     hash = {
       SEQ_NAME: 'test',
@@ -47,18 +47,18 @@ class TestTrimSeq < Test::Unit::TestCase
     @output.write hash
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::TrimSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.trim_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::TrimSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.trim_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::TrimSeq with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::TrimSeq with valid options don\'t raise' do
     assert_nothing_raised { @p.trim_seq(mode: :left) }
   end
 
-  test 'BioPieces::Pipeline::TrimSeq returns correctly' do
+  test 'BioDSL::Pipeline::TrimSeq returns correctly' do
     @p.trim_seq.run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').tr("\n", ' ')[0..-2]
@@ -71,7 +71,7 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::TrimSeq status returns correctly' do
+  test 'BioDSL::Pipeline::TrimSeq status returns correctly' do
     @p.trim_seq.run(input: @input, output: @output2)
 
     assert_equal(1,  @p.status.first[:records_in])
@@ -82,7 +82,7 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(42, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::TrimSeq with :quality_min returns correctly' do
+  test 'BioDSL::Pipeline::TrimSeq with :quality_min returns correctly' do
     @p.trim_seq(quality_min: 25).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').tr("\n", ' ')[0..-2]
@@ -95,7 +95,7 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::TrimSeq with mode: both: returns correctly' do
+  test 'BioDSL::Pipeline::TrimSeq with mode: both: returns correctly' do
     @p.trim_seq(mode: :both).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').tr("\n", ' ')[0..-2]
@@ -108,7 +108,7 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::TrimSeq with mode: :left returns correctly' do
+  test 'BioDSL::Pipeline::TrimSeq with mode: :left returns correctly' do
     @p.trim_seq(mode: :left).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').tr("\n", ' ')[0..-2]
@@ -122,7 +122,7 @@ class TestTrimSeq < Test::Unit::TestCase
   end
 
   # rubocop:disable LineLength
-  test 'BioPieces::Pipeline::TrimSeq with mode: :right returns correctly' do
+  test 'BioDSL::Pipeline::TrimSeq with mode: :right returns correctly' do
     @p.trim_seq(mode: :right).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').tr("\n", ' ')[0..-2]
@@ -135,7 +135,7 @@ class TestTrimSeq < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline::TrimSeq with :length_min returns correctly' do
+  test 'BioDSL::Pipeline::TrimSeq with :length_min returns correctly' do
     @p.trim_seq(length_min: 4).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '').tr("\n", ' ')[0..-2]

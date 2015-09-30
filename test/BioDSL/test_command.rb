@@ -23,7 +23,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,14 +31,14 @@ require 'test/helper'
 
 # Test class for Command.
 class CommandTest < Test::Unit::TestCase
-  test 'BioPieces::Command#to_s w/o options returns OK' do
-    command = BioPieces::Command.new('dump', nil, {})
+  test 'BioDSL::Command#to_s w/o options returns OK' do
+    command = BioDSL::Command.new('dump', nil, {})
     expected = %{dump}
     assert_equal(expected, command.to_s)
   end
 
-  test 'BioPieces::Command#to_s with options returns OK' do
-    command = BioPieces::Command.new('read_fasta', nil, input: 'test.fna')
+  test 'BioDSL::Command#to_s with options returns OK' do
+    command = BioDSL::Command.new('read_fasta', nil, input: 'test.fna')
     expected = %{read_fasta(input: "test.fna")}
     assert_equal(expected, command.to_s)
   end

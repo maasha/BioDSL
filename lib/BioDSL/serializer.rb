@@ -21,12 +21,12 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# Namespace for BioPieces.
-module BioPieces
+# Namespace for BioDSL.
+module BioDSL
   # Error class for Serializer.
   SerializerError = Class.new(StandardError)
 
@@ -56,7 +56,7 @@ module BioPieces
     #
     # @example
     #   File.open("foo.dat", 'wb') do |io|
-    #     BioPieces::Serializer.new(io) do |s|
+    #     BioDSL::Serializer.new(io) do |s|
     #       s << {"foo": 0}
     #       s << {"bar": 1}
     #     end
@@ -73,7 +73,7 @@ module BioPieces
     #
     # @example
     #   File.open("foo.dat", 'rb') do |io|
-    #     BioPieces::Serializer.new(io) do |s|
+    #     BioDSL::Serializer.new(io) do |s|
     #       s.each do |record|
     #         puts record
     #       end

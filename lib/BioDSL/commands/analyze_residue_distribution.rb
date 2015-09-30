@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Analyze the residue distribution from sequences in the stream.
   #
   # +analyze_residue_distribution+ determines the distribution per position
@@ -181,7 +181,7 @@ module BioPieces
 
     # Calculate the residue destribution.
     #
-    # @param output [BioPieces::Stream] Output stream.
+    # @param output [BioDSL::Stream] Output stream.
     def calc_dist(output)
       @residues.each do |res|
         record               = {}
@@ -200,7 +200,7 @@ module BioPieces
 
     # Calculate the residue distribution in percent for a given residue.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     # @param res [Symbol] Residue.
     def calc_dist_percent(record, res)
       @counts.each do |pos, dist|
@@ -211,7 +211,7 @@ module BioPieces
 
     # Calculate the residue distribution for a given residue.
     #
-    # @param record [Hash] BioPieces record.
+    # @param record [Hash] BioDSL record.
     # @param res [Symbol] Residue.
     def calc_dist_count(record, res)
       @counts.each do |pos, dist|

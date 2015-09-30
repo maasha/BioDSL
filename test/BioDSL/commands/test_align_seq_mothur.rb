@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,14 +35,14 @@ class TestAlignSeqMothur < Test::Unit::TestCase
   def setup
     require 'tempfile'
 
-    omit('mothur not found') unless BioPieces::Filesys.which('mothur')
+    omit('mothur not found') unless BioDSL::Filesys.which('mothur')
 
     @template = Tempfile.new('template')
 
     write_template
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test', SEQ: 'gattccgatcgatcgatcga')
     @output.close
@@ -53,8 +53,8 @@ class TestAlignSeqMothur < Test::Unit::TestCase
   def write_template
     seq_name = 'ref'
     seq      = '--a-ttc--c-a-tcga----Ttcg-at---cCa---'
-    BioPieces::Fasta.open(@template, 'w') do |ios|
-      ios.puts BioPieces::Seq.new(seq_name: seq_name, seq: seq).to_fasta
+    BioDSL::Fasta.open(@template, 'w') do |ios|
+      ios.puts BioDSL::Seq.new(seq_name: seq_name, seq: seq).to_fasta
     end
   end
 
@@ -63,19 +63,19 @@ class TestAlignSeqMothur < Test::Unit::TestCase
     @template.unlink
   end
 
-  test 'BioPieces::Pipeline#align_seq_mothur with disallowed option raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline#align_seq_mothur with disallowed option raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.align_seq_mothur(template_file: @template, foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline#align_seq_mothur w. allowed option don\'t raise' do
+  test 'BioDSL::Pipeline#align_seq_mothur w. allowed option don\'t raise' do
     assert_nothing_raised do
       @p.align_seq_mothur(template_file: @template, cpus: 2)
     end
   end
 
-  test 'BioPieces::Pipeline#align_seq_mothur outputs correctly' do
+  test 'BioDSL::Pipeline#align_seq_mothur outputs correctly' do
     @p.align_seq_mothur(template_file: @template.path).
       run(input: @input, output: @output2)
 
@@ -85,7 +85,7 @@ class TestAlignSeqMothur < Test::Unit::TestCase
     assert_equal(expected, collect_result.chomp)
   end
 
-  test 'BioPieces::Pipeline#align_seq_mothur status returns correctly' do
+  test 'BioDSL::Pipeline#align_seq_mothur status returns correctly' do
     @p.align_seq_mothur(template_file: @template.path).
       run(input: @input, output: @output2)
 

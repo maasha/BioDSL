@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -31,12 +31,12 @@ require 'test/helper'
 
 class VerboseTest < Test::Unit::TestCase
   def teardown
-    BioPieces::verbose = false
+    BioDSL::verbose = false
   end
 
-  test "BioPieces::verbose returns correctly" do
-    BioPieces::verbose = true
-    assert_equal(true, BioPieces::verbose)
+  test "BioDSL::verbose returns correctly" do
+    BioDSL::verbose = true
+    assert_equal(true, BioDSL::verbose)
   end
 end
 

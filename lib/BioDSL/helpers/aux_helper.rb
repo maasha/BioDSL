@@ -21,15 +21,15 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# Namespace for BioPieces.
-module BioPieces
+# Namespace for BioDSL.
+module BioDSL
   # Namespace for AuxHelper.
   module AuxHelper
-    BioPieces::AuxiliaryError = Class.new(StandardError)
+    BioDSL::AuxiliaryError = Class.new(StandardError)
 
     # Method that raises if the given command is not found on the system.
     #
@@ -37,7 +37,7 @@ module BioPieces
     #
     # @raise [AuxiliaryError] if command is not found.
     def aux_exist(command)
-      return if BioPieces::Filesys.which(command)
+      return if BioDSL::Filesys.which(command)
       fail AuxiliaryError, "command: #{command} not found"
     end
   end

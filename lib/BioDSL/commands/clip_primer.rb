@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Clip sequences in the stream at a specified primer location.
   #
   # +clip_primer+ locates a specified +primer+ in sequences in the stream and
@@ -204,7 +204,7 @@ module BioPieces
 
     def clip_primer(record)
       reset(record)
-      entry = BioPieces::Seq.new_bp(record)
+      entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
       @status[:residues_in]  += entry.length
@@ -224,7 +224,7 @@ module BioPieces
     # in record.
     #
     # @param record [Hash] BioPiece record with sequence.
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     def clip_primer_forward(record, entry)
       if (match = entry.patmatch(@primer, start: 0, stop: stop(entry),
                                           max_mismatches: @mis,
@@ -244,7 +244,7 @@ module BioPieces
 
     # Calculate the match stop position.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     #
     # @return [Integer] Match stop position.
     def stop(entry)
@@ -257,7 +257,7 @@ module BioPieces
     # in record.
     #
     # @param record [Hash] BioPiece record with sequence.
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     def clip_primer_reverse(record, entry)
       start = entry.length - search_distance(entry)
 
@@ -278,9 +278,9 @@ module BioPieces
 
     # Merge entry and match info to record.
     #
-    # @param record [Hash] BioPieces record.
-    # @param entry [BioPieces::Seq] Sequence entry.
-    # @param match [BioPieces::Match] Match object.
+    # @param record [Hash] BioDSL record.
+    # @param entry [BioDSL::Seq] Sequence entry.
+    # @param match [BioDSL::Match] Match object.
     # @param type [String] Type.
     def merge_record_entry(record, entry, match, type)
       record.merge!(entry.to_bp)
@@ -304,7 +304,7 @@ module BioPieces
     # Determine the search distance from the search_distance in the options or
     # as the sequence length.
     #
-    # @param entry [BioPieces::Seq] Sequence entry.
+    # @param entry [BioDSL::Seq] Sequence entry.
     #
     # @return [Integer] Search distance.
     def search_distance(entry)

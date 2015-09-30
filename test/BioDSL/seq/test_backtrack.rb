@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,13 +33,13 @@ class BackTrackTest < Test::Unit::TestCase
   def setup
     #                    0         1
     #                    01234567890123456789
-    @seq = BioPieces::Seq.new(seq: "tacgatgctagcatgcacgg")
-    @seq.extend(BioPieces::BackTrack)
+    @seq = BioDSL::Seq.new(seq: "tacgatgctagcatgcacgg")
+    @seq.extend(BioDSL::BackTrack)
   end
 
   test "#patscan with bad pattern raises" do
     ["", "X", "1"].each { |pattern|
-      assert_raise(BioPieces::BackTrackError) { @seq.patscan(pattern) }
+      assert_raise(BioDSL::BackTrackError) { @seq.patscan(pattern) }
     }
   end
 
@@ -51,7 +51,7 @@ class BackTrackTest < Test::Unit::TestCase
 
   test "#patscan with bad start raises" do
     [-1, 20].each { |start|
-      assert_raise(BioPieces::BackTrackError) { @seq.patscan("N", start: start) }
+      assert_raise(BioDSL::BackTrackError) { @seq.patscan("N", start: start) }
     }
   end
 
@@ -63,7 +63,7 @@ class BackTrackTest < Test::Unit::TestCase
 
   test "#patscan with bad stop raises" do
     [-1, 20].each { |stop|
-      assert_raise(BioPieces::BackTrackError) { @seq.patscan("N", stop: stop) }
+      assert_raise(BioDSL::BackTrackError) { @seq.patscan("N", stop: stop) }
     }
   end
 
@@ -80,7 +80,7 @@ class BackTrackTest < Test::Unit::TestCase
 
   test "#patscan with bad mis raises" do
     [-1, 6].each { |mis|
-      assert_raise(BioPieces::BackTrackError) { @seq.patscan("N", max_mismatches: mis) }
+      assert_raise(BioDSL::BackTrackError) { @seq.patscan("N", max_mismatches: mis) }
     }
   end
 
@@ -92,7 +92,7 @@ class BackTrackTest < Test::Unit::TestCase
 
   test "#patscan with bad ins raises" do
     [-1, 6].each { |ins|
-      assert_raise(BioPieces::BackTrackError) { @seq.patscan("N", max_insertions: ins) }
+      assert_raise(BioDSL::BackTrackError) { @seq.patscan("N", max_insertions: ins) }
     }
   end
 
@@ -104,7 +104,7 @@ class BackTrackTest < Test::Unit::TestCase
 
   test "#patscan with bad del raises" do
     [-1, 6].each { |del|
-      assert_raise(BioPieces::BackTrackError) { @seq.patscan("N", max_deletions: del) }
+      assert_raise(BioDSL::BackTrackError) { @seq.patscan("N", max_deletions: del) }
     }
   end
 

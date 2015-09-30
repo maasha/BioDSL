@@ -20,10 +20,10 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-module BioPieces
+module BioDSL
   # Module to provide a temporary directory.
   module TmpDir
     require 'tempfile'
@@ -37,13 +37,13 @@ module BioPieces
     # @param files [Array] List of file names.
     #
     # @example
-    #   BioPieces::TmpDir.create do |dir|
+    #   BioDSL::TmpDir.create do |dir|
     #     puts dir
     #       # => "<tmp_dir>"
     #   end
     #
     # @example
-    #   BioPieces::TmpDir.create("foo", "bar") do |foo, bar, dir|
+    #   BioDSL::TmpDir.create("foo", "bar") do |foo, bar, dir|
     #     puts foo
     #       # => "<tmp_dir>/foo"
     #     puts bar
@@ -54,7 +54,7 @@ module BioPieces
     def self.create(*files, &block)
       fail 'no block given' unless block
 
-      Dir.mktmpdir(nil, BioPieces::Config::TMP_DIR) do |dir|
+      Dir.mktmpdir(nil, BioDSL::Config::TMP_DIR) do |dir|
         paths = files.each_with_object([]) { |e, a| a << File.join(dir, e) }
 
         if paths.empty?

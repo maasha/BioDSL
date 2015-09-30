@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for SplitPairSeq.
 class TestSplitPairSeq < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     setup_output
 
@@ -42,7 +42,7 @@ class TestSplitPairSeq < Test::Unit::TestCase
 
     setup_expected
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   # rubocop: disable MethodLength
@@ -101,12 +101,12 @@ class TestSplitPairSeq < Test::Unit::TestCase
   end
 
   # rubocop: enable MethodLength
-  test 'BioPieces::Pipeline::SplitPairSeq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.split_pair_seq(foo: 'bar') }
+  test 'BioDSL::Pipeline::SplitPairSeq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.split_pair_seq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::SplitPairSeq with bad sequence lengths raises' do
-    input, output = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline::SplitPairSeq with bad sequence lengths raises' do
+    input, output = BioDSL::Stream.pipe
 
     record = {
       SEQ_NAME: 'M01168:16:000000000-A1R9L:1:1101:14862:1868 1:N:0:14',
@@ -120,13 +120,13 @@ class TestSplitPairSeq < Test::Unit::TestCase
     output.write record
     output.close
 
-    assert_raise(BioPieces::SeqError) do
+    assert_raise(BioDSL::SeqError) do
       @p.split_pair_seq.run(input: input, output: @output2)
     end
   end
 
-  test 'BioPieces::Pipeline::SplitPairSeq with bad sequence name raises' do
-    input, output = BioPieces::Stream.pipe
+  test 'BioDSL::Pipeline::SplitPairSeq with bad sequence name raises' do
+    input, output = BioDSL::Stream.pipe
 
     record = {
       SEQ_NAME: 'M01168:16:000000000-A1R9L:1:1101:14862:18681:N:0:14',
@@ -145,13 +145,13 @@ class TestSplitPairSeq < Test::Unit::TestCase
     end
   end
 
-  test 'BioPieces::Pipeline::SplitPairSeq returns correctly' do
+  test 'BioDSL::Pipeline::SplitPairSeq returns correctly' do
     @p.split_pair_seq.run(input: @input, output: @output2)
 
     assert_equal(@expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::SplitPairSeq status returns correctly' do
+  test 'BioDSL::Pipeline::SplitPairSeq status returns correctly' do
     @p.split_pair_seq.run(input: @input, output: @output2)
 
     assert_equal(3,   @p.status.first[:records_in])

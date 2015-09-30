@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,25 +33,25 @@ require 'test/helper'
 # Test class for MergeValues.
 class TestMergeValues < Test::Unit::TestCase
   def setup
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(ID: 'FOO', COUNT: 10, SEQ: 'gataag')
     @output.write(ID: 'FOO', SEQ: 'gataag')
     @output.close
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
-  test 'BioPieces::Pipeline::MergeValues with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.merge_values(foo: 'bar') }
+  test 'BioDSL::Pipeline::MergeValues with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.merge_values(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::MergeValues with valid options don\'t raise' do
+  test 'BioDSL::Pipeline::MergeValues with valid options don\'t raise' do
     assert_nothing_raised { @p.merge_values(keys: [:ID]) }
   end
 
-  test 'BioPieces::Pipeline::MergeValues returns correctly' do
+  test 'BioDSL::Pipeline::MergeValues returns correctly' do
     @p.merge_values(keys: [:COUNT, :ID]).run(input: @input, output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -62,14 +62,14 @@ class TestMergeValues < Test::Unit::TestCase
     assert_equal(expected, collect_result)
   end
 
-  test 'BioPieces::Pipeline::MergeValues status returns correctly' do
+  test 'BioDSL::Pipeline::MergeValues status returns correctly' do
     @p.merge_values(keys: [:COUNT, :ID]).run(input: @input, output: @output2)
 
     assert_equal(2, @p.status.first[:records_in])
     assert_equal(2, @p.status.first[:records_out])
   end
 
-  test 'BioPieces::Pipeline::MergeValues with :delimiter returns correctly' do
+  test 'BioDSL::Pipeline::MergeValues with :delimiter returns correctly' do
     @p.merge_values(keys: [:ID, :COUNT], delimiter: ':count=').
       run(input: @input, output: @output2)
 

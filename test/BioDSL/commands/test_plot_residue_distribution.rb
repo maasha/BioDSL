@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -35,19 +35,19 @@ require 'test/helper'
 # rubocop: disable ClassLength
 class TestPlotResidueDistribution < Test::Unit::TestCase
   def setup
-    omit('gnuplot not found') unless BioPieces::Filesys.which('gnuplot')
+    omit('gnuplot not found') unless BioDSL::Filesys.which('gnuplot')
 
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.plot')
 
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     setup_data
     setup_expected1
     setup_expected2
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_data
@@ -223,21 +223,21 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution with invalid options ' \
+  test 'BioDSL::Pipeline::PlotResidueDistribution with invalid options ' \
     'raises' do
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(BioDSL::OptionError) do
       @p.plot_residue_distribution(foo: 'bar')
     end
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution with invalid terminal ' \
+  test 'BioDSL::Pipeline::PlotResidueDistribution with invalid terminal ' \
     'raises' do
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(BioDSL::OptionError) do
       @p.plot_residue_distribution(terminal: 'foo')
     end
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution with valid terminal ' \
+  test 'BioDSL::Pipeline::PlotResidueDistribution with valid terminal ' \
     'don\'t raise' do
     %w(dumb post svg x11 aqua png pdf).each do |terminal|
       assert_nothing_raised do
@@ -246,7 +246,7 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
     end
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution to file outputs OK' do
+  test 'BioDSL::Pipeline::PlotResidueDistribution to file outputs OK' do
     result = capture_stderr do
       @p.plot_residue_distribution(output: @file, test: true).
       run(input: @input, output: @output2)
@@ -255,7 +255,7 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
     assert_equal(@expected1, result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution to file with :count ' \
+  test 'BioDSL::Pipeline::PlotResidueDistribution to file with :count ' \
     'outputs correctly' do
     result = capture_stderr do
       @p.plot_residue_distribution(output: @file, count: true, test: true).
@@ -265,14 +265,14 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
     assert_equal(@expected2, result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution to existing file raises' do
+  test 'BioDSL::Pipeline::PlotResidueDistribution to existing file raises' do
     `touch #{@file}`
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(BioDSL::OptionError) do
       @p.plot_residue_distribution(output: @file)
     end
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution to existing file with ' \
+  test 'BioDSL::Pipeline::PlotResidueDistribution to existing file with ' \
     ':force outputs correctly' do
     `touch #{@file}`
     result = capture_stderr do
@@ -283,7 +283,7 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
     assert_equal(@expected1, result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution with flux outputs OK' do
+  test 'BioDSL::Pipeline::PlotResidueDistribution with flux outputs OK' do
     result = capture_stderr do
       @p.plot_residue_distribution(output: @file, force: true, test: true).
       run(input: @input, output: @output2)
@@ -295,7 +295,7 @@ class TestPlotResidueDistribution < Test::Unit::TestCase
     assert_equal(expected, collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::PlotResidueDistribution status outputs OK' do
+  test 'BioDSL::Pipeline::PlotResidueDistribution status outputs OK' do
     @p.plot_residue_distribution(output: @file, force: true).
       run(input: @input, output: @output2)
 

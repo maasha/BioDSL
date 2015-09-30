@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # rubocop:disable ClassLength
 
   # == Assemble sequences the stream using Ray.
@@ -68,7 +68,7 @@ module BioPieces
   #    run
   class AssembleSeqRay
     require 'English'
-    require 'biopieces/helpers/aux_helper'
+    require 'BioDSL/helpers/aux_helper'
 
     include AuxHelper
 
@@ -144,7 +144,7 @@ module BioPieces
       options_assert(@options, ':kmer_max <= 255')
       options_assert(@options, ':contig_min > 0')
       options_assert(@options, ':cpus >= 1')
-      options_assert(@options, ":cpus <= #{BioPieces::Config::CORES_MAX}")
+      options_assert(@options, ":cpus <= #{BioDSL::Config::CORES_MAX}")
 
       assert_uneven(@options, :kmer_min)
       assert_uneven(@options, :kmer_max)
@@ -177,12 +177,12 @@ module BioPieces
     # @param output [Enumerator::Yielder] Output stream.
     # @param fa_in [String] Path to temporary FASTA file.
     def process_input(input, output, fa_in)
-      BioPieces::Fasta.open(fa_in, 'w') do |fasta_io|
+      BioDSL::Fasta.open(fa_in, 'w') do |fasta_io|
         input.each do |record|
           @status[:records_in] += 1
 
           if record.key? :SEQ
-            entry = BioPieces::Seq.new_bp(record)
+            entry = BioDSL::Seq.new_bp(record)
 
             @status[:sequences_in] += 1
             @status[:residues_in]  += entry.length
@@ -204,12 +204,12 @@ module BioPieces
     #
     # @return [Booleon] True if paired else false.
     def paired?(file)
-      BioPieces::Fasta.open(file, 'r') do |ios|
+      BioDSL::Fasta.open(file, 'r') do |ios|
         entry1 = ios.next_entry
         entry2 = ios.next_entry
 
         begin
-          BioPieces::Seq.check_name_pair(entry1, entry2)
+          BioDSL::Seq.check_name_pair(entry1, entry2)
 
           return true
         rescue SeqError
@@ -227,7 +227,7 @@ module BioPieces
     # @raise If execution fails.
     def execute_ray(fa_in, tmp_dir, kmer)
       cmd_line = compile_cmd_line(fa_in, tmp_dir, kmer)
-      $stderr.puts "Running: #{cmd_line}" if BioPieces.verbose
+      $stderr.puts "Running: #{cmd_line}" if BioDSL.verbose
       system(cmd_line)
 
       fail cmd_line unless $CHILD_STATUS.success?
@@ -256,7 +256,7 @@ module BioPieces
       end
 
       cmd << "-o #{out_dir}"
-      cmd << '> /dev/null 2>&1' unless BioPieces.verbose
+      cmd << '> /dev/null 2>&1' unless BioDSL.verbose
 
       cmd.join(' ')
     end
@@ -270,7 +270,7 @@ module BioPieces
     def parse_result(dir, kmer)
       lengths = []
 
-      BioPieces::Fasta.open(File.join(dir, 'Scaffolds.fasta')) do |ios|
+      BioDSL::Fasta.open(File.join(dir, 'Scaffolds.fasta')) do |ios|
         ios.each do |entry|
           lengths << entry.length if entry.length >= @options[:contig_min]
         end
@@ -309,7 +309,7 @@ module BioPieces
       lengths = []
       file    = File.join(dir, kmer.to_s, 'Scaffolds.fasta')
 
-      BioPieces::Fasta.open(file, 'r') do |ios|
+      BioDSL::Fasta.open(file, 'r') do |ios|
         ios.each do |entry|
           next if entry.length < @options[:contig_min]
 

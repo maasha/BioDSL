@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -36,7 +36,7 @@ require 'test/helper'
 # rubocop: disable ClassLength
 class TestReadFastq < Test::Unit::TestCase
   def setup
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
 
     setup_file1
     setup_file2
@@ -46,7 +46,7 @@ class TestReadFastq < Test::Unit::TestCase
     setup_file6
     setup_data
 
-    @p = BioPieces::Pipeline.new
+    @p = BioDSL::Pipeline.new
   end
 
   def setup_file1
@@ -140,8 +140,8 @@ class TestReadFastq < Test::Unit::TestCase
   end
 
   def setup_data
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test1', SEQ: 'atgcagcac', SEQ_LEN: 9)
     @output.write(SEQ_NAME: 'test2', SEQ: 'acagcactgA', SEQ_LEN: 10)
@@ -152,84 +152,84 @@ class TestReadFastq < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with invalid options raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_fastq(foo: 'bar') }
+  test 'BioDSL::Pipeline::ReadFastq with invalid options raises' do
+    assert_raise(BioDSL::OptionError) { @p.read_fastq(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::ReadFastq without required options raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_fastq }
+  test 'BioDSL::Pipeline::ReadFastq without required options raises' do
+    assert_raise(BioDSL::OptionError) { @p.read_fastq }
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with bad first raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadFastq with bad first raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_fastq(input: @file, first: -1)
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with bad last raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadFastq with bad last raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_fastq(input: @file, last: -1)
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with exclusive unique options raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadFastq with exclusive unique options raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_fastq(input: @file, first: 1, last: 1)
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with non-existing input file raises' do
-    assert_raise(BioPieces::OptionError) { @p.read_fastq(input: '___adsf') }
+  test 'BioDSL::Pipeline::ReadFastq with non-existing input file raises' do
+    assert_raise(BioDSL::OptionError) { @p.read_fastq(input: '___adsf') }
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with non-existing input2 file raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadFastq with non-existing input2 file raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_fastq(input: '___adsf', input2: '___xsdf')
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with uneven sized input and ' \
+  test 'BioDSL::Pipeline::ReadFastq with uneven sized input and ' \
     'input2 raises' do
-    assert_raise(BioPieces::OptionError) do
+    assert_raise(BioDSL::OptionError) do
       @p.read_fastq(input: [@file, @file2], input2: @file3).run
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with input and non-conclusive ' \
+  test 'BioDSL::Pipeline::ReadFastq with input and non-conclusive ' \
     'encoding raises' do
-    assert_raise(BioPieces::SeqError) { @p.read_fastq(input: @file6).run }
+    assert_raise(BioDSL::SeqError) { @p.read_fastq(input: @file6).run }
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with input and input2 and ' \
+  test 'BioDSL::Pipeline::ReadFastq with input and input2 and ' \
     'non-conclusive encoding raises' do
-    assert_raise(BioPieces::SeqError) do
+    assert_raise(BioDSL::SeqError) do
       @p.read_fastq(input: @file6, input2: @file6).run
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with encoding and bad value raises' do
-    assert_raise(BioPieces::OptionError) do
+  test 'BioDSL::Pipeline::ReadFastq with encoding and bad value raises' do
+    assert_raise(BioDSL::OptionError) do
       @p.read_fastq(input: @file6, encoding: :foo).run
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with encoding: :auto don\'t raise' do
+  test 'BioDSL::Pipeline::ReadFastq with encoding: :auto don\'t raise' do
     assert_nothing_raised { @p.read_fastq(input: @file, encoding: :auto).run }
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with encoding: :base_33 don\'t raise' do
+  test 'BioDSL::Pipeline::ReadFastq with encoding: :base_33 don\'t raise' do
     assert_nothing_raised do
       @p.read_fastq(input: @file2, encoding: :base_33).run
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with encoding: :base_64 don\'t raise' do
+  test 'BioDSL::Pipeline::ReadFastq with encoding: :base_64 don\'t raise' do
     assert_nothing_raised do
       @p.read_fastq(input: @file4, encoding: :base_64).run
     end
   end
 
-  test 'BioPieces::Pipeline::ReadFastq returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq returns correctly' do
     @p.read_fastq(input: @file).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -246,7 +246,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq status returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq status returns correctly' do
     @p.read_fastq(input: @file).run(output: @output2)
 
     assert_equal(0,   @p.status.first[:records_in])
@@ -257,7 +257,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(162, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with gzipped data returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with gzipped data returns correctly' do
     `gzip #{@file}`
 
     @p.read_fastq(input: "#{@file}.gz").run(output: @output2)
@@ -276,7 +276,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with bzip2\'ed data returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with bzip2\'ed data returns correctly' do
     `bzip2 #{@file}`
 
     @p.read_fastq(input: "#{@file}.bz2").run(output: @output2)
@@ -295,7 +295,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with multiple files returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with multiple files returns correctly' do
     @p.read_fastq(input: [@file, @file2]).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -320,7 +320,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with input glob returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with input glob returns correctly' do
     @p.read_fastq(input: File.join(@tmpdir, 'test*.fq')).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -353,7 +353,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with :first returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with :first returns correctly' do
     @p.read_fastq(input: [@file, @file2], first: 3).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -374,7 +374,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq#to_s with :first returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq#to_s with :first returns correctly' do
     @p.read_fastq(input: @file, first: 3)
 
     expected = %{BP.new.read_fastq(input: "#{@file}", first: 3)}
@@ -382,7 +382,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected, @p.to_s)
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with :last returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with :last returns correctly' do
     @p.read_fastq(input: [@file, @file2], last: 3).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -403,7 +403,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with :input and :input2 returns OK' do
+  test 'BioDSL::Pipeline::ReadFastq with :input and :input2 returns OK' do
     @p.read_fastq(input: @file2, input2: @file3, encoding: :base_33).
       run(output: @output2)
 
@@ -429,7 +429,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq status with :input and :input2 ' \
+  test 'BioDSL::Pipeline::ReadFastq status with :input and :input2 ' \
     'returns correctly' do
     @p.read_fastq(input: @file2, input2: @file3, encoding: :base_33).
       run(output: @output2)
@@ -437,7 +437,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(156, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with :input and :input2 and ' \
+  test 'BioDSL::Pipeline::ReadFastq with :input and :input2 and ' \
     ':first returns correctly' do
     @p.read_fastq(input: @file2, input2: @file3, encoding: :base_33, first: 2).
       run(output: @output2)
@@ -456,7 +456,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with :input and :input2 and :last ' \
+  test 'BioDSL::Pipeline::ReadFastq with :input and :input2 and :last ' \
     'returns correctly' do
     @p.read_fastq(input: @file2, input2: @file3, last: 2, encoding: :base_33).
       run(output: @output2)
@@ -475,7 +475,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with base_64 :input returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with base_64 :input returns correctly' do
     @p.read_fastq(input: @file4).run(output: @output2)
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -488,7 +488,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with base_64 :input and :input2 ' \
+  test 'BioDSL::Pipeline::ReadFastq with base_64 :input and :input2 ' \
     'returns correctly' do
     @p.read_fastq(input: @file4, input2: @file5).run(output: @output2)
 
@@ -506,7 +506,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with base_64 :input and :input2 and ' \
+  test 'BioDSL::Pipeline::ReadFastq with base_64 :input and :input2 and ' \
     ':reverse_complement returns correctly' do
     @p.read_fastq(input: @file2, input2: @file3, first: 2,
                   reverse_complement: true, encoding: :base_33).
@@ -526,7 +526,7 @@ class TestReadFastq < Test::Unit::TestCase
     assert_equal(expected.delete("\n"), collect_result.delete("\n"))
   end
 
-  test 'BioPieces::Pipeline::ReadFastq with flux returns correctly' do
+  test 'BioDSL::Pipeline::ReadFastq with flux returns correctly' do
     @p.read_fastq(input: @file2, encoding: :base_33).
       run(input: @input, output: @output2)
 

@@ -23,7 +23,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                        #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -41,15 +41,15 @@ class FastaTest < Test::Unit::TestCase
     @file.unlink
   end
 
-  test "BioPieces::Fasta#read with non-existing file raises" do
-    assert_raise(Errno::ENOENT) { BioPieces::Fasta.read("dasf") }
+  test "BioDSL::Fasta#read with non-existing file raises" do
+    assert_raise(Errno::ENOENT) { BioDSL::Fasta.read("dasf") }
   end
 
-  test "BioPieces::Fasta#read with empty files return empty" do
-    assert_equal([], BioPieces::Fasta.read(@file))
+  test "BioDSL::Fasta#read with empty files return empty" do
+    assert_equal([], BioDSL::Fasta.read(@file))
   end
 
-  test "BioPieces::Fasta#read with two entries return correctly" do
+  test "BioDSL::Fasta#read with two entries return correctly" do
     File.open(@file, 'w') do |ios|
 ios.puts <<EOD
 >test1
@@ -61,10 +61,10 @@ EOD
 
     @file.close
 
-    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read(@file).map { |e| e.to_fasta } )
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioDSL::Fasta.read(@file).map { |e| e.to_fasta } )
   end
 
-  test "BioPieces::Fasta#read from gzip with two entries return correctly" do
+  test "BioDSL::Fasta#read from gzip with two entries return correctly" do
     File.open(@file, 'w') do |ios|
 ios.puts <<EOD
 >test1
@@ -78,10 +78,10 @@ EOD
 
     `gzip #{@file.path}`
 
-    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read("#{@file.path}.gz").map { |e| e.to_fasta } )
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioDSL::Fasta.read("#{@file.path}.gz").map { |e| e.to_fasta } )
   end
 
-  test "BioPieces::Fasta#read from bzip2 with two entries return correctly" do
+  test "BioDSL::Fasta#read from bzip2 with two entries return correctly" do
     File.open(@file, 'w') do |ios|
 ios.puts <<EOD
 >test1
@@ -95,10 +95,10 @@ EOD
 
     `bzip2 #{@file.path}`
 
-    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read("#{@file.path}.bz2").map { |e| e.to_fasta } )
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioDSL::Fasta.read("#{@file.path}.bz2").map { |e| e.to_fasta } )
   end
 
-  test "BioPieces::Fasta#read with two entries and white space return correctly" do
+  test "BioDSL::Fasta#read with two entries and white space return correctly" do
     File.open(@file, 'w') do |ios|
 ios.puts <<EOD
 
@@ -119,36 +119,36 @@ EOD
 
     @file.close
 
-    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioPieces::Fasta.read(@file).map { |e| e.to_fasta } )
+    assert_equal([">test1\natcg\n", ">test2\ngtT\n"], BioDSL::Fasta.read(@file).map { |e| e.to_fasta } )
   end
 
-  test "BioPieces::Fasta#read with content and missing seq_name raises" do
+  test "BioDSL::Fasta#read with content and missing seq_name raises" do
     File.open(@file, 'w') do |ios|
       ios.puts "tyt"
     end
 
     @file.close
 
-    assert_raise(BioPieces::FastaError) { BioPieces::Fasta.read(@file) }
+    assert_raise(BioDSL::FastaError) { BioDSL::Fasta.read(@file) }
   end
 
-  test "BioPieces::Fasta#read with content before first entry raises" do
+  test "BioDSL::Fasta#read with content before first entry raises" do
     File.open(@file, 'w') do |ios|
       ios.puts "foo\n>bar\natcg"
     end
 
     @file.close
 
-    assert_raise(BioPieces::FastaError) { BioPieces::Fasta.read(@file) }
+    assert_raise(BioDSL::FastaError) { BioDSL::Fasta.read(@file) }
   end
 
-  test "BioPieces::Fasta#read with content and truncated seq_name raises" do
+  test "BioDSL::Fasta#read with content and truncated seq_name raises" do
     File.open(@file, 'w') do |ios|
       ios.puts ">\ntyt"
     end
 
     @file.close
 
-    assert_raise(BioPieces::FastaError) { BioPieces::Fasta.read(@file) }
+    assert_raise(BioDSL::FastaError) { BioDSL::Fasta.read(@file) }
   end
 end

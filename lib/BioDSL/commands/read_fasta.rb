@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Read FASTA entries from one or more files.
   #
   # +read_fasta+ read in sequence entries from FASTA files. Each sequence
@@ -108,7 +108,7 @@ module BioPieces
         read_input(input, output)
 
         options_glob(@options[:input]).each do |file|
-          BioPieces::Fasta.open(file) do |ios|
+          BioDSL::Fasta.open(file) do |ios|
             if @options[:first] && read_first(ios, output)
             elsif @options[:last] && read_last(ios)
             else
@@ -154,7 +154,7 @@ module BioPieces
     # Read in a specified number of entries from the input and emit to the
     # output.
     #
-    # @param input [BioPieces::Fasta] FASTA file input stream.
+    # @param input [BioDSL::Fasta] FASTA file input stream.
     # @param output [Enumerable::Yielder] Output stream.
     #
     # @return [Fixnum] Number of read entries.
@@ -178,7 +178,7 @@ module BioPieces
     # Read in entries from input and cache the specified last number in a
     # buffer.
     #
-    # @param input [BioPieces::Fasta] FASTA file input stream.
+    # @param input [BioDSL::Fasta] FASTA file input stream.
     #
     # @return [Fixnum] Number of read entries.
     def read_last(input)
@@ -194,7 +194,7 @@ module BioPieces
 
     # Read in all entries from input and emit to output.
     #
-    # @param input [BioPieces::Fasta] FASTA file input stream.
+    # @param input [BioDSL::Fasta] FASTA file input stream.
     # @param output [Enumerable::Yielder] Output stream.
     def read_all(input, output)
       input.each do |entry|

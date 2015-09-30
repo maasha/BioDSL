@@ -21,11 +21,11 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the Biopieces framework (www.biopieces.org).        #
+# This software is part of the BioDSL framework (www.BioDSL.org).        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-module BioPieces
+module BioDSL
   # == Collect OTU data from records in the stream.
   #
   # +collect_otus+ count the number of times each OTU is found in a set of
@@ -101,7 +101,7 @@ module BioPieces
     # Add to the count_hash a given record.
     #
     # @param count_hash [Hash] Hash with sample counts
-    # @param record [Hash] BioPieces record with sample and count.
+    # @param record [Hash] BioDSL record with sample and count.
     def add_to_count_hash(count_hash, record)
       id     = record[:S_ID].to_sym
       sample = record[:SAMPLE].upcase.to_sym

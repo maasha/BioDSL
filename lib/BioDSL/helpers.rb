@@ -21,15 +21,15 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
-# Namespace for BioPieces.
-module BioPieces
-  require 'biopieces/helpers/history_helper'
-  require 'biopieces/helpers/log_helper'
-  require 'biopieces/helpers/options_helper'
-  require 'biopieces/helpers/status_helper'
-  require 'biopieces/helpers/aux_helper'
+# Namespace for BioDSL.
+module BioDSL
+  require 'BioDSL/helpers/history_helper'
+  require 'BioDSL/helpers/log_helper'
+  require 'BioDSL/helpers/options_helper'
+  require 'BioDSL/helpers/status_helper'
+  require 'BioDSL/helpers/aux_helper'
 end

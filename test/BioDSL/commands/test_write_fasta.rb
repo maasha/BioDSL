@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of Biopieces (www.biopieces.org).                      #
+# This software is part of BioDSL (www.BioDSL.org).                      #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,8 +33,8 @@ require 'test/helper'
 # Test class for WriteFasta.
 class TestWriteFasta < Test::Unit::TestCase
   def setup
-    @zcat = BioPieces::Filesys.which('gzcat') ||
-            BioPieces::Filesys.which('zcat')
+    @zcat = BioDSL::Filesys.which('gzcat') ||
+            BioDSL::Filesys.which('zcat')
 
     init_test_files
     init_data_streams
@@ -46,19 +46,19 @@ class TestWriteFasta < Test::Unit::TestCase
       |gtac
     EXP
 
-    @p = BioPieces::Pipeline.new
-    @e = BioPieces::OptionError
+    @p = BioDSL::Pipeline.new
+    @e = BioDSL::OptionError
   end
 
   def init_test_files
-    @tmpdir = Dir.mktmpdir('BioPieces')
+    @tmpdir = Dir.mktmpdir('BioDSL')
     @file   = File.join(@tmpdir, 'test.fna')
     @file2  = File.join(@tmpdir, 'test.fna')
   end
 
   def init_data_streams
-    @input, @output   = BioPieces::Stream.pipe
-    @input2, @output2 = BioPieces::Stream.pipe
+    @input, @output   = BioDSL::Stream.pipe
+    @input2, @output2 = BioDSL::Stream.pipe
 
     @output.write(SEQ_NAME: 'test1', SEQ: 'atcg', SEQ_LEN: 4)
     @output.write(SEQ_NAME: 'test2', SEQ: 'gtac', SEQ_LEN: 4)
@@ -69,16 +69,16 @@ class TestWriteFasta < Test::Unit::TestCase
     FileUtils.rm_r @tmpdir
   end
 
-  test 'BioPieces::Pipeline::WriteFasta with invalid options raises' do
+  test 'BioDSL::Pipeline::WriteFasta with invalid options raises' do
     assert_raise(@e) { @p.write_fasta(foo: 'bar') }
   end
 
-  test 'BioPieces::Pipeline::WriteFasta to stdout outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFasta to stdout outputs correctly' do
     result = capture_stdout { @p.write_fasta.run(input: @input) }
     assert_equal(@expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFasta status outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFasta status outputs correctly' do
     capture_stdout { @p.write_fasta.run(input: @input) }
     assert_equal(2, @p.status.first[:records_in])
     assert_equal(2, @p.status.first[:records_out])
@@ -88,7 +88,7 @@ class TestWriteFasta < Test::Unit::TestCase
     assert_equal(8, @p.status.first[:residues_out])
   end
 
-  test 'BioPieces::Pipeline::WriteFasta with :wrap outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFasta with :wrap outputs correctly' do
     result = capture_stdout { @p.write_fasta(wrap: 2).run(input: @input) }
 
     expected = <<-EXP.gsub(/^\s+\|/, '')
@@ -103,49 +103,49 @@ class TestWriteFasta < Test::Unit::TestCase
     assert_equal(expected, result)
   end
 
-  test 'BioPieces::Pipeline::WriteFasta to file outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFasta to file outputs correctly' do
     @p.write_fasta(output: @file).run(input: @input, output: @output2)
 
     assert_equal(@expected, File.read(@file))
   end
 
-  test 'BioPieces::Pipeline::WriteFasta to existing file raises' do
+  test 'BioDSL::Pipeline::WriteFasta to existing file raises' do
     `touch #{@file}`
     assert_raise(@e) { @p.write_fasta(output: @file) }
   end
 
-  test 'BioPieces::Pipeline::WriteFasta to file with :force outputs OK' do
+  test 'BioDSL::Pipeline::WriteFasta to file with :force outputs OK' do
     `touch #{@file}`
     @p.write_fasta(output: @file, force: true).run(input: @input)
 
     assert_equal(@expected, File.open(@file).read)
   end
 
-  test 'BioPieces::Pipeline::WriteFasta with gzipdata and w/o file raises' do
+  test 'BioDSL::Pipeline::WriteFasta with gzipdata and w/o file raises' do
     assert_raise(@e) { @p.write_fasta(gzip: true) }
   end
 
-  test 'BioPieces::Pipeline::WriteFasta with bzip2 data w/o file raises' do
+  test 'BioDSL::Pipeline::WriteFasta with bzip2 data w/o file raises' do
     assert_raise(@e) { @p.write_fasta(bzip2: true) }
   end
 
-  test 'BioPieces::Pipeline::WriteFasta to file outputs gzipped data OK' do
+  test 'BioDSL::Pipeline::WriteFasta to file outputs gzipped data OK' do
     @p.write_fasta(output: @file, gzip: true).run(input: @input)
 
     assert_equal(@expected, `#{@zcat} #{@file}`)
   end
 
-  test 'BioPieces::Pipeline::WriteFasta to file outputs bzip2\'ed data OK' do
+  test 'BioDSL::Pipeline::WriteFasta to file outputs bzip2\'ed data OK' do
     @p.write_fasta(output: @file, bzip2: true).run(input: @input)
 
     assert_equal(@expected, `bzcat #{@file}`)
   end
 
-  test 'BioPieces::Pipeline::WriteFasta with gzip and bzip2 output raises' do
+  test 'BioDSL::Pipeline::WriteFasta with gzip and bzip2 output raises' do
     assert_raise(@e) { @p.write_fasta(output: @file, gzip: true, bzip2: true) }
   end
 
-  test 'BioPieces::Pipeline::WriteFasta with flux outputs correctly' do
+  test 'BioDSL::Pipeline::WriteFasta with flux outputs correctly' do
     @p.write_fasta(output: @file).run(input: @input, output: @output2)
 
     expected2 = <<-EXP.gsub(/^\s+\|/, '')

@@ -1,10 +1,10 @@
-BioPieces
+BioDSL
 =========
 
 Installation
 ------------
 
-`gem install biopieces`
+`gem install BioDSL`
 
 Getting started
 ---------------
@@ -13,7 +13,7 @@ A test script:
 
     #!/usr/bin/env ruby
     
-    require 'biopieces'
+    require 'BioDSL'
     
     p = BP.new.
     read_fasta(input: "input.fna").
@@ -24,7 +24,7 @@ A test script:
 Or using an interactive shell using the alias ibp which you can create by
 adding the following to your `~/.bashrc` file:
 
-    alias ibp="irb -r biopieces --noinspect"
+    alias ibp="irb -r BioDSL --noinspect"
 
 And then start the interactive shell:
 
@@ -52,72 +52,72 @@ Or chaining commands directly:
 Or run on the command line with the alias bp which you can create by adding the
 following to your ~/.bashrc file:
 
-    alias bp="ruby -r biopieces"
+    alias bp="ruby -r BioDSL"
 
 Then you can run the below from the command line:
 
     $ bp -e 'BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)'
 
-Available Biopieces
+Available BioDSL
 -------------------
 
-  * [add_key]                          (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/AddKey)                          
-  * [align_seq_mothur]                 (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/AlignSeqMothur)                          
-  * [analyze_residue_distribution]     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/AnalyzeResidueDistribution)
-  * [assemble_pairs]                   (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/AssemblePairs)
-  * [assemble_seq_idba]                (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/AssembleSeqIdba)
-  * [assemble_seq_ray]                 (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/AssembleSeqRay)
-  * [assemble_seq_spades]              (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/AssembleSeqSpades)
-  * [classify_seq]                     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ClassifySeq)
-  * [classify_seq_mothur]              (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ClassifySeqMothur)
-  * [clip_primer]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ClipPrimer)
-  * [cluster_otus]                     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ClusterOtus)
-  * [collapse_otus]                    (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/CollapseOtus)
-  * [collect_otus]                     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/CollectOtus)
-  * [complement_seq]                   (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ComplementSeq)
-  * [count]                            (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/Count)
-  * [degap_seq]                        (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/DegapSeq)
-  * [dereplicate_seq]                  (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/DereplicateSeq)
-  * [dump]                             (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/Dump)
-  * [filter_rrna]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/FilterRrna)
-  * [genecall]                         (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/Genecall)
-  * [grab]                             (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/Grab)
-  * [index_taxonomy]                   (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/IndexTaxonomy)
-  * [mean_scores]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/MeanScores)
-  * [merge_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/MergePairSeq)
-  * [merge_table]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/MergeTable)
-  * [merge_values]                     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/MergeValues)
-  * [plot_heatmap]                     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/PlotHeatmap)
-  * [plot_histogram]                   (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/PlotHistogram)
-  * [plot_matches]                     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/PlotMatches)
-  * [plot_residue_distribution]        (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/PlotResidueDistribution)
-  * [plot_scores]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/PlotScores)
-  * [random]                           (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/Random)
-  * [read_fasta]                       (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ReadFasta)
-  * [read_fastq]                       (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ReadFastq)
-  * [read_table]                       (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ReadTable)
-  * [reverse_seq]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/ReverseSeq)
-  * [slice_align]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/SliceAlign)
-  * [slice_seq]                        (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/SliceSeq)
-  * [sort]                             (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/Sort)
-  * [split_pair_seq]                   (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/SplitPairSeq)
-  * [split_values]                     (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/SplitValues)
-  * [trim_primer]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/TrimPrimer)
-  * [trim_seq]                         (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/TrimSeq)
-  * [uchime_ref]                       (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/UchimeRef)
-  * [unique_values]                    (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/UniqueValues)
-  * [usearch_global]                   (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/UsearchGlobal)
-  * [write_fasta]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/WriteFasta)
-  * [write_fastq]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/WriteFastq)
-  * [write_table]                      (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/WriteTable)
-  * [write_tree]                       (http://www.rubydoc.info/gems/biopieces/0.6.0/BioPieces/WriteTree)
+  * [add_key]                          (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/AddKey)                          
+  * [align_seq_mothur]                 (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/AlignSeqMothur)                          
+  * [analyze_residue_distribution]     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/AnalyzeResidueDistribution)
+  * [assemble_pairs]                   (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/AssemblePairs)
+  * [assemble_seq_idba]                (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/AssembleSeqIdba)
+  * [assemble_seq_ray]                 (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/AssembleSeqRay)
+  * [assemble_seq_spades]              (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/AssembleSeqSpades)
+  * [classify_seq]                     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ClassifySeq)
+  * [classify_seq_mothur]              (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ClassifySeqMothur)
+  * [clip_primer]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ClipPrimer)
+  * [cluster_otus]                     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ClusterOtus)
+  * [collapse_otus]                    (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/CollapseOtus)
+  * [collect_otus]                     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/CollectOtus)
+  * [complement_seq]                   (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ComplementSeq)
+  * [count]                            (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/Count)
+  * [degap_seq]                        (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/DegapSeq)
+  * [dereplicate_seq]                  (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/DereplicateSeq)
+  * [dump]                             (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/Dump)
+  * [filter_rrna]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/FilterRrna)
+  * [genecall]                         (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/Genecall)
+  * [grab]                             (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/Grab)
+  * [index_taxonomy]                   (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/IndexTaxonomy)
+  * [mean_scores]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/MeanScores)
+  * [merge_pair_seq]                   (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/MergePairSeq)
+  * [merge_table]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/MergeTable)
+  * [merge_values]                     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/MergeValues)
+  * [plot_heatmap]                     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/PlotHeatmap)
+  * [plot_histogram]                   (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/PlotHistogram)
+  * [plot_matches]                     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/PlotMatches)
+  * [plot_residue_distribution]        (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/PlotResidueDistribution)
+  * [plot_scores]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/PlotScores)
+  * [random]                           (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/Random)
+  * [read_fasta]                       (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ReadFasta)
+  * [read_fastq]                       (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ReadFastq)
+  * [read_table]                       (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ReadTable)
+  * [reverse_seq]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/ReverseSeq)
+  * [slice_align]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/SliceAlign)
+  * [slice_seq]                        (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/SliceSeq)
+  * [sort]                             (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/Sort)
+  * [split_pair_seq]                   (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/SplitPairSeq)
+  * [split_values]                     (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/SplitValues)
+  * [trim_primer]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/TrimPrimer)
+  * [trim_seq]                         (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/TrimSeq)
+  * [uchime_ref]                       (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/UchimeRef)
+  * [unique_values]                    (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/UniqueValues)
+  * [usearch_global]                   (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/UsearchGlobal)
+  * [write_fasta]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/WriteFasta)
+  * [write_fastq]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/WriteFastq)
+  * [write_table]                      (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/WriteTable)
+  * [write_tree]                       (http://www.rubydoc.info/gems/BioDSL/0.6.0/BioDSL/WriteTree)
 
 Log and History
 ---------------
 
-All BioPieces events are logged to `~/.biopieces_log`.
+All BioDSL events are logged to `~/.BioDSL_log`.
 
-BioPieces history is saved to `~/.biopieces_history`.
+BioDSL history is saved to `~/.BioDSL_history`.
 
 
 Features
@@ -164,7 +164,7 @@ Configuration File
 ------------------
 
 It is possible to pre-set options in a configuration file located in your $HOME
-directory called `.biopiecesrc`. Thus if an option is not already set, its value
+directory called `.BioDSLrc`. Thus if an option is not already set, its value
 will fall back to the one set in the configuration file. The configuration file
 contains three whitespace separated columns:
 
@@ -176,7 +176,7 @@ Lines starting with '#' are considered comments and are ignored.
 
 An example:
 
-    maasha@mel:~$ cat ~/.biopiecesrc
+    maasha@mel:~$ cat ~/.BioDSLrc
     uchime_ref   database   /home/maasha/Install/QIIME1.8/data/rdp_gold.fa
     uchime_ref   cpus       20
 
