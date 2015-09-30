@@ -1,3 +1,29 @@
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+
 $LOAD_PATH.push File.expand_path('../lib', __FILE__)
 
 require 'BioDSL/version'
@@ -8,12 +34,11 @@ Gem::Specification.new do |s|
   s.platform          = Gem::Platform::RUBY
   s.date              = Time.now.strftime('%F')
   s.summary           = 'BioDSL'
-  s.description       = 'BioDSL is a bioinformatic framework of tools ' \
-                        'easily used and easily created.'
+  s.description       = 'BioDSL is a Bioinformatics Domain Specific Language.'
   s.authors           = ['Martin A. Hansen']
   s.email             = 'mail@maasha.dk'
   s.rubyforge_project = 'BioDSL'
-  s.homepage          = 'http://www.BioDSL.org'
+  s.homepage          = 'http://www.github.com/maasha/BioDSL'
   s.license           = 'GPL2'
   s.rubygems_version  = '2.0.0'
   s.files             = `git ls-files`.split("\n")
