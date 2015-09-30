@@ -15,7 +15,7 @@ A test script:
     
     require 'BioDSL'
     
-    p = BP.new.
+    p = BD.new.
     read_fasta(input: "input.fna").
     grab(select: "ATC$", keys: :SEQ).
     write_fasta(output: "output.fna").
@@ -29,24 +29,24 @@ adding the following to your `~/.bashrc` file:
 And then start the interactive shell:
 
     $ ibp
-    irb(main):001:0> p = BP.new
-    => BP.new
+    irb(main):001:0> p = BD.new
+    => BD.new
     irb(main):002:0> p.read_fasta(input: "input.fna")
-    => BP.new.read_fasta(input: "input.fna")
+    => BD.new.read_fasta(input: "input.fna")
     irb(main):003:0> p.grab(select: "ATC$", keys: :SEQ)
-    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ)
+    => BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ)
     irb(main):004:0> p.write_fasta(output: "output.fna")
-    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna")
+    => BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna")
     irb(main):005:0> p.run(progress: true)
-    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+    => BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
     irb(main):006:0>
 
 
 Or chaining commands directly:
 
     $ ibp
-    irb(main):001:0> BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
-    => BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+    irb(main):001:0> BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+    => BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
     irb(main):002:0>
 
 Or run on the command line with the alias bp which you can create by adding the
@@ -56,7 +56,7 @@ following to your ~/.bashrc file:
 
 Then you can run the below from the command line:
 
-    $ bp -e 'BP.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)'
+    $ bp -e 'BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)'
 
 Available BioDSL
 -------------------
@@ -127,37 +127,37 @@ Progress:
 
 Show nifty progress table with commands, records read and emittet and time.
 
-`BP.new.read_fasta(input: "input.fna").dump.run(progress: true)`
+`BD.new.read_fasta(input: "input.fna").dump.run(progress: true)`
 
 Verbose:
 
 Output verbose messages from commands and the run status.
 
-`BP.new.read_fasta(input: "input.fna").dump.run(verbose: true)`
+`BD.new.read_fasta(input: "input.fna").dump.run(verbose: true)`
 
 Debug:
 
 Output debug messages from commands using these.
 
-`BP.new.read_fasta(input: "input.fna").dump.run(debug: true)`
+`BD.new.read_fasta(input: "input.fna").dump.run(debug: true)`
 
 E-mail notification:
 
 Send an email when run is complete.
 
-`BP.new.read_fasta(input: "input.fna").dump.run(email: mail@maasha.dk, subject: "Script done!")`
+`BD.new.read_fasta(input: "input.fna").dump.run(email: mail@maasha.dk, subject: "Script done!")`
 
 Report:
 
 Create an HTML report of the run stats:
 
-`BP.new.read_fasta(input: "input.fna").dump.run(report: "status.html")`
+`BD.new.read_fasta(input: "input.fna").dump.run(report: "status.html")`
 
 Output dir:
 
 All output files from commands are put in a specified dir:
 
-`BP.new.read_fasta(input: "input.fna").dump.run(output_dir: "Results")`
+`BD.new.read_fasta(input: "input.fna").dump.run(output_dir: "Results")`
 
 
 Configuration File
