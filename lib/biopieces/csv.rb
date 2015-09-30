@@ -1,34 +1,39 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of Biopieces (www.biopieces.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of Biopieces (www.biopieces.org).                      #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
+# Monkey patching Array to add convert_types method.
 class Array
   # Method that converts variable types given an array of types.
   # Example: ["fish", 0.0, 1].convert_types([:to_s, :to_f, :to_i])
   def convert_types(types)
-    raise ArgumentError, "Array and types size mismatch: #{self.size} != #{types.size}" if self.size != types.size
+    if size != types.size
+      fail ArgumentError, "Array and types size mismatch: #{size} != " \
+        "#{types.size}"
+    end
 
     types.each_with_index do |type, i|
       self[i] = self[i].send(type)
@@ -41,6 +46,8 @@ end
 module BioPieces
   class CSVError < StandardError; end
 
+  # rubocop: disable ClassLength
+
   # Class for manipulating CSV or table files.
   # Allow reading and writing of gzip and bzip2 data.
   # Auto-convert data types.
@@ -50,9 +57,9 @@ module BioPieces
       io = IO.open(*args)
 
       if block_given?
-        yield self.new(io)
+        yield new(io)
       else
-        return self.new(io)
+        return new(io)
       end
     end
 
@@ -71,8 +78,8 @@ module BioPieces
     def self.read_array(file, options = {})
       data = []
 
-      self.open(file) do |ios|
-        ios.each_array(options) { |row| data << row } 
+      open(file) do |ios|
+        ios.each_array(options) { |row| data << row }
       end
 
       data
@@ -91,8 +98,8 @@ module BioPieces
     def self.read_hash(file, options = {})
       data = []
 
-      self.open(file) do |ios|
-        ios.each_hash(options) { |row| data << row } 
+      open(file) do |ios|
+        ios.each_hash(options) { |row| data << row }
       end
 
       data
@@ -109,7 +116,7 @@ module BioPieces
 
     # Method to skip a given number or non-empty lines.
     def skip(num)
-      while num != 0 and line = @io.gets
+      while num != 0 && (line = @io.gets)
         line.chomp!
 
         num -= 1 unless line.empty?
@@ -122,9 +129,9 @@ module BioPieces
     #
     # Options:
     #   * :include_header -
-    #   * :delimiter      - 
-    #   * :select         - 
-    #   * :reject         - 
+    #   * :delimiter      -
+    #   * :select         -
+    #   * :reject         -
     def each_array(options = {})
       return to_enum :each_array unless block_given?
 
@@ -140,11 +147,9 @@ module BioPieces
           get_header(fields, options) unless @header
           get_fields(fields, options) unless @fields
 
-          if options[:include_header]
-            yield @header.map { |h| h.to_s }
-          end
+          yield @header.map(&:to_s) if options[:include_header]
         else
-          get_header(fields, options)    unless @header
+          get_header(fields, options) unless @header
           get_fields(fields, options) unless @fields
 
           fields = fields.values_at(*@fields) if @fields
@@ -163,9 +168,9 @@ module BioPieces
     #   CSV.each_hash(options={})                  -> Enumerator
     #
     # Options:
-    #   * :delimiter      - 
-    #   * :select         - 
-    #   * :reject         - 
+    #   * :delimiter      -
+    #   * :select         -
+    #   * :reject         -
     def each_hash(options = {})
       each_array(options) do |array|
         hash = {}
@@ -188,31 +193,39 @@ module BioPieces
     #   * :reject - list of column indexes, names or a range to reject.
     def get_header(fields, options)
       if fields[0][0] == '#'
-        fields[0] = fields[0][1 .. -1] 
-        @header = fields.map { |h| h.to_sym }
+        fields[0] = fields[0][1..-1]
+        @header = fields.map(&:to_sym)
       else
         @header = []
-        fields.each_with_index { |field, i| @header << "V#{i}".to_sym }
+        fields.each_with_index { |_field, i| @header << "V#{i}".to_sym }
       end
 
       if options[:select]
         if options[:select].first.is_a? Fixnum
           if options[:select].max >= @header.size
-            raise CSVError, "Selected columns out of bounds: #{options[:select].select { |c| c >= @header.size }}"
+            fail CSVError, "Selected columns out of bounds: #{options[:select].
+              select { |c| c >= @header.size }}"
           end
         else
           options[:select].each do |value|
-            raise CSVError, "Selected value: #{value} not in header: #{@header}" unless @header.include? value.to_sym
+            unless @header.include? value.to_sym
+              fail CSVError, "Selected value: #{value} not in header: " \
+                " #{@header}"
+            end
           end
         end
       elsif options[:reject]
         if options[:reject].first.is_a? Fixnum
           if options[:reject].max >= @header.size
-            raise CSVError, "Rejected columns out of bounds: #{options[:reject].reject { |c| c >= @header.size }}"
+            fail CSVError, "Rejected columns out of bounds: #{options[:reject].
+              reject { |c| c >= @header.size }}"
           end
         else
           options[:reject].map do |value|
-            raise CSVError, "Rejected value: #{value} not found in header: #{@header}" unless @header.include? value.to_sym
+            unless @header.include? value.to_sym
+              fail CSVError, "Rejected value: #{value} not found in header: " \
+                "#{@header}"
+            end
           end
         end
       end
@@ -230,7 +243,7 @@ module BioPieces
         if options[:select].first.is_a? Fixnum
           @fields = options[:select]
         else
-          raise CSVError, "No header found" unless @header
+          fail CSVError, 'No header found' unless @header
 
           fields = []
 
@@ -244,14 +257,19 @@ module BioPieces
         @header = @header.values_at(*@fields)
       elsif options[:reject]
         if options[:reject].first.is_a? Fixnum
-          reject = options[:reject].is_a?(Range) ? options[:reject].to_a : options[:reject]
-          @fields = (0 ... fields.size).to_a - reject
+          reject = if options[:reject].is_a?(Range)
+                     options[:reject].to_a
+                   else
+                     options[:reject]
+                   end
+          @fields = (0...fields.size).to_a - reject
         else
-          raise CSVError, "No header found" unless @header
+          fail CSVError, 'No header found' unless @header
 
-          reject = options[:reject].map { |r| r.to_sym }
+          reject = options[:reject].map(&:to_sym)
 
-          @fields = @header.map.with_index.to_h.delete_if { |k, v| reject.include? k }.values
+          @fields = @header.map.with_index.to_h.
+                    delete_if { |k, _| reject.include? k }.values
         end
 
         @header = @header.values_at(*@fields)
@@ -279,6 +297,7 @@ module BioPieces
       @types = types
     end
 
+    # IO class for CSV.
     class IO < Filesys
       def gets
         @io.gets
