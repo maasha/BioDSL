@@ -93,7 +93,7 @@ module BioDSL
   # where the keys Organism, Sequence and Count are taken from the comment
   # line prefixe with #:
   #
-  #    BP.new.read_tab(input: "test.tab").dump.run
+  #    BD.new.read_tab(input: "test.tab").dump.run
   #
   #    {:Organism=>"Human", :Sequence=>"ATACGTCAG", :Count=>23524}
   #    {:Organism=>"Dog", :Sequence=>"AGCATGAC", :Count=>2442}
@@ -103,7 +103,7 @@ module BioDSL
   # However, if the first line is skipped using the +skip+ option the keys
   # will default to V0, V1, V2 ... Vn:
   #
-  #    BP.new.read_table(input: "test.tab", skip: 1).dump.run
+  #    BD.new.read_table(input: "test.tab", skip: 1).dump.run
   #
   #    {:V0=>"Human", :V1=>"ATACGTCAG", :V2=>23524}
   #    {:V0=>"Dog", :V1=>"AGCATGAC", :V2=>2442}
@@ -112,7 +112,7 @@ module BioDSL
   #
   # To explicitly name the columns (or the keys) use the +keys+ option:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test.tab", skip: 1, keys: [:ORGANISM, :SEQ, :COUNT]).
   #    dump.
   #    run
@@ -128,7 +128,7 @@ module BioDSL
   # argument. So to read in only the sequence and the count so that the
   # count comes before the sequence do:
   #
-  #    BP.new.read_table(input: "test.tab", skip: 1, select: [2, 1]).dump.run
+  #    BD.new.read_table(input: "test.tab", skip: 1, select: [2, 1]).dump.run
   #
   #    {:V0=>23524, :V1=>"ATACGTCAG"}
   #    {:V0=>2442, :V1=>"AGCATGAC"}
@@ -141,7 +141,7 @@ module BioDSL
   #
   # Then the header keys can be used:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test.tab", skip: 1, select: [:Count, :Sequence]).
   #    dump.
   #    run
@@ -154,7 +154,7 @@ module BioDSL
   # Likewise, it is possible to reject specified columns from being read
   # using the +reject+ option:
   #
-  #    BP.new.read_table(input: "test.tab", skip: 1, reject: [2, 1]).dump.run
+  #    BD.new.read_table(input: "test.tab", skip: 1, reject: [2, 1]).dump.run
   #
   #    {:V0=>"Human"}
   #    {:V0=>"Dog"}
@@ -163,7 +163,7 @@ module BioDSL
   #
   # And again, the header keys can be used if a header is present:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test.tab", skip: 1, reject: [:Count, :Sequence]).
   #    dump.
   #    run

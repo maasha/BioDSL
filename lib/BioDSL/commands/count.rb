@@ -46,7 +46,7 @@ module BioDSL
   #
   # To count the number of records in the file `test.fq`:
   #
-  #    BP.new.read_fastq(input: "test.fq").count(output: "count.txt").dump.run
+  #    BD.new.read_fastq(input: "test.fq").count(output: "count.txt").dump.run
   #
   #    {:SEQ_NAME=>"ILLUMINA-52179E_0004:2:1:1040:5263#TTAGGC/1",
   #     :SEQ=>"TTCGGCATCGGCGGCGACGTTGGCGGCGGGGCCGGGCGGGTCGANNNCAT",

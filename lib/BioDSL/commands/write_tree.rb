@@ -50,7 +50,7 @@ module BioDSL
   #
   # To create a tree from aligned FASTA sequences in the file `align.fna` do:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "align.fna").
   #    write_tree(output: "align.tree").
   #    run

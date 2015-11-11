@@ -59,7 +59,7 @@ module BioDSL
   #
   # To genecall a genome do:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "contigs.fna").
   #    genecall.
   #    grab(select: "genecall", key: :type, exact: true).
@@ -68,7 +68,7 @@ module BioDSL
   #
   # To add genecall data to the sequence name use +merge_values+:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "contigs.fna").
   #    genecall(type: "protein").
   #    grab(select: "genecall", key: :type, exact: true).

@@ -53,7 +53,7 @@ module BioDSL
   # To align the entries in the FASTA file `test.fna` to the template alignment
   # in the file `template.fna` do:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    align_seq_mothur(template_file: "template.fna").
   #    run

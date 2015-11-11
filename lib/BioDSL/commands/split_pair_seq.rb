@@ -65,7 +65,7 @@ module BioDSL
   #
   # These can be split using split_pair_seq:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fastq(input: "test.fq", encoding: :base_33).
   #    merge_pair_seq.
   #    split_pair_seq.

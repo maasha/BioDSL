@@ -66,7 +66,7 @@ module BioDSL
   #
   # To calculate the mean score do:
   #
-  #    BP.new.read_fastq(input: "test.fq").mean_scores.dump.run
+  #    BD.new.read_fastq(input: "test.fq").mean_scores.dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG",
@@ -76,7 +76,7 @@ module BioDSL
   #
   # To calculate local means for a sliding window, do:
   #
-  #    BP.new.read_fastq(input: "test.fq").mean_scores(local: true).dump.run
+  #    BD.new.read_fastq(input: "test.fq").mean_scores(local: true).dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"TTGGTCGCTCGCTCGACCTCAGATCAGACGTGG",

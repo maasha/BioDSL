@@ -65,7 +65,7 @@ module BioDSL
   #
   # Here we plot a residue distribution of a FASTA file:
   #
-  #    BP.new.read_fasta(input: "test.fna").plot_residue_distribution.run
+  #    BD.new.read_fasta(input: "test.fna").plot_residue_distribution.run
   #
   # rubocop: disable ClassLength
   class PlotResidueDistribution

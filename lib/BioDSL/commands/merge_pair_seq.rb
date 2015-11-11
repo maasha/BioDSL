@@ -70,7 +70,7 @@ module BioDSL
   #
   # To merge these interleaved pair-end sequences use merge_pair_seq:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fastq(input: "test.fq", encoding: :base_33).
   #    merge_pair_seq.
   #    dump.

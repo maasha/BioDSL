@@ -47,7 +47,7 @@ class TestCollapseOtus < Test::Unit::TestCase
 
     @output.close
 
-    @p = BP.new
+    @p = BD.new
   end
 
   test 'BioDSL::Pipeline::Count with invalid options raises' do

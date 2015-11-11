@@ -47,7 +47,7 @@ class TestAlignSeqMothur < Test::Unit::TestCase
     @output.write(SEQ_NAME: 'test', SEQ: 'gattccgatcgatcgatcga')
     @output.close
 
-    @p = BP.new
+    @p = BD.new
   end
 
   def write_template

@@ -53,7 +53,7 @@ module BioDSL
   #
   # To create OTU clusters do:
   #
-  #     BP.new.
+  #     BD.new.
   #     read_fasta(input: "in.fna").
   #     dereplicate_seq.
   #     sort(key: :SEQ_COUNT, reverse: true).

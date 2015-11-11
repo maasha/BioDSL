@@ -76,7 +76,7 @@ module BioDSL
   #
   # We can merge the data with +merge_table+ like this:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test1.tab").
   #    merge_table(input: "test2.tab", key: :ID).
   #    dump.

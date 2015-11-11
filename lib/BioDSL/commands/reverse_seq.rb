@@ -51,7 +51,7 @@ module BioDSL
   #
   # To reverse the sequence simply do:
   #
-  #    BP.new.read_fastq(input:"test.fq").reverse_seq.dump.run
+  #    BD.new.read_fastq(input:"test.fq").reverse_seq.dump.run
   #
   #    {:SEQ_NAME=>"M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185",
   #     :SEQ=>"GTGACCGGCAGCAAAATGTT",

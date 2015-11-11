@@ -51,7 +51,7 @@ module BioDSL
   #
   # To filter all reads matching the SILVA archaea 23S rRNA do:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fastq(input: "reads.fq").
   #    filter_rrna(ref_fasta: ["silva-arc-23s-id98.fasta"],
   #                ref_index: ["silva-arc-23s-id98.fasta.idx*"]).

@@ -377,7 +377,7 @@ class TestReadFastq < Test::Unit::TestCase
   test 'BioDSL::Pipeline::ReadFastq#to_s with :first returns correctly' do
     @p.read_fastq(input: @file, first: 3)
 
-    expected = %{BP.new.read_fastq(input: "#{@file}", first: 3)}
+    expected = %{BD.new.read_fastq(input: "#{@file}", first: 3)}
 
     assert_equal(expected, @p.to_s)
   end

@@ -51,7 +51,7 @@ module BioDSL
   #
   # To remove all gaps from all sequences do:
   #
-  #    BP.new.read_fasta(input: "test.fna").degap_seq.dump.run
+  #    BD.new.read_fasta(input: "test.fna").degap_seq.dump.run
   #
   #    {:SEQ_NAME=>"test1", :SEQ=>"AGTC", :SEQ_LEN=>4}
   #    {:SEQ_NAME=>"test2", :SEQ=>"AGGTC", :SEQ_LEN=>5}
@@ -59,7 +59,7 @@ module BioDSL
   #
   # To remove all gap-only columns use the +columns_only+ option:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    degap_seq(columns_only: true).
   #    dump.

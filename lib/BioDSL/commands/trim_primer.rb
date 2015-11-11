@@ -82,7 +82,7 @@ module BioDSL
   #
   # The forward end can be trimmed like this:
   #
-  #     BP.new.
+  #     BD.new.
   #     read_fasta(input: "test.fna").
   #     trim_primer(primer: "ATAGAACTGAC", direction: :forward).
   #     dump.
@@ -98,7 +98,7 @@ module BioDSL
   #
   # And trimming a reverse primer:
   #
-  #     BP.new.
+  #     BD.new.
   #     read_fasta(input: "test.fna").
   #     trim_primer(primer: "ACTACGTGCGGAT", direction: :reverse).
   #     dump.

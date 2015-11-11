@@ -56,7 +56,7 @@ module BioDSL
   # If you have two pair-end sequence files with the Illumina data then you
   # can assemble these using assemble_seq_spades like this:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fastq(input: "file1.fq", input2: "file2.fq).
   #    assemble_seq_spades(kmers: [55,77,99,127]).
   #    write_fasta(output: "contigs.fna").
@@ -69,7 +69,7 @@ module BioDSL
     include AuxHelper
 
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
-               records_out assembled)
+               residues_out records_out assembled)
 
     # Constructor for the AssembleSeqSpades class.
     #

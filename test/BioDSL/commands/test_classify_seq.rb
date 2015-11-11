@@ -33,7 +33,7 @@ require 'test/helper'
 # Test class for ClassifySeq.
 class TestClassifySeq < Test::Unit::TestCase
   def setup
-    @p = BP.new
+    @p = BD.new
   end
 
   test 'BioDSL::Pipeline#classify_seq with disallowed option raises' do

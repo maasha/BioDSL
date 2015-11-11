@@ -53,7 +53,7 @@ module BioDSL
   #
   # To sort this accoring to COUNT in descending order do:
   #
-  #    BP.new.read_table(input: "test.tab").sort(key: :COUNT).dump.run
+  #    BD.new.read_table(input: "test.tab").sort(key: :COUNT).dump.run
   #
   #    {:COUNT=>1, :ORGANISM=>"Eel"}
   #    {:COUNT=>3, :ORGANISM=>"Cat"}
@@ -61,7 +61,7 @@ module BioDSL
   #
   # And in ascending order:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test.tab").
   #    sort(key: :COUNT, reverse: true).
   #    dump.
@@ -73,7 +73,7 @@ module BioDSL
   #
   # The type of value determines the sorting, alphabetical order:
   #
-  #    BP.new.read_table(input: "test.tab").sort(key: :ORGANISM).dump.run
+  #    BD.new.read_table(input: "test.tab").sort(key: :ORGANISM).dump.run
   #
   #    {:COUNT=>3, :ORGANISM=>"Cat"}
   #    {:COUNT=>4, :ORGANISM=>"Dog"}
@@ -81,7 +81,7 @@ module BioDSL
   #
   # And reverse alphabetic order:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test.tab").
   #    sort(key: :ORGANISM, reverse: true).
   #    dump.
