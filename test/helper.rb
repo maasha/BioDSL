@@ -41,7 +41,7 @@ require 'BioDSL'
 require 'test/unit'
 require 'mocha/test_unit'
 
-ENV['BP_TEST'] = "true"
+ENV['BD_TEST'] = "true"
 
 module Kernel
   def capture_stdout

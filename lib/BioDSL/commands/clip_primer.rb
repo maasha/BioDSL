@@ -75,7 +75,7 @@ module BioDSL
   # To clip this sequence in the forward direction with the primer
   # 'TGACTACGACTACGACTACT' do:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    clip_primer(primer: "TGACTACGACTACGACTACT", direction: :forward).
   #    dump.
@@ -91,7 +91,7 @@ module BioDSL
   #
   # Or in the reverse direction:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    clip_primer(primer: "TGACTACGACTACGACTACT", direction: :reverse).
   #    dump.

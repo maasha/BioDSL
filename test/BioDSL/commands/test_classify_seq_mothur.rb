@@ -35,7 +35,7 @@ class TestClassifySeqMothur < Test::Unit::TestCase
   def setup
     omit('mothur not found') unless BioDSL::Filesys.which('mothur')
 
-    @p = BP.new
+    @p = BD.new
     @database = __FILE__
     @taxonomy = __FILE__
   end

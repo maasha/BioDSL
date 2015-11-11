@@ -44,7 +44,7 @@ class PipelineTest < Test::Unit::TestCase
       delivery_method :test
     end
 
-    @p = BP.new
+    @p = BD.new
   end
 
   def setup_fasta_files
@@ -69,27 +69,27 @@ class PipelineTest < Test::Unit::TestCase
 
   test 'BioDSL::Pipeline#to_s w/o options and w/o .run() returns OK' do
     @p.commands << BioDSL::Command.new('dump', nil, {})
-    expected = %(BP.new.dump)
+    expected = %(BD.new.dump)
     assert_equal(expected, @p.to_s)
   end
 
   test 'BioDSL::Pipeline#to_s with options and w/o .run() returns OK' do
     @p.commands << BioDSL::Command.new('read_fasta', nil, input: 'test.fna')
-    expected = %(BP.new.read_fasta(input: "test.fna"))
+    expected = %(BD.new.read_fasta(input: "test.fna"))
     assert_equal(expected, @p.to_s)
   end
 
   test 'BioDSL::Pipeline#to_s w/o options and .run() returns OK' do
     @p.commands << BioDSL::Command.new('dump', nil, {})
     @p.complete = true
-    expected = %(BP.new.dump.run)
+    expected = %(BD.new.dump.run)
     assert_equal(expected, @p.run.to_s)
   end
 
   test 'BioDSL::Pipeline#to_s with options and .run() returns OK' do
     @p.commands << BioDSL::Command.new('read_fasta', nil, input: 'test.fna')
     @p.complete = true
-    expected = %{BP.new.read_fasta(input: "test.fna").run}
+    expected = %{BD.new.read_fasta(input: "test.fna").run}
     assert_equal(expected, @p.run.to_s)
   end
 
@@ -113,13 +113,13 @@ class PipelineTest < Test::Unit::TestCase
 
   test 'BioDSL::Pipeline#+ of two Pipelines return correctly' do
     p = BioDSL::Pipeline.new.dump(first: 2)
-    assert_equal('BP.new.dump(first: 2)', (@p + p).to_s)
+    assert_equal('BD.new.dump(first: 2)', (@p + p).to_s)
   end
 
   test 'BioDSL::Pipeline#+ of three Pipelines return correctly' do
     p1 = BioDSL::Pipeline.new.dump(first: 2)
     p2 = BioDSL::Pipeline.new.dump(last: 3)
-    assert_equal('BP.new.dump(first: 2).dump(last: 3)', (@p + p1 + p2).to_s)
+    assert_equal('BD.new.dump(first: 2).dump(last: 3)', (@p + p1 + p2).to_s)
   end
 
   test 'BioDSL::Pipeline#pop decreases size' do

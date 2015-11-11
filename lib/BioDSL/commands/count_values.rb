@@ -52,7 +52,7 @@ module BioDSL
   # To count the values of both columns we first read the table with
   # +read_table+ and then pass the result to +count_values+:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test.tab").
   #    count_values(keys: [:V0, :V1]).
   #    dump.

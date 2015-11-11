@@ -58,7 +58,7 @@ module BioDSL
   #
   # To trim both ends simply do:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq.trim_seq.run
+  #    BD.new.read_fastq(input: "test.fq").trim_seq.trim_seq.run
   #
   #    SEQ_NAME: test
   #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcat
@@ -68,7 +68,7 @@ module BioDSL
   #
   # Use the +quality_min+ option to change the minimum value to discard:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fastq(input: "test.fq").
   #    trim_seq(quality_min: 25).
   #    trim_seq.
@@ -82,7 +82,7 @@ module BioDSL
   #
   # To trim the left end only (use :rigth for right end only), do:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq(mode: :left).trim_seq.run
+  #    BD.new.read_fastq(input: "test.fq").trim_seq(mode: :left).trim_seq.run
   #
   #    SEQ_NAME: test
   #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtctacgacgagcatgctagctag
@@ -93,7 +93,7 @@ module BioDSL
   # To increase the length of stretch of good quality residues to match, use
   # the +length_min+ option:
   #
-  #    BP.new.read_fastq(input: "test.fq").trim_seq(length_min: 4).trim_seq.run
+  #    BD.new.read_fastq(input: "test.fq").trim_seq(length_min: 4).trim_seq.run
   #
   #    SEQ_NAME: test
   #    SEQ: tctgacgtatcgatcgttgattagttgctagctatgcagtct

@@ -43,7 +43,7 @@ module BioDSL
   # Here is an OTU table with four rows, one of which has a redundant Taxonomy
   # string:
   #
-  #    BP.new.read_table(input: "otu_table.txt").dump.run
+  #    BD.new.read_table(input: "otu_table.txt").dump.run
   #
   #    {:OTU=>"OTU_1",
   #     :CM1_COUNT=>881,
@@ -73,7 +73,7 @@ module BioDSL
   # In order to collapse the redudant OTU simply run the stream through
   # +collapse_otus+:
   #
-  #    BP.new.read_table(input: "otu_table.txt").collapse_otus.dump.run
+  #    BD.new.read_table(input: "otu_table.txt").collapse_otus.dump.run
   #
   #    {:OTU=>"OTU_1",
   #     :CM1_COUNT=>881,

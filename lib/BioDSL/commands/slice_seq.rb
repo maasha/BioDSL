@@ -55,7 +55,7 @@ module BioDSL
   #
   # To slice the second residue from the beginning do:
   #
-  #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: 2).dump.run
+  #    BD.new.read_fastq(input: "test.fq").slice_seq(slice: 2).dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"G",
@@ -64,7 +64,7 @@ module BioDSL
   #
   # To slice the last residue do:
   #
-  #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: -1).dump.run
+  #    BD.new.read_fastq(input: "test.fq").slice_seq(slice: -1).dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"T",
@@ -73,7 +73,7 @@ module BioDSL
   #
   # To slice the first 5 residues do:
   #
-  #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: 0 ... 5).dump.run
+  #    BD.new.read_fastq(input: "test.fq").slice_seq(slice: 0 ... 5).dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"TTGGT",
@@ -82,7 +82,7 @@ module BioDSL
   #
   # To slice the last 5 residues do:
   #
-  #    BP.new.read_fastq(input: "test.fq").slice_seq(slice: -5 .. -1).dump.run
+  #    BD.new.read_fastq(input: "test.fq").slice_seq(slice: -5 .. -1).dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"GCGAT",

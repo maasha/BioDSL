@@ -47,7 +47,7 @@ module BioDSL
   #
   # To pick some random records from the stream do:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "in.fna").
   #    random(number: 10_000).
   #    write_fasta(output: "out.fna").

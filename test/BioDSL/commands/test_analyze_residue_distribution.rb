@@ -49,7 +49,7 @@ class TestAnalyzeResidueDistribution < Test::Unit::TestCase
 
     @output.close
 
-    @p = BP.new
+    @p = BD.new
   end
 
   def teardown

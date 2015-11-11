@@ -78,4 +78,4 @@ module BioDSL
   require 'BioDSL/verbose'
 end
 
-BP = BioDSL::Pipeline # Module alias for irb short hand
+BD = BioDSL::Pipeline # Module alias for irb short hand

@@ -56,7 +56,7 @@ module BioDSL
   # To output only unique values for the first column we first read the table
   # with +read_table+ and then pass the result to +unique_values+:
   #
-  #    BP.new.read_table(input: "test.tab").unique_values(key: :V0).dump.run
+  #    BD.new.read_table(input: "test.tab").unique_values(key: :V0).dump.run
   #
   #    {:V0=>"Human", :V1=>"H1"}
   #    {:V0=>"Dog", :V1=>"D1"}
@@ -64,7 +64,7 @@ module BioDSL
   #
   # To output duplicate records instead use the +invert+ options:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_table(input: "test.tab").
   #    unique_values(key: :V0, invert: true).
   #    dump.

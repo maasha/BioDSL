@@ -139,7 +139,7 @@ module BioDSL
 
     # Format a Pipeline to a pretty string which is returned.
     def to_s
-      command_strings = %w(BP new)
+      command_strings = %w(BD new)
 
       @commands.each { |command| command_strings << command.to_s }
 
@@ -317,7 +317,7 @@ module BioDSL
     # @option options [Booleon] :debug   Debug flag.
     # @option options [Booleon] :verbose Verbose flag.
     def prime_variables(options)
-      BioDSL.test    = ENV['BP_TEST']
+      BioDSL.test    = ENV['BD_TEST']
       BioDSL.debug   = options[:debug]
       BioDSL.verbose = options[:verbose]
     end

@@ -92,7 +92,7 @@ module BioDSL
   #
   # We can slice the alignment with +slice_align+ using a range:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    slice_align(slice: 14 .. 27).
   #    dump.
@@ -107,7 +107,7 @@ module BioDSL
   #
   # Or we could slice the alignment using a set of primers:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    slice_align(forward: "CGCATACG", reverse: "GAGGGG", max_mismatches: 0,
   #                max_insertions: 0, max_deletions: 0).
@@ -128,7 +128,7 @@ module BioDSL
   # and spefifying primers these will be matched to the template and the hit
   # positions used for slicing:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    slice_align(template_file: "template.fna", forward: "GAATACG",
   #                reverse: "ATTCGAT", max_mismatches: 0, max_insertions: 0,
@@ -147,7 +147,7 @@ module BioDSL
   # is useful if you are slicing 16S rRNA alignments and want the _E.coli_
   # corresponding positions - simply use the _E.coli_ sequence as template.
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    slice_align(template_file: "template.fna", slice: 4 .. 14).
   #    dump.run

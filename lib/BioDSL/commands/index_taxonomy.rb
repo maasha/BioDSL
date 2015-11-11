@@ -113,7 +113,7 @@ module BioDSL
   #
   # == Examples
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "RDP_11_Bacteria.fna").
   #    index_taxonomy(output_dir: "RDP_11").
   #    run

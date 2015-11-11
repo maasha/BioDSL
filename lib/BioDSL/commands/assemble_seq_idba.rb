@@ -58,7 +58,7 @@ module BioDSL
   # If you have two pair-end sequence files with the Illumina data then you
   # can assemble these using +assemble_seq_idba+ like this:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fastq(input: "file1.fq", input2: "file2.fq).
   #    assemble_seq_idba.
   #    write_fasta(output: "contigs.fna").

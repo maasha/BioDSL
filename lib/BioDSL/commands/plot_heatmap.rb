@@ -64,7 +64,7 @@ module BioDSL
   #
   # Here we plot a heatmap of data a table:
   #
-  #    BP.new.read_table(input: "test.tab").plot_heatmap.run
+  #    BD.new.read_table(input: "test.tab").plot_heatmap.run
   #
   # rubocop:disable ClassLength
   class PlotHeatmap

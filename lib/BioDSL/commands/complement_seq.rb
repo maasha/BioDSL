@@ -51,7 +51,7 @@ module BioDSL
   #
   # To complement the sequence do:
   #
-  #    BP.new.read_fastq(input:"test.fq").complement_seq.dump.run
+  #    BD.new.read_fastq(input:"test.fq").complement_seq.dump.run
   #
   #    {:SEQ_NAME=>"M02529:88:000000000-AC0WY:1:1101:12879:1928 2:N:0:185",
   #     :SEQ=>"AACATTTTGCTGCCGGTCAC",

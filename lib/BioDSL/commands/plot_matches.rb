@@ -68,7 +68,7 @@ module BioDSL
   # Here we plot two matches from a table. The vector records are shown in the
   # +dump+ output:
   #
-  #    BP.new.read_table(input: "test.tab").dump.plot_matches.run
+  #    BD.new.read_table(input: "test.tab").dump.plot_matches.run
   #
   #    {:Q_BEG=>0, :Q_END=>10, :S_BEG=>0, :S_END=>10, :STRAND=>"+"}
   #    {:Q_BEG=>0, :Q_END=>10, :S_BEG=>0, :S_END=>10, :STRAND=>"-"}

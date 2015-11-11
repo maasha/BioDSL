@@ -68,7 +68,7 @@ module BioDSL
   # Now we run the data through the following pipeline and get the resulting
   # table:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    analyze_residue_distribution.
   #    grab(select: "residue").
@@ -91,7 +91,7 @@ module BioDSL
   # Here we do the same as above, but output percentages instead of absolute
   # counts:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "test.fna").
   #    analyze_residue_distribution(percent: true).
   #    grab(select: "residue").

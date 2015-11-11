@@ -57,7 +57,7 @@ module BioDSL
   # We can read in these sequence using +read_fastq+ and then soft mask the
   # sequence with mask_seq like this:
   #
-  #    BP.new.read_fastq(input: "test.fq").mask_seq.dump.run
+  #    BD.new.read_fastq(input: "test.fq").mask_seq.dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"ttggtcgctcgctccgcgacCTCAGATCAGACGTGGGCGAT",
@@ -66,7 +66,7 @@ module BioDSL
   #
   # Using the +quality_min+ option we can change the cutoff:
   #
-  #    BP.new.read_fastq(input: "test.fq").mask_seq(quality_min: 25).dump.run
+  #    BD.new.read_fastq(input: "test.fq").mask_seq(quality_min: 25).dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"ttggtcgctcgctccgcgacctcagATCAGACGTGGGCGAT",
@@ -75,7 +75,7 @@ module BioDSL
   #
   # Using the +mask+ option for hard masking:
   #
-  #    BP.new.read_fastq(input: "test.fq").mask_seq(mask: :hard).dump.run
+  #    BD.new.read_fastq(input: "test.fq").mask_seq(mask: :hard).dump.run
   #
   #    {:SEQ_NAME=>"HWI-EAS157_20FFGAAXX:2:1:888:434",
   #     :SEQ=>"NNNNNNNNNNNNNNNNNNNNCTCAGATCAGACGTGGGCGAT",

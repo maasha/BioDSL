@@ -61,7 +61,7 @@ module BioDSL
   #    database = "trainset9_032012.pds.fasta"
   #    taxonomy = "trainset9_032012.pds.tax"
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "otus.fna").
   #    classify_seq_mothur(database: database, taxonomy: taxonomy).
   #    grab(exact: true, keys: :RECORD_TYPE, select: "taxonomy").

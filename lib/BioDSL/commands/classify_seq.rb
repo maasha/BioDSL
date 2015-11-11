@@ -100,7 +100,7 @@ module BioDSL
   #
   # To classify a bunch of OTU sequences in the file +otus.fna+ we do:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fasta(input: "otus.fna").
   #    classify_seq(dir: "RDP11_3").
   #    write_table(keys: [:SEQ_NAME, :TAXONOMY_HITS, :TAXONOMY]).

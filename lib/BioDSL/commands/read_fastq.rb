@@ -64,39 +64,39 @@ module BioDSL
   #
   # To read all FASTQ entries from a file:
   #
-  #    BP.new.read_fastq(input: "test.fq").dump.run
+  #    BD.new.read_fastq(input: "test.fq").dump.run
   #
   # To read all FASTQ entries from a gzipped file:
   #
-  #    BP.new.read_fastq(input: "test.fq.gz").dump.run
+  #    BD.new.read_fastq(input: "test.fq.gz").dump.run
   #
   # To read in only 10 records from a FASTQ file:
   #
-  #    BP.new.read_fastq(input: "test.fq", first: 10).dump.run
+  #    BD.new.read_fastq(input: "test.fq", first: 10).dump.run
   #
   # To read in the last 10 records from a FASTQ file:
   #
-  #    BP.new.read_fastq(input: "test.fq", last: 10).dump.run
+  #    BD.new.read_fastq(input: "test.fq", last: 10).dump.run
   #
   # To read all FASTQ entries from multiple files:
   #
-  #    BP.new.read_fastq(input: "test1.fq,test2.fq").dump.run
+  #    BD.new.read_fastq(input: "test1.fq,test2.fq").dump.run
   #
   # To read FASTQ entries from multiple files using a glob expression:
   #
-  #    BP.new.read_fastq(input: "*.fq").dump.run
+  #    BD.new.read_fastq(input: "*.fq").dump.run
   #
   # To read FASTQ entries from pair-end data:
   #
-  #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
+  #    BD.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
   #
   # To read FASTQ entries from pair-end data:
   #
-  #    BP.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
+  #    BD.new.read_fastq(input: "file1.fq", input2: "file2.fq").dump.run
   #
   # To read FASTQ entries from pair-end data and reverse-complement read2:
   #
-  #    BP.new.
+  #    BD.new.
   #    read_fastq(input: "file1.fq", input2: "file2.fq",
   #               reverse_complement: true)
   #    .dump.run
