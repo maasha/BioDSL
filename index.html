@@ -23,13 +23,19 @@
 
 <p>BioDSL is build on the same principles as <a href="www.biopieces.org">Biopieces</a>, where data records are passed through multiple commands each with a specific task. The idea is that a command will process the data record if this contains the relevant attributes that the command can process. E.g. if a data record contains a sequence, then the command <a href="reverse_seq">reverse_seq</a> will reverse that sequence.</p>
 
-<h2>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<p>The recommended way of installing BioDSL is via Ruby’s gem package manager:</p>
 
 <p><code>gem install BioDSL</code></p>
 
-<h2>
-<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting started</h2>
+<p>For those commands which are wrappers around third-party tools, such as Usearch, Mothur and SPAdes, you will have to install these and make the executables available in your <code>$PATH</code>.</p>
+
+<h1>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting started</h1>
+
+<p>BioDSL is implemented in Ruby making use of Ruby’s powerful metaprogramming facilities. Thus, a workflow is basically a Ruby script containing one or more pipelines.</p>
 
 <p>A test script:</p>
 
@@ -43,6 +49,56 @@ grab(select: "ATC$", keys: :SEQ).
 write_fasta(output: "output.fna").
 run(progress: true)
 </code></pre>
+
+<h1>
+<a id="combining-multiple-pipelines" class="anchor" href="#combining-multiple-pipelines" aria-hidden="true"><span class="octicon octicon-link"></span></a>Combining multiple pipelines</h1>
+
+<p>This script demonstrates how multiple pipelines can be created and combined. In the end two pipelines are run, one consisting of p1 + p2 and one consisting of p1 + p3.</p>
+
+<pre><code>#!/usr/bin/env ruby
+
+require 'BioDSL'
+
+p1 = BD.new.read_fasta(input: "test.fna")
+p2 = BD.new.grab(keys: :SEQ, select: "ATCG").
+     plot_histogram(key: :SEQ_LEN, terminal: :png, output: "select.png")
+p3 = BD.new.grab(keys: :SEQ, reject: "ATCG").
+     plot_histogram(key: :SEQ_LEN, terminal: :png, output: "reject.png")
+p4 = p1 + p3
+(p1 + p2).write_fasta(output: "select.fna").run(progress: true)
+p4.write_fasta(output: "reject.fna").run(progress: true)
+</code></pre>
+
+<h1>
+<a id="running-pipelines-in-parallel" class="anchor" href="#running-pipelines-in-parallel" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running pipelines in parallel</h1>
+
+<p>This script demonstrates how to run multiple pipelines in parallel. Here we filter pair-end FASTQ entries from a list of samples, each consisting of a sample name, a forward read file and a reverse read file is processed in parallel.</p>
+
+<pre><code>#!/usr/bin/env ruby
+
+require 'BioDSL'
+
+samples = read_samples("samples.txt)
+
+Parallel.each(samples, in_processes: 20) do |sample|
+  BD.new.
+  read_fastq(input: sample[1], input2: sample[2], encoding: :base_33).
+  grab(keys: :SEQ, select: "ATCG").
+  write_fastq(output: "#{sample[0]}_filted.fastq.bz2", bzip2: true).
+  run
+end
+</code></pre>
+
+<h1>
+<a id="ruby-one-liner" class="anchor" href="#ruby-one-liner" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ruby one-liner</h1>
+
+<p>Here we use the alias bp which is set in .bashrc like this: alias bd='ruby -r BioDSL':</p>
+
+<pre><code>$ bd -e 'BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_LEN).run'
+</code></pre>
+
+<h1>
+<a id="using-the-interactive-ruby-interpreter" class="anchor" href="#using-the-interactive-ruby-interpreter" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using the Interactive Ruby interpreter</h1>
 
 <p>Or using an interactive shell using the alias ibp which you can create by
 adding the following to your <code>~/.bashrc</code> file:</p>
