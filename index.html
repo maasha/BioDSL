@@ -143,116 +143,81 @@ irb(main):001:0&gt; BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", k
 irb(main):002:0&gt;
 </code></pre>
 
-<h2>
-<a id="available-biodsl" class="anchor" href="#available-biodsl" aria-hidden="true"><span class="octicon octicon-link"></span></a>Available BioDSL</h2>
+<h1>
+<a id="history-file" class="anchor" href="#history-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>History file</h1>
 
-<ul>
-<li>
-<a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AddKey">add_key</a><br>
-</li>
-<li>
-<a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AlignSeqMothur">align_seq_mothur</a><br>
-</li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AnalyzeResidueDistribution">analyze_residue_distribution</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssemblePairs">assemble_pairs</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqIdba">assemble_seq_idba</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqRay">assemble_seq_ray</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqSpades">assemble_seq_spades</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClassifySeq">classify_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClassifySeqMothur">classify_seq_mothur</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClipPrimer">clip_primer</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClusterOtus">cluster_otus</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/CollapseOtus">collapse_otus</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/CollectOtus">collect_otus</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ComplementSeq">complement_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Count">count</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/DegapSeq">degap_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/DereplicateSeq">dereplicate_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Dump">dump</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/FilterRrna">filter_rrna</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Genecall">genecall</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Grab">grab</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/IndexTaxonomy">index_taxonomy</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MeanScores">mean_scores</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergePairSeq">merge_pair_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergeTable">merge_table</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergeValues">merge_values</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotHeatmap">plot_heatmap</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotHistogram">plot_histogram</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotMatches">plot_matches</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotResidueDistribution">plot_residue_distribution</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotScores">plot_scores</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Random">random</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadFasta">read_fasta</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadFastq">read_fastq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadTable">read_table</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReverseSeq">reverse_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SliceAlign">slice_align</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SliceSeq">slice_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Sort">sort</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SplitPairSeq">split_pair_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SplitValues">split_values</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/TrimPrimer">trim_primer</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/TrimSeq">trim_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UchimeRef">uchime_ref</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UniqueValues">unique_values</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UsearchGlobal">usearch_global</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteFasta">write_fasta</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteFastq">write_fastq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteTable">write_table</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteTree">write_tree</a></li>
-</ul>
+<p>A history file is kept in <code>$USER/.BioDSL_history</code> and each time run is called a history entry is added to this file:</p>
 
-<h2>
-<a id="log-and-history" class="anchor" href="#log-and-history" aria-hidden="true"><span class="octicon octicon-link"></span></a>Log and History</h2>
+<pre><code>BD.new.read_fasta(input: "test_big.fna", first: 100).plot_histogram(key: :SEQ_LEN).run
+BD.new.read_fasta(input: "test_big.fna", first: 100).plot_histogram(key: :SEQ_LEN).run
+BD.new.read_fasta(input: "test_big.fna", first: 10).plot_histogram(key: :SEQ_LEN).run
+BD.new.read_fasta(input: "test_big.fna").plot_histogram(key: :SEQ_LEN).run
+BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_LEN).run
+</code></pre>
+
+<p>Thus it is possible to redo the last pipeline by pasting the line in irb or a Ruby one-liner.</p>
+
+<h1>
+<a id="log-and-history" class="anchor" href="#log-and-history" aria-hidden="true"><span class="octicon octicon-link"></span></a>Log and History</h1>
 
 <p>All BioDSL events are logged to <code>~/.BioDSL_log</code>.</p>
 
 <p>BioDSL history is saved to <code>~/.BioDSL_history</code>.</p>
 
-<h2>
-<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+<h1>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h1>
 
-<p>Progress:</p>
+<h2>
+<a id="progress" class="anchor" href="#progress" aria-hidden="true"><span class="octicon octicon-link"></span></a>Progress</h2>
 
 <p>Show nifty progress table with commands, records read and emittet and time.</p>
 
 <p><code>BD.new.read_fasta(input: "input.fna").dump.run(progress: true)</code></p>
 
-<p>Verbose:</p>
+<h2>
+<a id="verbose" class="anchor" href="#verbose" aria-hidden="true"><span class="octicon octicon-link"></span></a>Verbose</h2>
 
 <p>Output verbose messages from commands and the run status.</p>
 
-<p><code>BD.new.read_fasta(input: "input.fna").dump.run(verbose: true)</code></p>
+<pre><code>BD.new.read_fasta(input: "input.fna").dump.run(verbose: true)
+</code></pre>
 
-<p>Debug:</p>
+<h2>
+<a id="debug" class="anchor" href="#debug" aria-hidden="true"><span class="octicon octicon-link"></span></a>Debug</h2>
 
 <p>Output debug messages from commands using these.</p>
 
-<p><code>BD.new.read_fasta(input: "input.fna").dump.run(debug: true)</code></p>
+<pre><code>BD.new.read_fasta(input: "input.fna").dump.run(debug: true)
+</code></pre>
 
-<p>E-mail notification:</p>
+<h2>
+<a id="e-mail-notification" class="anchor" href="#e-mail-notification" aria-hidden="true"><span class="octicon octicon-link"></span></a>E-mail notification</h2>
 
 <p>Send an email when run is complete.</p>
 
-<p><code>BD.new.read_fasta(input: "input.fna").dump.run(email: mail@maasha.dk, subject: "Script done!")</code></p>
+<pre><code>BD.new.read_fasta(input: "input.fna").dump.run(email: bill@hotmail.com, subject: "Script done!")
+</code></pre>
 
-<p>Report:</p>
+<h2>
+<a id="reports" class="anchor" href="#reports" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reports</h2>
 
-<p>Create an HTML report of the run stats:</p>
+<p>Create an HTML report of the run stats for a pipeline:</p>
 
-<p><code>BD.new.read_fasta(input: "input.fna").dump.run(report: "status.html")</code></p>
+<pre><code>BD.new.read_fasta(input: "input.fna").dump.run(report: "status.html")
+</code></pre>
 
-<p>Output dir:</p>
+<h2>
+<a id="output-directory" class="anchor" href="#output-directory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output directory</h2>
 
-<p>All output files from commands are put in a specified dir:</p>
+<p>All output files from commands are put in a specified directory:</p>
 
-<p><code>BD.new.read_fasta(input: "input.fna").dump.run(output_dir: "Results")</code></p>
+<pre><code>BD.new.read_fasta(input: "input.fna").dump.run(output_dir: "Results")
+</code></pre>
 
 <h2>
 <a id="configuration-file" class="anchor" href="#configuration-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration File</h2>
 
-<p>It is possible to pre-set options in a configuration file located in your $HOME
+<p>It is possible to pre-set options in a configuration file located in your <code>$HOME</code>
 directory called <code>.BioDSLrc</code>. Thus if an option is not already set, its value
 will fall back to the one set in the configuration file. The configuration file
 contains three whitespace separated columns:</p>
@@ -263,7 +228,7 @@ contains three whitespace separated columns:</p>
 <li>Option value</li>
 </ul>
 
-<p>Lines starting with '#' are considered comments and are ignored.</p>
+<p>Lines starting with <code>#</code> are considered comments and are ignored.</p>
 
 <p>An example:</p>
 
@@ -285,18 +250,16 @@ by adding the following line:</p>
 <pre><code>pipeline   tmp_dir   /home/projects/ku_microbio/scratch/tmp
 </code></pre>
 
-<h2>
-<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
+<h1>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h1>
 
-<p>Fork it</p>
-
-<p>Create your feature branch (git checkout -b my-new-feature)</p>
-
-<p>Commit your changes (git commit -am 'Add some feature')</p>
-
-<p>Push to the branch (git push origin my-new-feature)</p>
-
-<p>Create new Pull Request</p>
+<ol>
+<li>Fork it</li>
+<li>Create your feature branch (git checkout -b my-new-feature)</li>
+<li>Commit your changes (git commit -am 'Add some feature')</li>
+<li>Push to the branch (git push origin my-new-feature)</li>
+<li>Create new Pull Request</li>
+</ol>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/maasha/BioDSL">BioDSL</a> is maintained by <a href="https://github.com/maasha">maasha</a>.</span>
