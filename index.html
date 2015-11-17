@@ -37,7 +37,7 @@
 
 <p>BioDSL is implemented in Ruby making use of Ruby’s powerful metaprogramming facilities. Thus, a workflow is basically a Ruby script containing one or more pipelines.</p>
 
-<p>A test script:</p>
+<p>Here is a test script that with a single pipeline that reads all FASTA entries from the file <code>input.fna</code>, selects all records with a sequence ending in <code>ATC</code>, and writing those records as FASTA entries to the file <code>output.fna</code>:</p>
 
 <pre><code>#!/usr/bin/env ruby
 
@@ -48,6 +48,11 @@ read_fasta(input: "input.fna").
 grab(select: "ATC$", keys: :SEQ).
 write_fasta(output: "output.fna").
 run(progress: true)
+</code></pre>
+
+<p>Save the test script to a file <code>test.biodsl</code> and execute on the command line:</p>
+
+<pre><code>$ ruby test.biodsl
 </code></pre>
 
 <h1>
