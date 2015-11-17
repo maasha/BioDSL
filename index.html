@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>BioDSL by maasha</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">BioDSL</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/maasha/BioDSL" class="btn">View on GitHub</a>
+      <a href="https://github.com/maasha/BioDSL/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/maasha/BioDSL/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="biodsl" class="anchor" href="#biodsl" aria-hidden="true"><span class="octicon octicon-link"></span></a>BioDSL</h1>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p><code>gem install BioDSL</code></p>
+
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting started</h2>
+
+<p>A test script:</p>
+
+<pre><code>#!/usr/bin/env ruby
+
+require 'BioDSL'
+
+p = BD.new.
+read_fasta(input: "input.fna").
+grab(select: "ATC$", keys: :SEQ).
+write_fasta(output: "output.fna").
+run(progress: true)
+</code></pre>
+
+<p>Or using an interactive shell using the alias ibp which you can create by
+adding the following to your <code>~/.bashrc</code> file:</p>
+
+<pre><code>alias ibp="irb -r BioDSL --noinspect"
+</code></pre>
+
+<p>And then start the interactive shell:</p>
+
+<pre><code>$ ibp
+irb(main):001:0&gt; p = BD.new
+=&gt; BD.new
+irb(main):002:0&gt; p.read_fasta(input: "input.fna")
+=&gt; BD.new.read_fasta(input: "input.fna")
+irb(main):003:0&gt; p.grab(select: "ATC$", keys: :SEQ)
+=&gt; BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ)
+irb(main):004:0&gt; p.write_fasta(output: "output.fna")
+=&gt; BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna")
+irb(main):005:0&gt; p.run(progress: true)
+=&gt; BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+irb(main):006:0&gt;
+</code></pre>
+
+<p>Or chaining commands directly:</p>
+
+<pre><code>$ ibp
+irb(main):001:0&gt; BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+=&gt; BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
+irb(main):002:0&gt;
+</code></pre>
+
+<p>Or run on the command line with the alias bp which you can create by adding the
+following to your ~/.bashrc file:</p>
+
+<pre><code>alias bp="ruby -r BioDSL"
+</code></pre>
+
+<p>Then you can run the below from the command line:</p>
+
+<pre><code>$ bp -e 'BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)'
+</code></pre>
+
+<h2>
+<a id="available-biodsl" class="anchor" href="#available-biodsl" aria-hidden="true"><span class="octicon octicon-link"></span></a>Available BioDSL</h2>
+
+<ul>
+<li>
+<a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AddKey">add_key</a><br>
+</li>
+<li>
+<a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AlignSeqMothur">align_seq_mothur</a><br>
+</li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AnalyzeResidueDistribution">analyze_residue_distribution</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssemblePairs">assemble_pairs</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqIdba">assemble_seq_idba</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqRay">assemble_seq_ray</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqSpades">assemble_seq_spades</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClassifySeq">classify_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClassifySeqMothur">classify_seq_mothur</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClipPrimer">clip_primer</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClusterOtus">cluster_otus</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/CollapseOtus">collapse_otus</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/CollectOtus">collect_otus</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ComplementSeq">complement_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Count">count</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/DegapSeq">degap_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/DereplicateSeq">dereplicate_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Dump">dump</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/FilterRrna">filter_rrna</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Genecall">genecall</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Grab">grab</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/IndexTaxonomy">index_taxonomy</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MeanScores">mean_scores</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergePairSeq">merge_pair_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergeTable">merge_table</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergeValues">merge_values</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotHeatmap">plot_heatmap</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotHistogram">plot_histogram</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotMatches">plot_matches</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotResidueDistribution">plot_residue_distribution</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotScores">plot_scores</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Random">random</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadFasta">read_fasta</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadFastq">read_fastq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadTable">read_table</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReverseSeq">reverse_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SliceAlign">slice_align</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SliceSeq">slice_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Sort">sort</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SplitPairSeq">split_pair_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SplitValues">split_values</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/TrimPrimer">trim_primer</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/TrimSeq">trim_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UchimeRef">uchime_ref</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UniqueValues">unique_values</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UsearchGlobal">usearch_global</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteFasta">write_fasta</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteFastq">write_fastq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteTable">write_table</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteTree">write_tree</a></li>
+</ul>
+
+<h2>
+<a id="log-and-history" class="anchor" href="#log-and-history" aria-hidden="true"><span class="octicon octicon-link"></span></a>Log and History</h2>
+
+<p>All BioDSL events are logged to <code>~/.BioDSL_log</code>.</p>
+
+<p>BioDSL history is saved to <code>~/.BioDSL_history</code>.</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<p>Progress:</p>
+
+<p>Show nifty progress table with commands, records read and emittet and time.</p>
+
+<p><code>BD.new.read_fasta(input: "input.fna").dump.run(progress: true)</code></p>
+
+<p>Verbose:</p>
+
+<p>Output verbose messages from commands and the run status.</p>
+
+<p><code>BD.new.read_fasta(input: "input.fna").dump.run(verbose: true)</code></p>
+
+<p>Debug:</p>
+
+<p>Output debug messages from commands using these.</p>
+
+<p><code>BD.new.read_fasta(input: "input.fna").dump.run(debug: true)</code></p>
+
+<p>E-mail notification:</p>
+
+<p>Send an email when run is complete.</p>
+
+<p><code>BD.new.read_fasta(input: "input.fna").dump.run(email: mail@maasha.dk, subject: "Script done!")</code></p>
+
+<p>Report:</p>
+
+<p>Create an HTML report of the run stats:</p>
+
+<p><code>BD.new.read_fasta(input: "input.fna").dump.run(report: "status.html")</code></p>
+
+<p>Output dir:</p>
+
+<p>All output files from commands are put in a specified dir:</p>
+
+<p><code>BD.new.read_fasta(input: "input.fna").dump.run(output_dir: "Results")</code></p>
+
+<h2>
+<a id="configuration-file" class="anchor" href="#configuration-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration File</h2>
+
+<p>It is possible to pre-set options in a configuration file located in your $HOME
+directory called <code>.BioDSLrc</code>. Thus if an option is not already set, its value
+will fall back to the one set in the configuration file. The configuration file
+contains three whitespace separated columns:</p>
+
+<ul>
+<li>Command name</li>
+<li>Option</li>
+<li>Option value</li>
+</ul>
+
+<p>Lines starting with '#' are considered comments and are ignored.</p>
+
+<p>An example:</p>
+
+<pre><code>maasha@mel:~$ cat ~/.BioDSLrc
+uchime_ref   database   /home/maasha/Install/QIIME1.8/data/rdp_gold.fa
+uchime_ref   cpus       20
+</code></pre>
+
+<p>On compute clusters it is necessary to specify the max processor count, which
+is otherwise determined as the number of cores on the current node. To override
+this add the following line:</p>
+
+<pre><code>pipeline   processor_count   1000
+</code></pre>
+
+<p>It is also possible to change the temporary directory from the systems default
+by adding the following line:</p>
+
+<pre><code>pipeline   tmp_dir   /home/projects/ku_microbio/scratch/tmp
+</code></pre>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<p>Fork it</p>
+
+<p>Create your feature branch (git checkout -b my-new-feature)</p>
+
+<p>Commit your changes (git commit -am 'Add some feature')</p>
+
+<p>Push to the branch (git push origin my-new-feature)</p>
+
+<p>Create new Pull Request</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/maasha/BioDSL">BioDSL</a> is maintained by <a href="https://github.com/maasha">maasha</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-70265737-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
