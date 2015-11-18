@@ -116,31 +116,31 @@ class TestSeq < Test::Unit::TestCase
     assert_nothing_raised { BioDSL::Seq.check_name_pair(entry1, entry2) }
   end
 
-  test "#is_dna? with no sequence type returns false" do
-    assert(@entry.is_dna? == false)
+  test "#dna? with no sequence type returns false" do
+    assert(@entry.dna? == false)
   end
 
-  test "#is_dna? with dna sequence type returns true" do
+  test "#dna? with dna sequence type returns true" do
     @entry.type = :dna
-    assert(@entry.is_dna? == true)
+    assert(@entry.dna? == true)
   end
 
-  test "#is_rna? with no sequence type returns false" do
-    assert(@entry.is_rna? == false)
+  test "#rna? with no sequence type returns false" do
+    assert(@entry.rna? == false)
   end
 
-  test "#is_rna? with rna sequence type returns true" do
+  test "#rna? with rna sequence type returns true" do
     @entry.type = :rna
-    assert(@entry.is_rna? == true)
+    assert(@entry.rna? == true)
   end
 
-  test "#is_protein? with no sequence type returns false" do
-    assert(@entry.is_protein? == false)
+  test "#protein? with no sequence type returns false" do
+    assert(@entry.protein? == false)
   end
 
-  test "#is_protein? with protein sequence type returns true" do
+  test "#protein? with protein sequence type returns true" do
     @entry.type = :protein
-    assert_equal(true, @entry.is_protein?)
+    assert_equal(true, @entry.protein?)
   end
 
   test "#type_guess without sequence raises" do
