@@ -153,6 +153,7 @@ module BioDSL
 
           if record[:SEQ] && record[:SEQ].length > 0
             @status[:sequences_in] += 1
+            @status[:sequences_out] += 1
 
             case @options[:direction]
             when :forward then trim_forward(record)
@@ -235,6 +236,8 @@ module BioDSL
     def merge_forward(record, entry, match)
       entry = entry[match.pos + match.length..-1]
 
+      @status[:residues_out] += entry.length
+
       record.merge!(entry.to_bp)
       record[:TRIM_PRIMER_DIR] = 'FORWARD'
       record[:TRIM_PRIMER_POS] = match.pos
@@ -287,6 +290,8 @@ module BioDSL
     # @param match [BioDSL::Seq::Match] Match data.
     def merge_reverse(record, entry, match)
       entry = entry[0...match.pos]
+
+      @status[:residues_out] += entry.length
 
       record.merge!(entry.to_bp)
       record[:TRIM_PRIMER_DIR] = 'REVERSE'
