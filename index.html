@@ -28,7 +28,7 @@
 
 <p>The recommended way of installing BioDSL is via Ruby’s gem package manager:</p>
 
-<p><code>gem install BioDSL</code></p>
+<p><code>$ gem install BioDSL</code></p>
 
 <p>For those commands which are wrappers around third-party tools, such as Usearch, Mothur and SPAdes, you will have to install these and make the executables available in your <code>$PATH</code>.</p>
 
@@ -135,7 +135,7 @@ irb(main):005:0&gt; p.run
 irb(main):006:0&gt;
 </code></pre>
 
-<p>Again, it may be a good idea to save an alias <code>biodsl = "irb -r BioDSL --noinspect"</code> to your <code>.bashrc</code> file. Thus, we can use the new <code>biodsl</code> alias to chain commands directly:</p>
+<p>Again, it may be a good idea to save an alias <code>alias biodsl="irb -r BioDSL --noinspect"</code> to your <code>.bashrc</code> file. Thus, we can use the new <code>biodsl</code> alias to chain commands directly:</p>
 
 <pre><code>$ biodsl
 irb(main):001:0&gt; BD.new.read_fasta(input: "input.fna").grab(select: "ATC$", keys: :SEQ).write_fasta(output: "output.fna").run(progress: true)
