@@ -77,7 +77,7 @@ END
     end
 
     if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) &&
-       Regex.last_match[1].to_i != Time.now.year
+       Regexp.last_match[1].to_i != Time.now.year
       STDERR.puts "Updating boilerplate: #{file}"
 
       body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/,
