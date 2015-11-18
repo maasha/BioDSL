@@ -1,36 +1,37 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                              #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (www.BioDSL.org).                            #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioDSL
   # Error class for all exceptions to do with BackTrack.
   class BackTrackError < StandardError; end
 
-  # Module containing code to locate nucleotide patterns in sequences allowing for
-  # ambiguity codes and a given maximum mismatches, insertions, and deletions. The
-  # pattern match engine is based on a backtrack algorithm.
+  # Module containing code to locate nucleotide patterns in sequences allowing
+  # for ambiguity codes and a given maximum mismatches, insertions, and
+  # deletions. The pattern match engine is based on a backtrack algorithm.
   # Insertions are nucleotides found in the pattern but not in the sequence.
   # Deletions are nucleotides found in the sequence but not in the pattern.
   # Algorithm based on code kindly provided by j_random_hacker @ Stackoverflow:
@@ -43,7 +44,7 @@ module BioDSL
     MAX_INS    = 5 # Maximum number of insertions allowed
     MAX_DEL    = 5 # Maximum number of deletions allowed
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #   str.patmatch(pattern[, options])
     #   -> Match
     #   str.patmatch(pattern[, options]) { |match|
@@ -58,20 +59,20 @@ module BioDSL
     #     :max_insertions
     #     :max_deletions
     #
-    # ------------------------------------------------------------------------------
-    # Method to iterate through a sequence from a given start position to the end of
-    # the sequence or to a given stop position to locate a pattern allowing for a
-    # maximum number of mismatches, insertions, and deletions. Insertions are
-    # nucleotides found in the pattern but not in the sequence. Deletions are
-    # nucleotides found in the sequence but not in the pattern.
+    # --------------------------------------------------------------------------
+    # Method to iterate through a sequence from a given start position to the
+    # end of the sequence or to a given stop position to locate a pattern
+    # allowing for a maximum number of mismatches, insertions, and deletions.
+    # Insertions are nucleotides found in the pattern but not in the sequence.
+    # Deletions are nucleotides found in the sequence but not in the pattern.
     def patmatch(pattern, options = {})
-      options[:start]          ||= 0
-      options[:stop]           ||= self.length - 1
+      options[:start] ||= 0
+      options[:stop] ||= length - 1
       options[:max_mismatches] ||= 0
       options[:max_insertions] ||= 0
-      options[:max_deletions]  ||= 0
+      options[:max_deletions] ||= 0
 
-      self.patscan(pattern, options) do |m|
+      patscan(pattern, options) do |m|
         if block_given?
           yield m
         else
@@ -80,7 +81,7 @@ module BioDSL
       end
     end
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #   str.patscan(pattern[, options])
     #   -> Array
     #   str.patscan(pattern[, options]) { |match|
@@ -95,39 +96,57 @@ module BioDSL
     #     :max_insertions
     #     :max_deletions
     #
-    # ------------------------------------------------------------------------------
-    # Method to iterate through a sequence from a given start position to the end of
-    # the sequence or to a given stop position to locate a pattern allowing for a
-    # maximum number of mismatches, insertions, and deletions. Insertions are
-    # nucleotides found in the pattern but not in the sequence. Deletions are
-    # nucleotides found in the sequence but not in the pattern. Matches found in
-    # block context return the Match object. Otherwise matches are returned in an
-    # Array of Match objects.
+    # --------------------------------------------------------------------------
+    # Method to iterate through a sequence from a given start position to the
+    # end of the sequence or to a given stop position to locate a pattern
+    # allowing for a maximum number of mismatches, insertions, and deletions.
+    # Insertions are nucleotides found in the pattern but not in the sequence.
+    # Deletions are nucleotides found in the sequence but not in the pattern.
+    # Matches found in block context return the Match object. Otherwise matches
+    # are returned in an Array of Match objects.
     def patscan(pattern, options = {})
-      options[:start]          ||= 0
-      options[:stop]           ||= self.length - 1
+      options[:start] ||= 0
+      options[:stop] ||= length - 1
       options[:max_mismatches] ||= 0
       options[:max_insertions] ||= 0
-      options[:max_deletions]  ||= 0
+      options[:max_deletions] ||= 0
 
-      raise BackTrackError, "Bad pattern: #{pattern}"                                          unless pattern.downcase =~ OK_PATTERN
-      raise BackTrackError, "start: #{options[:start]} out of range (0 .. #{self.length - 1})"           unless (0 ... self.length).include? options[:start]
-      raise BackTrackError, "stop: #{options[:stop]} out of range (0 .. #{self.length - 1})"             unless (0 ... self.length).include? options[:stop]
-      raise BackTrackError, "max_mismatches: #{options[:max_mismatches]} out of range (0 .. #{MAX_MIS})" unless (0 .. MAX_MIS).include? options[:max_mismatches]
-      raise BackTrackError, "max_insertions: #{options[:max_insertions]} out of range (0 .. #{MAX_INS})" unless (0 .. MAX_INS).include? options[:max_insertions]
-      raise BackTrackError, "max_deletions: #{options[:max_deletions]} out of range (0 .. #{MAX_DEL})"   unless (0 .. MAX_DEL).include? options[:max_deletions]
+      unless pattern.downcase =~ OK_PATTERN
+        fail BackTrackError, "Bad pattern: #{pattern}"
+      end
+
+      unless (0...length).include? options[:start]
+        fail BackTrackError, "start: #{options[:start]} out of range " \
+                             "(0..#{length - 1})"
+      end
+
+      unless (0...length).include? options[:stop]
+        fail BackTrackError, "stop: #{options[:stop]} out of range " \
+                             "(0..#{length - 1})"
+      end
+
+      unless (0..MAX_MIS).include? options[:max_mismatches]
+        fail BackTrackError, "max_mismatches: #{options[:max_mismatches]} " \
+                             "out of range (0..#{MAX_MIS})"
+      end
+
+      unless (0..MAX_INS).include? options[:max_insertions]
+        fail BackTrackError, "max_insertions: #{options[:max_insertions]} " \
+                             "out of range (0..#{MAX_INS})"
+      end
+
+      unless (0..MAX_DEL).include? options[:max_deletions]
+        fail BackTrackError, "max_deletions: #{options[:max_deletions]} " \
+                             "out of range (0..#{MAX_DEL})"
+      end
 
       matches = []
 
-      while result = scan_C(self.seq,
-                            pattern,
-                            options[:start],
-                            options[:stop],
-                            options[:max_mismatches],
-                            options[:max_insertions],
-                            options[:max_deletions]
-                           )
-        match = Match.new(result.first, result.last, self.seq[result.first ... result.first + result.last])
+      while (result = scan_C(@seq, pattern, options[:start], options[:stop],
+                             options[:max_mismatches], options[:max_insertions],
+                             options[:max_deletions]))
+        match = Match.new(result.first, result.last,
+                          @seq[result.first...result.first + result.last])
 
         if block_given?
           yield match
@@ -146,10 +165,11 @@ module BioDSL
     inline do |builder|
       add_ambiguity_macro(builder)
 
-      # Backtrack algorithm for matching a pattern (p) starting in a sequence (s) allowing for mis
-      # mismatches, ins insertions and del deletions. ss is the start of the sequence, used only for
-      # reporting the match endpoints. State is used to avoid ins followed by del and visa versa which
-      # are nonsense.
+      # Backtrack algorithm for matching a pattern (p) starting in a sequence
+      # (s) allowing for mis mismatches, ins insertions and del deletions. ss is
+      # the start of the sequence, used only for reporting the match endpoints.
+      # State is used to avoid ins followed by del and visa versa which are
+      # nonsense.
       builder.prefix %{
         unsigned int backtrack(
           char         *ss,     // Sequence start
@@ -177,9 +197,9 @@ module BioDSL
           return 0;
         }
       }
-   
-      # Find pattern (p) in a sequence (s) starting at pos, with at most mis mismatches, ins
-      # insertions and del deletions.
+
+      # Find pattern (p) in a sequence (s) starting at pos, with at most mis
+      # mismatches, ins insertions and del deletions.
       builder.c %{
         VALUE scan_C(
           VALUE _s,       // Sequence
@@ -247,6 +267,3 @@ module BioDSL
     end
   end
 end
-
-
-__END__
