@@ -19,9 +19,17 @@
     </section>
 
     <section class="main-content">
-      <p>BioDSL (pronounced Biodiesel) is a Domain Specific Language for creating bioinformatic analysis workflows. A workflow may consist of several pipelines and each pipeline consists of a series of steps such as reading in data from a file, processing the data in some way, and writing data to a new file.</p>
+      <p>BioDSL (pronounced Biodiesel) is a Domain Specific Language for creating
+bioinformatic analysis workflows. A workflow may consist of several pipelines
+and each pipeline consists of a series of steps such as reading in data from a
+file, processing the data in some way, and writing data to a new file.</p>
 
-<p>BioDSL is build on the same principles as <a href="www.biopieces.org">Biopieces</a>, where data records are passed through multiple commands each with a specific task. The idea is that a command will process the data record if this contains the relevant attributes that the command can process. E.g. if a data record contains a sequence, then the command <a href="reverse_seq">reverse_seq</a> will reverse that sequence.</p>
+<p>BioDSL is build on the same principles as <a href="www.biopieces.org">Biopieces</a>, where
+data records are passed through multiple commands each with a specific task. The
+idea is that a command will process the data record if this contains the
+relevant attributes that the command can process. E.g. if a data record contains
+a sequence, then the command <a href="reverse_seq">reverse_seq</a> will reverse that
+sequence.</p>
 
 <h1>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
@@ -30,14 +38,20 @@
 
 <p><code>$ gem install BioDSL</code></p>
 
-<p>For those commands which are wrappers around third-party tools, such as Usearch, Mothur and SPAdes, you will have to install these and make the executables available in your <code>$PATH</code>.</p>
+<p>For those commands which are wrappers around third-party tools, such as Usearch,
+Mothur and SPAdes, you will have to install these and make the executables
+available in your <code>$PATH</code>.</p>
 
 <h1>
 <a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting started</h1>
 
-<p>BioDSL is implemented in Ruby making use of Ruby’s powerful metaprogramming facilities. Thus, a workflow is basically a Ruby script containing one or more pipelines.</p>
+<p>BioDSL is implemented in Ruby making use of Ruby’s powerful metaprogramming
+facilities. Thus, a workflow is basically a Ruby script containing one or more
+pipelines.</p>
 
-<p>Here is a test script with a single pipeline that reads all FASTA entries from the file <code>input.fna</code>, selects all records with a sequence ending in <code>ATC</code>, and writing those records as FASTA entries to the file <code>output.fna</code>:</p>
+<p>Here is a test script with a single pipeline that reads all FASTA entries from
+the file <code>input.fna</code>, selects all records with a sequence ending in <code>ATC</code>, and
+writing those records as FASTA entries to the file <code>output.fna</code>:</p>
 
 <pre><code>#!/usr/bin/env ruby
 
@@ -58,7 +72,12 @@ run
 <h1>
 <a id="combining-multiple-pipelines" class="anchor" href="#combining-multiple-pipelines" aria-hidden="true"><span class="octicon octicon-link"></span></a>Combining multiple pipelines</h1>
 
-<p>This script demonstrates how multiple pipelines can be created and combined. In the end two pipelines are run, one consisting of p1 + p2 and one consisting of p1 + p3. The first pipeline run will produce a histogram plot of sequence length from sequences containing the pattern <code>ATCG</code>, and the other pipeline run will produce a plot with sequences length distribution of sequences not matching <code>ATCG</code>.</p>
+<p>This script demonstrates how multiple pipelines can be created and combined. In
+the end two pipelines are run, one consisting of p1 + p2 and one consisting of
+p1 + p3. The first pipeline run will produce a histogram plot of sequence length
+from sequences containing the pattern <code>ATCG</code>, and the other pipeline run will
+produce a plot with sequences length distribution of sequences not matching
+<code>ATCG</code>.</p>
 
 <pre><code>#!/usr/bin/env ruby
 
@@ -78,7 +97,10 @@ p4.write_fasta(output: "reject.fna").run
 <h1>
 <a id="running-pipelines-in-parallel" class="anchor" href="#running-pipelines-in-parallel" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running pipelines in parallel</h1>
 
-<p>This script demonstrates how to run multiple pipelines in parallel using 20 CPU cores. Here we filter pair-end FASTQ entries from a list of samples described in the file <code>samples.txt</code> which contains three tab separated columns: sample name, a forward read file path, and a reverse read file path.</p>
+<p>This script demonstrates how to run multiple pipelines in parallel using 20 CPU
+cores. Here we filter pair-end FASTQ entries from a list of samples described in
+the file <code>samples.txt</code> which contains three tab separated columns: sample name,
+a forward read file path, and a reverse read file path.</p>
 
 <pre><code>#!/usr/bin/env ruby
 
@@ -104,7 +126,8 @@ end
 <pre><code>ruby -r BioDSL -e 'BD.new.read_fasta(input: "test.fna").plot_histogram(key: :SEQ_LEN).run'
 </code></pre>
 
-<p>And to save typing we may use the alias <code>bd</code> which is set like this on the command line:</p>
+<p>And to save typing we may use the alias <code>bd</code> which is set like this on the
+command line:</p>
 
 <pre><code>$ alias bd='ruby -r BioDSL'
 </code></pre>
@@ -254,67 +277,69 @@ by adding the following line:</p>
 <a id="available-biodsl-commands" class="anchor" href="#available-biodsl-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Available BioDSL commands</h1>
 
 <ul>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AddKey">add_key</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AlignSeqMothur">align_seq_mothur</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AnalyzeResidueDistribution">analyze_residue_distribution</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssemblePairs">assemble_pairs</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqIdba">assemble_seq_idba</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqRay">assemble_seq_ray</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/AssembleSeqSpades">assemble_seq_spades</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClassifySeq">classify_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClassifySeqMothur">classify_seq_mothur</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClipPrimer">clip_primer</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ClusterOtus">cluster_otus</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/CollapseOtus">collapse_otus</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/CollectOtus">collect_otus</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ComplementSeq">complement_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Count">count</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/DegapSeq">degap_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/DereplicateSeq">dereplicate_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Dump">dump</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/FilterRrna">filter_rrna</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Genecall">genecall</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Grab">grab</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/IndexTaxonomy">index_taxonomy</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MeanScores">mean_scores</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergePairSeq">merge_pair_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergeTable">merge_table</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/MergeValues">merge_values</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotHeatmap">plot_heatmap</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotHistogram">plot_histogram</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotMatches">plot_matches</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotResidueDistribution">plot_residue_distribution</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/PlotScores">plot_scores</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Random">random</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadFasta">read_fasta</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadFastq">read_fastq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReadTable">read_table</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/ReverseSeq">reverse_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SliceAlign">slice_align</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SliceSeq">slice_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/Sort">sort</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SplitPairSeq">split_pair_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/SplitValues">split_values</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/TrimPrimer">trim_primer</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/TrimSeq">trim_seq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UchimeRef">uchime_ref</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UniqueValues">unique_values</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/UsearchGlobal">usearch_global</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteFasta">write_fasta</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteFastq">write_fastq</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteTable">write_table</a></li>
-<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.1/BioDSL/WriteTree">write_tree</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AddKey">add_key</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AlignSeqMothur">align_seq_mothur</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AnalyzeResidueDistribution">analyze_residue_distribution</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AssemblePairs">assemble_pairs</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AssembleSeqIdba">assemble_seq_idba</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AssembleSeqRay">assemble_seq_ray</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AssembleSeqSpades">assemble_seq_spades</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ClassifySeq">classify_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ClassifySeqMothur">classify_seq_mothur</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ClipPrimer">clip_primer</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ClusterOtus">cluster_otus</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/CollapseOtus">collapse_otus</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/CollectOtus">collect_otus</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ComplementSeq">complement_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/Count">count</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/DegapSeq">degap_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/DereplicateSeq">dereplicate_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/Dump">dump</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/FilterRrna">filter_rrna</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/Genecall">genecall</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/Grab">grab</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/IndexTaxonomy">index_taxonomy</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/MeanScores">mean_scores</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/MergePairSeq">merge_pair_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/MergeTable">merge_table</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/MergeValues">merge_values</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/PlotHeatmap">plot_heatmap</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/PlotHistogram">plot_histogram</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/PlotMatches">plot_matches</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/PlotResidueDistribution">plot_residue_distribution</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/PlotScores">plot_scores</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/Random">random</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ReadFasta">read_fasta</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ReadFastq">read_fastq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ReadTable">read_table</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ReverseSeq">reverse_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/SliceAlign">slice_align</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/SliceSeq">slice_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/Sort">sort</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/SplitPairSeq">split_pair_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/SplitValues">split_values</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/TrimPrimer">trim_primer</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/TrimSeq">trim_seq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/UchimeRef">uchime_ref</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/UniqueValues">unique_values</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/UsearchGlobal">usearch_global</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/WriteFasta">write_fasta</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/WriteFastq">write_fastq</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/WriteTable">write_table</a></li>
+<li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/WriteTree">write_tree</a></li>
 </ul>
 
 <h1>
 <a id="running-the-test-suite" class="anchor" href="#running-the-test-suite" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running the test suite</h1>
 
-<p>BioDSL have an extended set of unit tests that can be run after installing development dependencies. First you need to install the bundler gem:</p>
+<p>BioDSL have an extended set of unit tests that can be run after installing
+development dependencies. First you need to install the bundler gem:</p>
 
 <pre><code>$ gem install bundler
 </code></pre>
 
-<p>Next you need to change to the source directory of BioDSL and run bundler to download depending gems:</p>
+<p>Next you need to change to the source directory of BioDSL and run bundler to
+download depending gems:</p>
 
 <pre><code>$ bundle install
 </code></pre>
@@ -324,7 +349,8 @@ by adding the following line:</p>
 <pre><code>$ rake
 </code></pre>
 
-<p>And the unit tests should all run, except those omitted because a third-party executable was missing.</p>
+<p>And the unit tests should all run, except those omitted because a third-party
+executable was missing.</p>
 
 <h1>
 <a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h1>
