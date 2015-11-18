@@ -20,7 +20,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                              #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -97,7 +97,7 @@ module BioDSL
       }
 
       builder.prefix %{
-        typedef struct 
+        typedef struct
         {
           unsigned int mis;
           unsigned int ins;
@@ -207,7 +207,7 @@ module BioDSL
           unsigned int  pat_len = FIX2UINT(_pat_len);
           unsigned int  pos     = FIX2UINT(_pos);
           unsigned int  max_ed  = FIX2UINT(_max_ed);
-          
+
           score         vec[MAX_PAT] = {0};
           unsigned int  vec_len      = pat_len + 1;
           unsigned int  match_beg    = 0;

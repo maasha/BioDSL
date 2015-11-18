@@ -20,7 +20,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                        #
+# This software is part of BioDSL (www.BioDSL.org).                              #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -152,7 +152,7 @@ module BioDSL
           unsigned int  ary_len   = FIX2UINT(_ary_len);
           unsigned int  kmer_size = FIX2UINT(_kmer_size);
           unsigned int  step_size = FIX2UINT(_step_size);
-          
+
           VALUE         array = rb_ary_new();
           unsigned int  bin   = 0;
           unsigned int  enc   = 0;
@@ -208,7 +208,7 @@ module BioDSL
           unsigned int  step_size  = FIX2UINT(_step_size);
           unsigned int  score_min  = FIX2UINT(_score_min);
           unsigned int  score_base = FIX2UINT(_score_base);
-          
+
           VALUE         array = rb_ary_new();
           unsigned int  bin   = 0;
           unsigned int  enc   = 0;

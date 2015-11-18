@@ -20,7 +20,7 @@
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                                #
-# This software is part of the BioDSL framework (www.BioDSL.org).          #
+# This software is part of the BioDSL framework (www.BioDSL.org).              #
 #                                                                                #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -82,24 +82,24 @@ module BioDSL
           unsigned int i    = 0;
           unsigned int j    = 0;
           unsigned int cost = 0;
-         
+
           for (i = 0; i < t_len + 1; i++)
             v0[i] = i;
-         
+
           for (i = 0; i < s_len; i++)
           {
             v1[0] = i + 1;
-         
+
             for (j = 0; j < t_len; j++)
             {
               cost = (MATCH(s[i], t[j])) ? 0 : 1;
               v1[j + 1] = min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost);
             }
-         
+
             for (j = 0; j < t_len + 1; j++)
               v0[j] = v1[j];
           }
-         
+
           return UINT2NUM(v1[t_len]);
         }
       }
