@@ -88,7 +88,7 @@ END
       end
     end
 
-    next unless body.match('Copyright')
+    next if body.match('Copyright')
     STDERR.puts "Warning: missing boilerplate in #{file}"
     STDERR.puts body.split($RS).first(10).join($RS)
     exit
