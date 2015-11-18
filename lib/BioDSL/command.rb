@@ -80,7 +80,7 @@ module BioDSL
     # @return [BioDSL::Status] returns self.
     def calc_time_elapsed
       delta = @status[:time_stop] - @status[:time_start]
-      @status[:time_elapsed] = (Time.mktime(0) + delta).strftime("%H:%M:%S")
+      @status[:time_elapsed] = (Time.mktime(0) + delta).strftime('%H:%M:%S')
 
       self
     end

@@ -36,7 +36,7 @@ module BioDSL
     HISTORY_FILE             = File.join(ENV['HOME'], '.BioDSL_history')
     LOG_FILE                 = File.join(ENV['HOME'], '.BioDSL_log')
     RC_FILE                  = File.join(ENV['HOME'], '.BioDSLrc')
-    STATUS_PROGRESS_INTERVAL = 0.1   # update progress every n second.
+    STATUS_PROGRESS_INTERVAL = 0.1 # update progress every n second.
 
     options = options_load_rc({}, :pipeline)
 
