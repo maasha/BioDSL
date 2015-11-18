@@ -1,28 +1,29 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (http://maasha.github.io/BioDSL).            #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioDSL
   # Error class for all exceptions to do with Kmer.
@@ -36,19 +37,19 @@ module BioDSL
       oligos = []
 
       kmers.each do |kmer|
-        oligo = ""
-        bin   = "%0#{kmer_size * 2}b" % kmer
+        oligo = ''
+        bin   = format("%0#{kmer_size * 2}b", kmer)
 
-        bin.scan(/.{2}/) { |m|
+        bin.scan(/.{2}/) do |m|
           case m
           when '00' then oligo << 'a'
           when '01' then oligo << 't'
           when '10' then oligo << 'c'
           when '11' then oligo << 'g'
           else
-            raise "unknown m #{m}"
+            fail "unknown m #{m}"
           end
-        }
+        end
 
         oligos << oligo
       end
@@ -58,33 +59,45 @@ module BioDSL
 
     # Method that returns a sorted array of unique kmers, which are integer
     # representations of DNA/RNA sequence oligos where A is encoded in two bits
-    # as 00, T as 01, U as 01, C as 10 and G as 11. Oligos with other nucleotides
-    # are ignored. The following options apply:
+    # as 00, T as 01, U as 01, C as 10 and G as 11. Oligos with other
+    # nucleotides are ignored. The following options apply:
     #   * kmer_size: kmer size in the range 1-12.
     #   * step_size: step size in the range 1-12 (defualt=1).
     #   * score_min: drop kmers with quality score below this.
     def to_kmers(options)
       options[:step_size] ||= 1
       options[:score_min] ||= Seq::SCORE_MAX
-      raise KmerError, "No kmer_size" unless options[:kmer_size]
-      raise KmerError, "Bad kmer_size: #{options[:kmer_size]}" unless (1 .. 12).include? options[:kmer_size]
-      raise KmerError, "Bad step_size: #{options[:step_size]}" unless (1 .. 12).include? options[:step_size]
-      if self.qual and not (Seq::SCORE_MIN .. Seq::SCORE_MAX).include? options[:score_min]
-        raise KmerError, "score minimum: #{options[:score_min]} out of range #{Seq::SCORE_MIN} .. #{Seq::SCORE_MAX}"
+      fail KmerError, 'No kmer_size' unless options[:kmer_size]
+
+      unless (1..12).include? options[:kmer_size]
+        fail KmerError, "Bad kmer_size: #{options[:kmer_size]}"
       end
 
-      size = Seq::DNA.size ** options[:kmer_size]
+      unless (1..12).include? options[:step_size]
+        fail KmerError, "Bad step_size: #{options[:step_size]}"
+      end
 
-      if defined? @kmer_ary and @kmer_ary.count == size
+      if @qual && !(Seq::SCORE_MIN..Seq::SCORE_MAX).
+                   include?(options[:score_min])
+        fail KmerError, "score minimum: #{options[:score_min]} out of " \
+                        "range #{Seq::SCORE_MIN}..#{Seq::SCORE_MAX}"
+      end
+
+      size = Seq::DNA.size**options[:kmer_size]
+
+      if defined?(@kmer_ary) && (@kmer_ary.count == size)
         @kmer_ary.zero!
       else
         @kmer_ary = BioDSL::CAry.new(size, 1)
       end
 
-      if self.qual
-        to_kmers_qual_C(self.seq, self.qual, @kmer_ary.ary, self.length, @kmer_ary.count, options[:kmer_size], options[:step_size], options[:score_min], Seq::SCORE_BASE)
+      if @qual
+        to_kmers_qual_C(@seq, @qual, @kmer_ary.ary, length, @kmer_ary.count,
+                        options[:kmer_size], options[:step_size],
+                        options[:score_min], Seq::SCORE_BASE)
       else
-        to_kmers_C(self.seq, @kmer_ary.ary, self.length, @kmer_ary.count, options[:kmer_size], options[:step_size])
+        to_kmers_C(@seq, @kmer_ary.ary, length, @kmer_ary.count,
+                  options[:kmer_size], options[:step_size])
       end
     end
 
@@ -152,7 +165,7 @@ module BioDSL
           unsigned int  ary_len   = FIX2UINT(_ary_len);
           unsigned int  kmer_size = FIX2UINT(_kmer_size);
           unsigned int  step_size = FIX2UINT(_step_size);
-          
+
           VALUE         array = rb_ary_new();
           unsigned int  bin   = 0;
           unsigned int  enc   = 0;
@@ -208,7 +221,7 @@ module BioDSL
           unsigned int  step_size  = FIX2UINT(_step_size);
           unsigned int  score_min  = FIX2UINT(_score_min);
           unsigned int  score_base = FIX2UINT(_score_base);
-          
+
           VALUE         array = rb_ary_new();
           unsigned int  bin   = 0;
           unsigned int  enc   = 0;
@@ -251,11 +264,13 @@ module BioDSL
     def naive(options)
       oligos = []
 
-      (0 .. self.length - options[:kmer_size]).each do |i|
-        oligo = self[i ... i + options[:kmer_size]]
+      (0..length - options[:kmer_size]).each do |i|
+        oligo = self[i...i + options[:kmer_size]]
 
         next unless oligo.seq.upcase =~ /^[ATUCG]+$/
-        next if oligo.qual and options[:scores_min] and oligo.scores_min < options[:scores_min]
+        next if oligo.qual &&
+                options[:scores_min] &&
+                (oligo.scores_min < options[:scores_min])
 
         oligos << oligo.seq.upcase
       end
@@ -266,11 +281,13 @@ module BioDSL
     def naive_bin(options)
       oligos = []
 
-      (0 .. self.length - options[:kmer_size]).each do |i|
-        oligo = self[i ... i + options[:kmer_size]]
+      (0..length - options[:kmer_size]).each do |i|
+        oligo = self[i...i + options[:kmer_size]]
 
         next unless oligo.seq.upcase =~ /^[ATCG]+$/
-        next if oligo.qual and options[:scores_min] and oligo.scores_min < options[:scores_min]
+        next if oligo.qual &&
+                options[:scores_min] &&
+                (oligo.scores_min < options[:scores_min])
 
         bin = 0
 

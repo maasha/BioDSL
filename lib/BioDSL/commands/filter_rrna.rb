@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -197,7 +197,7 @@ module BioDSL
     def record2entry(record, i)
       entry = BioDSL::Seq.new(seq_name: i, seq: record[:SEQ])
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
       entry
     end
 
@@ -226,9 +226,9 @@ module BioDSL
       if record.key? :SEQ
         unless @filter.include? i
           output << record
-          @status[:records_out]   += 1
+          @status[:records_out] += 1
           @status[:sequences_out] += 1
-          @status[:residues_out]  += record[:SEQ].length
+          @status[:residues_out] += record[:SEQ].length
         end
       else
         output << record

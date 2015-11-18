@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -71,8 +71,8 @@ module BioDSL
       @options = options
       aux_exist('usearch')
       check_options
-      @options[:cpus]   ||= 1
-      @options[:strand] ||= 'plus'  # This option cant be changed in usearch7.0
+      @options[:cpus] ||= 1
+      @options[:strand] ||= 'plus' # This option cant be changed in usearch7.0
     end
 
     # Return command lambda for uchime_ref.
@@ -115,7 +115,7 @@ module BioDSL
 
           if record[:SEQ]
             @status[:sequences_in] += 1
-            @status[:residues_in]  += record[:SEQ].length
+            @status[:residues_in] += record[:SEQ].length
             seq_name = record[:SEQ_NAME] || i.to_s
 
             entry = BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ])
@@ -161,8 +161,8 @@ module BioDSL
 
           output << record
           @status[:sequences_out] += 1
-          @status[:residues_out]  += entry.length
-          @status[:records_out]   += 1
+          @status[:residues_out] += entry.length
+          @status[:records_out] += 1
         end
       end
     end

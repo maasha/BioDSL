@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -131,10 +131,10 @@ module BioDSL
     # @return [TrimPrimer] Class instance.
     def initialize(options)
       @options = options
-      @options[:overlap_min]       ||= 1
-      @options[:mismatch_percent]  ||= 0
+      @options[:overlap_min] ||= 1
+      @options[:mismatch_percent] ||= 0
       @options[:insertion_percent] ||= 0
-      @options[:deletion_percent]  ||= 0
+      @options[:deletion_percent] ||= 0
       @pattern = pattern
       @hit     = false
 
@@ -153,6 +153,7 @@ module BioDSL
 
           if record[:SEQ] && record[:SEQ].length > 0
             @status[:sequences_in] += 1
+            @status[:sequences_out] += 1
 
             case @options[:direction]
             when :forward then trim_forward(record)
@@ -198,7 +199,7 @@ module BioDSL
     def trim_forward(record)
       entry = BioDSL::Seq.new_bp(record)
 
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       while @pattern.length >= @options[:overlap_min]
         if (match = match_forward(entry))
@@ -235,6 +236,8 @@ module BioDSL
     def merge_forward(record, entry, match)
       entry = entry[match.pos + match.length..-1]
 
+      @status[:residues_out] += entry.length
+
       record.merge!(entry.to_bp)
       record[:TRIM_PRIMER_DIR] = 'FORWARD'
       record[:TRIM_PRIMER_POS] = match.pos
@@ -248,7 +251,7 @@ module BioDSL
     def trim_reverse(record)
       entry = BioDSL::Seq.new_bp(record)
 
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       while @pattern.length >= @options[:overlap_min]
         if (match = match_reverse(entry))
@@ -288,6 +291,8 @@ module BioDSL
     def merge_reverse(record, entry, match)
       entry = entry[0...match.pos]
 
+      @status[:residues_out] += entry.length
+
       record.merge!(entry.to_bp)
       record[:TRIM_PRIMER_DIR] = 'REVERSE'
       record[:TRIM_PRIMER_POS] = match.pos
@@ -302,9 +307,9 @@ module BioDSL
     #
     # @return [Hash] Match options hash.
     def match_options(length)
-      mis = (length * @options[:mismatch_percent]  * 0.01).round
+      mis = (length * @options[:mismatch_percent] * 0.01).round
       ins = (length * @options[:insertion_percent] * 0.01).round
-      del = (length * @options[:deletion_percent]  * 0.01).round
+      del = (length * @options[:deletion_percent] * 0.01).round
 
       {max_mismatches: mis,
        max_insertions: ins,

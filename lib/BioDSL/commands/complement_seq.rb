@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -106,10 +106,10 @@ module BioDSL
       entry.type = @type
       entry.complement!
 
-      @status[:sequences_in]  += 1
+      @status[:sequences_in] += 1
       @status[:sequences_out] += 1
-      @status[:residues_in]   += entry.length
-      @status[:residues_out]  += entry.length
+      @status[:residues_in] += entry.length
+      @status[:residues_out] += entry.length
 
       record.merge! entry.to_bp
     end

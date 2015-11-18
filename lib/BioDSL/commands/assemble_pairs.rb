@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -160,7 +160,7 @@ module BioDSL
     # Set default options.
     def defaults
       @options[:mismatch_percent] ||= 20
-      @options[:overlap_min]      ||= 1
+      @options[:overlap_min] ||= 1
     end
 
     # Output a record to the stream if a stram is provided.
@@ -182,7 +182,7 @@ module BioDSL
       entry1, entry2 = records2entries(record1, record2)
 
       if overlap_possible?(entry1, entry2, @options[:overlap_min]) &&
-         assembled = assemble_entries(entry1, entry2)
+         (assembled = assemble_entries(entry1, entry2))
         output_assembled(assembled, output)
       elsif @options[:merge_unassembled]
         output_merged(entry1, entry2, output)
@@ -211,7 +211,7 @@ module BioDSL
       end
 
       @status[:sequences_in] += 2
-      @status[:residues_in]  += entry1.length + entry2.length
+      @status[:residues_in] += entry1.length + entry2.length
 
       [entry1, entry2]
     end
@@ -252,10 +252,10 @@ module BioDSL
     def output_assembled(assembled, output)
       output << assembled2record(assembled)
 
-      @status[:assembled]     += 1
-      @status[:records_out]   += 1
+      @status[:assembled] += 1
+      @status[:records_out] += 1
       @status[:sequences_out] += 1
-      @status[:residues_out]  += assembled.length
+      @status[:residues_out] += assembled.length
     end
 
     # Convert a sequence entry to a BioPiece record with hamming distance and
@@ -289,10 +289,10 @@ module BioDSL
 
       output << entry2record(entry1)
 
-      @status[:unassembled]   += 1
+      @status[:unassembled] += 1
       @status[:sequences_out] += 1
-      @status[:residues_out]  += entry1.length
-      @status[:records_out]   += 1
+      @status[:residues_out] += entry1.length
+      @status[:records_out] += 1
     end
 
     # Output unassembled entries to the stream.
@@ -304,10 +304,10 @@ module BioDSL
       output << entry2record(entry1)
       output << entry2record(entry2)
 
-      @status[:unassembled]   += 2
+      @status[:unassembled] += 2
       @status[:sequences_out] += 2
-      @status[:residues_out]  += entry1.length + entry2.length
-      @status[:records_out]   += 2
+      @status[:residues_out] += entry1.length + entry2.length
+      @status[:records_out] += 2
     end
 
     # Converts a sequence entry to a BioPeice record.

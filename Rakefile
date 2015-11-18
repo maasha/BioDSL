@@ -1,17 +1,18 @@
 require 'bundler'
+require 'English'
 require 'rake/testtask'
 require 'pp'
 
 Bundler::GemHelper.install_tasks
 
-task :default => 'test'
- 
+task default: 'test'
+
 Rake::TestTask.new do |t|
-  t.description = "Run test suite"
+  t.description = 'Run test suite'
   t.test_files  = Dir['test/**/*'].select { |f| f.match(/\.rb$/) }
   t.warning     = true
 end
- 
+
 desc 'Run test suite with simplecov'
 task :simplecov do
   ENV['SIMPLECOV'] = 'true'
@@ -23,7 +24,7 @@ task :doc do
   run_docgen
 end
 
-task :build => :boilerplate
+task build: :boilerplate
 
 desc 'Add or update license boilerplate in source files'
 task :boilerplate do
@@ -31,9 +32,9 @@ task :boilerplate do
 end
 
 def run_docgen
-  $stderr.puts "Building docs"
+  $stderr.puts 'Building docs'
   `yardoc lib/`
-  $stderr.puts "Docs done"
+  $stderr.puts 'Docs done'
 end
 
 def run_boilerplate
@@ -61,7 +62,7 @@ def run_boilerplate
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
+# This software is part of BioDSL (http://maasha.github.io/BioDSL).            #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 END
@@ -69,26 +70,27 @@ END
   files = Rake::FileList.new('bin/**/*', 'lib/**/*.rb', 'test/**/*.rb')
 
   files.each do |file|
-    body = ""
+    body = ''
 
     File.open(file) do |ios|
       body = ios.read
     end
 
-    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) and $1.to_i != Time.now.year
+    if body.match(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/) &&
+       Regex.last_match[1].to_i != Time.now.year
       STDERR.puts "Updating boilerplate: #{file}"
 
-      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/, "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
+      body.sub!(/Copyright \(C\) 2007-(\d{4}) Martin Asser Hansen/,
+                "Copyright (C) 2007-#{Time.now.year} Martin Asser Hansen")
 
       File.open(file, 'w') do |ios|
         ios.puts body
       end
     end
 
-    unless body.match('Copyright')
-      STDERR.puts "Warning: missing boilerplate in #{file}"
-      STDERR.puts body.split($/).first(10).join($/)
-      exit
-    end
+    next unless body.match('Copyright')
+    STDERR.puts "Warning: missing boilerplate in #{file}"
+    STDERR.puts body.split($RS).first(10).join($RS)
+    exit
   end
 end

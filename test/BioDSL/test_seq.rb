@@ -1,35 +1,36 @@
 #!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                        #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (http://maasha.github.io/BioDSL).            #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
-class TestSeq < Test::Unit::TestCase 
+class TestSeq < Test::Unit::TestCase
   def setup
     @entry = BioDSL::Seq.new
   end
@@ -116,31 +117,31 @@ class TestSeq < Test::Unit::TestCase
     assert_nothing_raised { BioDSL::Seq.check_name_pair(entry1, entry2) }
   end
 
-  test "#is_dna? with no sequence type returns false" do
-    assert(@entry.is_dna? == false)
+  test "#dna? with no sequence type returns false" do
+    assert(@entry.dna? == false)
   end
 
-  test "#is_dna? with dna sequence type returns true" do
+  test "#dna? with dna sequence type returns true" do
     @entry.type = :dna
-    assert(@entry.is_dna? == true)
+    assert(@entry.dna? == true)
   end
 
-  test "#is_rna? with no sequence type returns false" do
-    assert(@entry.is_rna? == false)
+  test "#rna? with no sequence type returns false" do
+    assert(@entry.rna? == false)
   end
 
-  test "#is_rna? with rna sequence type returns true" do
+  test "#rna? with rna sequence type returns true" do
     @entry.type = :rna
-    assert(@entry.is_rna? == true)
+    assert(@entry.rna? == true)
   end
 
-  test "#is_protein? with no sequence type returns false" do
-    assert(@entry.is_protein? == false)
+  test "#protein? with no sequence type returns false" do
+    assert(@entry.protein? == false)
   end
 
-  test "#is_protein? with protein sequence type returns true" do
+  test "#protein? with protein sequence type returns true" do
     @entry.type = :protein
-    assert_equal(true, @entry.is_protein?)
+    assert_equal(true, @entry.protein?)
   end
 
   test "#type_guess without sequence raises" do
@@ -397,7 +398,7 @@ class TestSeq < Test::Unit::TestCase
   end
 
   test "#shuffle returns correctly" do
-    orig       = "actgactgactgatcgatcgatcgatcgtactg" 
+    orig       = "actgactgactgatcgatcgatcgatcgtactg"
     @entry.seq = "actgactgactgatcgatcgatcgatcgtactg"
     entry_shuf = @entry.shuffle
     assert_equal(orig, @entry.seq)

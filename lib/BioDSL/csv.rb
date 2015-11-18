@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
+# This software is part of BioDSL (http://maasha.github.io/BioDSL).            #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -283,15 +283,13 @@ module BioDSL
       fields.each do |field|
         field = field.to_num
 
-        if field.is_a? Fixnum
-          types << :to_i
-        elsif field.is_a? Float
-          types << :to_f
-        elsif field.is_a? String
-          types << :to_s
-        else
-          types << nil
-        end
+        types << if field.is_a? Fixnum
+                   :to_i
+                 elsif field.is_a? Float
+                   :to_f
+                 elsif field.is_a? String
+                   :to_s
+                 end
       end
 
       @types = types

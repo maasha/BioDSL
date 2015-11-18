@@ -23,7 +23,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
+# This software is part of BioDSL (http://maasha.github.io/BioDSL).            #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -33,7 +33,7 @@ require 'test/helper'
 class CommandTest < Test::Unit::TestCase
   test 'BioDSL::Command#to_s w/o options returns OK' do
     command = BioDSL::Command.new('dump', nil, {})
-    expected = %{dump}
+    expected = %(dump)
     assert_equal(expected, command.to_s)
   end
 

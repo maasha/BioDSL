@@ -8,3 +8,4 @@ pkg/
 .tags*
 tags
 8mer
+Gemfile.lock

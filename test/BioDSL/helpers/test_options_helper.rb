@@ -24,7 +24,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..', '..')
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of BioDSL (www.github.com/maasha/BioDSL).              #
+# This software is part of BioDSL (http://maasha.github.io/BioDSL).            #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -233,12 +233,12 @@ class TestOptionsHelper < Test::Unit::TestCase
   end
 
   test '#options_glob returns correctly' do
-    glob    = __FILE__[0..-3] + '*'
+    glob = __FILE__[0..-3] + '*'
     assert_equal([__FILE__], options_glob(glob))
   end
 
   test '#options_glob with Array returns correctly' do
-    glob    = __FILE__[0..-3] + '*'
+    glob = __FILE__[0..-3] + '*'
     assert_equal([__FILE__, __FILE__], options_glob([glob, glob]))
   end
 

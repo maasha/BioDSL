@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -142,11 +142,11 @@ module BioDSL
 
       input.each do |record|
         output << record
-        @status[:records_in]  += 1
+        @status[:records_in] += 1
 
         if record[:SEQ]
           @status[:sequences_in] += 1
-          @status[:residues_in]  += record[:SEQ].length
+          @status[:residues_in] += record[:SEQ].length
         end
       end
     end
@@ -165,9 +165,9 @@ module BioDSL
         break if @count == first
         output << entry.to_bp
 
-        @status[:records_out]   += 1
+        @status[:records_out] += 1
         @status[:sequences_out] += 1
-        @status[:residues_out]  += entry.length
+        @status[:residues_out] += entry.length
 
         @count += 1
       end
@@ -200,9 +200,9 @@ module BioDSL
       input.each do |entry|
         output << entry.to_bp
 
-        @status[:records_out]   += 1
+        @status[:records_out] += 1
         @status[:sequences_out] += 1
-        @status[:residues_out]  += entry.length
+        @status[:residues_out] += entry.length
       end
     end
 
@@ -213,9 +213,9 @@ module BioDSL
       @buffer.each do |entry|
         output << entry.to_bp
 
-        @status[:records_out]   += 1
+        @status[:records_out] += 1
         @status[:sequences_out] += 1
-        @status[:residues_out]  += entry.length
+        @status[:residues_out] += entry.length
       end
     end
   end

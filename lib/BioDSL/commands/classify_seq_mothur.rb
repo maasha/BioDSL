@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -128,7 +128,7 @@ module BioDSL
     # Set default options.
     def defaults
       @options[:confidence] ||= 80
-      @options[:cpus]       ||= 1
+      @options[:cpus] ||= 1
     end
 
     # Process input data and save sequences to a temporary file for
@@ -143,10 +143,10 @@ module BioDSL
           @status[:records_in] += 1
 
           if record[:SEQ]
-            @status[:sequences_in]  += 1
+            @status[:sequences_in] += 1
             @status[:sequences_out] += 1
-            @status[:residues_in]   += record[:SEQ].length
-            @status[:records_out]   += record[:SEQ].length
+            @status[:residues_in] += record[:SEQ].length
+            @status[:records_out] += record[:SEQ].length
             seq_name = record[:SEQ_NAME] || i.to_s
 
             entry = BioDSL::Seq.new(seq_name: seq_name, seq: record[:SEQ])

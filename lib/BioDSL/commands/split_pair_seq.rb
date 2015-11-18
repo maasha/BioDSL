@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -146,12 +146,11 @@ module BioDSL
     # @param output [Enumerator::Yielder] Output stream.
     # @param record [Hash]                BioDSL record.
     #
-    # rubocop: disable Metrics/AbcSize
     def split_pair_seq(output, record)
       entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       pos = get_split_pos(record, entry)
 
@@ -161,13 +160,13 @@ module BioDSL
       output << entry2.to_bp
 
       @status[:sequences_out] += 2
-      @status[:residues_out]  += entry1.length + entry2.length
-      @status[:records_out]   += 2
+      @status[:residues_out] += entry1.length + entry2.length
+      @status[:records_out] += 2
     end
 
     # Given a record locate the sequence split position.
     #
-    # @param record [Hash]           BioDSL record.
+    # @param record [Hash] BioDSL record.
     # @param entry  [BioDSL::Seq] Sequence entry.
     #
     # @return [Integer] Sequence split position.
@@ -210,7 +209,7 @@ module BioDSL
     def fix_seq_names(entry1, entry2)
       if entry1.seq_name =~ /^[^ ]+ \d:/
         entry2.seq_name.sub!(/ \d:/, ' 2:')
-      elsif entry1.seq_name =~ /^.+\/\d$/
+      elsif entry1.seq_name =~ %r{^.+\/\d$}
         entry2.seq_name[-1] = '2'
       else
         fail "Could not match sequence name: #{entry1.seq_name}"

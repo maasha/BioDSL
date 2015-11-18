@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -164,8 +164,8 @@ module BioDSL
     # Set defaul options.
     def defaults
       @options[:quality_min] ||= 20
-      @options[:mode]        ||= :both
-      @options[:length_min]  ||= 3
+      @options[:mode] ||= :both
+      @options[:length_min] ||= 3
     end
 
     # Trim sequence in a given record with sequence info.
@@ -175,7 +175,7 @@ module BioDSL
       entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       case @mode
       when :both  then entry.quality_trim!(@min, @len)
@@ -184,7 +184,7 @@ module BioDSL
       end
 
       @status[:sequences_out] += 1
-      @status[:residues_out]  += entry.length
+      @status[:residues_out] += entry.length
 
       record.merge! entry.to_bp
     end

@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -68,7 +68,6 @@ module BioDSL
   #    {:SEQ_NAME=>"test1", :SEQ=>"A-GTC", :SEQ_LEN=>5}
   #    {:SEQ_NAME=>"test2", :SEQ=>"AGGTC", :SEQ_LEN=>5}
   #
-  # rubocop:disable ClassLength
   class DegapSeq
     require 'narray'
 
@@ -157,14 +156,14 @@ module BioDSL
     # @param seq [String] Sequences.
     def mask_add(seq)
       @status[:sequences_in] += 1
-      @status[:residues_in]  += seq.length
+      @status[:residues_in] += seq.length
 
       @max_len ||= seq.length
 
       check_length(seq)
 
       @na_mask ||= NArray.int(seq.length)
-      na_seq  = NArray.to_na(seq, 'byte')
+      na_seq = NArray.to_na(seq, 'byte')
       @indels.each_char { |c| @na_mask += na_seq.eq(c.ord) }
     end
 
@@ -212,7 +211,7 @@ module BioDSL
       record[:SEQ_LEN] = record[:SEQ].length
 
       @status[:sequences_out] += 1
-      @status[:residues_out]  += record[:SEQ].length
+      @status[:residues_out] += record[:SEQ].length
     end
 
     # Remove all gaps from all sequences in input stream and output to output
@@ -240,12 +239,12 @@ module BioDSL
       entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       entry.seq.delete!(@indels)
 
       @status[:sequences_out] += 1
-      @status[:residues_out]  += entry.length
+      @status[:residues_out] += entry.length
 
       record.merge! entry.to_bp
     end

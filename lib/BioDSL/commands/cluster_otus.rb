@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -89,8 +89,8 @@ module BioDSL
           process_input(input, output, tmp_in)
 
           BioDSL::Usearch.cluster_otus(input: tmp_in, output: tmp_out,
-                                          identity: @options[:identity],
-                                          verbose: @options[:verbose])
+                                       identity: @options[:identity],
+                                       verbose: @options[:verbose])
 
           process_output(output, tmp_out)
         end
@@ -172,8 +172,8 @@ module BioDSL
 
           output << record
           @status[:sequences_out] += 1
-          @status[:residues_out]  += record[:SEQ].length
-          @status[:records_out]   += 1
+          @status[:residues_out] += record[:SEQ].length
+          @status[:records_out] += 1
         end
       end
     end

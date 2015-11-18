@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -160,7 +160,7 @@ module BioDSL
       entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       if entry.qual
         @type = :fastq
@@ -216,9 +216,9 @@ module BioDSL
       BioDSL::Fasta.open(output_file) do |ios|
         ios.each do |entry|
           output << entry.to_bp
-          @status[:records_out]   += 1
+          @status[:records_out] += 1
           @status[:sequences_out] += 1
-          @status[:residues_out]  += entry.length
+          @status[:residues_out] += entry.length
 
           @lengths << entry.length
         end

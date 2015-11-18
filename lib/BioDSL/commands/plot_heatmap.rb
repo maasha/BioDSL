@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -66,7 +66,6 @@ module BioDSL
   #
   #    BD.new.read_table(input: "test.tab").plot_heatmap.run
   #
-  # rubocop:disable ClassLength
   class PlotHeatmap
     require 'gnuplotter'
     require 'set'
@@ -133,9 +132,9 @@ module BioDSL
     # Set default options.
     def defaults
       @options[:terminal] ||= :dumb
-      @options[:title]    ||= 'Heatmap'
-      @options[:xlabel]   ||= 'x'
-      @options[:ylabel]   ||= 'y'
+      @options[:title] ||= 'Heatmap'
+      @options[:xlabel] ||= 'x'
+      @options[:ylabel] ||= 'y'
     end
 
     # Compile a set of keys to skip.

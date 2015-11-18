@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -79,7 +79,6 @@ module BioDSL
       @cmd = compile_command
     end
 
-    # rubocop: disable Metrics/AbcSize
     # rubocop: disable MethodLength
 
     # Return command lambda for write_tree.
@@ -146,7 +145,7 @@ module BioDSL
       entry.seq_name ||= i
 
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       stdin.puts entry.to_fasta
     end

@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -164,10 +164,10 @@ module BioDSL
 
     # Set the default option values.
     def defaults
-      @options[:kmer_min]   ||= 21
-      @options[:kmer_max]   ||= 49
+      @options[:kmer_min] ||= 21
+      @options[:kmer_max] ||= 49
       @options[:contig_min] ||= 500
-      @options[:cpus]       ||= 1
+      @options[:cpus] ||= 1
     end
 
     # Read all records from input and emit non-sequence records to the output
@@ -185,7 +185,7 @@ module BioDSL
             entry = BioDSL::Seq.new_bp(record)
 
             @status[:sequences_in] += 1
-            @status[:residues_in]  += entry.length
+            @status[:residues_in] += entry.length
 
             fasta_io.puts entry.to_fasta
           else
@@ -314,11 +314,11 @@ module BioDSL
           next if entry.length < @options[:contig_min]
 
           lengths << entry.length
-          output  << entry.to_bp
+          output << entry.to_bp
 
-          @status[:records_out]   += 1
+          @status[:records_out] += 1
           @status[:sequences_out] += 1
-          @status[:residues_out]  += entry.length
+          @status[:residues_out] += entry.length
         end
       end
 
@@ -333,11 +333,11 @@ module BioDSL
       @status[:kmer]   = kmer
       @status[:paired] = @paired
 
-      unless lengths.empty?
-        @status[:contig_min] = lengths.min
-        @status[:contig_max] = lengths.max
-        @status[:n50]        = calc_n50(lengths)
-      end
+      return if lengths.empty?
+
+      @status[:contig_min] = lengths.min
+      @status[:contig_max] = lengths.max
+      @status[:n50]        = calc_n50(lengths)
     end
 
     N50 = Struct.new(:kmer, :n50)

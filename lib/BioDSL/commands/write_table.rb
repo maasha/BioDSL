@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -185,7 +185,7 @@ module BioDSL
     #
     # @return [WriteTable] Class instance.
     def initialize(options)
-      @options               = options
+      @options = options
       check_options
       @options[:delimiter] ||= "\t"
       @compress              = choose_compression
@@ -402,7 +402,7 @@ module BioDSL
     def align_columns(table)
       @rows.first.each_with_index do |cell, i|
         next unless cell.is_a?(Fixnum) ||
-                    cell.is_a?(Float)  ||
+                    cell.is_a?(Float) ||
                     cell.delete(',') =~ /^[0-9]+$/
 
         table.align_column(i, :right)

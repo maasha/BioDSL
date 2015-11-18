@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -180,10 +180,10 @@ module BioDSL
     # Set default options.
     def defaults
       @options[:direction] ||= :both
-      @options[:terminal]  ||= :dumb
-      @options[:title]     ||= 'Matches'
-      @options[:xlabel]    ||= 'x'
-      @options[:ylabel]    ||= 'y'
+      @options[:terminal] ||= :dumb
+      @options[:title] ||= 'Matches'
+      @options[:xlabel] ||= 'x'
+      @options[:ylabel] ||= 'y'
     end
 
     # Set plot default attributes.

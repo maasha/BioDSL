@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -139,7 +139,7 @@ module BioDSL
       create_output_dir
       check_output_files
 
-      @index   = BioDSL::Taxonomy::Index.new(options)
+      @index = BioDSL::Taxonomy::Index.new(options)
     end
 
     # Return command lambda for index_taxonomy.
@@ -179,7 +179,7 @@ module BioDSL
 
     # Set the default options hash values.
     def defaults
-      @options[:prefix]    ||= 'taxonomy'
+      @options[:prefix] ||= 'taxonomy'
       @options[:kmer_size] ||= 8
       @options[:step_size] ||= 1
     end

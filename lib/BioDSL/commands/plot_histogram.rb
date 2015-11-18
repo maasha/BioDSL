@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -167,9 +167,9 @@ module BioDSL
     # Set default values for options hash.
     def defaults
       @options[:terminal] ||= :dumb
-      @options[:title]    ||= 'Histogram'
-      @options[:xlabel]   ||= @options[:key]
-      @options[:ylabel]   ||= 'n'
+      @options[:title] ||= 'Histogram'
+      @options[:xlabel] ||= @options[:key]
+      @options[:ylabel] ||= 'n'
 
       @options[:ylogscale] &&
         @options[:ylabel] = "log10(#{@options[:ylabel]})"

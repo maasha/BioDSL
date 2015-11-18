@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -232,9 +232,9 @@ module BioDSL
             record.merge!(entry.to_bp)
 
             output << record
-            @status[:records_out]   += 1
+            @status[:records_out] += 1
             @status[:sequences_out] += 1
-            @status[:residues_out]  += entry.length
+            @status[:residues_out] += entry.length
           end
         end
       end
@@ -273,9 +273,9 @@ module BioDSL
 
         if (r = results[record[:SEQ_NAME]])
           output << record.merge(r)
-          @status[:records_out]   += 1
+          @status[:records_out] += 1
           @status[:sequences_out] += 1
-          @status[:residues_out]  += record[:SEQ].length
+          @status[:residues_out] += record[:SEQ].length
         else
           fail BioDSL::UsearchError, 'Sequence name: ' \
             "#{record[:SEQ_NAME]} not found in uclust results"

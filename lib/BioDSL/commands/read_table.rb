@@ -21,7 +21,7 @@
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 #                                                                              #
-# This software is part of the BioDSL framework (www.BioDSL.org).        #
+# This software is part of the BioDSL (www.BioDSL.org).                        #
 #                                                                              #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
@@ -173,7 +173,6 @@ module BioDSL
   #    {:Organism=>"Mouse"}
   #    {:Organism=>"Cat"}
   #
-  # rubocop: disable ClassLength
   class ReadTable
     STATS = %i(records_in records_out)
 
@@ -321,7 +320,7 @@ module BioDSL
       return unless output
       input.each do |record|
         output << record
-        @status[:records_in]  += 1
+        @status[:records_in] += 1
         @status[:records_out] += 1
       end
     end

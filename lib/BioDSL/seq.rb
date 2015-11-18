@@ -1,30 +1,33 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part BioDSL (www.BioDSL.org).                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part BioDSL (www.BioDSL.org).                               #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
+# Namespace for BioDSL.
 module BioDSL
+  require 'English'
   require 'narray'
   require 'BioDSL/seq/ambiguity'
   require 'BioDSL/seq/assemble'
@@ -40,12 +43,15 @@ module BioDSL
   # Error class for all exceptions to do with Seq.
   class SeqError < StandardError; end
 
+  # rubocop: disable ClassLength
+
+  # Class for manipulating sequences.
   class Seq
     # Residue alphabets
-    DNA     = %w[a t c g]
-    RNA     = %w[a u c g]
-    PROTEIN = %w[f l s y c w p h q r i m t n k v a d e g]
-    INDELS  = %w[. - _ ~]
+    DNA     = %w(a t c g)
+    RNA     = %w(a u c g)
+    PROTEIN = %w(f l s y c w p h q r i m t n k v a d e g)
+    INDELS  = %w(. - _ ~)
 
     # Quality scores bases
     SCORE_BASE = 33
@@ -69,30 +75,29 @@ module BioDSL
       type     = record[:SEQ_TYPE].to_sym if record[:SEQ_TYPE]
       qual     = record[:SCORES]
 
-      self.new(seq_name: seq_name, seq: seq, type: type, qual: qual)
+      new(seq_name: seq_name, seq: seq, type: type, qual: qual)
     end
 
-    # Class method that generates all possible oligos of a specifed length and type.
+    # Class method that generates all possible oligos of a specifed length and
+    # type.
     def self.generate_oligos(length, type)
-      raise SeqError, "Cannot generate oligos of zero or negative length: #{length}" if length <= 0
+      fail SeqError, "Bad length: #{length}" if length <= 0
 
       case type.downcase
       when :dna     then alph = DNA
       when :rna     then alph = RNA
       when :protein then alph = PROTEIN
       else
-        raise SeqError, "Unknown sequence type: #{type}"
+        fail SeqError, "Unknown sequence type: #{type}"
       end
 
-      oligos = [""]
+      oligos = ['']
 
-      (1 .. length).each do
+      (1..length).each do
         list = []
 
         oligos.each do |oligo|
-          alph.each do |char|
-            list << oligo + char
-          end
+          alph.each { |char| list << oligo + char }
         end
 
         oligos = list
@@ -103,24 +108,22 @@ module BioDSL
 
     def self.check_name_pair(entry1, entry2)
       if entry1.seq_name =~ /^([^ ]+) \d:/
-        name1 = $1
-      elsif entry1.seq_name =~ /^(.+)\/\d$/
-        name1 = $1
+        name1 = Regexp.last_match[1]
+      elsif entry1.seq_name =~ %r{^(.+)\/\d$}
+        name1 = Regexp.last_match[1]
       else
-        raise SeqError, "Could not match sequence name: #{entry1.seq_name}"
+        fail SeqError, "Could not match sequence name: #{entry1.seq_name}"
       end
 
       if entry2.seq_name =~ /^([^ ]+) \d:/
-        name2 = $1
-      elsif entry2.seq_name =~ /^(.+)\/\d$/
-        name2 = $1
+        name2 = Regexp.last_match[1]
+      elsif entry2.seq_name =~ %r{^(.+)\/\d$}
+        name2 = Regexp.last_match[1]
       else
-        raise SeqError, "Could not match sequence name: #{entry2.seq_name}"
+        fail SeqError, "Could not match sequence name: #{entry2.seq_name}"
       end
 
-      if name1 != name2
-        raise SeqError, "Name mismatch: #{name1} != #{name2}"
-      end
+      fail SeqError, "Name mismatch: #{name1} != #{name2}" if name1 != name2
     end
 
     # Initialize a sequence object with the following options:
@@ -134,18 +137,19 @@ module BioDSL
       @type     = options[:type]
       @qual     = options[:qual]
 
-      if @seq and @qual and @seq.length != @qual.length
-        raise SeqError, "Sequence length and score length mismatch:" \
-        "#{@seq.length} != #{@qual.length}"
-      end
+      return unless @seq && @qual
+      return if @seq.length == @qual.length
+
+      fail SeqError, 'Sequence length and score length mismatch: ' \
+      "#{@seq.length} != #{@qual.length}"
     end
 
     # Method that guesses and returns the sequence type
     # by inspecting the first 100 residues.
     def type_guess
-      raise SeqError, "Guess failed: sequence is nil" if self.seq.nil?
+      fail SeqError, 'Guess failed: sequence is nil' if @seq.nil?
 
-      case self.seq[0 ... 100].downcase
+      case @seq[0...100].downcase
       when /[flpqie]/ then return :protein
       when /[u]/      then return :rna
       else                 return :dna
@@ -155,31 +159,31 @@ module BioDSL
     # Method that guesses and sets the sequence type
     # by inspecting the first 100 residues.
     def type_guess!
-      self.type = self.type_guess
+      @type = type_guess
       self
     end
 
     # Returns the length of a sequence.
     def length
-      self.seq.nil? ? 0 : self.seq.length
+      @seq.nil? ? 0 : @seq.length
     end
 
-    alias :len :length
+    alias_method :len, :length
 
     # Return the number indels in a sequence.
     def indels
       regex = Regexp.new(/[#{Regexp.escape(INDELS.join(""))}]/)
-      self.seq.scan(regex).size
+      @seq.scan(regex).size
     end
 
     # Method to remove indels from seq and qual if qual.
     def indels_remove
-      if self.qual.nil?
-        self.seq.delete!(Regexp.escape(INDELS.join('')))
+      if @qual.nil?
+        @seq.delete!(Regexp.escape(INDELS.join('')))
       else
-        na_seq  = NArray.to_na(self.seq, "byte")
-        na_qual = NArray.to_na(self.qual, "byte")
-        mask    = NArray.byte(self.length)
+        na_seq  = NArray.to_na(@seq, 'byte')
+        na_qual = NArray.to_na(@qual, 'byte')
+        mask    = NArray.byte(length)
 
         INDELS.each do |c|
           mask += na_seq.eq(c.ord)
@@ -187,113 +191,113 @@ module BioDSL
 
         mask = mask.eq(0)
 
-        self.seq  = na_seq[mask].to_s
-        self.qual = na_qual[mask].to_s
+        @seq  = na_seq[mask].to_s
+        @qual = na_qual[mask].to_s
       end
 
       self
     end
 
     # Method that returns true is a given sequence type is DNA.
-    def is_dna?
-      self.type == :dna
+    def dna?
+      @type == :dna
     end
 
     # Method that returns true is a given sequence type is RNA.
-    def is_rna?
-      self.type == :rna
+    def rna?
+      @type == :rna
     end
 
     # Method that returns true is a given sequence type is protein.
-    def is_protein?
-      self.type == :protein
+    def protein?
+      @type == :protein
     end
 
     # Method to transcribe DNA to RNA.
     def to_rna
-      raise SeqError, "Cannot transcribe 0 length sequence" if self.length == 0
-      raise SeqError, "Cannot transcribe sequence type: #{self.type}" unless self.is_dna?
-      self.type = :rna
-      self.seq.tr!('Tt','Uu')
+      fail SeqError, 'Cannot transcribe 0 length sequence' if length == 0
+      fail SeqError, 'Cannot transcribe sequence type: #{@type}' unless dna?
+      @type = :rna
+      @seq.tr!('Tt', 'Uu')
     end
 
     # Method to reverse-transcribe RNA to DNA.
     def to_dna
-      raise SeqError, "Cannot reverse-transcribe 0 length sequence" if self.length == 0
-      raise SeqError, "Cannot reverse-transcribe sequence type: #{self.type}" unless self.is_rna?
-      self.type = :dna
-      self.seq.tr!('Uu','Tt')
+      fail SeqError, 'Cant reverse-transcribe 0 length sequence' if length == 0
+      fail SeqError, "Cant reverse-transcribe seq type: #{@type}" unless rna?
+      @type = :dna
+      @seq.tr!('Uu', 'Tt')
     end
 
     # Method that given a Seq entry returns a BioDSL record (a hash).
     def to_bp
       record            = {}
-      record[:SEQ_NAME] = self.seq_name   if self.seq_name
-      record[:SEQ]      = self.seq        if self.seq
-      record[:SEQ_LEN]  = self.seq.length if self.seq
-      record[:SCORES]   = self.qual       if self.qual
+      record[:SEQ_NAME] = @seq_name if @seq_name
+      record[:SEQ]      = @seq      if @seq
+      record[:SEQ_LEN]  = length    if @seq
+      record[:SCORES]   = @qual     if @qual
       record
     end
 
     # Method that given a Seq entry returns a FASTA entry (a string).
     def to_fasta(wrap = nil)
-      raise SeqError, "Missing seq_name" if self.seq_name.nil? or self.seq_name == ''
-      raise SeqError, "Missing seq"      if self.seq.nil?      or self.seq.empty?
+      fail SeqError, 'Missing seq_name' if @seq_name.nil? || @seq_name == ''
+      fail SeqError, 'Missing seq'      if @seq.nil? || @seq.empty?
 
-      seq_name = self.seq_name.to_s
-      seq      = self.seq.to_s
+      seq_name = @seq_name.to_s
+      seq      = @seq.to_s
 
       unless wrap.nil?
         seq.gsub!(/(.{#{wrap}})/) do |match|
-          match << $/
+          match << $INPUT_RECORD_SEPARATOR
         end
 
         seq.chomp!
       end
 
-      ">#{seq_name}#{$/}#{seq}#{$/}"
+      ">#{seq_name}#{$INPUT_RECORD_SEPARATOR}#{seq}#{$INPUT_RECORD_SEPARATOR}"
     end
 
     # Method that given a Seq entry returns a FASTQ entry (a string).
     def to_fastq
-      raise SeqError, "Missing seq_name" if self.seq_name.nil?
-      raise SeqError, "Missing seq"      if self.seq.nil?
-      raise SeqError, "Missing qual"     if self.qual.nil?
+      fail SeqError, 'Missing seq_name' if @seq_name.nil?
+      fail SeqError, 'Missing seq'      if @seq.nil?
+      fail SeqError, 'Missing qual'     if @qual.nil?
 
-      seq_name = self.seq_name.to_s
-      seq      = self.seq.to_s
-      qual     = self.qual.to_s
+      seq_name = @seq_name.to_s
+      seq      = @seq.to_s
+      qual     = @qual.to_s
 
-      "@#{seq_name}#{$/}#{seq}#{$/}+#{$/}#{qual}#{$/}"
+      "@#{seq_name}#{$RS}#{seq}#{$RS}+#{$RS}#{qual}#{$RS}"
     end
 
     # Method that generates a unique key for a
     # DNA sequence and return this key as a Fixnum.
     def to_key
       key = 0
-      
-      self.seq.upcase.each_char do |char|
+
+      @seq.upcase.each_char do |char|
         key <<= 2
-        
+
         case char
         when 'A' then key |= 0
         when 'C' then key |= 1
         when 'G' then key |= 2
         when 'T' then key |= 3
-        else raise SeqError, "Bad residue: #{char}"
+        else fail SeqError, "Bad residue: #{char}"
         end
       end
-      
+
       key
     end
 
     # Method to reverse the sequence.
     def reverse
       entry = Seq.new(
-        seq_name: self.seq_name,
-        seq:      self.seq.reverse,
-        type:     self.type,
-        qual:     (self.qual ? self.qual.reverse : self.qual)
+        seq_name: @seq_name,
+        seq:      @seq.reverse,
+        type:     @type,
+        qual:     (@qual ? @qual.reverse : @qual)
       )
 
       entry
@@ -301,27 +305,25 @@ module BioDSL
 
     # Method to reverse the sequence.
     def reverse!
-      self.seq.reverse!
-      self.qual.reverse! if self.qual
+      @seq.reverse!
+      @qual.reverse! if @qual
       self
     end
 
     # Method that complements sequence including ambiguity codes.
     def complement
-      raise SeqError, "Cannot complement 0 length sequence" if self.length == 0
+      fail SeqError, 'Cannot complement 0 length sequence' if length == 0
 
-      entry = Seq.new(
-        seq_name: self.seq_name,
-        type:     self.type,
-        qual:     self.qual
-      )
+      entry = Seq.new(seq_name: @seq_name, type: @type, qual: @qual)
 
-      if self.is_dna?
-        entry.seq = self.seq.tr('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn', 'TCGAAYRWSKMDHBVNtcgaayrwskmdhbvn')
-      elsif self.is_rna?
-        entry.seq = self.seq.tr('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn', 'UCGAAYRWSKMDHBVNucgaayrwskmdhbvn')
+      if dna?
+        entry.seq = @seq.tr('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn',
+                            'TCGAAYRWSKMDHBVNtcgaayrwskmdhbvn')
+      elsif rna?
+        entry.seq = @seq.tr('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn',
+                            'UCGAAYRWSKMDHBVNucgaayrwskmdhbvn')
       else
-        raise SeqError, "Cannot complement sequence type: #{self.type}"
+        fail SeqError, "Cannot complement sequence type: #{@type}"
       end
 
       entry
@@ -329,14 +331,16 @@ module BioDSL
 
     # Method that complements sequence including ambiguity codes.
     def complement!
-      raise SeqError, "Cannot complement 0 length sequence" if self.length == 0
+      fail SeqError, 'Cannot complement 0 length sequence' if length == 0
 
-      if self.is_dna?
-        self.seq.tr!('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn', 'TCGAAYRWSKMDHBVNtcgaayrwskmdhbvn')
-      elsif self.is_rna?
-        self.seq.tr!('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn', 'UCGAAYRWSKMDHBVNucgaayrwskmdhbvn')
+      if dna?
+        @seq.tr!('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn',
+                 'TCGAAYRWSKMDHBVNtcgaayrwskmdhbvn')
+      elsif rna?
+        @seq.tr!('AGCUTRYWSMKHDVBNagcutrywsmkhdvbn',
+                 'UCGAAYRWSKMDHBVNucgaayrwskmdhbvn')
       else
-        raise SeqError, "Cannot complement sequence type: #{self.type}"
+        fail SeqError, "Cannot complement sequence type: #{@type}"
       end
 
       self
@@ -346,68 +350,70 @@ module BioDSL
     # two Sequence objects (case insensitive).
     def hamming_distance(entry, options = {})
       if options[:ambiguity]
-        BioDSL::Hamming.distance(self.seq, entry.seq, options)
+        BioDSL::Hamming.distance(@seq, entry.seq, options)
       else
-        BioDSL::Hamming.distance(self.seq.upcase, entry.seq.upcase, options)
+        BioDSL::Hamming.distance(@seq.upcase, entry.seq.upcase, options)
       end
     end
 
     # Method to determine the Edit Distance between
     # two Sequence objects (case insensitive).
     def edit_distance(entry)
-      Levenshtein.distance(self.seq, entry.seq)
+      Levenshtein.distance(@seq, entry.seq)
     end
 
     # Method that generates a random sequence of a given length and type.
     def generate(length, type)
-      raise SeqError, "Cannot generate sequence length < 1: #{length}" if length <= 0
+      fail SeqError, "Cannot generate seq length < 1: #{length}" if length <= 0
 
       case type
       when :dna     then alph = DNA
       when :rna     then alph = RNA
       when :protein then alph = PROTEIN
       else
-        raise SeqError, "Unknown sequence type: #{type}"
+        fail SeqError, "Unknown sequence type: #{type}"
       end
 
-      seq_new   = Array.new(length) { alph[rand(alph.size)] }.join("")
-      self.seq  = seq_new
-      self.type = type
+      seq_new = Array.new(length) { alph[rand(alph.size)] }.join('')
+      @seq    = seq_new
+      @type   = type
+
       seq_new
     end
 
     # Method to return a new Seq object with shuffled sequence.
     def shuffle
       Seq.new(
-        seq_name: self.seq_name,
-        seq:      self.seq.split('').shuffle!.join,
-        type:     self.type,
-        qual:     self.qual
+        seq_name: @seq_name,
+        seq:      @seq.split('').shuffle!.join,
+        type:     @type,
+        qual:     @qual
       )
     end
 
     # Method to shuffle a sequence randomly inline.
     def shuffle!
-      self.seq = self.seq.split('').shuffle!.join
+      @seq = @seq.split('').shuffle!.join
       self
     end
 
     # Method to add two Seq objects.
-    def +(entry)
-      new_entry = Seq.new()
-      new_entry.seq  = self.seq  + entry.seq
-      new_entry.type = self.type              if self.type == entry.type
-      new_entry.qual = self.qual + entry.qual if self.qual and entry.qual
+    def +(other)
+      new_entry = Seq.new
+      new_entry.seq  = @seq + other.seq
+      new_entry.type = @type              if @type == other.type
+      new_entry.qual = @qual + other.qual if @qual && other.qual
       new_entry
     end
 
     # Method to concatenate sequence entries.
     def <<(entry)
-      raise SeqError, "sequences of different types" unless self.type == entry.type
-      raise SeqError, "qual is missing in one entry" unless self.qual.class == entry.qual.class
+      fail SeqError, 'sequences of different types' unless @type == entry.type
+      fail SeqError, 'qual is missing in one entry' unless @qual.class ==
+                                                           entry.qual.class
 
-      self.seq  << entry.seq
-      self.qual << entry.qual unless entry.qual.nil?
+      @seq << entry.seq
+      @qual << entry.qual unless entry.qual.nil?
 
       self
     end
@@ -415,18 +421,18 @@ module BioDSL
     # Index method for Seq objects.
     def [](*args)
       entry = Seq.new
-      entry.seq_name = self.seq_name.dup unless self.seq_name.nil?
-      entry.seq      = self.seq[*args] || ""
-      entry.type     = self.type
-      entry.qual     = self.qual[*args] || "" unless self.qual.nil?
+      entry.seq_name = @seq_name.dup unless @seq_name.nil?
+      entry.seq      = @seq[*args] || ''
+      entry.type     = @type
+      entry.qual     = @qual[*args] || '' unless @qual.nil?
 
       entry
     end
 
     # Index assignment method for Seq objects.
     def []=(*args, entry)
-      self.seq[*args]  = entry.seq[*args]
-      self.qual[*args] = entry.qual[*args] unless self.qual.nil?
+      @seq[*args]  = entry.seq[*args]
+      @qual[*args] = entry.qual[*args] unless @qual.nil?
 
       self
     end
@@ -437,7 +443,7 @@ module BioDSL
     def composition
       comp = Hash.new(0);
 
-      self.seq.upcase.each_char do |char|
+      @seq.upcase.each_char do |char|
         comp[char] += 1
       end
 
@@ -447,30 +453,33 @@ module BioDSL
     # Method that returns the percentage of hard masked residues
     # or N's in a sequence.
     def hard_mask
-      ((self.seq.upcase.scan("N").size.to_f / (self.len - self.indels).to_f) * 100).round(2)
+      ((@seq.upcase.scan('N').size.to_f / (length - indels).to_f) * 100).
+        round(2)
     end
 
     # Method that returns the percentage of soft masked residues
     # or lower cased residues in a sequence.
     def soft_mask
-      ((self.seq.scan(/[a-z]/).size.to_f / (self.len - self.indels).to_f) * 100).round(2)
+      ((@seq.scan(/[a-z]/).size.to_f / (length - indels).to_f) * 100).round(2)
     end
 
-    # Hard masks sequence residues where the corresponding quality score
-    # is below a given cutoff.
+    # Hard masks sequence residues where the corresponding quality scoreis below
+    # a given cutoff.
     def mask_seq_hard!(cutoff)
-      raise SeqError, "seq is nil"  if self.seq.nil?
-      raise SeqError, "qual is nil" if self.qual.nil?
-      raise SeqError, "cufoff value: #{cutoff} out of range #{SCORE_MIN} .. #{SCORE_MAX}" unless (SCORE_MIN .. SCORE_MAX).include? cutoff
+      fail SeqError, 'seq is nil'  if @seq.nil?
+      fail SeqError, 'qual is nil' if @qual.nil?
+      fail SeqError, "cufoff value: #{cutoff} out of range: " \
+                      "#{SCORE_MIN}..#{SCORE_MAX}" unless (SCORE_MIN..SCORE_MAX).
+                                                          include? cutoff
 
-      na_seq  = NArray.to_na(self.seq.upcase, "byte")
-      na_qual = NArray.to_na(self.qual, "byte")
+      na_seq  = NArray.to_na(@seq.upcase, 'byte')
+      na_qual = NArray.to_na(@qual, 'byte')
       mask    = (na_qual - SCORE_BASE) < cutoff
-      mask   *= na_seq.ne("-".ord)
+      mask *= na_seq.ne('-'.ord)
 
       na_seq[mask] = 'N'.ord
 
-      self.seq = na_seq.to_s
+      @seq = na_seq.to_s
 
       self
     end
@@ -479,18 +488,20 @@ module BioDSL
     # is below a given cutoff. Masked sequence will be lowercased and
     # remaining will be uppercased.
     def mask_seq_soft!(cutoff)
-      raise SeqError, "seq is nil"  if self.seq.nil?
-      raise SeqError, "qual is nil" if self.qual.nil?
-      raise SeqError, "cufoff value: #{cutoff} out of range #{SCORE_MIN} .. #{SCORE_MAX}" unless (SCORE_MIN .. SCORE_MAX).include? cutoff
+      fail SeqError, 'seq is nil'  if @seq.nil?
+      fail SeqError, 'qual is nil' if @qual.nil?
+      fail SeqError, "cufoff value: #{cutoff} out of range: " \
+                     "#{SCORE_MIN} .. #{SCORE_MAX}" unless (SCORE_MIN..SCORE_MAX).
+                                                           include? cutoff
 
-      na_seq  = NArray.to_na(self.seq.upcase, "byte")
-      na_qual = NArray.to_na(self.qual, "byte")
+      na_seq  = NArray.to_na(@seq.upcase, 'byte')
+      na_qual = NArray.to_na(@qual, 'byte')
       mask    = (na_qual - SCORE_BASE) < cutoff
-      mask   *= na_seq.ne("-".ord)
+      mask *= na_seq.ne('-'.ord)
 
       na_seq[mask] ^= ' '.ord
 
-      self.seq = na_seq.to_s
+      @seq = na_seq.to_s
 
       self
     end
@@ -498,22 +509,22 @@ module BioDSL
     # Method that determines if a quality score string can be
     # absolutely identified as base 33.
     def qual_base33?
-      self.qual.match(/[!-:]/) ? true : false
+      @qual.match(/[!-:]/) ? true : false
     end
-   
+
     # Method that determines if a quality score string may be base 64.
     def qual_base64?
-      self.qual.match(/[K-h]/) ? true : false
+      @qual.match(/[K-h]/) ? true : false
     end
 
     # Method to determine if a quality score is valid accepting only 0-40 range.
     def qual_valid?(encoding)
-      raise SeqError, "Missing qual" if self.qual.nil?
+      fail SeqError, 'Missing qual' if @qual.nil?
 
       case encoding
-      when :base_33 then return true if self.qual.match(/^[!-I]*$/)
-      when :base_64 then return true if self.qual.match(/^[@-h]*$/)
-      else raise SeqError, "unknown quality score encoding: #{encoding}"
+      when :base_33 then return true if @qual.match(/^[!-I]*$/)
+      when :base_64 then return true if @qual.match(/^[@-h]*$/)
+      else fail SeqError, "unknown quality score encoding: #{encoding}"
       end
 
       false
@@ -521,28 +532,34 @@ module BioDSL
 
     # Method to coerce quality scores to be within the 0-40 range.
     def qual_coerce!(encoding)
-      raise SeqError, "Missing qual" if self.qual.nil?
+      fail SeqError, 'Missing qual' if @qual.nil?
 
       case encoding
-      when :base_33 then qual_coerce_C(self.qual, self.qual.length, 33, 73)  # !-J
-      when :base_64 then qual_coerce_C(self.qual, self.qual.length, 64, 104) # @-h
+      when :base_33 then qual_coerce_C(@qual, @qual.length, 33, 73)  # !-J
+      when :base_64 then qual_coerce_C(@qual, @qual.length, 64, 104) # @-h
       else
-        raise SeqError, "unknown quality score encoding: #{encoding}"
-      end 
+        fail SeqError, "unknown quality score encoding: #{encoding}"
+      end
 
       self
     end
 
     # Method to convert quality scores.
     def qual_convert!(from, to)
-      raise SeqError, "unknown quality score encoding: #{from}" unless from == :base_33 or from == :base_64
-      raise SeqError, "unknown quality score encoding: #{to}"   unless to   == :base_33 or to   == :base_64
+      unless from == :base_33 || from == :base_64
+        fail SeqError, "unknown quality score encoding: #{from}"
+      end
 
-      if from == :base_33 and to == :base_64
-        qual_convert_C(self.qual, self.qual.length, 31)    # += 64 - 33
-      elsif from == :base_64 and to == :base_33
-        qual_coerce_C(self.qual, self.qual.length, 64, 104) # Handle negative Solexa values from -5 to -1 (set these to 0).
-        qual_convert_C(self.qual, self.qual.length, -31)    # -= 64 - 33
+      unless to == :base_33 || to == :base_64
+        fail SeqError, "unknown quality score encoding: #{to}"
+      end
+
+      if from == :base_33 && to == :base_64
+        qual_convert_C(@qual, @qual.length, 31) # += 64 - 33
+      elsif from == :base_64 && to == :base_33
+        # Handle negative Solexa values from -5 to -1 (set these to 0).
+        qual_coerce_C(@qual, @qual.length, 64, 104)
+        qual_convert_C(@qual, @qual.length, -31) # -= 64 - 33
       end
 
       self
@@ -550,9 +567,9 @@ module BioDSL
 
     # Method to calculate and return the mean quality score.
     def scores_mean
-      raise SeqError, "Missing qual in entry" if self.qual.nil?
+      fail SeqError, 'Missing qual in entry' if @qual.nil?
 
-      na_qual = NArray.to_na(self.qual, "byte")
+      na_qual = NArray.to_na(@qual, 'byte')
       na_qual -= SCORE_BASE
 
       na_qual.mean
@@ -560,9 +577,9 @@ module BioDSL
 
     # Method to calculate and return the min quality score.
     def scores_min
-      raise SeqError, "Missing qual in entry" if self.qual.nil?
+      fail SeqError, 'Missing qual in entry' if @qual.nil?
 
-      na_qual = NArray.to_na(self.qual, "byte")
+      na_qual = NArray.to_na(@qual, 'byte')
       na_qual -= SCORE_BASE
 
       na_qual.min
@@ -570,9 +587,9 @@ module BioDSL
 
     # Method to calculate and return the max quality score.
     def scores_max
-      raise SeqError, "Missing qual in entry" if self.qual.nil?
+      fail SeqError, 'Missing qual in entry' if @qual.nil?
 
-      na_qual = NArray.to_na(self.qual, "byte")
+      na_qual = NArray.to_na(@qual, 'byte')
       na_qual -= SCORE_BASE
 
       na_qual.max
@@ -582,17 +599,17 @@ module BioDSL
     # scores string and calculate for each window the mean score and return
     # the minimum mean score.
     def scores_mean_local(window_size)
-      raise SeqError, "Missing qual in entry" if self.qual.nil?
+      fail SeqError, 'Missing qual in entry' if @qual.nil?
 
-      scores_mean_local_C(self.qual, self.qual.length, SCORE_BASE, window_size)
+      scores_mean_local_C(@qual, @qual.length, SCORE_BASE, window_size)
     end
 
     # Method to find open reading frames (ORFs).
     def each_orf(options = {})
-      size_min     = options[:size_min]     || 0
-      size_max     = options[:size_max]     || self.length
-      start_codons = options[:start_codons] || "ATG,GTG,AUG,GUG"
-      stop_codons  = options[:stop_codons]  || "TAA,TGA,TAG,UAA,UGA,UAG"
+      size_min     = options[:size_min] || 0
+      size_max     = options[:size_max] || length
+      start_codons = options[:start_codons] || 'ATG,GTG,AUG,GUG'
+      stop_codons  = options[:stop_codons] || 'TAA,TGA,TAG,UAA,UGA,UAG'
       pick_longest = options[:pick_longest]
 
       orfs    = []
@@ -601,22 +618,23 @@ module BioDSL
       regex_start = Regexp.new(start_codons.split(',').join('|'), true)
       regex_stop  = Regexp.new(stop_codons.split(',').join('|'), true)
 
-      while pos_beg and pos_beg < self.length - size_min
-        if pos_beg = self.seq.index(regex_start, pos_beg)
-          if pos_end = self.seq.index(regex_stop, pos_beg)
-            length = (pos_end - pos_beg) + 3
+      while pos_beg && pos_beg < length - size_min
+        pos_beg = @seq.index(regex_start, pos_beg)
+        next unless pos_beg
+        pos_end = @seq.index(regex_stop, pos_beg)
+        next unless pos_end
 
-            if (length % 3) == 0
-              if size_min <= length and length <= size_max
-                subseq = self[pos_beg ... pos_beg + length]
+        orf_length = (pos_end - pos_beg) + 3
 
-                orfs << Orf.new(subseq, pos_beg, pos_end + 2)
-              end
-            end
+        if (orf_length % 3) == 0
+          if size_min <= orf_length && orf_length <= size_max
+            subseq = self[pos_beg...pos_beg + orf_length]
+
+            orfs << Orf.new(subseq, pos_beg, pos_end + 2)
           end
-
-          pos_beg += 1
         end
+
+        pos_beg += 1
       end
 
       if pick_longest
@@ -634,17 +652,8 @@ module BioDSL
       end
     end
 
-    class Orf
-      attr_reader :entry, :start, :stop
-
-      def initialize(entry, start, stop)
-        @entry = entry
-        @start = start
-        @stop  = stop
-      end
-    end
-
-    private
+    # Struct for holding an ORF.
+    Orf = Struct.new(:entry, :start, :stop)
 
     inline do |builder|
       builder.c %{
