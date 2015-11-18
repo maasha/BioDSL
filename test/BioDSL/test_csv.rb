@@ -1,41 +1,44 @@
 #!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                              #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (www.BioDSL.org).                            #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
+# Patching StingIO class.
 class StringIO
   def get_entry
     self.gets
   end
 end
 
-class TestCSV < Test::Unit::TestCase 
+# Test class for CSV.
+class TestCSV < Test::Unit::TestCase
   require 'stringio'
   require 'tempfile'
 
@@ -84,14 +87,14 @@ END
     @file.unlink
   end
 
-  test "CSV#skip returns correctly" do
+  test 'CSV#skip returns correctly' do
     @csv.skip(3)
 
     result = []
     @csv.each_array { |array| result << array }
 
-    expected = [["Mouse", "GACTG", 234],
-                ["Cat", "AAATGCA", 2342]]
+    expected = [['Mouse', 'GACTG', 234],
+                ['Cat', 'AAATGCA', 2342]]
 
     assert_equal(expected, result)
   end

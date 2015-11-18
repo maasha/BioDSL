@@ -1,35 +1,36 @@
 #!/usr/bin/env ruby
-$:.unshift File.join(File.dirname(__FILE__), '..', '..')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', '..')
 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                              #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (www.BioDSL.org).                            #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 require 'test/helper'
 
-class TestTaxonomy < Test::Unit::TestCase 
+class TestTaxonomy < Test::Unit::TestCase
   def setup
     @tmpdir = Dir.mktmpdir("Taxonomy")
 
@@ -40,7 +41,7 @@ class TestTaxonomy < Test::Unit::TestCase
     @index2.add(BioDSL::Seq.new(seq_name: "K#b;P#f;C#;O#;F#;G#;S#",  seq: "aagu"))
     @index2.add(BioDSL::Seq.new(seq_name: "K#b;P#;C#;O#;F#;G#;S#",   seq: "aag"))
     @index2.add(BioDSL::Seq.new(seq_name: "K#b;P#e;C#g;O#;F#;G#;S#", seq: "aagag"))
-    
+
     @index3 = BioDSL::Taxonomy::Index.new(kmer_size: 3, step_size: 1, output_dir: @tmpdir, prefix: "test")
     @index3.add(BioDSL::Seq.new(seq_name: "K#a;P#b;C#;O#;F#;G#;S#",      seq: "aagc"))
     @index3.add(BioDSL::Seq.new(seq_name: "K#a;P#c;C#d;O#;F#;G#;S#",     seq: "aagag"))
@@ -103,7 +104,7 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal("e",     @index.get_node(2).name)
     assert_equal([],      @index.get_node(0).kmers.to_a)
     assert_equal([],      @index.get_node(1).kmers.to_a)
-    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # aag=000011=3, aga=001100=12 
+    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # aag=000011=3, aga=001100=12
   end
 
   test "BioDSL::Taxonomy::Index#add with edge split returns correctly" do
@@ -116,8 +117,8 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal("f",     @index.get_node(3).name)
     assert_equal([],      @index.get_node(0).kmers.to_a)
     assert_equal([],      @index.get_node(1).kmers.to_a)
-    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # aag=000011=3, aga=001100=12 
-    assert_equal([3, 13], @index.get_node(3).kmers.to_a) # aag=000011=3, agu=001101=13 
+    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # aag=000011=3, aga=001100=12
+    assert_equal([3, 13], @index.get_node(3).kmers.to_a) # aag=000011=3, agu=001101=13
   end
 
   test "BioDSL::Taxonomy::Index#add to existing non-leaf node returns correctly" do
@@ -131,8 +132,8 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal("f",     @index.get_node(3).name)
     assert_equal([],      @index.get_node(0).kmers.to_a)
     assert_equal([3],     @index.get_node(1).kmers.to_a) # aag=000011=3
-    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # aag=000011=3, aga=001100=12 
-    assert_equal([3, 13], @index.get_node(3).kmers.to_a) # aag=000011=3, agu=001101=13 
+    assert_equal([3, 12], @index.get_node(2).kmers.to_a) # aag=000011=3, aga=001100=12
+    assert_equal([3, 13], @index.get_node(3).kmers.to_a) # aag=000011=3, agu=001101=13
   end
 
   test "BioDSL::Taxonomy::Index#add exteding existing leaf node returns correctly" do
@@ -148,9 +149,9 @@ class TestTaxonomy < Test::Unit::TestCase
     assert_equal("g",         @index.get_node(4).name)
     assert_equal([],          @index.get_node(0).kmers.to_a.sort)
     assert_equal([3],         @index.get_node(1).kmers.to_a.sort) # aag=000011=3
-    assert_equal([3, 12],     @index.get_node(2).kmers.to_a.sort) # aag=000011=3, aga=001100=12 
-    assert_equal([3, 13],     @index.get_node(3).kmers.to_a.sort) # aag=000011=3, agu=001101=13 
-    assert_equal([3, 12, 51], @index.get_node(4).kmers.to_a.sort) # aag=000011=3, aga=001101=12, gag=110011=51 
+    assert_equal([3, 12],     @index.get_node(2).kmers.to_a.sort) # aag=000011=3, aga=001100=12
+    assert_equal([3, 13],     @index.get_node(3).kmers.to_a.sort) # aag=000011=3, agu=001101=13
+    assert_equal([3, 12, 51], @index.get_node(4).kmers.to_a.sort) # aag=000011=3, aga=001101=12, gag=110011=51
   end
 
   test "BioDSL::Taxonomy::Index#tree_union returns correctly" do

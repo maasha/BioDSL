@@ -233,12 +233,12 @@ class TestOptionsHelper < Test::Unit::TestCase
   end
 
   test '#options_glob returns correctly' do
-    glob    = __FILE__[0..-3] + '*'
+    glob = __FILE__[0..-3] + '*'
     assert_equal([__FILE__], options_glob(glob))
   end
 
   test '#options_glob with Array returns correctly' do
-    glob    = __FILE__[0..-3] + '*'
+    glob = __FILE__[0..-3] + '*'
     assert_equal([__FILE__, __FILE__], options_glob([glob, glob]))
   end
 
