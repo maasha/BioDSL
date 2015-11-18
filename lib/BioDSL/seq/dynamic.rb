@@ -1,35 +1,36 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                              #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (www.BioDSL.org).                            #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioDSL
   # Error class for Dynamic.
   class DynamicError < StandardError; end
 
-  # Module containing code to locate nucleotide patterns in sequences allowing for
-  # ambiguity codes and a given maximum edit distance.
+  # Module containing code to locate nucleotide patterns in sequences allowing
+  # for ambiguity codes and a given maximum edit distance.
   # Insertions are nucleotides found in the pattern but not in the sequence.
   # Deletions are nucleotides found in the sequence but not in the pattern.
   #
@@ -38,7 +39,7 @@ module BioDSL
   module Dynamic
     extend BioDSL::Ambiguity
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #   str.patmatch(pattern[, pos[, max_edit_distance]])
     #   -> Match or nil
     #   str.patscan(pattern[, pos[, max_edit_distance]]) { |match|
@@ -46,16 +47,16 @@ module BioDSL
     #   }
     #   -> Match
     #
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Method to iterate through a sequence to locate the first pattern match
     # starting from a given position and allowing for a maximum edit distance.
     def patmatch(pattern, pos = 0, max_edit_distance = 0)
-      self.patscan(pattern, pos, max_edit_distance) do |m|
+      patscan(pattern, pos, max_edit_distance) do |m|
         return m
       end
     end
 
-    # ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #   str.patscan(pattern[, pos[, max_edit_distance]])
     #   -> Array or nil
     #   str.patscan(pattern[, pos[, max_edit_distance]]) { |match|
@@ -63,16 +64,17 @@ module BioDSL
     #   }
     #   -> Match
     #
-    # ------------------------------------------------------------------------------
-    # Method to iterate through a sequence to locate pattern matches starting from a
-    # given position and allowing for a maximum edit distance. Matches found in
-    # block context return the Match object. Otherwise matches are returned in an
-    # Array.
+    # --------------------------------------------------------------------------
+    # Method to iterate through a sequence to locate pattern matches starting
+    # from a given position and allowing for a maximum edit distance. Matches
+    # found in block context return the Match object. Otherwise matches are
+    # returned in an Array.
     def patscan(pattern, pos = 0, max_edit_distance = 0)
       matches = []
 
-      while result = match_C(self.seq, self.length, pattern, pattern.length, pos, max_edit_distance)
-        match = Match.new(*result, self.seq[result[0] ... result[0] + result[1]]);
+      while (result = match_C(@seq, length, pattern, pattern.length, pos,
+                              max_edit_distance))
+        match = Match.new(*result, @seq[result[0]...result[0] + result[1]])
 
         if block_given?
           yield match
@@ -244,20 +246,6 @@ module BioDSL
       }
     end
 
-    class Match
-      attr_accessor :beg, :length, :mis, :ins, :del, :match
-
-      def initialize(beg, length, mis, ins, del, match)
-        @beg    = beg
-        @length = length
-        @mis    = mis
-        @ins    = ins
-        @del    = del
-        @match  = match
-      end
-    end
+    Match = Struct.new(:beg, :length, :mis, :ins, :del, :match)
   end
 end
-
-
-__END__
