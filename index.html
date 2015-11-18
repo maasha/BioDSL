@@ -307,6 +307,26 @@ by adding the following line:</p>
 </ul>
 
 <h1>
+<a id="running-the-test-suite" class="anchor" href="#running-the-test-suite" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running the test suite</h1>
+
+<p>BioDSL have an extended set of unit tests that can be run after installing development dependencies. First you need to install the bundler gem:</p>
+
+<pre><code>$ gem install bundler
+</code></pre>
+
+<p>Next you need to change to the source directory of BioDSL and run bundler to download depending gems:</p>
+
+<pre><code>$ bundle install
+</code></pre>
+
+<p>And then you run the test suite by running <code>rake</code>:</p>
+
+<pre><code>$ rake
+</code></pre>
+
+<p>And the unit tests should all run, except those omitted because a third-party executable was missing.</p>
+
+<h1>
 <a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h1>
 
 <ol>
