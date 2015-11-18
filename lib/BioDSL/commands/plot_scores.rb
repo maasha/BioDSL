@@ -113,7 +113,7 @@ module BioDSL
     STATS = %i(records_in records_out sequences_in sequences_out residues_in
                residues_out)
 
-    SCORES_MAX = 100_000   # Maximum score string length.
+    SCORES_MAX = 100_000 # Maximum score string length.
 
     # Constructor for PlotScores.
     #
@@ -180,9 +180,9 @@ module BioDSL
     # Set default options.
     def default
       @options[:terminal] ||= :dumb
-      @options[:title]    ||= 'Mean Quality Scores'
-      @options[:xlabel]   ||= 'Sequence Position'
-      @options[:ylabel]   ||= 'Mean Score'
+      @options[:title] ||= 'Mean Quality Scores'
+      @options[:xlabel] ||= 'Sequence Position'
+      @options[:ylabel] ||= 'Mean Score'
     end
 
     # Collect plot data from a given record.
@@ -196,7 +196,7 @@ module BioDSL
 
       score_vec = NArray.to_na(scores, 'byte') - Seq::SCORE_BASE
       @scores_vec[0...scores.length] += score_vec
-      @count_vec[0...scores.length]  += 1
+      @count_vec[0...scores.length] += 1
 
       @max = scores.length if scores.length > @max
     end
@@ -212,7 +212,7 @@ module BioDSL
 
     # Prepare data to plot.
     def prepare_plot_data
-      @max = 1 if @max == 0   # ugly fix to avaid index error
+      @max = 1 if @max == 0 # ugly fix to avaid index error
 
       count_vec  = @count_vec[0...@max].to_f
       count_vec *= (Seq::SCORE_MAX / @count_vec.max(0).to_f)

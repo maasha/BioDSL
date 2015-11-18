@@ -91,7 +91,7 @@ module BioDSL
     #
     # @return [WriteFastq] Class instance.
     def initialize(options)
-      @options            = options
+      @options = options
       check_options
       @options[:output] ||= $stdout
       @compress           = choose_compression
@@ -139,7 +139,7 @@ module BioDSL
 
         if record[:SEQ]
           @status[:sequences_in] += 1
-          @status[:residues_in]  += record[:SEQ].length
+          @status[:residues_in] += record[:SEQ].length
 
           write_fastq(record, ios) if record[:SEQ_NAME] && record[:SCORES]
         end
@@ -162,7 +162,7 @@ module BioDSL
 
       ios.puts entry.to_fastq
       @status[:sequences_out] += 1
-      @status[:residues_out]  += entry.length
+      @status[:residues_out] += entry.length
     end
 
     # Choose compression to use which can either be gzip or bzip2 or no

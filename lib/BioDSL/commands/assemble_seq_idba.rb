@@ -26,8 +26,6 @@
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
 module BioDSL
-  # rubocop:disable ClassLength
-
   # == Assemble sequences the stream using IDBA_UD.
   #
   # +assemble_seq_idba+ is a wrapper around the prokaryotic metagenome
@@ -99,7 +97,7 @@ module BioDSL
         TmpDir.create('reads.fna', 'contig.fa') do |fa_in, fa_out, tmp_dir|
           process_input(input, output, fa_in)
           execute_idba(fa_in, tmp_dir)
-          lengths = process_output(output, fa_out)
+          process_output(output, fa_out)
         end
 
         calc_n50(status)
@@ -123,7 +121,7 @@ module BioDSL
     def defaults
       @options[:kmer_min] ||= 24
       @options[:kmer_max] ||= 48
-      @options[:cpus]     ||= 1
+      @options[:cpus] ||= 1
     end
 
     # Read all records from input and emit non-sequence records to the output
@@ -141,7 +139,7 @@ module BioDSL
             entry = BioDSL::Seq.new_bp(record)
 
             @status[:sequences_in] += 1
-            @status[:residues_in]  += entry.length
+            @status[:residues_in] += entry.length
 
             fasta_io.puts entry.to_fasta
           else
@@ -193,9 +191,9 @@ module BioDSL
       BioDSL::Fasta.open(fa_out, 'r') do |ios|
         ios.each do |entry|
           output << entry.to_bp
-          @status[:records_out]   += 1
+          @status[:records_out] += 1
           @status[:sequences_out] += 1
-          @status[:residues_out]  += entry.length
+          @status[:residues_out] += entry.length
 
           @lengths << entry.length
         end
@@ -212,7 +210,7 @@ module BioDSL
       @lengths.reverse!
 
       status[:contig_max] = @lengths.first || 0
-      status[:contig_min] = @lengths.last  || 0
+      status[:contig_min] = @lengths.last || 0
       status[:contig_n50] = 0
 
       count = 0

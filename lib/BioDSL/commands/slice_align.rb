@@ -231,7 +231,7 @@ module BioDSL
     def defaults
       @max_mis = @options[:max_mismatches] || 2
       @max_ins = @options[:max_insertions] || 1
-      @max_del = @options[:max_deletions]  || 1
+      @max_del = @options[:max_deletions] || 1
     end
 
     # Parse FASTA file with one gapped template sequence if specified.
@@ -312,7 +312,7 @@ module BioDSL
       entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       setup_slice(entry) unless @slice
 
@@ -321,7 +321,7 @@ module BioDSL
       record.merge! entry.to_bp
 
       @status[:sequences_out] += 1
-      @status[:residues_out]  += entry.length
+      @status[:residues_out] += entry.length
     end
 
     # Usings primers to locate slice positions in entry.

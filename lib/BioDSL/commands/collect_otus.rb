@@ -142,7 +142,7 @@ module BioDSL
 
         output << record
 
-        @status[:hits_out]    += 1
+        @status[:hits_out] += 1
         @status[:records_out] += 1
       end
     end

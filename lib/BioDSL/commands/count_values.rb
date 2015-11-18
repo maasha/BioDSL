@@ -74,7 +74,7 @@ module BioDSL
     #
     # @return [CountValues] Instance of class.
     def initialize(options)
-      @options    = options
+      @options = options
 
       check_options
 

@@ -185,12 +185,12 @@ module BioDSL
 
     # Set default options.
     def defaults
-      @options[:prefix]    ||= 'taxonomy'
+      @options[:prefix] ||= 'taxonomy'
       @options[:kmer_size] ||= 8
       @options[:step_size] ||= 1
-      @options[:hits_max]  ||= 50
+      @options[:hits_max] ||= 50
       @options[:consensus] ||= 0.51
-      @options[:coverage]  ||= 0.9
+      @options[:coverage] ||= 0.9
       @options[:best_only] = true if @options[:best_only].nil?
     end
 
@@ -200,14 +200,14 @@ module BioDSL
     # @param i      [Fixnum]                      Record number,
     # @param search [BioDSL::Taxonomy::Search] Search object.
     def classify_seq(record, i, search)
-      @status[:sequences_in]  += 1
+      @status[:sequences_in] += 1
       @status[:sequences_out] += 1
-      @status[:residues_in]   += record[:SEQ].length
-      @status[:residues_out]  += record[:SEQ].length
+      @status[:residues_in] += record[:SEQ].length
+      @status[:residues_out] += record[:SEQ].length
       seq_name = record[:SEQ_NAME] || i.to_s
 
       result = search.execute(BioDSL::Seq.new(seq_name: seq_name,
-                                                 seq: record[:SEQ]))
+                                              seq: record[:SEQ]))
 
       record[:TAXONOMY]      = result.taxonomy
       record[:TAXONOMY_HITS] = result.hits

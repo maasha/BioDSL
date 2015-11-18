@@ -166,15 +166,15 @@ module BioDSL
     #
     # @param seq [String] - Sequence to analyze.
     def analyze_residues(seq)
-      @status[:sequences_in]  += 1
+      @status[:sequences_in] += 1
       @status[:sequences_out] += 1
-      @status[:residues_in]   += seq.length
-      @status[:residues_out]  += seq.length
+      @status[:residues_in] += seq.length
+      @status[:residues_out] += seq.length
 
       seq.upcase.chars.each_with_index do |char, i|
         c = char.to_sym
         @counts[i][c] += 1
-        @total[i]     += 1
+        @total[i] += 1
         @residues.add(c)
       end
     end

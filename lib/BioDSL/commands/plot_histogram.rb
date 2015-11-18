@@ -167,9 +167,9 @@ module BioDSL
     # Set default values for options hash.
     def defaults
       @options[:terminal] ||= :dumb
-      @options[:title]    ||= 'Histogram'
-      @options[:xlabel]   ||= @options[:key]
-      @options[:ylabel]   ||= 'n'
+      @options[:title] ||= 'Histogram'
+      @options[:xlabel] ||= @options[:key]
+      @options[:ylabel] ||= 'n'
 
       @options[:ylogscale] &&
         @options[:ylabel] = "log10(#{@options[:ylabel]})"

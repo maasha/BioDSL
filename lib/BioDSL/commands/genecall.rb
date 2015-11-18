@@ -160,7 +160,7 @@ module BioDSL
 
     # Set the default option values.
     def defaults
-      @options[:type]      ||= :dna
+      @options[:type] ||= :dna
       @options[:procedure] ||= :single
     end
 
@@ -179,10 +179,10 @@ module BioDSL
             entry = BioDSL::Seq.new(seq_name: i, seq: record[:SEQ])
             @names[i] = record[:SEQ_NAME] || i
 
-            @status[:sequences_in]  += 1
+            @status[:sequences_in] += 1
             @status[:sequences_out] += 1
-            @status[:residues_in]   += entry.length
-            @status[:residues_out]  += entry.length
+            @status[:residues_in] += entry.length
+            @status[:residues_out] += entry.length
 
             fasta_io.puts entry.to_fasta
           end
@@ -205,9 +205,9 @@ module BioDSL
         ios.each do |entry|
           output << parse_entry(entry)
 
-          @status[:records_out]   += 1
+          @status[:records_out] += 1
           @status[:sequences_out] += 1
-          @status[:residues_out]  += entry.length
+          @status[:residues_out] += entry.length
         end
       end
     end

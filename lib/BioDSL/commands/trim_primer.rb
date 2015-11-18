@@ -131,10 +131,10 @@ module BioDSL
     # @return [TrimPrimer] Class instance.
     def initialize(options)
       @options = options
-      @options[:overlap_min]       ||= 1
-      @options[:mismatch_percent]  ||= 0
+      @options[:overlap_min] ||= 1
+      @options[:mismatch_percent] ||= 0
       @options[:insertion_percent] ||= 0
-      @options[:deletion_percent]  ||= 0
+      @options[:deletion_percent] ||= 0
       @pattern = pattern
       @hit     = false
 
@@ -198,7 +198,7 @@ module BioDSL
     def trim_forward(record)
       entry = BioDSL::Seq.new_bp(record)
 
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       while @pattern.length >= @options[:overlap_min]
         if (match = match_forward(entry))
@@ -248,7 +248,7 @@ module BioDSL
     def trim_reverse(record)
       entry = BioDSL::Seq.new_bp(record)
 
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       while @pattern.length >= @options[:overlap_min]
         if (match = match_reverse(entry))
@@ -302,9 +302,9 @@ module BioDSL
     #
     # @return [Hash] Match options hash.
     def match_options(length)
-      mis = (length * @options[:mismatch_percent]  * 0.01).round
+      mis = (length * @options[:mismatch_percent] * 0.01).round
       ins = (length * @options[:insertion_percent] * 0.01).round
-      del = (length * @options[:deletion_percent]  * 0.01).round
+      del = (length * @options[:deletion_percent] * 0.01).round
 
       {max_mismatches: mis,
        max_insertions: ins,

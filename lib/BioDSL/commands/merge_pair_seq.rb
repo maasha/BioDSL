@@ -122,9 +122,9 @@ module BioDSL
           if record1[:SEQ] && record2[:SEQ]
             output << merge_pair_seq(record1, record2)
 
-            @status[:sequences_in]  += 2
+            @status[:sequences_in] += 2
             @status[:sequences_out] += 1
-            @status[:records_out]   += 1
+            @status[:records_out] += 1
           else
             output.puts record1, record2
 

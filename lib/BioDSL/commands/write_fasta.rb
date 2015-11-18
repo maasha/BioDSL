@@ -137,17 +137,15 @@ module BioDSL
 
         if (entry = record2entry(record))
           $stdout.puts entry.to_fasta(wrap)
-          @status[:sequences_in]  += 1
+          @status[:sequences_in] += 1
           @status[:sequences_out] += 1
-          @status[:residues_in]   += entry.length
-          @status[:residues_out]  += entry.length
+          @status[:residues_in] += entry.length
+          @status[:residues_out] += entry.length
         end
 
         write_output(output, record)
       end
     end
-
-    # rubocop: disable Metrics/AbcSize
 
     # Write all sequence entries to a specified file.
     #
@@ -160,10 +158,10 @@ module BioDSL
 
           if (entry = record2entry(record))
             ios.puts entry.to_fasta(@options[:wrap])
-            @status[:sequences_in]  += 1
+            @status[:sequences_in] += 1
             @status[:sequences_out] += 1
-            @status[:residues_in]   += entry.length
-            @status[:residues_out]  += entry.length
+            @status[:residues_in] += entry.length
+            @status[:residues_out] += entry.length
           end
 
           write_output(output, record)

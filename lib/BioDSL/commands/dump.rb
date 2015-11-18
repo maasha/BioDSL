@@ -63,7 +63,7 @@ module BioDSL
     #
     # @return [Dump] Returns an instance of the Dump class.
     def initialize(options)
-      @options     = options
+      @options = options
 
       check_options
     end

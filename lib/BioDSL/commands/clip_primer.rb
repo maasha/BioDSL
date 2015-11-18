@@ -166,16 +166,16 @@ module BioDSL
 
     # Set default option values.
     def defaults
-      @options[:mismatch_percent]  ||= 0
+      @options[:mismatch_percent] ||= 0
       @options[:insertion_percent] ||= 0
-      @options[:deletion_percent]  ||= 0
+      @options[:deletion_percent] ||= 0
     end
 
     # Calculate the mismatch percentage.
     #
     # @return [Float] Mismatch percentage.
     def calc_mis
-      (@primer.length * @options[:mismatch_percent]  * 0.01).round
+      (@primer.length * @options[:mismatch_percent] * 0.01).round
     end
 
     # Calculate the insertion percentage.
@@ -189,7 +189,7 @@ module BioDSL
     #
     # @return [Float] Deletion percentage.
     def calc_del
-      (@primer.length * @options[:deletion_percent]  * 0.01).round
+      (@primer.length * @options[:deletion_percent] * 0.01).round
     end
 
     # Reset any previous clip_primer results from record.
@@ -207,7 +207,7 @@ module BioDSL
       entry = BioDSL::Seq.new_bp(record)
 
       @status[:sequences_in] += 1
-      @status[:residues_in]  += entry.length
+      @status[:residues_in] += entry.length
 
       case @options[:direction]
       when :forward then clip_primer_forward(record, entry)
@@ -217,7 +217,7 @@ module BioDSL
       end
 
       @status[:sequences_out] += 1
-      @status[:residues_out]  += entry.length
+      @status[:residues_out] += entry.length
     end
 
     # Clip forward primer from entry and save clip information

@@ -159,7 +159,7 @@ module BioDSL
         record[:SCORES_MEAN] = mean
       end
 
-      @sum   += mean
+      @sum += mean
       @status[:min_mean] = mean if mean < @status[:min_mean]
       @status[:max_mean] = mean if mean > @status[:max_mean]
       @count += 1

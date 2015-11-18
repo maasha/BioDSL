@@ -82,7 +82,7 @@ module BioDSL
     #
     # @return [SplitValues] Class instance.
     def initialize(options)
-      @options     = options
+      @options = options
 
       check_options
 

@@ -162,7 +162,7 @@ module BioDSL
         ios.each(:uc) do |record|
           record[:RECORD_TYPE] = 'usearch'
           output << record
-          @status[:hits_out]    += 1
+          @status[:hits_out] += 1
           @status[:records_out] += 1
         end
       end

@@ -143,7 +143,7 @@ module BioDSL
         case
         when @options[:first] && @pair then read_first_pair(output)
         when @options[:first]          then read_first_single(output)
-        when @options[:last]  && @pair then read_last_pair(output)
+        when @options[:last] && @pair  then read_last_pair(output)
         when @options[:last]           then read_last_single(output)
         when @pair                     then read_all_pair(output)
         else
@@ -176,12 +176,12 @@ module BioDSL
       return unless input
 
       input.each do |record|
-        @status[:records_in]  += 1
+        @status[:records_in] += 1
         @status[:records_out] += 1
 
         if (seq = record[:SEQ])
           @status[:sequences_in] += 1
-          @status[:residues_in]  += seq.length
+          @status[:residues_in] += seq.length
         end
 
         output << record
@@ -197,10 +197,10 @@ module BioDSL
           ios.each do |entry|
             check_entry(entry)
             output << entry.to_bp
-            @status[:records_out]   += 1
+            @status[:records_out] += 1
             @status[:sequences_out] += 1
-            @status[:residues_out]  += entry.length
-            return if @status[:sequences_out] >= @options[:first]
+            @status[:residues_out] += entry.length
+            break if @status[:sequences_out] >= @options[:first]
           end
         end
       end
@@ -220,10 +220,10 @@ module BioDSL
               reverse_complement(entry2) if @options[:reverse_complement]
               output << entry1.to_bp
               output << entry2.to_bp
-              @status[:records_out]   += 2
+              @status[:records_out] += 2
               @status[:sequences_out] += 2
-              @status[:residues_out]  += entry1.length + entry2.length
-              return if @status[:sequences_out] >= @options[:first]
+              @status[:residues_out] += entry1.length + entry2.length
+              break if @status[:sequences_out] >= @options[:first]
             end
           end
         end
@@ -279,9 +279,9 @@ module BioDSL
           ios.each do |entry|
             check_entry(entry)
             output << entry.to_bp
-            @status[:records_out]   += 1
+            @status[:records_out] += 1
             @status[:sequences_out] += 1
-            @status[:residues_out]  += entry.length
+            @status[:residues_out] += entry.length
           end
         end
       end
@@ -299,9 +299,9 @@ module BioDSL
               reverse_complement(entry2) if @options[:reverse_complement]
               output << entry1.to_bp
               output << entry2.to_bp
-              @status[:records_out]   += 2
+              @status[:records_out] += 2
               @status[:sequences_out] += 2
-              @status[:residues_out]  += entry1.length + entry2.length
+              @status[:residues_out] += entry1.length + entry2.length
             end
           end
         end
@@ -405,9 +405,9 @@ module BioDSL
       @buffer.each do |entry|
         output << entry.to_bp
 
-        @status[:records_out]   += 1
+        @status[:records_out] += 1
         @status[:sequences_out] += 1
-        @status[:residues_out]  += entry.length
+        @status[:residues_out] += entry.length
       end
     end
   end

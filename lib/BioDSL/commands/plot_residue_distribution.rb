@@ -147,9 +147,9 @@ module BioDSL
     # Set default options.
     def defaults
       @options[:terminal] ||= :dumb
-      @options[:title]    ||= 'Residue Distribution'
-      @options[:xlabel]   ||= 'Sequence position'
-      @options[:ylabel]   ||= '%'
+      @options[:title] ||= 'Residue Distribution'
+      @options[:xlabel] ||= 'Sequence position'
+      @options[:ylabel] ||= '%'
     end
 
     # Given a record with a sequence count its residues.
@@ -157,12 +157,12 @@ module BioDSL
     # @param record [Hash] BioDSL record
     def count_residues(record)
       @status[:sequences_in] += 1
-      @status[:residues_in]  += record[:SEQ].length
+      @status[:residues_in] += record[:SEQ].length
 
       record[:SEQ].upcase.chars.each_with_index do |char, i|
         c = char.to_sym
         @counts[i][c] += 1
-        @total[i]     += 1
+        @total[i] += 1
         @residues.add(c)
       end
     end
