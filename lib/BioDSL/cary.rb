@@ -1,34 +1,37 @@
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                  #
-#                                                                                #
-# This program is free software; you can redistribute it and/or                  #
-# modify it under the terms of the GNU General Public License                    #
-# as published by the Free Software Foundation; either version 2                 #
-# of the License, or (at your option) any later version.                         #
-#                                                                                #
-# This program is distributed in the hope that it will be useful,                #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of                 #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  #
-# GNU General Public License for more details.                                   #
-#                                                                                #
-# You should have received a copy of the GNU General Public License              #
-# along with this program; if not, write to the Free Software                    #
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. #
-#                                                                                #
-# http://www.gnu.org/copyleft/gpl.html                                           #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
-#                                                                                #
-# This software is part of BioDSL (www.BioDSL.org).                              #
-#                                                                                #
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# Copyright (C) 2007-2015 Martin Asser Hansen (mail@maasha.dk).                #
+#                                                                              #
+# This program is free software; you can redistribute it and/or                #
+# modify it under the terms of the GNU General Public License                  #
+# as published by the Free Software Foundation; either version 2               #
+# of the License, or (at your option) any later version.                       #
+#                                                                              #
+# This program is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of               #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                #
+# GNU General Public License for more details.                                 #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with this program; if not, write to the Free Software                  #
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,    #
+# USA.                                                                         #
+#                                                                              #
+# http://www.gnu.org/copyleft/gpl.html                                         #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
+#                                                                              #
+# This software is part of BioDSL (www.BioDSL.org).                            #
+#                                                                              #
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
+# Namespace for BioDSL.
 module BioDSL
   # Error class for all exceptions to do with CAry.
   class CAryError < StandardError; end
 
-  # Class to manipulate a Ruby byte array which is fit for inline C manipulation.
+  # Class to manipulate a Ruby byte array which is fit for inline C
+  # manipulation.
   class CAry
     require 'inline'
 
@@ -37,8 +40,8 @@ module BioDSL
     # Class method to store to a given file a given ary.
     def self.store(file, ary)
       File.open(file, 'w') do |ios|
-        ios.write([ary.count].pack("I"))
-        ios.write([ary.size].pack("I"))
+        ios.write([ary.count].pack('I'))
+        ios.write([ary.size].pack('I'))
         ios.write(ary.ary)
       end
 
@@ -52,20 +55,20 @@ module BioDSL
       ary   = nil
 
       File.open(file) do |ios|
-        count = ios.read(4).unpack("I").first
-        size  = ios.read(4).unpack("I").first
+        count = ios.read(4).unpack('I').first
+        size  = ios.read(4).unpack('I').first
         ary   = ios.read
       end
 
       CAry.new(count, size, ary)
     end
 
-    # Method to initialize a new CAry object which is either empty
-    # or created from a given byte string. Count is the number of
-    # elements in the ary, and size is the byte size of a element.
+    # Method to initialize a new CAry object which is either empty or created
+    # from a given byte string. Count is the number of elements in the ary, and
+    # size is the byte size of a element.
     def initialize(count, size, ary = nil)
-      raise CAryError, "count must be positive - not #{count}" if count <= 0
-      raise CAryError, "size must be positive - not #{size}"   if size  <= 0
+      fail CAryError, "count must be positive - not #{count}" if count <= 0
+      fail CAryError, "size must be positive - not #{size}"   if size <= 0
 
       @count = count
       @size  = size
@@ -95,34 +98,58 @@ module BioDSL
     end
 
     # Method to do bitwise AND operation between two CArys.
-    def &(cary)
-      raise BioDSL::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
-      raise BioDSL::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
-      raise BioDSL::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
+    def &(other)
+      unless other.is_a? CAry
+        fail BioDSL::CAryError, "Bad object type: #{other.class}"
+      end
 
-      bitwise_and_C(@ary, cary.ary, @count * @size)
+      if @count != other.count
+        fail BioDSL::CAryError, "Counts mismatch: #{@count} != #{other.count}"
+      end
+
+      if @size != other.size
+        fail BioDSL::CAryError, "Sizes mismatch: #{@size} != #{other.size}"
+      end
+
+      bitwise_and_C(@ary, other.ary, @count * @size)
 
       self
     end
 
     # Method to do bitwise OR operation between two CArys.
-    def |(cary)
-      raise BioDSL::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
-      raise BioDSL::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
-      raise BioDSL::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
+    def |(other)
+      unless other.is_a? CAry
+        fail BioDSL::CAryError, "Bad object type: #{other.class}"
+      end
 
-      bitwise_or_C(@ary, cary.ary, @count * @size)
+      if @count != other.count
+        fail BioDSL::CAryError, "Counts mismatch: #{@count} != #{other.count}"
+      end
+
+      if @size != other.size
+        fail BioDSL::CAryError, "Sizes mismatch: #{@size} != #{other.size}"
+      end
+
+      bitwise_or_C(@ary, other.ary, @count * @size)
 
       self
     end
 
     # Method to do bitwise XOR operation between two CArys.
-    def ^(cary)
-      raise BioDSL::CAryError, "Bad object type: #{cary.class}" unless cary.is_a? CAry
-      raise BioDSL::CAryError, "Counts mismatch: #{self.count} != #{cary.count}" if self.count != cary.count
-      raise BioDSL::CAryError, "Sizes mismatch: #{self.size} != #{cary.size}"    if self.size != cary.size
+    def ^(other)
+      unless other.is_a? CAry
+        fail BioDSL::CAryError, "Bad object type: #{other.class}"
+      end
 
-      bitwise_xor_C(@ary, cary.ary, @count * @size)
+      if @count != other.count
+        fail BioDSL::CAryError, "Counts mismatch: #{@count} != #{other.count}"
+      end
+
+      if @size != other.size
+        fail BioDSL::CAryError, "Sizes mismatch: #{@size} != #{other.size}"
+      end
+
+      bitwise_xor_C(@ary, other.ary, @count * @size)
 
       self
     end
@@ -137,8 +164,6 @@ module BioDSL
     def to_s
       @ary.unpack('B*').first
     end
-
-    private
 
     inline do |builder|
       # Method that given a byte array and its size in bytes
