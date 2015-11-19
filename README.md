@@ -7,8 +7,9 @@ BioDSL is build on the same principles as [Biopieces](www.biopieces.org), where
 data records are passed through multiple commands each with a specific task. The
 idea is that a command will process the data record if this contains the
 relevant attributes that the command can process. E.g. if a data record contains
-a sequence, then the command [reverse_seq](reverse_seq) will reverse that
-sequence.
+a sequence, then the command
+[reverse_seq](http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/ReverseSeq) will
+reverse that sequence.
 
 # Installation
 
