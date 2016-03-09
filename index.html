@@ -32,7 +32,7 @@ a sequence, then the command <a href="reverse_seq">reverse_seq</a> will reverse 
 sequence.</p>
 
 <h1>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h1>
 
 <p>The recommended way of installing BioDSL is via Ruby’s gem package manager:</p>
 
@@ -43,7 +43,7 @@ Mothur and SPAdes, you will have to install these and make the executables
 available in your <code>$PATH</code>.</p>
 
 <h1>
-<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting started</h1>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting started</h1>
 
 <p>BioDSL is implemented in Ruby making use of Ruby’s powerful metaprogramming
 facilities. Thus, a workflow is basically a Ruby script containing one or more
@@ -70,7 +70,7 @@ run
 </code></pre>
 
 <h1>
-<a id="combining-multiple-pipelines" class="anchor" href="#combining-multiple-pipelines" aria-hidden="true"><span class="octicon octicon-link"></span></a>Combining multiple pipelines</h1>
+<a id="combining-multiple-pipelines" class="anchor" href="#combining-multiple-pipelines" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Combining multiple pipelines</h1>
 
 <p>This script demonstrates how multiple pipelines can be created and combined. In
 the end two pipelines are run, one consisting of p1 + p2 and one consisting of
@@ -95,7 +95,7 @@ p4.write_fasta(output: "reject.fna").run
 </code></pre>
 
 <h1>
-<a id="running-pipelines-in-parallel" class="anchor" href="#running-pipelines-in-parallel" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running pipelines in parallel</h1>
+<a id="running-pipelines-in-parallel" class="anchor" href="#running-pipelines-in-parallel" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Running pipelines in parallel</h1>
 
 <p>This script demonstrates how to run multiple pipelines in parallel using 20 CPU
 cores. Here we filter pair-end FASTQ entries from a list of samples described in
@@ -119,7 +119,7 @@ end
 </code></pre>
 
 <h1>
-<a id="ruby-one-liners" class="anchor" href="#ruby-one-liners" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ruby one-liners</h1>
+<a id="ruby-one-liners" class="anchor" href="#ruby-one-liners" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ruby one-liners</h1>
 
 <p>It is possible to execute BioDSL pipelines on the command line:</p>
 
@@ -140,7 +140,7 @@ command line:</p>
 </code></pre>
 
 <h1>
-<a id="using-the-interactive-ruby-interpreter" class="anchor" href="#using-the-interactive-ruby-interpreter" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using the Interactive Ruby interpreter</h1>
+<a id="using-the-interactive-ruby-interpreter" class="anchor" href="#using-the-interactive-ruby-interpreter" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using the Interactive Ruby interpreter</h1>
 
 <p>Here we demonstrate the use of Ruby's <code>irb</code> shell:</p>
 
@@ -167,7 +167,7 @@ irb(main):002:0&gt;
 </code></pre>
 
 <h1>
-<a id="history-file" class="anchor" href="#history-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>History file</h1>
+<a id="history-file" class="anchor" href="#history-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>History file</h1>
 
 <p>A history file is kept in <code>$USER/.BioDSL_history</code> and each time run is called a history entry is added to this file:</p>
 
@@ -181,24 +181,24 @@ BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_L
 <p>Thus it is possible to redo the last pipeline by pasting the line in irb or a Ruby one-liner.</p>
 
 <h1>
-<a id="log-and-history" class="anchor" href="#log-and-history" aria-hidden="true"><span class="octicon octicon-link"></span></a>Log and History</h1>
+<a id="log-and-history" class="anchor" href="#log-and-history" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Log and History</h1>
 
 <p>All BioDSL events are logged to <code>~/.BioDSL_log</code>.</p>
 
 <p>BioDSL history is saved to <code>~/.BioDSL_history</code>.</p>
 
 <h1>
-<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h1>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h1>
 
 <h2>
-<a id="progress" class="anchor" href="#progress" aria-hidden="true"><span class="octicon octicon-link"></span></a>Progress</h2>
+<a id="progress" class="anchor" href="#progress" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Progress</h2>
 
 <p>Show nifty progress table with commands, records read and emittet and time.</p>
 
 <p><code>BD.new.read_fasta(input: "input.fna").dump.run(progress: true)</code></p>
 
 <h2>
-<a id="verbose" class="anchor" href="#verbose" aria-hidden="true"><span class="octicon octicon-link"></span></a>Verbose</h2>
+<a id="verbose" class="anchor" href="#verbose" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Verbose</h2>
 
 <p>Output verbose messages from commands and the run status.</p>
 
@@ -206,7 +206,7 @@ BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_L
 </code></pre>
 
 <h2>
-<a id="debug" class="anchor" href="#debug" aria-hidden="true"><span class="octicon octicon-link"></span></a>Debug</h2>
+<a id="debug" class="anchor" href="#debug" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Debug</h2>
 
 <p>Output debug messages from commands using these.</p>
 
@@ -214,7 +214,7 @@ BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_L
 </code></pre>
 
 <h2>
-<a id="e-mail-notification" class="anchor" href="#e-mail-notification" aria-hidden="true"><span class="octicon octicon-link"></span></a>E-mail notification</h2>
+<a id="e-mail-notification" class="anchor" href="#e-mail-notification" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>E-mail notification</h2>
 
 <p>Send an email when run is complete.</p>
 
@@ -222,7 +222,7 @@ BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_L
 </code></pre>
 
 <h2>
-<a id="reports" class="anchor" href="#reports" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reports</h2>
+<a id="reports" class="anchor" href="#reports" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Reports</h2>
 
 <p>Create an HTML report of the run stats for a pipeline:</p>
 
@@ -230,7 +230,7 @@ BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_L
 </code></pre>
 
 <h2>
-<a id="output-directory" class="anchor" href="#output-directory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output directory</h2>
+<a id="output-directory" class="anchor" href="#output-directory" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Output directory</h2>
 
 <p>All output files from commands are put in a specified directory:</p>
 
@@ -238,7 +238,7 @@ BD.new.read_fasta(input: "test_big.fna", first: 1000).plot_histogram(key: :SEQ_L
 </code></pre>
 
 <h2>
-<a id="configuration-file" class="anchor" href="#configuration-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration File</h2>
+<a id="configuration-file" class="anchor" href="#configuration-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration File</h2>
 
 <p>It is possible to pre-set options in a configuration file located in your <code>$HOME</code>
 directory called <code>.BioDSLrc</code>. Thus if an option is not already set, its value
@@ -274,7 +274,7 @@ by adding the following line:</p>
 </code></pre>
 
 <h1>
-<a id="available-biodsl-commands" class="anchor" href="#available-biodsl-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Available BioDSL commands</h1>
+<a id="available-biodsl-commands" class="anchor" href="#available-biodsl-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Available BioDSL commands</h1>
 
 <ul>
 <li><a href="http://www.rubydoc.info/gems/BioDSL/1.0.2/BioDSL/AddKey">add_key</a></li>
@@ -330,7 +330,7 @@ by adding the following line:</p>
 </ul>
 
 <h1>
-<a id="running-the-test-suite" class="anchor" href="#running-the-test-suite" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running the test suite</h1>
+<a id="running-the-test-suite" class="anchor" href="#running-the-test-suite" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Running the test suite</h1>
 
 <p>BioDSL have an extended set of unit tests that can be run after installing
 development dependencies. First you need to install the bundler gem:</p>
@@ -353,7 +353,7 @@ download depending gems:</p>
 executable was missing.</p>
 
 <h1>
-<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h1>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h1>
 
 <ol>
 <li>Fork it</li>
@@ -377,7 +377,7 @@ executable was missing.</p>
           </script>
           <script type="text/javascript">
             try {
-              var pageTracker = _gat._getTracker("UA-70265737-1");
+              var pageTracker = _gat._getTracker("UA-3769691-2");
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
