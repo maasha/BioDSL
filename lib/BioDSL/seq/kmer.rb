@@ -47,7 +47,7 @@ module BioDSL
           when '10' then oligo << 'c'
           when '11' then oligo << 'g'
           else
-            fail "unknown m #{m}"
+            raise "unknown m #{m}"
           end
         end
 
@@ -67,19 +67,19 @@ module BioDSL
     def to_kmers(options)
       options[:step_size] ||= 1
       options[:score_min] ||= Seq::SCORE_MAX
-      fail KmerError, 'No kmer_size' unless options[:kmer_size]
+      raise KmerError, 'No kmer_size' unless options[:kmer_size]
 
-      unless (1..12).include? options[:kmer_size]
-        fail KmerError, "Bad kmer_size: #{options[:kmer_size]}"
+      unless (1..12).cover? options[:kmer_size]
+        raise KmerError, "Bad kmer_size: #{options[:kmer_size]}"
       end
 
-      unless (1..12).include? options[:step_size]
-        fail KmerError, "Bad step_size: #{options[:step_size]}"
+      unless (1..12).cover? options[:step_size]
+        raise KmerError, "Bad step_size: #{options[:step_size]}"
       end
 
       if @qual && !(Seq::SCORE_MIN..Seq::SCORE_MAX).
-                   include?(options[:score_min])
-        fail KmerError, "score minimum: #{options[:score_min]} out of " \
+         cover?(options[:score_min])
+        raise KmerError, "score minimum: #{options[:score_min]} out of " \
                         "range #{Seq::SCORE_MIN}..#{Seq::SCORE_MAX}"
       end
 
@@ -97,7 +97,7 @@ module BioDSL
                         options[:score_min], Seq::SCORE_BASE)
       else
         to_kmers_C(@seq, @kmer_ary.ary, length, @kmer_ary.count,
-                  options[:kmer_size], options[:step_size])
+                   options[:kmer_size], options[:step_size])
       end
     end
 
