@@ -21,6 +21,17 @@ For those commands which are wrappers around third-party tools, such as Usearch,
 Mothur and SPAdes, you will have to install these and make the executables
 available in your `$PATH`.
 
+## Installing using Docker
+
+It is possible to run BioDSL from a Docker container hosted at
+[dockerhub](https://hub.docker.com/r/maasha/biodsl/). So if you have a Docker
+demon running you can run BioDSL in a Debian/Linux environment like this:
+
+`docker run -it --mount 'type=bind,source=<SRC>,target=/home/biodsl/data/' maasha/biodsl`
+
+Where `<SRC>` is the path to a data directory shared between the Docker host and
+the Docker BioDSL container.
+
 # Getting started
 
 BioDSL is implemented in Ruby making use of Ruby’s powerful metaprogramming
