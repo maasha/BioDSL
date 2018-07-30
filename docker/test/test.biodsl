@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'BioDSL'
+
+BD.new.
+read_fasta(input: "input.fna").
+grab(select: "ATC$", keys: :SEQ).
+write_fasta(output: "output.fna").
+run
