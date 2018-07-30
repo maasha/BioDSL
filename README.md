@@ -32,6 +32,8 @@ demon running you can run BioDSL in a Debian/Linux environment like this:
 Where `<SRC>` is the path to a data directory shared between the Docker host and
 the Docker BioDSL container.
 
+NB! The Docker version of BioDSL currently don't contain any third-party tools.
+
 # Getting started
 
 BioDSL is implemented in Ruby making use of Ruby’s powerful metaprogramming
